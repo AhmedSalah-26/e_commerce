@@ -117,7 +117,7 @@ class _MyAppState extends State<MyApp> {
         }
       },
       child: MaterialApp.router(
-        theme: ThemeData.light().copyWith(
+        theme: ThemeData(
           fontFamily: 'Changa',
           primaryColor: AppColours.brownMedium,
           colorScheme: const ColorScheme.light(

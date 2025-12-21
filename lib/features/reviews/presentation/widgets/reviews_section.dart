@@ -319,7 +319,11 @@ class _ReviewsSectionState extends State<ReviewsSection> {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('dd/MM/yyyy').format(date);
+    final isArabic = context.locale.languageCode == 'ar';
+    if (isArabic) {
+      return DateFormat('dd/MM/yyyy', 'ar').format(date);
+    }
+    return DateFormat('dd/MM/yyyy', 'en').format(date);
   }
 
   void _showReviewDialog(ReviewEntity? existingReview) {

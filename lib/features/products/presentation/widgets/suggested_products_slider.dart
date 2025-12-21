@@ -25,7 +25,6 @@ class SuggestedProductsSlider extends StatefulWidget {
 }
 
 class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
-  final PageController _pageController = PageController();
   List<ProductEntity> _suggestedProducts = [];
   bool _isLoading = true;
 
@@ -38,7 +37,6 @@ class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
   Future<void> _loadSuggestedProducts() async {
     final productsCubit = sl<ProductsCubit>();
 
-    // Load products from same category or all products
     if (widget.categoryId != null) {
       await productsCubit.loadProductsByCategory(widget.categoryId!);
     } else {
@@ -50,19 +48,13 @@ class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
       setState(() {
         _suggestedProducts = state.products
             .where((p) => p.id != widget.currentProductId)
-            .take(8)
+            .take(10)
             .toList();
         _isLoading = false;
       });
     } else {
       setState(() => _isLoading = false);
     }
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
   }
 
   @override
@@ -76,7 +68,19 @@ class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
     }
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final pageCount = (_suggestedProducts.length / 4).ceil();
+    final cardWidth = screenWidth * 0.4;
+    final cardHeight = cardWidth * 1.4;
+
+    // Split products into two rows
+    final topRow = <ProductEntity>[];
+    final bottomRow = <ProductEntity>[];
+    for (int i = 0; i < _suggestedProducts.length; i++) {
+      if (i % 2 == 0) {
+        topRow.add(_suggestedProducts[i]);
+      } else {
+        bottomRow.add(_suggestedProducts[i]);
+      }
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,44 +94,39 @@ class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
           ),
         ),
         SizedBox(
-          height: screenWidth * 0.7,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: pageCount,
-            itemBuilder: (context, pageIndex) {
-              final startIndex = pageIndex * 4;
-              final endIndex =
-                  (startIndex + 4).clamp(0, _suggestedProducts.length);
-              final pageProducts =
-                  _suggestedProducts.sublist(startIndex, endIndex);
-
-              return GridView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.75,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
+          height: cardHeight * 2 + 16,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: List.generate(
+                topRow.length,
+                (index) => Padding(
+                  padding: EdgeInsets.only(
+                      right: index < topRow.length - 1 ? 12 : 0),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        width: cardWidth,
+                        height: cardHeight,
+                        child: _SuggestedProductCard(product: topRow[index]),
+                      ),
+                      const SizedBox(height: 12),
+                      if (index < bottomRow.length)
+                        SizedBox(
+                          width: cardWidth,
+                          height: cardHeight,
+                          child:
+                              _SuggestedProductCard(product: bottomRow[index]),
+                        ),
+                    ],
+                  ),
                 ),
-                itemCount: pageProducts.length,
-                itemBuilder: (context, index) {
-                  return _SuggestedProductCard(product: pageProducts[index]);
-                },
-              );
-            },
-          ),
-        ),
-        if (pageCount > 1)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: _PageIndicator(
-                pageController: _pageController,
-                pageCount: pageCount,
               ),
             ),
           ),
+        ),
       ],
     );
   }
@@ -204,9 +203,12 @@ class _SuggestedProductCard extends StatelessWidget {
                               decoration: TextDecoration.lineThrough,
                             ),
                           ),
-                        Text(
-                          '${product.effectivePrice.toStringAsFixed(0)} ${'egp'.tr()}',
-                          style: AppTextStyle.bold_14_medium_brown,
+                        Flexible(
+                          child: Text(
+                            '${product.effectivePrice.toStringAsFixed(0)} ${'egp'.tr()}',
+                            style: AppTextStyle.bold_14_medium_brown,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
@@ -225,63 +227,6 @@ class _SuggestedProductCard extends StatelessWidget {
       color: AppColours.greyLight,
       child: const Center(
         child: Icon(Icons.image_not_supported, color: Colors.grey),
-      ),
-    );
-  }
-}
-
-class _PageIndicator extends StatefulWidget {
-  final PageController pageController;
-  final int pageCount;
-
-  const _PageIndicator({
-    required this.pageController,
-    required this.pageCount,
-  });
-
-  @override
-  State<_PageIndicator> createState() => _PageIndicatorState();
-}
-
-class _PageIndicatorState extends State<_PageIndicator> {
-  int _currentPage = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.pageController.addListener(_onPageChanged);
-  }
-
-  void _onPageChanged() {
-    final page = widget.pageController.page?.round() ?? 0;
-    if (page != _currentPage) {
-      setState(() => _currentPage = page);
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.pageController.removeListener(_onPageChanged);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(
-        widget.pageCount,
-        (index) => Container(
-          width: 8,
-          height: 8,
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _currentPage == index
-                ? AppColours.brownLight
-                : AppColours.greyLight,
-          ),
-        ),
       ),
     );
   }

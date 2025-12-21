@@ -1,5 +1,4 @@
 import 'dart:ui' as ui;
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,7 +11,6 @@ import '../../features/favorites/presentation/cubit/favorites_state.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/cubit/auth_state.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_text_style.dart';
 import 'toast.dart';
 
 class ProductGridCard extends StatelessWidget {
@@ -80,7 +78,7 @@ class ProductGridCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFF6B00),
+                          color: AppColours.jumiaOrange,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -105,13 +103,13 @@ class ProductGridCard extends StatelessWidget {
                           onTap: () => _toggleFavorite(context),
                           child: Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF313133),
+                            decoration: const BoxDecoration(
+                              color: AppColours.jumiaDark,
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               isFav ? Icons.favorite : Icons.favorite_border,
-                              color: const Color(0xFFFF6B00),
+                              color: AppColours.jumiaOrange,
                               size: 20,
                             ),
                           ),
@@ -136,7 +134,7 @@ class ProductGridCard extends StatelessWidget {
                       product.name,
                       style: const TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF313133),
+                        color: AppColours.jumiaDark,
                         height: 1.3,
                       ),
                       maxLines: 2,
@@ -152,7 +150,7 @@ class ProductGridCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF313133),
+                            color: AppColours.jumiaDark,
                           ),
                         ),
                         if (product.hasDiscount) ...[
@@ -161,7 +159,7 @@ class ProductGridCard extends StatelessWidget {
                             "${product.price.toStringAsFixed(2)} ${'egp'.tr()}",
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF9A9A9A),
+                              color: AppColours.jumiaGrey,
                               decoration: TextDecoration.lineThrough,
                             ),
                           ),
@@ -177,36 +175,16 @@ class ProductGridCard extends StatelessWidget {
                             index < product.rating.floor()
                                 ? Icons.star
                                 : Icons.star_border,
-                            color: const Color(0xFFFFA500),
+                            color: AppColours.jumiaYellow,
                             size: 14,
                           );
                         }),
                         const SizedBox(width: 4),
                         Text(
-                          "(${product.reviewCount ?? 0})",
+                          "(0)",
                           style: const TextStyle(
                             fontSize: 11,
-                            color: Color(0xFF9A9A9A),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Express badge
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.local_shipping,
-                          size: 14,
-                          color: const Color(0xFFFF6B00),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'EXPRESS',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFFFF6B00),
+                            color: AppColours.jumiaGrey,
                           ),
                         ),
                       ],
@@ -223,7 +201,7 @@ class ProductGridCard extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: product.isOutOfStock
                               ? Colors.grey
-                              : const Color(0xFFFF6B00),
+                              : AppColours.jumiaOrange,
                           padding: EdgeInsets.zero,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),

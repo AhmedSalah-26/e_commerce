@@ -19,6 +19,8 @@ import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../cart/presentation/pages/cart_screen.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../favorites/presentation/cubit/favorites_cubit.dart';
+import '../../../favorites/presentation/cubit/favorites_state.dart';
 import '../../../reviews/presentation/cubit/reviews_cubit.dart';
 import '../../../reviews/presentation/widgets/reviews_section.dart';
 import '../widgets/suggested_products_slider.dart';
@@ -86,7 +88,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   SizedBox(height: screenWidth * 0.05),
                   _buildNameAndPrice(screenWidth, isArabic),
                   SizedBox(height: screenWidth * 0.02),
-                  _buildRating(screenWidth),
+                  _buildRating(screenWidth, isArabic),
                   SizedBox(height: screenWidth * 0.02),
                   _buildStoreInfo(screenWidth, isArabic),
                   SizedBox(height: screenWidth * 0.02),
@@ -250,29 +252,53 @@ class _ProductScreenState extends State<ProductScreen> {
     );
   }
 
-  Widget _buildRating(double screenWidth) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        RatingBarIndicator(
-          rating: _product.rating,
-          direction: Axis.horizontal,
-          itemCount: 5,
-          itemSize: screenWidth * 0.05,
-          itemPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-          itemBuilder: (context, _) =>
-              const Icon(Icons.star, color: Colors.amber),
-        ),
-        SizedBox(width: screenWidth * 0.02),
-        AutoSizeText(
-          "(${_product.rating.toStringAsFixed(1)})",
-          style: AppTextStyle.normal_16_brownLight
-              .copyWith(fontSize: screenWidth * 0.04),
-          minFontSize: 10,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+  Widget _buildRating(double screenWidth, bool isArabic) {
+    return Directionality(
+      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Rating section
+          Row(
+            children: [
+              RatingBarIndicator(
+                rating: _product.rating,
+                direction: Axis.horizontal,
+                itemCount: 5,
+                itemSize: screenWidth * 0.05,
+                itemPadding:
+                    EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
+                itemBuilder: (context, _) =>
+                    const Icon(Icons.star, color: Colors.amber),
+              ),
+              SizedBox(width: screenWidth * 0.02),
+              AutoSizeText(
+                "(${_product.rating.toStringAsFixed(1)})",
+                style: AppTextStyle.normal_16_brownLight
+                    .copyWith(fontSize: screenWidth * 0.04),
+                minFontSize: 10,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+          // Favorite button
+          BlocBuilder<FavoritesCubit, FavoritesState>(
+            builder: (context, state) {
+              final isFav =
+                  state is FavoritesLoaded && state.isFavorite(_product.id);
+              return IconButton(
+                onPressed: () => _toggleFavorite(context),
+                icon: Icon(
+                  isFav ? Icons.favorite : Icons.favorite_border,
+                  color: Colors.red,
+                  size: screenWidth * 0.07,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -394,13 +420,15 @@ class _ProductScreenState extends State<ProductScreen> {
   Widget _buildDescription(double screenWidth, bool isArabic) {
     return Directionality(
       textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-      child: AutoSizeText(
-        _product.description,
-        style:
-            AppTextStyle.normal_12_black.copyWith(fontSize: screenWidth * 0.04),
-        minFontSize: 10,
-        maxLines: 6,
-        overflow: TextOverflow.ellipsis,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _product.description,
+            style: AppTextStyle.normal_12_black
+                .copyWith(fontSize: screenWidth * 0.04),
+          ),
+        ],
       ),
     );
   }
@@ -499,6 +527,27 @@ class _ProductScreenState extends State<ProductScreen> {
       context.read<CartCubit>().addToCart(_product.id, quantity: _quantity);
       Tost.showCustomToast(context, 'added_to_cart'.tr(),
           backgroundColor: Colors.green, textColor: Colors.white);
+    } else {
+      Tost.showCustomToast(context, 'login_required'.tr(),
+          backgroundColor: Colors.orange, textColor: Colors.white);
+    }
+  }
+
+  void _toggleFavorite(BuildContext context) {
+    final authState = context.read<AuthCubit>().state;
+    if (authState is AuthAuthenticated) {
+      final favoritesCubit = context.read<FavoritesCubit>();
+      favoritesCubit.setUserId(authState.user.id);
+      final isFav = favoritesCubit.isFavorite(_product.id);
+      favoritesCubit.toggleFavorite(_product.id);
+
+      if (isFav) {
+        Tost.showCustomToast(context, 'removed_from_favorites'.tr(),
+            backgroundColor: Colors.grey, textColor: Colors.white);
+      } else {
+        Tost.showCustomToast(context, 'added_to_favorites'.tr(),
+            backgroundColor: Colors.red, textColor: Colors.white);
+      }
     } else {
       Tost.showCustomToast(context, 'login_required'.tr(),
           backgroundColor: Colors.orange, textColor: Colors.white);

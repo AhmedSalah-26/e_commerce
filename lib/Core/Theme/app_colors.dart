@@ -22,4 +22,10 @@ class AppColours {
   static const Color background = Color(0xFFFAFAFA);
   static const Color error = Color(0xFFD32F2F);
   static const Color success = Color(0xFF388E3C);
+
+  // Jumia-style colors
+  static const Color jumiaOrange = Color(0xFFFF6B00);
+  static const Color jumiaDark = Color(0xFF313133);
+  static const Color jumiaGrey = Color(0xFF9A9A9A);
+  static const Color jumiaYellow = Color(0xFFFFA500);
 }

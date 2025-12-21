@@ -142,21 +142,23 @@ class ProductGridCard extends StatelessWidget {
                 textDirection:
                     isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AutoSizeText(
-                        product.name,
-                        style: AppTextStyle.normal_12_black.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                      Flexible(
+                        child: AutoSizeText(
+                          product.name,
+                          style: AppTextStyle.normal_12_black.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                          minFontSize: 10,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
-                        minFontSize: 10,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -164,11 +166,11 @@ class ProductGridCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Icon(Icons.star,
-                                  color: Colors.amber, size: 14),
+                                  color: Colors.amber, size: 12),
                               const SizedBox(width: 2),
                               Text(
                                 "(${product.rating.toStringAsFixed(1)})",
-                                style: const TextStyle(fontSize: 11),
+                                style: const TextStyle(fontSize: 10),
                               ),
                             ],
                           ),
@@ -177,21 +179,27 @@ class ProductGridCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (product.hasDiscount)
-                                Text(
+                                AutoSizeText(
                                   "${product.price.toStringAsFixed(0)} ${'egp'.tr()}",
                                   style: const TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 11,
                                     color: Colors.grey,
                                     decoration: TextDecoration.lineThrough,
                                   ),
+                                  minFontSize: 8,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              Text(
+                              AutoSizeText(
                                 "${product.effectivePrice.toStringAsFixed(0)} ${'egp'.tr()}",
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   color: AppColours.brownMedium,
                                 ),
+                                minFontSize: 11,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -201,7 +209,7 @@ class ProductGridCard extends StatelessWidget {
                       // Add to Cart Button
                       SizedBox(
                         width: double.infinity,
-                        height: 30,
+                        height: 28,
                         child: ElevatedButton(
                           onPressed: product.isOutOfStock
                               ? null
@@ -221,11 +229,12 @@ class ProductGridCard extends StatelessWidget {
                                 : 'add_to_cart'.tr(),
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 11,
+                              fontSize: 10,
                             ),
                           ),
                         ),
                       ),
+                      const SizedBox(height: 4),
                     ],
                   ),
                 ),

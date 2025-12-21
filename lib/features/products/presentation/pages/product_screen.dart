@@ -201,7 +201,9 @@ class _ProductScreenState extends State<ProductScreen> {
               _product.name,
               style: AppTextStyle.semiBold_20_dark_brown
                   .copyWith(fontSize: screenWidth * 0.04),
+              minFontSize: 14,
               maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           Expanded(
@@ -215,11 +217,17 @@ class _ProductScreenState extends State<ProductScreen> {
                         fontSize: screenWidth * 0.03,
                         color: Colors.grey,
                         decoration: TextDecoration.lineThrough),
+                    minFontSize: 10,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 AutoSizeText(
                   "${_product.effectivePrice.toStringAsFixed(2)} ${'egp'.tr()}",
                   style: AppTextStyle.bold_18_medium_brown
                       .copyWith(fontSize: screenWidth * 0.04),
+                  minFontSize: 14,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -243,10 +251,13 @@ class _ProductScreenState extends State<ProductScreen> {
               const Icon(Icons.star, color: Colors.amber),
         ),
         SizedBox(width: screenWidth * 0.02),
-        Text(
+        AutoSizeText(
           "(${_product.rating.toStringAsFixed(1)})",
           style: AppTextStyle.normal_16_brownLight
               .copyWith(fontSize: screenWidth * 0.04),
+          minFontSize: 10,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -271,7 +282,8 @@ class _ProductScreenState extends State<ProductScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.store, size: 14, color: AppColours.brownMedium),
+                  const Icon(Icons.store,
+                      size: 14, color: AppColours.brownMedium),
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
@@ -311,7 +323,8 @@ class _ProductScreenState extends State<ProductScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.phone, size: 14, color: AppColours.brownMedium),
+                    const Icon(Icons.phone,
+                        size: 14, color: AppColours.brownMedium),
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
@@ -366,7 +379,9 @@ class _ProductScreenState extends State<ProductScreen> {
         _product.description,
         style:
             AppTextStyle.normal_12_black.copyWith(fontSize: screenWidth * 0.04),
+        minFontSize: 10,
         maxLines: 6,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -380,6 +395,9 @@ class _ProductScreenState extends State<ProductScreen> {
             '${'quantity'.tr()}:',
             style: AppTextStyle.normal_16_brownLight
                 .copyWith(fontSize: screenWidth * 0.05),
+            minFontSize: 12,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           SizedBox(width: screenWidth * 0.04),
           Container(
@@ -395,9 +413,12 @@ class _ProductScreenState extends State<ProductScreen> {
                     if (_quantity > 1) setState(() => _quantity--);
                   },
                 ),
-                Text('$_quantity',
+                AutoSizeText('$_quantity',
                     style: AppTextStyle.normal_16_brownLight
-                        .copyWith(fontSize: screenWidth * 0.05)),
+                        .copyWith(fontSize: screenWidth * 0.05),
+                    minFontSize: 12,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
                 IconButton(
                   icon: const Icon(Icons.add),
                   onPressed: () {
@@ -421,10 +442,16 @@ class _ProductScreenState extends State<ProductScreen> {
         children: [
           AutoSizeText('${'total'.tr()}:',
               style: AppTextStyle.bold_18_medium_brown
-                  .copyWith(fontSize: screenWidth * 0.04)),
+                  .copyWith(fontSize: screenWidth * 0.04),
+              minFontSize: 14,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
           AutoSizeText("${totalPrice.toStringAsFixed(2)} ${'egp'.tr()}",
               style: AppTextStyle.bold_18_medium_brown
-                  .copyWith(fontSize: screenWidth * 0.04)),
+                  .copyWith(fontSize: screenWidth * 0.04),
+              minFontSize: 14,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
         ],
       ),
     );

@@ -48,7 +48,7 @@ class ProductGridCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Section
+            // Image Section - takes flexible space
             Expanded(
               flex: 3,
               child: Stack(
@@ -142,64 +142,60 @@ class ProductGridCard extends StatelessWidget {
                 textDirection:
                     isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+                  padding: const EdgeInsets.all(8.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Product Name
-                      Flexible(
-                        child: AutoSizeText(
-                          product.name,
-                          style: AppTextStyle.normal_12_black.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                          minFontSize: 10,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                      AutoSizeText(
+                        product.name,
+                        style: AppTextStyle.normal_12_black.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
                         ),
+                        minFontSize: 10,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                       const SizedBox(height: 4),
-                      // Rating
-                      Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.star,
-                                color: Colors.amber, size: 13),
-                            const SizedBox(width: 2),
-                            Text(
-                              "(${product.rating.toStringAsFixed(1)})",
-                              style: const TextStyle(fontSize: 10),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      // Price
-                      Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (product.hasDiscount)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.star,
+                                  color: Colors.amber, size: 14),
+                              const SizedBox(width: 2),
                               Text(
-                                "${product.price.toStringAsFixed(0)} ${'egp'.tr()}",
+                                "(${product.rating.toStringAsFixed(1)})",
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (product.hasDiscount)
+                                Text(
+                                  "${product.price.toStringAsFixed(0)} ${'egp'.tr()}",
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              Text(
+                                "${product.effectivePrice.toStringAsFixed(0)} ${'egp'.tr()}",
                                 style: const TextStyle(
-                                  fontSize: 9,
-                                  color: Colors.grey,
-                                  decoration: TextDecoration.lineThrough,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColours.brownMedium,
                                 ),
                               ),
-                            Text(
-                              "${product.effectivePrice.toStringAsFixed(0)} ${'egp'.tr()}",
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: AppColours.brownMedium,
-                              ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                        ],
                       ),
                       const Spacer(),
                       // Add to Cart Button
@@ -226,9 +222,7 @@ class ProductGridCard extends StatelessWidget {
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 11,
-                              fontWeight: FontWeight.w500,
                             ),
-                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),

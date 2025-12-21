@@ -24,7 +24,15 @@ class _OrdersPageState extends State<OrdersPage> {
   @override
   void initState() {
     super.initState();
-    _loadOrders();
+    _watchOrders();
+  }
+
+  void _watchOrders() {
+    final authState = context.read<AuthCubit>().state;
+    if (authState is AuthAuthenticated) {
+      // Use real-time watching for order status updates
+      context.read<OrdersCubit>().watchUserOrders(authState.user.id);
+    }
   }
 
   void _loadOrders() {

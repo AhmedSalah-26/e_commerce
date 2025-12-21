@@ -296,14 +296,14 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       final today = DateTime.now();
       final startOfDay = DateTime(today.year, today.month, today.day);
 
-      // Get today's counts
-      final todayPendingResponse = await _client
+      // Get ALL pending orders (not just today)
+      final allPendingResponse = await _client
           .from('orders')
           .select()
           .eq('merchant_id', merchantId)
-          .eq('status', 'pending')
-          .gte('created_at', startOfDay.toIso8601String());
+          .eq('status', 'pending');
 
+      // Get today's delivered orders
       final todayDeliveredResponse = await _client
           .from('orders')
           .select()
@@ -312,7 +312,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
           .gte('created_at', startOfDay.toIso8601String());
 
       return {
-        'todayPending': (todayPendingResponse as List).length,
+        'todayPending': (allPendingResponse as List).length,
         'todayDelivered': (todayDeliveredResponse as List).length,
       };
     } catch (e) {

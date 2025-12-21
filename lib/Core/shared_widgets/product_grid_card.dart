@@ -13,7 +13,6 @@ import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/cubit/auth_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_style.dart';
-import 'custom_button.dart';
 import 'toast.dart';
 
 class ProductGridCard extends StatelessWidget {
@@ -23,8 +22,6 @@ class ProductGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
     final isArabic = context.locale.languageCode == 'ar';
 
     return GestureDetector(
@@ -36,208 +33,257 @@ class ProductGridCard extends StatelessWidget {
         );
       },
       child: Container(
-        width: screenWidth * 0.45,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(12),
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: AppColours.greyLight.withValues(alpha: 0.3),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
+              color: AppColours.greyLight.withValues(alpha: 0.2),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Stack(
-              children: [
-                Container(
-                  height: screenHeight * 0.2,
-                  decoration: BoxDecoration(
-                    image: product.mainImage.isNotEmpty
-                        ? DecorationImage(
-                            image: _getImageProvider(product.mainImage),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(15),
-                      topRight: Radius.circular(15),
-                    ),
-                    color: AppColours.brownLight,
-                  ),
-                  child: product.mainImage.isEmpty
-                      ? const Center(
-                          child: Icon(Icons.image_not_supported,
-                              size: 50, color: Colors.white),
-                        )
-                      : null,
-                ),
-                // Favorite button
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: BlocBuilder<FavoritesCubit, FavoritesState>(
-                    builder: (context, state) {
-                      final isFav = state is FavoritesLoaded &&
-                          state.isFavorite(product.id);
-                      return GestureDetector(
-                        onTap: () => _toggleFavorite(context),
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            isFav ? Icons.favorite : Icons.favorite_border,
-                            color: Colors.red,
-                            size: 20,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                if (product.isOutOfStock)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text('out_of_stock'.tr(),
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 12)),
-                    ),
-                  ),
-                if (product.hasDiscount && !product.isOutOfStock)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '${product.discountPercentage}%-',
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 12),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: AutoSizeText(
-                product.name,
-                textDirection:
-                    isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-                style: AppTextStyle.normal_12_black.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: screenWidth * 0.04,
-                ),
-                minFontSize: 10,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                textAlign: isArabic ? TextAlign.right : TextAlign.left,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+            // Image Section - takes flexible space
+            Expanded(
+              flex: 3,
+              child: Stack(
                 children: [
-                  Icon(Icons.star,
-                      color: Colors.amber, size: screenWidth * 0.05),
-                  Text(
-                    "(${product.rating.toStringAsFixed(1)})",
-                    style: AppTextStyle.normal_12_black
-                        .copyWith(fontSize: screenWidth * 0.035),
+                  Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
+                      color: AppColours.brownLight,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
+                      child: _buildProductImage(product.mainImage),
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  Column(
-                    children: [
-                      if (product.hasDiscount)
-                        Text(
-                          "${product.price.toStringAsFixed(2)} EGP",
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.03,
-                            color: Colors.grey,
-                            decoration: TextDecoration.lineThrough,
+                  // Favorite button
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: BlocBuilder<FavoritesCubit, FavoritesState>(
+                      builder: (context, state) {
+                        final isFav = state is FavoritesLoaded &&
+                            state.isFavorite(product.id);
+                        return GestureDetector(
+                          onTap: () => _toggleFavorite(context),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: Colors.red,
+                              size: 20,
+                            ),
                           ),
+                        );
+                      },
+                    ),
+                  ),
+                  // Discount or Out of Stock badge
+                  if (product.isOutOfStock)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                      Text(
-                        "${product.effectivePrice.toStringAsFixed(2)} EGP",
-                        style: AppTextStyle.semiBold_16_dark_brown.copyWith(
-                          fontSize: screenWidth * 0.04,
-                          color: AppColours.brownMedium,
+                        child: Text('out_of_stock'.tr(),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 9)),
+                      ),
+                    )
+                  else if (product.hasDiscount)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '${product.discountPercentage}%-',
+                          style:
+                              const TextStyle(color: Colors.white, fontSize: 9),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
                 ],
               ),
             ),
-            SizedBox(height: screenHeight * 0.015),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: SizedBox(
-                  width: screenWidth * 0.35,
-                  child: CustomButton(
-                    color: product.isOutOfStock
-                        ? Colors.grey
-                        : AppColours.brownLight,
-                    onPressed: product.isOutOfStock
-                        ? () => Tost.showCustomToast('out_of_stock'.tr(),
-                            backgroundColor: Colors.red)
-                        : () => _addToCart(context),
-                    label: product.isOutOfStock
-                        ? 'out_of_stock'.tr()
-                        : 'add_to_cart'.tr(),
-                    labelSize: screenWidth * 0.04,
-                  ),
+            // Product Info
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AutoSizeText(
+                      product.name,
+                      textDirection: isArabic
+                          ? ui.TextDirection.rtl
+                          : ui.TextDirection.ltr,
+                      style: AppTextStyle.normal_12_black.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                      minFontSize: 10,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      textAlign: isArabic ? TextAlign.right : TextAlign.left,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.amber, size: 14),
+                        const SizedBox(width: 2),
+                        Text(
+                          "(${product.rating.toStringAsFixed(1)})",
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                        const Spacer(),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (product.hasDiscount)
+                              Text(
+                                "${product.price.toStringAsFixed(0)} EGP",
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  color: Colors.grey,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
+                            Text(
+                              "${product.effectivePrice.toStringAsFixed(0)} EGP",
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColours.brownMedium,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    // Add to Cart Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 30,
+                      child: ElevatedButton(
+                        onPressed: product.isOutOfStock
+                            ? null
+                            : () => _addToCart(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: product.isOutOfStock
+                              ? Colors.grey
+                              : AppColours.brownLight,
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text(
+                          product.isOutOfStock
+                              ? 'out_of_stock'.tr()
+                              : 'add_to_cart'.tr(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            SizedBox(height: screenHeight * 0.015),
           ],
         ),
       ),
     );
   }
 
-  ImageProvider _getImageProvider(String imageUrl) {
-    if (imageUrl.startsWith('http')) {
-      return NetworkImage(imageUrl);
+  Widget _buildProductImage(String imageUrl) {
+    if (imageUrl.isEmpty) {
+      return const Center(
+        child: Icon(Icons.image_not_supported, size: 50, color: Colors.white),
+      );
     }
-    return AssetImage(imageUrl);
+
+    if (imageUrl.startsWith('http')) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return const Center(
+            child:
+                Icon(Icons.image_not_supported, size: 50, color: Colors.white),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 2,
+            ),
+          );
+        },
+      );
+    }
+
+    // Local asset
+    return Image.asset(
+      imageUrl,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      errorBuilder: (context, error, stackTrace) {
+        return const Center(
+          child: Icon(Icons.image_not_supported, size: 50, color: Colors.white),
+        );
+      },
+    );
   }
 
   void _addToCart(BuildContext context) {
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
-      // Set user ID first, then add to cart
       context.read<CartCubit>().setUserId(authState.user.id);
       context.read<CartCubit>().addToCart(product.id);
-      Tost.showCustomToast('added_to_cart'.tr(), backgroundColor: Colors.green);
+      Tost.showCustomToast(context, 'added_to_cart'.tr(),
+          backgroundColor: Colors.green);
     } else {
-      Tost.showCustomToast('login_required'.tr(),
+      Tost.showCustomToast(context, 'login_required'.tr(),
           backgroundColor: Colors.orange);
     }
   }
@@ -246,23 +292,19 @@ class ProductGridCard extends StatelessWidget {
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
       final favoritesCubit = context.read<FavoritesCubit>();
-
-      // Set user ID first
       favoritesCubit.setUserId(authState.user.id);
-
       final isFav = favoritesCubit.isFavorite(product.id);
-
       favoritesCubit.toggleFavorite(product.id);
 
       if (isFav) {
-        Tost.showCustomToast('removed_from_favorites'.tr(),
+        Tost.showCustomToast(context, 'removed_from_favorites'.tr(),
             backgroundColor: Colors.grey);
       } else {
-        Tost.showCustomToast('added_to_favorites'.tr(),
+        Tost.showCustomToast(context, 'added_to_favorites'.tr(),
             backgroundColor: Colors.red);
       }
     } else {
-      Tost.showCustomToast('login_required'.tr(),
+      Tost.showCustomToast(context, 'login_required'.tr(),
           backgroundColor: Colors.orange);
     }
   }

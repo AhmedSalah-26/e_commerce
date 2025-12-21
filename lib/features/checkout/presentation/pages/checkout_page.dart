@@ -9,6 +9,7 @@ import '../../../../core/shared_widgets/custom_button.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
+import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
@@ -88,6 +89,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             );
 
             Tost.showCustomToast(
+              context,
               'order_placed'.tr(),
               backgroundColor: Colors.green,
               textColor: Colors.white,
@@ -100,7 +102,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
             context.go('/orders');
           } else if (state is OrdersError) {
             Tost.showCustomToast(
-              state.message,
+              context,
+              ErrorHelper.getUserFriendlyMessage(state.message),
               backgroundColor: Colors.red,
               textColor: Colors.white,
             );

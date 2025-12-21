@@ -13,32 +13,35 @@ class ProductsGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         int crossAxisCount;
-        double aspectRatio;
+        double childAspectRatio;
 
         if (constraints.maxWidth > 1200) {
           crossAxisCount = 4;
-          aspectRatio = 0.6;
+          childAspectRatio = 0.72;
         } else if (constraints.maxWidth > 800) {
           crossAxisCount = 3;
-          aspectRatio = 0.65;
+          childAspectRatio = 0.70;
         } else {
           crossAxisCount = 2;
-          aspectRatio = 0.50;
+          childAspectRatio = 0.68;
         }
 
-        return GridView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 15.0,
-            mainAxisSpacing: 15.0,
-            childAspectRatio: aspectRatio,
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: childAspectRatio,
+            ),
+            itemCount: products.length,
+            itemBuilder: (BuildContext context, int index) {
+              return ProductGridCard(product: products[index]);
+            },
           ),
-          itemCount: products.length,
-          itemBuilder: (BuildContext context, int index) {
-            return ProductGridCard(product: products[index]);
-          },
         );
       },
     );

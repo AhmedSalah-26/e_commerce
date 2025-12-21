@@ -331,6 +331,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 onPressed: widget.product.isOutOfStock
                     ? () {
                         Tost.showCustomToast(
+                          context,
                           'out_of_stock'.tr(),
                           backgroundColor: Colors.red,
                           textColor: Colors.white,
@@ -356,12 +357,14 @@ class _ProductScreenState extends State<ProductScreen> {
           .read<CartCubit>()
           .addToCart(widget.product.id, quantity: _quantity);
       Tost.showCustomToast(
+        context,
         'added_to_cart'.tr(),
         backgroundColor: Colors.green,
         textColor: Colors.white,
       );
     } else {
       Tost.showCustomToast(
+        context,
         'login_required'.tr(),
         backgroundColor: Colors.orange,
         textColor: Colors.white,

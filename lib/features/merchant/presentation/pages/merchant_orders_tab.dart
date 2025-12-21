@@ -114,22 +114,15 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
   void _loadOrdersForStatus(String status) {
     if (_merchantId == null) return;
     _currentPage[status] = 0;
-    context.read<OrdersCubit>().loadMerchantOrdersByStatusPaginated(
-        _merchantId!, status, 0, _pageSize);
+    // Use real-time watching for orders
+    context
+        .read<OrdersCubit>()
+        .watchMerchantOrdersByStatus(_merchantId!, status);
   }
 
   void _loadMoreOrders(String status) {
-    final state = context.read<OrdersCubit>().state;
-    if (state is OrdersLoaded &&
-        state.hasMore &&
-        state.currentStatus == status &&
-        _merchantId != null) {
-      final nextPage = (_currentPage[status] ?? 0) + 1;
-      _currentPage[status] = nextPage;
-      context.read<OrdersCubit>().loadMerchantOrdersByStatusPaginated(
-          _merchantId!, status, nextPage, _pageSize,
-          append: true);
-    }
+    // Pagination disabled when using real-time streams
+    // All orders are loaded via the stream
   }
 
   @override
@@ -153,7 +146,7 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
               children: [
                 OrdersHeader(
                   isRtl: isRtl,
-                  todayPending: _todayPending,
+                  totalPending: _todayPending,
                   todayDelivered: _todayDelivered,
                 ),
                 _buildTabBar(isRtl),
@@ -232,7 +225,15 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
   }
 
   Widget _buildOrdersList(String status, bool isRtl, bool showFilters) {
-    return BlocBuilder<OrdersCubit, OrdersState>(
+    return BlocConsumer<OrdersCubit, OrdersState>(
+      listener: (context, state) {
+        // Update pending count when pending orders list changes
+        if (state is OrdersLoaded && status == 'pending') {
+          setState(() {
+            _todayPending = state.orders.length;
+          });
+        }
+      },
       builder: (context, state) {
         if (state is OrdersLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -243,10 +244,6 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
         }
 
         if (state is OrdersLoaded) {
-          if (state.currentStatus != status) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
           var filteredOrders = state.orders;
           if (_searchQuery.isNotEmpty && showFilters) {
             filteredOrders = filteredOrders
@@ -270,16 +267,8 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
             child: ListView.builder(
               controller: _scrollControllers[status],
               padding: const EdgeInsets.all(16),
-              itemCount: filteredOrders.length + (state.hasMore ? 1 : 0),
+              itemCount: filteredOrders.length,
               itemBuilder: (context, index) {
-                if (index == filteredOrders.length) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
                 final order = filteredOrders[index];
                 return OrderCard(
                   order: order,

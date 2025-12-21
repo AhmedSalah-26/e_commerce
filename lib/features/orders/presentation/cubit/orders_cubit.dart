@@ -152,6 +152,7 @@ class OrdersCubit extends Cubit<OrdersState> {
   /// Watch user orders
   void watchUserOrders(String userId) {
     _ordersSubscription?.cancel();
+    emit(const OrdersLoading());
     _ordersSubscription = _repository.watchUserOrders(userId).listen(
       (orders) {
         emit(OrdersLoaded(orders));

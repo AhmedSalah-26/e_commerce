@@ -4,13 +4,13 @@ import '../../../../core/theme/app_text_style.dart';
 
 class OrdersHeader extends StatelessWidget {
   final bool isRtl;
-  final int todayPending;
+  final int totalPending;
   final int todayDelivered;
 
   const OrdersHeader({
     super.key,
     required this.isRtl,
-    required this.todayPending,
+    required this.totalPending,
     required this.todayDelivered,
   });
 
@@ -54,14 +54,14 @@ class OrdersHeader extends StatelessWidget {
               Expanded(
                 child: _buildStatCard(
                   isRtl ? 'قيد الانتظار' : 'Pending',
-                  todayPending.toString(),
+                  totalPending.toString(),
                   Icons.pending_actions,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
-                  isRtl ? 'تم التوصيل' : 'Delivered',
+                  isRtl ? 'تم التوصيل اليوم' : 'Delivered Today',
                   todayDelivered.toString(),
                   Icons.check_circle,
                 ),

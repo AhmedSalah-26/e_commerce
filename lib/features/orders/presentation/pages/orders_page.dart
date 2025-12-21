@@ -111,7 +111,10 @@ class _OrdersPageState extends State<OrdersPage> {
               );
             }
 
-            return _buildEmptyOrders();
+            // Show loading for initial state (waiting for stream)
+            return const SingleChildScrollView(
+              child: OrdersListSkeleton(itemCount: 4),
+            );
           },
         ),
       ),

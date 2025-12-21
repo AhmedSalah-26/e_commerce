@@ -6,6 +6,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/shared_widgets/toast.dart';
+import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../domain/entities/review_entity.dart';
@@ -39,13 +40,15 @@ class _ReviewsSectionState extends State<ReviewsSection> {
       listener: (context, state) {
         if (state is ReviewSubmitted) {
           Tost.showCustomToast(
+            context,
             'review_added'.tr(),
             backgroundColor: Colors.green,
             textColor: Colors.white,
           );
         } else if (state is ReviewsError) {
           Tost.showCustomToast(
-            state.message,
+            context,
+            ErrorHelper.getUserFriendlyMessage(state.message),
             backgroundColor: Colors.red,
             textColor: Colors.white,
           );
@@ -412,6 +415,7 @@ class _ReviewsSectionState extends State<ReviewsSection> {
                     onPressed: () {
                       if (rating == 0) {
                         Tost.showCustomToast(
+                          modalContext,
                           'rating_required'.tr(),
                           backgroundColor: Colors.orange,
                           textColor: Colors.white,

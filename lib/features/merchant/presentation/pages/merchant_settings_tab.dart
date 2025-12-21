@@ -9,6 +9,7 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../widgets/profile_edit_dialog.dart';
 import '../widgets/store_info_dialog.dart';
 import '../widgets/settings_dialogs.dart';
+import '../widgets/shipping_prices_dialog.dart';
 
 class MerchantSettingsTab extends StatelessWidget {
   const MerchantSettingsTab({super.key});
@@ -48,6 +49,17 @@ class MerchantSettingsTab extends StatelessWidget {
                       title: isRtl ? 'معلومات المتجر' : 'Store Information',
                       icon: Icons.store_outlined,
                       onTap: () => StoreInfoDialog.show(context, isRtl),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _SettingsSection(
+                  title: isRtl ? 'الشحن' : 'Shipping',
+                  items: [
+                    _SettingsItem(
+                      title: 'shipping_prices'.tr(),
+                      icon: Icons.local_shipping_outlined,
+                      onTap: () => ShippingPricesDialog.show(context, isRtl),
                     ),
                   ],
                 ),

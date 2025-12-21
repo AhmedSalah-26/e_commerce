@@ -199,29 +199,32 @@ class ProductGridCard extends StatelessWidget {
                       ),
                       const Spacer(),
                       // Add to Cart Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 30,
-                        child: ElevatedButton(
-                          onPressed: product.isOutOfStock
-                              ? null
-                              : () => _addToCart(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: product.isOutOfStock
-                                ? Colors.grey
-                                : AppColours.brownLight,
-                            padding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 30,
+                          child: ElevatedButton(
+                            onPressed: product.isOutOfStock
+                                ? null
+                                : () => _addToCart(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: product.isOutOfStock
+                                  ? Colors.grey
+                                  : AppColours.brownLight,
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            product.isOutOfStock
-                                ? 'out_of_stock'.tr()
-                                : 'add_to_cart'.tr(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
+                            child: Text(
+                              product.isOutOfStock
+                                  ? 'out_of_stock'.tr()
+                                  : 'add_to_cart'.tr(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                              ),
                             ),
                           ),
                         ),

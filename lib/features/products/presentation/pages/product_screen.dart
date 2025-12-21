@@ -35,7 +35,7 @@ class ProductScreen extends StatefulWidget {
 class _ProductScreenState extends State<ProductScreen> {
   int _quantity = 1;
   late ProductEntity _product;
-  bool _isLoadingStoreInfo = false;
+  bool _isLoadingStoreInfo = true;
 
   @override
   void initState() {
@@ -45,9 +45,6 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   Future<void> _loadProductWithStoreInfo() async {
-    if (!_product.hasStoreInfo) {
-      setState(() => _isLoadingStoreInfo = true);
-    }
     try {
       final productsCubit = sl<ProductsCubit>();
       final fullProduct = await productsCubit.getProductById(widget.product.id);
@@ -56,6 +53,10 @@ class _ProductScreenState extends State<ProductScreen> {
           _product = fullProduct;
           _isLoadingStoreInfo = false;
         });
+      } else {
+        if (mounted) {
+          setState(() => _isLoadingStoreInfo = false);
+        }
       }
     } catch (_) {
       if (mounted) {

@@ -8,6 +8,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
+import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
@@ -34,6 +35,7 @@ class ProductScreen extends StatefulWidget {
 class _ProductScreenState extends State<ProductScreen> {
   int _quantity = 1;
   late ProductEntity _product;
+  bool _isLoadingStoreInfo = false;
 
   @override
   void initState() {
@@ -43,13 +45,23 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   Future<void> _loadProductWithStoreInfo() async {
+    if (!_product.hasStoreInfo) {
+      setState(() => _isLoadingStoreInfo = true);
+    }
     try {
       final productsCubit = sl<ProductsCubit>();
       final fullProduct = await productsCubit.getProductById(widget.product.id);
       if (mounted && fullProduct != null) {
-        setState(() => _product = fullProduct);
+        setState(() {
+          _product = fullProduct;
+          _isLoadingStoreInfo = false;
+        });
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoadingStoreInfo = false);
+      }
+    }
   }
 
   @override
@@ -264,6 +276,12 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   Widget _buildStoreInfo(double screenWidth, bool isArabic) {
+    // Show skeleton while loading
+    if (_isLoadingStoreInfo) {
+      return const StoreInfoSkeleton();
+    }
+
+    // Hide if no store info
     if (!_product.hasStoreInfo) return const SizedBox.shrink();
 
     return Directionality(

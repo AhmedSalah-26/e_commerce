@@ -1,0 +1,112 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../orders/presentation/cubit/orders_cubit.dart';
+import '../../../categories/presentation/cubit/categories_cubit.dart';
+import '../cubit/merchant_products_cubit.dart';
+import 'merchant_orders_tab.dart';
+import 'merchant_inventory_tab.dart';
+import 'merchant_categories_tab.dart';
+import 'merchant_settings_tab.dart';
+
+class MerchantDashboardPage extends StatefulWidget {
+  const MerchantDashboardPage({super.key});
+
+  @override
+  State<MerchantDashboardPage> createState() => _MerchantDashboardPageState();
+}
+
+class _MerchantDashboardPageState extends State<MerchantDashboardPage> {
+  int _currentIndex = 0;
+
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      BlocProvider(
+        create: (_) => sl<OrdersCubit>(),
+        child: const MerchantOrdersTab(),
+      ),
+      BlocProvider(
+        create: (_) => sl<MerchantProductsCubit>(),
+        child: const MerchantInventoryTab(),
+      ),
+      BlocProvider(
+        create: (_) => sl<CategoriesCubit>(),
+        child: const MerchantCategoriesTab(),
+      ),
+      const MerchantSettingsTab(),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthUnauthenticated) {
+          context.go('/login');
+        }
+      },
+      child: Scaffold(
+        body: _pages[_currentIndex],
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            selectedItemColor: AppColours.primary,
+            unselectedItemColor: Colors.grey,
+            items: [
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.receipt_long),
+                label: Localizations.localeOf(context).languageCode == 'ar'
+                    ? 'الطلبات'
+                    : 'Orders',
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.inventory),
+                label: Localizations.localeOf(context).languageCode == 'ar'
+                    ? 'المخزون'
+                    : 'Inventory',
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.category),
+                label: Localizations.localeOf(context).languageCode == 'ar'
+                    ? 'التصنيفات'
+                    : 'Categories',
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.settings),
+                label: Localizations.localeOf(context).languageCode == 'ar'
+                    ? 'الإعدادات'
+                    : 'Settings',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -222,5 +222,11 @@
   "troubleshooting_login": "مشاكل تسجيل الدخول",
   "troubleshooting_orders": "مشاكل الطلبات",
   "troubleshooting_payment": "مشاكل الدفع",
-  "troubleshooting_app": "مشاكل التطبيق"
+  "troubleshooting_app": "مشاكل التطبيق",
+
+  "edit_profile": "تعديل الملف الشخصي",
+  "edit_profile_title": "تعديل البيانات",
+  "profile_updated": "تم تحديث البيانات بنجاح",
+  "profile_update_failed": "فشل في تحديث البيانات",
+  "current_email": "البريد الإلكتروني الحالي"
 }

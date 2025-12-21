@@ -222,5 +222,11 @@
   "troubleshooting_login": "Login Issues",
   "troubleshooting_orders": "Order Issues",
   "troubleshooting_payment": "Payment Issues",
-  "troubleshooting_app": "App Issues"
+  "troubleshooting_app": "App Issues",
+
+  "edit_profile": "Edit Profile",
+  "edit_profile_title": "Edit Profile",
+  "profile_updated": "Profile updated successfully",
+  "profile_update_failed": "Failed to update profile",
+  "current_email": "Current Email"
 }

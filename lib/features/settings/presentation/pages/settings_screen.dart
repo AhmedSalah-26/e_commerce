@@ -162,6 +162,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 8),
                   _buildSettingsCard([
                     _buildSettingItem(
+                      'edit_profile'.tr(),
+                      Icons.person_outline,
+                      () => context.push('/edit-profile'),
+                    ),
+                    _buildDivider(),
+                    _buildSettingItem(
                       'my_orders'.tr(),
                       Icons.receipt_long_outlined,
                       () => context.push('/orders'),

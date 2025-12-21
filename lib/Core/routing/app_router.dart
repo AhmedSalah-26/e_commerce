@@ -15,6 +15,7 @@ import '../../features/notifications/presentation/cubit/notifications_cubit.dart
 import '../../features/notifications/presentation/pages/notifications_screen.dart';
 import '../../features/onbording_screen/ui/onboarding_screen.dart';
 import '../../features/orders/presentation/pages/orders_page.dart';
+import '../../features/settings/presentation/pages/edit_profile_screen.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
 
 class AppRouter {
@@ -86,6 +87,11 @@ class AppRouter {
         path: '/about',
         builder: (BuildContext context, GoRouterState state) =>
             const AboutScreen(),
+      ),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (BuildContext context, GoRouterState state) =>
+            const EditProfileScreen(),
       ),
     ],
   );

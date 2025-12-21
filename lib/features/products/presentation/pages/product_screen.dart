@@ -12,6 +12,7 @@ import '../../../../core/shared_widgets/toast.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/product_entity.dart';
+import '../cubit/products_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../cart/presentation/pages/cart_screen.dart';
@@ -31,10 +32,28 @@ class ProductScreen extends StatefulWidget {
 
 class _ProductScreenState extends State<ProductScreen> {
   int _quantity = 1;
+  late ProductEntity _product;
+
+  @override
+  void initState() {
+    super.initState();
+    _product = widget.product;
+    _loadProductWithStoreInfo();
+  }
+
+  Future<void> _loadProductWithStoreInfo() async {
+    try {
+      final productsCubit = sl<ProductsCubit>();
+      final fullProduct = await productsCubit.getProductById(widget.product.id);
+      if (mounted && fullProduct != null) {
+        setState(() => _product = fullProduct);
+      }
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
-    double totalPrice = _quantity * widget.product.effectivePrice;
+    double totalPrice = _quantity * _product.effectivePrice;
     double screenWidth = MediaQuery.of(context).size.width;
     final isArabic = context.locale.languageCode == 'ar';
 
@@ -42,309 +61,381 @@ class _ProductScreenState extends State<ProductScreen> {
       create: (context) => sl<ReviewsCubit>(),
       child: Scaffold(
         backgroundColor: AppColours.white,
-        appBar: AppBar(
-          backgroundColor: AppColours.white,
-          elevation: 0,
-          leading: IconButton(
-            icon:
-                const Icon(Icons.arrow_back_ios, color: AppColours.brownMedium),
-            onPressed: () => Navigator.pop(context),
-          ),
-          actions: [
-            BlocBuilder<CartCubit, CartState>(
-              builder: (context, cartState) {
-                final cartItemCount = cartState is CartLoaded
-                    ? cartState.items
-                        .fold<int>(0, (sum, item) => sum + item.quantity)
-                    : 0;
-
-                return Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const CartScreen()),
-                      );
-                    },
-                    icon: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        const Icon(Icons.shopping_cart_outlined,
-                            color: AppColours.brownMedium),
-                        if (cartItemCount > 0)
-                          Positioned(
-                            right: -8,
-                            top: -4,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                              constraints: const BoxConstraints(
-                                  minWidth: 18, minHeight: 18),
-                              child: Text(
-                                cartItemCount > 99 ? '99+' : '$cartItemCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+        appBar: _buildAppBar(context),
         body: Stack(
           children: <Widget>[
             Padding(
               padding: EdgeInsets.all(screenWidth * 0.04),
               child: ListView(
                 children: [
-                  // Image Slider
-                  if (widget.product.images.isNotEmpty)
-                    FanCarouselImageSlider.sliderType1(
-                      autoPlayInterval: const Duration(seconds: 3),
-                      isClickable: true,
-                      imagesLink: widget.product.images,
-                      imageFitMode: BoxFit.cover,
-                      isAssets: !widget.product.images.first.startsWith('http'),
-                      expandImageHeight: screenWidth * 0.7,
-                      initalPageIndex: 0,
-                      autoPlay: widget.product.images.length > 1,
-                      indicatorActiveColor: AppColours.brownLight,
-                      sliderHeight: screenWidth * 0.5,
-                      sliderWidth: screenWidth,
-                      expandedImageFitMode: BoxFit.contain,
-                      showIndicator: widget.product.images.length > 1,
-                    )
-                  else
-                    Container(
-                      height: screenWidth * 0.5,
-                      decoration: BoxDecoration(
-                        color: AppColours.greyLight,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.image_not_supported,
-                            size: 80, color: Colors.grey),
-                      ),
-                    ),
+                  _buildImageSlider(screenWidth),
                   SizedBox(height: screenWidth * 0.05),
-                  // Price and Name
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (widget.product.hasDiscount)
-                              AutoSizeText(
-                                "${widget.product.price.toStringAsFixed(2)} EGP",
-                                style: TextStyle(
-                                  fontSize: screenWidth * 0.03,
-                                  color: Colors.grey,
-                                  decoration: TextDecoration.lineThrough,
-                                ),
-                              ),
-                            AutoSizeText(
-                              "${widget.product.effectivePrice.toStringAsFixed(2)} EGP",
-                              style: AppTextStyle.bold_18_medium_brown
-                                  .copyWith(fontSize: screenWidth * 0.04),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: AutoSizeText(
-                          textDirection: isArabic
-                              ? ui.TextDirection.rtl
-                              : ui.TextDirection.ltr,
-                          textAlign:
-                              isArabic ? TextAlign.right : TextAlign.left,
-                          widget.product.name,
-                          style: AppTextStyle.semiBold_20_dark_brown
-                              .copyWith(fontSize: screenWidth * 0.04),
-                          maxLines: 2,
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildNameAndPrice(screenWidth, isArabic),
                   SizedBox(height: screenWidth * 0.02),
-                  // Rating
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      RatingBarIndicator(
-                        rating: widget.product.rating,
-                        direction: Axis.horizontal,
-                        itemCount: 5,
-                        itemSize: screenWidth * 0.05,
-                        itemPadding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.02),
-                        itemBuilder: (context, _) =>
-                            const Icon(Icons.star, color: Colors.amber),
-                      ),
-                      SizedBox(width: screenWidth * 0.02),
-                      Text(
-                        "(${widget.product.rating.toStringAsFixed(1)})",
-                        style: AppTextStyle.normal_16_brownLight
-                            .copyWith(fontSize: screenWidth * 0.04),
-                      ),
-                    ],
-                  ),
+                  _buildRating(screenWidth),
                   SizedBox(height: screenWidth * 0.02),
-                  // Stock Status
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: widget.product.isOutOfStock
-                              ? Colors.red.shade100
-                              : Colors.green.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          widget.product.isOutOfStock
-                              ? 'out_of_stock'.tr()
-                              : '${'in_stock'.tr()} (${widget.product.stock})',
-                          style: TextStyle(
-                            color: widget.product.isOutOfStock
-                                ? Colors.red
-                                : Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildStoreInfo(screenWidth, isArabic),
                   SizedBox(height: screenWidth * 0.02),
-                  // Description
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: AutoSizeText(
-                          widget.product.description,
-                          style: AppTextStyle.normal_12_black
-                              .copyWith(fontSize: screenWidth * 0.04),
-                          textAlign:
-                              isArabic ? TextAlign.right : TextAlign.left,
-                          maxLines: 6,
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildStockStatus(screenWidth, isArabic),
+                  SizedBox(height: screenWidth * 0.02),
+                  _buildDescription(screenWidth, isArabic),
                   SizedBox(height: screenWidth * 0.05),
-                  // Quantity Selector
-                  if (!widget.product.isOutOfStock)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColours.brownLight),
-                          ),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.remove),
-                                onPressed: () {
-                                  setState(() {
-                                    if (_quantity > 1) _quantity--;
-                                  });
-                                },
-                              ),
-                              Text(
-                                '$_quantity',
-                                style: AppTextStyle.normal_16_brownLight
-                                    .copyWith(fontSize: screenWidth * 0.05),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.add),
-                                onPressed: () {
-                                  setState(() {
-                                    if (_quantity < widget.product.stock)
-                                      _quantity++;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: screenWidth * 0.04),
-                        AutoSizeText(
-                          '${'quantity'.tr()}:',
-                          style: AppTextStyle.normal_16_brownLight
-                              .copyWith(fontSize: screenWidth * 0.05),
-                        ),
-                      ],
-                    ),
+                  if (!_product.isOutOfStock)
+                    _buildQuantitySelector(screenWidth, isArabic),
                   SizedBox(height: screenWidth * 0.05),
-                  // Total Price
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      AutoSizeText(
-                        "${totalPrice.toStringAsFixed(2)} EGP",
-                        style: AppTextStyle.bold_18_medium_brown
-                            .copyWith(fontSize: screenWidth * 0.04),
-                      ),
-                      AutoSizeText(
-                        '${'total'.tr()}:',
-                        style: AppTextStyle.bold_18_medium_brown
-                            .copyWith(fontSize: screenWidth * 0.04),
-                      ),
-                    ],
-                  ),
+                  _buildTotalPrice(screenWidth, isArabic, totalPrice),
                   SizedBox(height: screenWidth * 0.05),
-                  // Reviews Section
-                  ReviewsSection(productId: widget.product.id),
+                  ReviewsSection(productId: _product.id),
                   SizedBox(height: screenWidth * 0.2),
                 ],
               ),
             ),
-            // Add to Cart Button
-            Positioned(
-              bottom: 16,
-              left: 16,
-              right: 16,
-              child: CustomButton(
-                color: widget.product.isOutOfStock
-                    ? Colors.grey
-                    : AppColours.brownLight,
-                onPressed: widget.product.isOutOfStock
-                    ? () {
-                        Tost.showCustomToast(
-                          context,
-                          'out_of_stock'.tr(),
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white,
-                        );
-                      }
-                    : () => _addToCart(context),
-                label: widget.product.isOutOfStock
-                    ? 'out_of_stock'.tr()
-                    : 'add_to_cart'.tr(),
-              ),
-            ),
+            _buildAddToCartButton(context),
           ],
         ),
+      ),
+    );
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: AppColours.white,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios, color: AppColours.brownMedium),
+        onPressed: () => Navigator.pop(context),
+      ),
+      actions: [
+        BlocBuilder<CartCubit, CartState>(
+          builder: (context, cartState) {
+            final cartItemCount = cartState is CartLoaded
+                ? cartState.items
+                    .fold<int>(0, (sum, item) => sum + item.quantity)
+                : 0;
+            return Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: IconButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CartScreen()),
+                ),
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.shopping_cart_outlined,
+                        color: AppColours.brownMedium),
+                    if (cartItemCount > 0)
+                      Positioned(
+                        right: -8,
+                        top: -4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                              color: Colors.red, shape: BoxShape.circle),
+                          constraints:
+                              const BoxConstraints(minWidth: 18, minHeight: 18),
+                          child: Text(
+                            cartItemCount > 99 ? '99+' : '$cartItemCount',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImageSlider(double screenWidth) {
+    if (_product.images.isNotEmpty) {
+      return FanCarouselImageSlider.sliderType1(
+        autoPlayInterval: const Duration(seconds: 3),
+        isClickable: true,
+        imagesLink: _product.images,
+        imageFitMode: BoxFit.cover,
+        isAssets: !_product.images.first.startsWith('http'),
+        expandImageHeight: screenWidth * 0.7,
+        initalPageIndex: 0,
+        autoPlay: _product.images.length > 1,
+        indicatorActiveColor: AppColours.brownLight,
+        sliderHeight: screenWidth * 0.5,
+        sliderWidth: screenWidth,
+        expandedImageFitMode: BoxFit.contain,
+        showIndicator: _product.images.length > 1,
+      );
+    }
+    return Container(
+      height: screenWidth * 0.5,
+      decoration: BoxDecoration(
+        color: AppColours.greyLight,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: const Center(
+          child: Icon(Icons.image_not_supported, size: 80, color: Colors.grey)),
+    );
+  }
+
+  Widget _buildNameAndPrice(double screenWidth, bool isArabic) {
+    return Directionality(
+      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            flex: 2,
+            child: AutoSizeText(
+              _product.name,
+              style: AppTextStyle.semiBold_20_dark_brown
+                  .copyWith(fontSize: screenWidth * 0.04),
+              maxLines: 2,
+            ),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (_product.hasDiscount)
+                  AutoSizeText(
+                    "${_product.price.toStringAsFixed(2)} ${'egp'.tr()}",
+                    style: TextStyle(
+                        fontSize: screenWidth * 0.03,
+                        color: Colors.grey,
+                        decoration: TextDecoration.lineThrough),
+                  ),
+                AutoSizeText(
+                  "${_product.effectivePrice.toStringAsFixed(2)} ${'egp'.tr()}",
+                  style: AppTextStyle.bold_18_medium_brown
+                      .copyWith(fontSize: screenWidth * 0.04),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRating(double screenWidth) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        RatingBarIndicator(
+          rating: _product.rating,
+          direction: Axis.horizontal,
+          itemCount: 5,
+          itemSize: screenWidth * 0.05,
+          itemPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
+          itemBuilder: (context, _) =>
+              const Icon(Icons.star, color: Colors.amber),
+        ),
+        SizedBox(width: screenWidth * 0.02),
+        Text(
+          "(${_product.rating.toStringAsFixed(1)})",
+          style: AppTextStyle.normal_16_brownLight
+              .copyWith(fontSize: screenWidth * 0.04),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStoreInfo(double screenWidth, bool isArabic) {
+    if (!_product.hasStoreInfo) return const SizedBox.shrink();
+
+    return Directionality(
+      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColours.primary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // Store name
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.store, size: 14, color: AppColours.brownMedium),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      _product.storeName!,
+                      style: AppTextStyle.semiBold_16_dark_brown
+                          .copyWith(fontSize: 12),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Address
+            if (_product.storeAddress != null &&
+                _product.storeAddress!.isNotEmpty)
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.location_on,
+                        size: 14, color: AppColours.brownMedium),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        _product.storeAddress!,
+                        style: AppTextStyle.normal_14_greyDark
+                            .copyWith(fontSize: 11),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            // Phone
+            if (_product.storePhone != null && _product.storePhone!.isNotEmpty)
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.phone, size: 14, color: AppColours.brownMedium),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        _product.storePhone!,
+                        style: AppTextStyle.normal_14_greyDark
+                            .copyWith(fontSize: 11),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStockStatus(double screenWidth, bool isArabic) {
+    return Directionality(
+      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: _product.isOutOfStock
+                  ? Colors.red.shade100
+                  : Colors.green.shade100,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              _product.isOutOfStock
+                  ? 'out_of_stock'.tr()
+                  : '${'in_stock'.tr()} (${_product.stock})',
+              style: TextStyle(
+                color: _product.isOutOfStock ? Colors.red : Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDescription(double screenWidth, bool isArabic) {
+    return Directionality(
+      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: AutoSizeText(
+        _product.description,
+        style:
+            AppTextStyle.normal_12_black.copyWith(fontSize: screenWidth * 0.04),
+        maxLines: 6,
+      ),
+    );
+  }
+
+  Widget _buildQuantitySelector(double screenWidth, bool isArabic) {
+    return Directionality(
+      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: Row(
+        children: [
+          AutoSizeText(
+            '${'quantity'.tr()}:',
+            style: AppTextStyle.normal_16_brownLight
+                .copyWith(fontSize: screenWidth * 0.05),
+          ),
+          SizedBox(width: screenWidth * 0.04),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColours.brownLight),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.remove),
+                  onPressed: () {
+                    if (_quantity > 1) setState(() => _quantity--);
+                  },
+                ),
+                Text('$_quantity',
+                    style: AppTextStyle.normal_16_brownLight
+                        .copyWith(fontSize: screenWidth * 0.05)),
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    if (_quantity < _product.stock) setState(() => _quantity++);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTotalPrice(
+      double screenWidth, bool isArabic, double totalPrice) {
+    return Directionality(
+      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          AutoSizeText('${'total'.tr()}:',
+              style: AppTextStyle.bold_18_medium_brown
+                  .copyWith(fontSize: screenWidth * 0.04)),
+          AutoSizeText("${totalPrice.toStringAsFixed(2)} ${'egp'.tr()}",
+              style: AppTextStyle.bold_18_medium_brown
+                  .copyWith(fontSize: screenWidth * 0.04)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddToCartButton(BuildContext context) {
+    return Positioned(
+      bottom: 16,
+      left: 16,
+      right: 16,
+      child: CustomButton(
+        color: _product.isOutOfStock ? Colors.grey : AppColours.brownLight,
+        onPressed: _product.isOutOfStock
+            ? () => Tost.showCustomToast(context, 'out_of_stock'.tr(),
+                backgroundColor: Colors.red, textColor: Colors.white)
+            : () => _addToCart(context),
+        label: _product.isOutOfStock ? 'out_of_stock'.tr() : 'add_to_cart'.tr(),
       ),
     );
   }
@@ -353,22 +444,12 @@ class _ProductScreenState extends State<ProductScreen> {
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
       context.read<CartCubit>().setUserId(authState.user.id);
-      context
-          .read<CartCubit>()
-          .addToCart(widget.product.id, quantity: _quantity);
-      Tost.showCustomToast(
-        context,
-        'added_to_cart'.tr(),
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-      );
+      context.read<CartCubit>().addToCart(_product.id, quantity: _quantity);
+      Tost.showCustomToast(context, 'added_to_cart'.tr(),
+          backgroundColor: Colors.green, textColor: Colors.white);
     } else {
-      Tost.showCustomToast(
-        context,
-        'login_required'.tr(),
-        backgroundColor: Colors.orange,
-        textColor: Colors.white,
-      );
+      Tost.showCustomToast(context, 'login_required'.tr(),
+          backgroundColor: Colors.orange, textColor: Colors.white);
     }
   }
 }

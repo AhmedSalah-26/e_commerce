@@ -68,7 +68,7 @@ class OrdersCubit extends Cubit<OrdersState> {
     _ordersSubscription =
         _repository.watchMerchantOrdersByStatus(merchantId, status).listen(
       (orders) {
-        emit(OrdersLoaded(orders));
+        emit(OrdersLoaded(orders, currentStatus: status));
       },
       onError: (error) {
         emit(OrdersError(error.toString()));

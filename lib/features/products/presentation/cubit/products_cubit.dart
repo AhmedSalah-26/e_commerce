@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/product_repository_impl.dart';
+import '../../domain/entities/product_entity.dart';
 import '../../domain/repositories/product_repository.dart';
 import 'products_state.dart';
 
@@ -175,6 +176,15 @@ class ProductsCubit extends Cubit<ProductsState> {
     } else {
       await loadProducts();
     }
+  }
+
+  /// Get a single product by ID with full details (including store info)
+  Future<ProductEntity?> getProductById(String productId) async {
+    final result = await _repository.getProductById(productId);
+    return result.fold(
+      (failure) => null,
+      (product) => product,
+    );
   }
 
   @override

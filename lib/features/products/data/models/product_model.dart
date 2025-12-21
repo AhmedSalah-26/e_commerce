@@ -16,6 +16,10 @@ class ProductModel extends ProductEntity {
     super.isActive,
     super.isFeatured,
     super.createdAt,
+    super.merchantId,
+    super.storeName,
+    super.storePhone,
+    super.storeAddress,
   });
 
   /// Create ProductModel from JSON (Supabase response) with locale
@@ -34,6 +38,21 @@ class ProductModel extends ProductEntity {
         : (json['description_ar'] as String? ??
             json['description_en'] as String? ??
             '');
+
+    // Get store info from joined stores table or profiles table
+    String? storeName;
+    String? storePhone;
+    String? storeAddress;
+    if (json['stores'] != null && json['stores'] is Map) {
+      storeName = json['stores']['name'] as String?;
+      storePhone = json['stores']['phone'] as String?;
+      storeAddress = json['stores']['address'] as String?;
+    } else if (json['profiles'] != null && json['profiles'] is Map) {
+      // Fallback to profiles table
+      storeName = json['profiles']['name'] as String?;
+      storePhone = json['profiles']['phone'] as String?;
+      storeAddress = json['profiles']['address'] as String?;
+    }
 
     return ProductModel(
       id: json['id'] as String,
@@ -55,6 +74,10 @@ class ProductModel extends ProductEntity {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : null,
+      merchantId: json['merchant_id'] as String?,
+      storeName: storeName,
+      storePhone: storePhone,
+      storeAddress: storeAddress,
     );
   }
 
@@ -62,7 +85,7 @@ class ProductModel extends ProductEntity {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name_ar': name, // Default to Arabic when saving
+      'name_ar': name,
       'name_en': name,
       'description_ar': description,
       'description_en': description,
@@ -100,6 +123,10 @@ class ProductModel extends ProductEntity {
     bool? isActive,
     bool? isFeatured,
     DateTime? createdAt,
+    String? merchantId,
+    String? storeName,
+    String? storePhone,
+    String? storeAddress,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -115,6 +142,10 @@ class ProductModel extends ProductEntity {
       isActive: isActive ?? this.isActive,
       isFeatured: isFeatured ?? this.isFeatured,
       createdAt: createdAt ?? this.createdAt,
+      merchantId: merchantId ?? this.merchantId,
+      storeName: storeName ?? this.storeName,
+      storePhone: storePhone ?? this.storePhone,
+      storeAddress: storeAddress ?? this.storeAddress,
     );
   }
 }

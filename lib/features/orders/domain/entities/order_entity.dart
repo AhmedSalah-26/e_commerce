@@ -80,6 +80,11 @@ class OrderEntity extends Equatable {
   final String? notes;
   final List<OrderItemEntity> items;
   final DateTime? createdAt;
+  // Merchant/Store info
+  final String? merchantId;
+  final String? merchantName;
+  final String? merchantPhone;
+  final String? merchantAddress;
 
   const OrderEntity({
     required this.id,
@@ -95,7 +100,13 @@ class OrderEntity extends Equatable {
     this.notes,
     this.items = const [],
     this.createdAt,
+    this.merchantId,
+    this.merchantName,
+    this.merchantPhone,
+    this.merchantAddress,
   });
+
+  bool get hasMerchantInfo => merchantName != null && merchantName!.isNotEmpty;
 
   @override
   List<Object?> get props => [
@@ -112,5 +123,9 @@ class OrderEntity extends Equatable {
         notes,
         items,
         createdAt,
+        merchantId,
+        merchantName,
+        merchantPhone,
+        merchantAddress,
       ];
 }

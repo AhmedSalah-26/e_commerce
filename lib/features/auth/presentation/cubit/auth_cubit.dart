@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/sign_in_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
@@ -13,16 +14,19 @@ class AuthCubit extends Cubit<AuthState> {
   final SignUpUseCase _signUpUseCase;
   final SignOutUseCase _signOutUseCase;
   final GetCurrentUserUseCase _getCurrentUserUseCase;
+  final AuthRepository _repository;
 
   AuthCubit({
     required SignInUseCase signInUseCase,
     required SignUpUseCase signUpUseCase,
     required SignOutUseCase signOutUseCase,
     required GetCurrentUserUseCase getCurrentUserUseCase,
+    required AuthRepository repository,
   })  : _signInUseCase = signInUseCase,
         _signUpUseCase = signUpUseCase,
         _signOutUseCase = signOutUseCase,
         _getCurrentUserUseCase = getCurrentUserUseCase,
+        _repository = repository,
         super(const AuthInitial());
 
   /// Check if user is already authenticated
@@ -105,4 +109,24 @@ class AuthCubit extends Cubit<AuthState> {
 
   /// Check if current user is customer
   bool get isCustomer => currentUser?.isCustomer ?? false;
+
+  /// Update user profile
+  Future<bool> updateProfile({String? name, String? phone}) async {
+    final user = currentUser;
+    if (user == null) return false;
+
+    final result = await _repository.updateProfile(
+      userId: user.id,
+      name: name,
+      phone: phone,
+    );
+
+    return result.fold(
+      (failure) => false,
+      (updatedUser) {
+        emit(AuthAuthenticated(updatedUser));
+        return true;
+      },
+    );
+  }
 }

@@ -22,6 +22,13 @@ abstract class AuthRepository {
   /// Get current authenticated user
   Future<Either<Failure, UserEntity?>> getCurrentUser();
 
+  /// Update user profile
+  Future<Either<Failure, UserEntity>> updateProfile({
+    required String userId,
+    String? name,
+    String? phone,
+  });
+
   /// Stream of auth state changes
   Stream<UserEntity?> get authStateChanges;
 }

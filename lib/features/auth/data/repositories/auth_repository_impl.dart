@@ -81,4 +81,24 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Stream<UserEntity?> get authStateChanges =>
       _remoteDataSource.authStateChanges;
+
+  @override
+  Future<Either<Failure, UserEntity>> updateProfile({
+    required String userId,
+    String? name,
+    String? phone,
+  }) async {
+    try {
+      final user = await _remoteDataSource.updateProfile(
+        userId: userId,
+        name: name,
+        phone: phone,
+      );
+      return Right(user);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, code: e.code));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

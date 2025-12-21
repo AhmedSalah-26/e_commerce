@@ -61,6 +61,7 @@
   "categories": "Categories",
   "all_products": "All Products",
   "no_products": "No products found",
+  "sold_by": "Sold by",
 
   "shopping_cart": "Shopping Cart",
   "cart_empty": "Cart is Empty",
@@ -74,6 +75,8 @@
   "added_to_cart": "Added to Cart",
   "item_removed": "Item Removed",
   "clear_cart": "Clear Cart",
+  "unit_price": "Unit Price",
+  "total_price": "Total Price",
 
   "checkout_title": "Checkout",
   "delivery_address": "Delivery Address",

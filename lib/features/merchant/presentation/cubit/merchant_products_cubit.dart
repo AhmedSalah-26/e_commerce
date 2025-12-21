@@ -310,4 +310,35 @@ class MerchantProductsCubit extends Cubit<MerchantProductsState> {
       return false;
     }
   }
+
+  /// Toggle product active status
+  Future<bool> toggleProductActive(String productId, bool isActive) async {
+    try {
+      AppLogger.i('🔄 TOGGLE PRODUCT ACTIVE: $productId -> $isActive');
+
+      final result = await _productRepository.updateProductData(
+        productId,
+        {'is_active': isActive},
+      );
+
+      return result.fold(
+        (failure) {
+          AppLogger.e('❌ Toggle active failed', failure.message);
+          emit(MerchantProductsError(failure.message));
+          return false;
+        },
+        (_) {
+          AppLogger.success('Product active status updated');
+          if (_currentMerchantId != null) {
+            loadMerchantProducts(_currentMerchantId!);
+          }
+          return true;
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.e('❌ Exception in toggleProductActive', e, stackTrace);
+      emit(MerchantProductsError(e.toString()));
+      return false;
+    }
+  }
 }

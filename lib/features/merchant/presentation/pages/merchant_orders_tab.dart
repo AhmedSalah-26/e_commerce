@@ -32,7 +32,6 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
     'delivered',
     'cancelled'
   ];
-  static const int _pageSize = 20;
 
   int _todayPending = 0;
   int _todayDelivered = 0;
@@ -226,9 +225,30 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
 
   Widget _buildOrdersList(String status, bool isRtl, bool showFilters) {
     return BlocConsumer<OrdersCubit, OrdersState>(
+      listenWhen: (previous, current) {
+        // Only listen when the status matches
+        if (current is OrdersLoaded) {
+          return current.currentStatus == status;
+        }
+        return true;
+      },
+      buildWhen: (previous, current) {
+        // Only rebuild when:
+        // 1. Loading state (show loading for this tab)
+        // 2. Error state
+        // 3. Loaded state with matching status
+        if (current is OrdersLoading) return true;
+        if (current is OrdersError) return true;
+        if (current is OrdersLoaded) {
+          return current.currentStatus == status;
+        }
+        return false;
+      },
       listener: (context, state) {
         // Update pending count when pending orders list changes
-        if (state is OrdersLoaded && status == 'pending') {
+        if (state is OrdersLoaded &&
+            state.currentStatus == 'pending' &&
+            status == 'pending') {
           setState(() {
             _todayPending = state.orders.length;
           });
@@ -243,7 +263,7 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
           return _buildErrorState(state.message, isRtl, status);
         }
 
-        if (state is OrdersLoaded) {
+        if (state is OrdersLoaded && state.currentStatus == status) {
           var filteredOrders = state.orders;
           if (_searchQuery.isNotEmpty && showFilters) {
             filteredOrders = filteredOrders
@@ -279,6 +299,7 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
           );
         }
 
+        // Show loading by default when status doesn't match
         return const Center(child: CircularProgressIndicator());
       },
     );

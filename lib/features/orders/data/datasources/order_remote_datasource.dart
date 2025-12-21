@@ -48,7 +48,27 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
           .order('created_at', ascending: false);
 
       logger.d('✅ Got ${(response as List).length} orders');
-      return response.map((json) => OrderModel.fromJson(json)).toList();
+
+      // Fetch store info for each order
+      final orders = <OrderModel>[];
+      for (final order in response) {
+        Map<String, dynamic>? storeInfo;
+        if (order['merchant_id'] != null) {
+          try {
+            final storeResponse = await _client
+                .from('stores')
+                .select('name, phone, address')
+                .eq('merchant_id', order['merchant_id'])
+                .maybeSingle();
+            storeInfo = storeResponse;
+          } catch (_) {}
+        }
+        orders.add(OrderModel.fromJson({
+          ...order,
+          if (storeInfo != null) 'stores': storeInfo,
+        }));
+      }
+      return orders;
     } catch (e, stackTrace) {
       logger.e('❌ Error getting orders', error: e, stackTrace: stackTrace);
       throw ServerException('فشل في جلب الطلبات: ${e.toString()}');
@@ -182,9 +202,23 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
                 .select()
                 .eq('order_id', order['id']);
 
+            // Try to get store info from stores table
+            Map<String, dynamic>? storeInfo;
+            if (order['merchant_id'] != null) {
+              try {
+                final storeResponse = await _client
+                    .from('stores')
+                    .select('name, phone, address')
+                    .eq('merchant_id', order['merchant_id'])
+                    .maybeSingle();
+                storeInfo = storeResponse;
+              } catch (_) {}
+            }
+
             orders.add(OrderModel.fromJson({
               ...order,
               'order_items': itemsResponse,
+              if (storeInfo != null) 'stores': storeInfo,
             }));
           }
           return orders;

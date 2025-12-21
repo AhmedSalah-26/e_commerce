@@ -166,10 +166,27 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   @override
   Future<ProductModel> getProductById(String id, {String locale = 'ar'}) async {
     try {
+      // Get product first
       final response =
           await _client.from('products').select().eq('id', id).single();
 
-      return ProductModel.fromJson(response, locale: locale);
+      // Try to get store info separately
+      Map<String, dynamic>? storeInfo;
+      if (response['merchant_id'] != null) {
+        try {
+          final storeResponse = await _client
+              .from('stores')
+              .select('name, phone, address')
+              .eq('merchant_id', response['merchant_id'])
+              .maybeSingle();
+          storeInfo = storeResponse;
+        } catch (_) {}
+      }
+
+      return ProductModel.fromJson({
+        ...response,
+        if (storeInfo != null) 'stores': storeInfo,
+      }, locale: locale);
     } catch (e) {
       throw ServerException('فشل في جلب المنتج: ${e.toString()}');
     }
@@ -270,7 +287,12 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   @override
   Future<void> deleteProduct(String id) async {
     try {
-      await _client.from('products').delete().eq('id', id);
+      // Soft delete - set is_active to false instead of hard delete
+      // This prevents foreign key constraint errors with order_items
+      await _client.from('products').update({
+        'is_active': false,
+        'is_featured': false,
+      }).eq('id', id);
     } catch (e) {
       throw ServerException('فشل في حذف المنتج: ${e.toString()}');
     }

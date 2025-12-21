@@ -83,6 +83,7 @@ Future<void> initializeDependencies() async {
         signUpUseCase: sl<SignUpUseCase>(),
         signOutUseCase: sl<SignOutUseCase>(),
         getCurrentUserUseCase: sl<GetCurrentUserUseCase>(),
+        repository: sl<AuthRepository>(),
       ));
 
   // Products Feature

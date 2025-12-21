@@ -15,6 +15,11 @@ class ProductEntity extends Equatable {
   final bool isActive;
   final bool isFeatured;
   final DateTime? createdAt;
+  final String? merchantId;
+  // Store info
+  final String? storeName;
+  final String? storePhone;
+  final String? storeAddress;
 
   const ProductEntity({
     required this.id,
@@ -30,6 +35,10 @@ class ProductEntity extends Equatable {
     this.isActive = true,
     this.isFeatured = false,
     this.createdAt,
+    this.merchantId,
+    this.storeName,
+    this.storePhone,
+    this.storeAddress,
   });
 
   /// Check if product is out of stock
@@ -50,6 +59,9 @@ class ProductEntity extends Equatable {
   /// Get first image or placeholder
   String get mainImage => images.isNotEmpty ? images.first : '';
 
+  /// Check if store info is available
+  bool get hasStoreInfo => storeName != null && storeName!.isNotEmpty;
+
   @override
   List<Object?> get props => [
         id,
@@ -65,5 +77,9 @@ class ProductEntity extends Equatable {
         isActive,
         isFeatured,
         createdAt,
+        merchantId,
+        storeName,
+        storePhone,
+        storeAddress,
       ];
 }

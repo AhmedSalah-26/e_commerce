@@ -61,6 +61,7 @@
   "categories": "التصنيفات",
   "all_products": "جميع المنتجات",
   "no_products": "لا توجد منتجات",
+  "sold_by": "يباع بواسطة",
 
   "shopping_cart": "سلة التسوق",
   "cart_empty": "السلة فارغة",
@@ -74,6 +75,8 @@
   "added_to_cart": "تمت الإضافة للسلة",
   "item_removed": "تم حذف المنتج",
   "clear_cart": "إفراغ السلة",
+  "unit_price": "سعر القطعة",
+  "total_price": "السعر الكلي",
 
   "checkout_title": "إتمام الطلب",
   "delivery_address": "عنوان التوصيل",

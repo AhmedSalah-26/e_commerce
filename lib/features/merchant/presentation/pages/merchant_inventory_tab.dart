@@ -187,8 +187,8 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
                 return MerchantProductCard(
                   product: product,
                   onEdit: () => _showEditProductDialog(context, product, isRtl),
-                  onDelete: () =>
-                      _showDeleteConfirmation(context, product, isRtl),
+                  onToggleActive: () =>
+                      _toggleProductActive(context, product, isRtl),
                 );
               },
             ),
@@ -281,34 +281,24 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
     );
   }
 
-  void _showDeleteConfirmation(
-      BuildContext context, ProductEntity product, bool isRtl) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(isRtl ? 'حذف المنتج' : 'Delete Product'),
+  Future<void> _toggleProductActive(
+      BuildContext context, ProductEntity product, bool isRtl) async {
+    final cubit = context.read<MerchantProductsCubit>();
+    final success =
+        await cubit.toggleProductActive(product.id, !product.isActive);
+
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
         content: Text(
-          isRtl
-              ? 'هل أنت متأكد من حذف "${product.name}"؟'
-              : 'Are you sure you want to delete "${product.name}"?',
+          success
+              ? (product.isActive
+                  ? (isRtl ? 'تم إلغاء تنشيط المنتج' : 'Product deactivated')
+                  : (isRtl ? 'تم تنشيط المنتج' : 'Product activated'))
+              : (isRtl ? 'فشل في تحديث المنتج' : 'Failed to update product'),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(isRtl ? 'إلغاء' : 'Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-              final success = await context
-                  .read<MerchantProductsCubit>()
-                  .deleteProduct(product.id);
-              _showDeleteSnackBar(context, success, isRtl);
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(isRtl ? 'حذف' : 'Delete'),
-          ),
-        ],
+        backgroundColor: success ? Colors.green : Colors.red,
       ),
     );
   }
@@ -327,20 +317,6 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: success ? Colors.green : Colors.red,
-      ),
-    );
-  }
-
-  void _showDeleteSnackBar(BuildContext context, bool success, bool isRtl) {
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? (isRtl ? 'تم حذف المنتج بنجاح' : 'Product deleted successfully')
-              : (isRtl ? 'فشل في حذف المنتج' : 'Failed to delete product'),
-        ),
         backgroundColor: success ? Colors.green : Colors.red,
       ),
     );

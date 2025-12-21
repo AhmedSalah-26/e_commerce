@@ -6,6 +6,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../Core/Theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../widgets/profile_edit_dialog.dart';
+import '../widgets/store_info_dialog.dart';
+import '../widgets/settings_dialogs.dart';
 
 class MerchantSettingsTab extends StatelessWidget {
   const MerchantSettingsTab({super.key});
@@ -33,66 +36,68 @@ class MerchantSettingsTab extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Account section
-                _buildSectionTitle(isRtl ? 'الحساب' : 'Account'),
-                const SizedBox(height: 8),
-                _buildSettingsCard([
-                  _buildSettingItem(
-                    isRtl ? 'الملف الشخصي' : 'Profile',
-                    Icons.person_outline,
-                    () {},
-                  ),
-                  _buildDivider(),
-                  _buildSettingItem(
-                    isRtl ? 'معلومات المتجر' : 'Store Information',
-                    Icons.store_outlined,
-                    () {},
-                  ),
-                ]),
+                _SettingsSection(
+                  title: isRtl ? 'الحساب' : 'Account',
+                  items: [
+                    _SettingsItem(
+                      title: isRtl ? 'الملف الشخصي' : 'Profile',
+                      icon: Icons.person_outline,
+                      onTap: () => ProfileEditDialog.show(context, isRtl),
+                    ),
+                    _SettingsItem(
+                      title: isRtl ? 'معلومات المتجر' : 'Store Information',
+                      icon: Icons.store_outlined,
+                      onTap: () => StoreInfoDialog.show(context, isRtl),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
-                // Preferences section
-                _buildSectionTitle(isRtl ? 'التفضيلات' : 'Preferences'),
-                const SizedBox(height: 8),
-                _buildSettingsCard([
-                  _buildSettingItem(
-                    isRtl ? 'اللغة' : 'Language',
-                    Icons.language,
-                    () => _showLanguageDialog(context, isRtl),
-                  ),
-                  _buildDivider(),
-                  _buildSettingItem(
-                    isRtl ? 'الإشعارات' : 'Notifications',
-                    Icons.notifications_outlined,
-                    () {},
-                  ),
-                ]),
+                _SettingsSection(
+                  title: isRtl ? 'التفضيلات' : 'Preferences',
+                  items: [
+                    _SettingsItem(
+                      title: isRtl ? 'اللغة' : 'Language',
+                      icon: Icons.language,
+                      onTap: () => LanguageDialog.show(context, isRtl),
+                    ),
+                    _SettingsItem(
+                      title: isRtl ? 'الإشعارات' : 'Notifications',
+                      icon: Icons.notifications_outlined,
+                      onTap: () => NotificationsDialog.show(context, isRtl),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
-                // Help section
-                _buildSectionTitle(isRtl ? 'المساعدة' : 'Help'),
-                const SizedBox(height: 8),
-                _buildSettingsCard([
-                  _buildSettingItem(
-                    isRtl ? 'مساعدة' : 'Help',
-                    Icons.help_outline,
-                    () => context.push('/help'),
-                  ),
-                  _buildDivider(),
-                  _buildSettingItem(
-                    isRtl ? 'عن التطبيق' : 'About',
-                    Icons.info_outline,
-                    () => context.push('/about'),
-                  ),
-                ]),
+                _SettingsSection(
+                  title: isRtl ? 'المساعدة' : 'Help',
+                  items: [
+                    _SettingsItem(
+                      title: isRtl ? 'مساعدة' : 'Help',
+                      icon: Icons.help_outline,
+                      onTap: () => context.push('/help'),
+                    ),
+                    _SettingsItem(
+                      title: isRtl ? 'عن التطبيق' : 'About',
+                      icon: Icons.info_outline,
+                      onTap: () => context.push('/about'),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
-                // Logout
-                _buildSettingsCard([
-                  _buildSettingItem(
-                    isRtl ? 'تسجيل الخروج' : 'Logout',
-                    Icons.logout,
-                    () => _handleLogout(context, isRtl),
-                    isDestructive: true,
-                  ),
-                ]),
+                _SettingsSection(
+                  items: [
+                    _SettingsItem(
+                      title: isRtl ? 'تسجيل الخروج' : 'Logout',
+                      icon: Icons.logout,
+                      isDestructive: true,
+                      onTap: () => LogoutDialog.show(
+                        context,
+                        isRtl,
+                        () => context.read<AuthCubit>().signOut(),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 32),
               ],
             ),
@@ -101,47 +106,74 @@ class MerchantSettingsTab extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 4, left: 4),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppColours.greyDark,
+class _SettingsSection extends StatelessWidget {
+  final String? title;
+  final List<_SettingsItem> items;
+
+  const _SettingsSection({this.title, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (title != null) ...[
+          Padding(
+            padding: const EdgeInsets.only(right: 4, left: 4),
+            child: Text(
+              title!,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColours.greyDark,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColours.greyLight, width: 1),
+          ),
+          child: Column(
+            children: [
+              for (int i = 0; i < items.length; i++) ...[
+                items[i],
+                if (i < items.length - 1)
+                  const Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: AppColours.greyLighter,
+                    indent: 56,
+                  ),
+              ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
+}
 
-  Widget _buildSettingsCard(List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColours.greyLight, width: 1),
-      ),
-      child: Column(children: children),
-    );
-  }
+class _SettingsItem extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool isDestructive;
 
-  Widget _buildDivider() {
-    return Divider(
-      height: 1,
-      thickness: 1,
-      color: AppColours.greyLighter,
-      indent: 56,
-    );
-  }
+  const _SettingsItem({
+    required this.title,
+    required this.icon,
+    required this.onTap,
+    this.isDestructive = false,
+  });
 
-  Widget _buildSettingItem(
-    String title,
-    IconData icon,
-    VoidCallback onTap, {
-    bool isDestructive = false,
-  }) {
+  @override
+  Widget build(BuildContext context) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
@@ -164,82 +196,13 @@ class MerchantSettingsTab extends StatelessWidget {
           color: isDestructive ? Colors.red : AppColours.brownDark,
         ),
       ),
-      trailing: Icon(
+      trailing: const Icon(
         Icons.arrow_forward_ios,
         color: AppColours.greyMedium,
         size: 16,
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       onTap: onTap,
-    );
-  }
-
-  void _showLanguageDialog(BuildContext context, bool isRtl) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(isRtl ? 'تغيير اللغة' : 'Change Language'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: isRtl
-                  ? const Icon(Icons.check_circle, color: Colors.green)
-                  : const Icon(Icons.circle_outlined, color: Colors.grey),
-              title: const Text('العربية'),
-              onTap: () {
-                context.setLocale(const Locale('ar'));
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: !isRtl
-                  ? const Icon(Icons.check_circle, color: Colors.green)
-                  : const Icon(Icons.circle_outlined, color: Colors.grey),
-              title: const Text('English'),
-              onTap: () {
-                context.setLocale(const Locale('en'));
-                Navigator.pop(ctx);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _handleLogout(BuildContext context, bool isRtl) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(isRtl ? 'تسجيل الخروج' : 'Logout'),
-        content: Text(
-          isRtl
-              ? 'هل أنت متأكد من تسجيل الخروج؟'
-              : 'Are you sure you want to logout?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              isRtl ? 'إلغاء' : 'Cancel',
-              style: TextStyle(color: AppColours.greyDark),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.read<AuthCubit>().signOut();
-            },
-            child: Text(
-              isRtl ? 'تسجيل الخروج' : 'Logout',
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

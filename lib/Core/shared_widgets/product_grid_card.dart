@@ -137,90 +137,96 @@ class ProductGridCard extends StatelessWidget {
             // Product Info
             Expanded(
               flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AutoSizeText(
-                      product.name,
-                      textDirection: isArabic
-                          ? ui.TextDirection.rtl
-                          : ui.TextDirection.ltr,
-                      style: AppTextStyle.normal_12_black.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                      minFontSize: 10,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      textAlign: isArabic ? TextAlign.right : TextAlign.left,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 14),
-                        const SizedBox(width: 2),
-                        Text(
-                          "(${product.rating.toStringAsFixed(1)})",
-                          style: const TextStyle(fontSize: 11),
+              child: Directionality(
+                textDirection:
+                    isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AutoSizeText(
+                        product.name,
+                        style: AppTextStyle.normal_12_black.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
                         ),
-                        const Spacer(),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (product.hasDiscount)
+                        minFontSize: 10,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.star,
+                                  color: Colors.amber, size: 14),
+                              const SizedBox(width: 2),
                               Text(
-                                "${product.price.toStringAsFixed(0)} EGP",
+                                "(${product.rating.toStringAsFixed(1)})",
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (product.hasDiscount)
+                                Text(
+                                  "${product.price.toStringAsFixed(0)} ${'egp'.tr()}",
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              Text(
+                                "${product.effectivePrice.toStringAsFixed(0)} ${'egp'.tr()}",
                                 style: const TextStyle(
-                                  fontSize: 9,
-                                  color: Colors.grey,
-                                  decoration: TextDecoration.lineThrough,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColours.brownMedium,
                                 ),
                               ),
-                            Text(
-                              "${product.effectivePrice.toStringAsFixed(0)} EGP",
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: AppColours.brownMedium,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    // Add to Cart Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 30,
-                      child: ElevatedButton(
-                        onPressed: product.isOutOfStock
-                            ? null
-                            : () => _addToCart(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: product.isOutOfStock
-                              ? Colors.grey
-                              : AppColours.brownLight,
-                          padding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
+                            ],
                           ),
-                        ),
-                        child: Text(
-                          product.isOutOfStock
-                              ? 'out_of_stock'.tr()
-                              : 'add_to_cart'.tr(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
+                        ],
+                      ),
+                      const Spacer(),
+                      // Add to Cart Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 30,
+                        child: ElevatedButton(
+                          onPressed: product.isOutOfStock
+                              ? null
+                              : () => _addToCart(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: product.isOutOfStock
+                                ? Colors.grey
+                                : AppColours.brownLight,
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            product.isOutOfStock
+                                ? 'out_of_stock'.tr()
+                                : 'add_to_cart'.tr(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -7,13 +7,13 @@ import '../../../products/domain/entities/product_entity.dart';
 class MerchantProductCard extends StatelessWidget {
   final ProductEntity product;
   final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback onToggleActive;
 
   const MerchantProductCard({
     super.key,
     required this.product,
     required this.onEdit,
-    required this.onDelete,
+    required this.onToggleActive,
   });
 
   @override
@@ -34,8 +34,32 @@ class MerchantProductCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Stack(
+      child: Column(
         children: [
+          // Active/Inactive badge at top
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: product.isActive ? Colors.green : Colors.grey,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+            ),
+            child: Text(
+              product.isActive
+                  ? (isRtl ? 'نشط' : 'Active')
+                  : (isRtl ? 'غير نشط' : 'Inactive'),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          // Product content
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
@@ -100,54 +124,32 @@ class MerchantProductCard extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: onEdit,
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.edit_outlined,
-                        color: AppColours.primary,
+                        color: AppColours.brownMedium,
                       ),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
+                      tooltip: isRtl ? 'تعديل' : 'Edit',
                     ),
                     const SizedBox(height: 8),
                     IconButton(
-                      onPressed: () => _showDeleteConfirmation(context, isRtl),
-                      icon: const Icon(
-                        Icons.delete_outline,
-                        color: Colors.red,
+                      onPressed: () => _showToggleConfirmation(context, isRtl),
+                      icon: Icon(
+                        product.isActive
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: product.isActive ? Colors.orange : Colors.green,
                       ),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
+                      tooltip: product.isActive
+                          ? (isRtl ? 'إلغاء التنشيط' : 'Deactivate')
+                          : (isRtl ? 'تنشيط' : 'Activate'),
                     ),
                   ],
                 ),
               ],
-            ),
-          ),
-          // Active/Inactive badge - corner ribbon style
-          Positioned(
-            top: 0,
-            right: isRtl ? null : 0,
-            left: isRtl ? 0 : null,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: product.isActive ? Colors.green : Colors.grey,
-                borderRadius: BorderRadius.only(
-                  topRight: isRtl ? Radius.zero : const Radius.circular(12),
-                  topLeft: isRtl ? const Radius.circular(12) : Radius.zero,
-                  bottomLeft: isRtl ? Radius.zero : const Radius.circular(12),
-                  bottomRight: isRtl ? const Radius.circular(12) : Radius.zero,
-                ),
-              ),
-              child: Text(
-                product.isActive
-                    ? (isRtl ? 'نشط' : 'Active')
-                    : (isRtl ? 'غير نشط' : 'Inactive'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ),
           ),
         ],
@@ -160,7 +162,7 @@ class MerchantProductCard extends StatelessWidget {
       width: 80,
       height: 80,
       color: AppColours.greyLighter,
-      child: Icon(
+      child: const Icon(
         Icons.image_outlined,
         color: AppColours.greyMedium,
         size: 32,
@@ -168,15 +170,25 @@ class MerchantProductCard extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, bool isRtl) {
+  void _showToggleConfirmation(BuildContext context, bool isRtl) {
+    final willDeactivate = product.isActive;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isRtl ? 'حذف المنتج' : 'Delete Product'),
+        title: Text(
+          willDeactivate
+              ? (isRtl ? 'إلغاء تنشيط المنتج' : 'Deactivate Product')
+              : (isRtl ? 'تنشيط المنتج' : 'Activate Product'),
+        ),
         content: Text(
-          isRtl
-              ? 'هل أنت متأكد من حذف هذا المنتج؟'
-              : 'Are you sure you want to delete this product?',
+          willDeactivate
+              ? (isRtl
+                  ? 'هل أنت متأكد من إلغاء تنشيط هذا المنتج؟ لن يظهر للعملاء.'
+                  : 'Are you sure you want to deactivate this product? It won\'t be visible to customers.')
+              : (isRtl
+                  ? 'هل أنت متأكد من تنشيط هذا المنتج؟ سيظهر للعملاء.'
+                  : 'Are you sure you want to activate this product? It will be visible to customers.'),
         ),
         actions: [
           TextButton(
@@ -186,10 +198,16 @@ class MerchantProductCard extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              onDelete();
+              onToggleActive();
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(isRtl ? 'حذف' : 'Delete'),
+            style: TextButton.styleFrom(
+              foregroundColor: willDeactivate ? Colors.orange : Colors.green,
+            ),
+            child: Text(
+              willDeactivate
+                  ? (isRtl ? 'إلغاء التنشيط' : 'Deactivate')
+                  : (isRtl ? 'تنشيط' : 'Activate'),
+            ),
           ),
         ],
       ),

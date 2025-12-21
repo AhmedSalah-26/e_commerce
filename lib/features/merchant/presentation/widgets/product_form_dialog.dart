@@ -359,16 +359,25 @@ class _ProductFormDialogState extends State<ProductFormDialog> {
                                       if (state is CategoriesLoaded) {
                                         return DropdownButtonFormField<String>(
                                           value: _selectedCategoryId,
+                                          isExpanded: true,
                                           decoration: InputDecoration(
                                             labelText: widget.isRtl
                                                 ? 'التصنيف'
                                                 : 'Category',
                                             border: const OutlineInputBorder(),
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 8),
                                           ),
                                           items: state.categories
                                               .map((cat) => DropdownMenuItem(
                                                     value: cat.id,
-                                                    child: Text(cat.name),
+                                                    child: Text(
+                                                      cat.name,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
                                                   ))
                                               .toList(),
                                           onChanged: (value) {

@@ -52,6 +52,10 @@ class OrderModel extends OrderEntity {
     super.notes,
     super.items,
     super.createdAt,
+    super.merchantId,
+    super.merchantName,
+    super.merchantPhone,
+    super.merchantAddress,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -60,6 +64,26 @@ class OrderModel extends OrderEntity {
       items = (json['order_items'] as List)
           .map((item) => OrderItemModel.fromJson(item))
           .toList();
+    }
+
+    // Parse merchant/store info
+    String? merchantName;
+    String? merchantPhone;
+    String? merchantAddress;
+
+    // Try to get from stores join first
+    if (json['stores'] != null) {
+      final store = json['stores'];
+      merchantName = store['name'] as String?;
+      merchantPhone = store['phone'] as String?;
+      merchantAddress = store['address'] as String?;
+    }
+    // Fallback to profiles join
+    else if (json['profiles'] != null) {
+      final profile = json['profiles'];
+      merchantName = profile['name'] as String?;
+      merchantPhone = profile['phone'] as String?;
+      merchantAddress = profile['address'] as String?;
     }
 
     return OrderModel(
@@ -78,6 +102,10 @@ class OrderModel extends OrderEntity {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : null,
+      merchantId: json['merchant_id'] as String?,
+      merchantName: merchantName,
+      merchantPhone: merchantPhone,
+      merchantAddress: merchantAddress,
     );
   }
 
@@ -110,6 +138,10 @@ class OrderModel extends OrderEntity {
     String? notes,
     List<OrderItemEntity>? items,
     DateTime? createdAt,
+    String? merchantId,
+    String? merchantName,
+    String? merchantPhone,
+    String? merchantAddress,
   }) {
     return OrderModel(
       id: id ?? this.id,
@@ -125,6 +157,10 @@ class OrderModel extends OrderEntity {
       notes: notes ?? this.notes,
       items: items ?? this.items,
       createdAt: createdAt ?? this.createdAt,
+      merchantId: merchantId ?? this.merchantId,
+      merchantName: merchantName ?? this.merchantName,
+      merchantPhone: merchantPhone ?? this.merchantPhone,
+      merchantAddress: merchantAddress ?? this.merchantAddress,
     );
   }
 }

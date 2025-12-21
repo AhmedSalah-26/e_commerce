@@ -16,6 +16,11 @@ abstract class AuthRemoteDataSource {
   });
   Future<void> signOut();
   Future<UserModel?> getCurrentUser();
+  Future<UserModel> updateProfile({
+    required String userId,
+    String? name,
+    String? phone,
+  });
   Stream<UserModel?> get authStateChanges;
 }
 
@@ -163,6 +168,38 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return null;
       }
     });
+  }
+
+  @override
+  Future<UserModel> updateProfile({
+    required String userId,
+    String? name,
+    String? phone,
+  }) async {
+    logger.i('📝 Updating profile for user: $userId');
+    try {
+      final updateData = <String, dynamic>{};
+      if (name != null) updateData['name'] = name;
+      if (phone != null) updateData['phone'] = phone;
+
+      if (updateData.isEmpty) {
+        logger.w('⚠️ No data to update');
+        return await _fetchUserProfile(userId);
+      }
+
+      await _client.from('profiles').update(updateData).eq('id', userId);
+
+      logger.i('✅ Profile updated successfully');
+      return await _fetchUserProfile(userId);
+    } on PostgrestException catch (e, stackTrace) {
+      logger.e('❌ PostgrestException updating profile',
+          error: e, stackTrace: stackTrace);
+      throw ServerException('فشل في تحديث البيانات: ${e.message}');
+    } catch (e, stackTrace) {
+      logger.e('❌ Exception updating profile',
+          error: e, stackTrace: stackTrace);
+      throw ServerException('فشل في تحديث البيانات: ${e.toString()}');
+    }
   }
 
   /// Helper method to fetch user profile from profiles table

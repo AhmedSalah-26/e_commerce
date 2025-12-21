@@ -15,6 +15,7 @@ import '../../features/notifications/presentation/cubit/notifications_cubit.dart
 import '../../features/notifications/presentation/pages/notifications_screen.dart';
 import '../../features/onbording_screen/ui/onboarding_screen.dart';
 import '../../features/orders/presentation/pages/orders_page.dart';
+import '../../features/splash/presentation/pages/splash_screen.dart';
 
 class AppRouter {
   static bool? _onboardingCompleted;
@@ -24,17 +25,16 @@ class AppRouter {
     _onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
   }
 
+  static bool get isOnboardingCompleted => _onboardingCompleted ?? false;
+
   static final GoRouter router = GoRouter(
-    initialLocation: '/onboarding',
-    redirect: (context, state) {
-      // If onboarding is completed and user is on onboarding page, redirect to login
-      if (_onboardingCompleted == true &&
-          state.matchedLocation == '/onboarding') {
-        return '/login';
-      }
-      return null;
-    },
+    initialLocation: '/splash',
     routes: <RouteBase>[
+      GoRoute(
+        path: '/splash',
+        builder: (BuildContext context, GoRouterState state) =>
+            const SplashScreen(),
+      ),
       GoRoute(
         path: '/onboarding',
         builder: (BuildContext context, GoRouterState state) =>

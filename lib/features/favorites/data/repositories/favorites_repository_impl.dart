@@ -10,10 +10,18 @@ class FavoritesRepositoryImpl implements FavoritesRepository {
   FavoritesRepositoryImpl(this._remoteDataSource);
 
   @override
-  Future<Either<Failure, List<FavoriteEntity>>> getFavorites(
-      String userId) async {
+  void setLocale(String locale) {
+    if (_remoteDataSource is FavoritesRemoteDataSourceImpl) {
+      (_remoteDataSource).setLocale(locale);
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<FavoriteEntity>>> getFavorites(String userId,
+      {String? locale}) async {
     try {
-      final favorites = await _remoteDataSource.getFavorites(userId);
+      final favorites =
+          await _remoteDataSource.getFavorites(userId, locale: locale);
       return Right(favorites);
     } catch (e) {
       return Left(ServerFailure(e.toString()));

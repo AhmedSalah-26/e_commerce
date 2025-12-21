@@ -138,6 +138,7 @@
   "egp": "EGP",
   "items": "عناصر",
   "no_favorites": "لا توجد منتجات في المفضلة",
+  "no_favorites_desc": "لم تقم بإضافة أي منتجات للمفضلة بعد",
   "added_to_favorites": "تمت الإضافة للمفضلة",
   "removed_from_favorites": "تم الإزالة من المفضلة",
   "all": "الكل",
@@ -228,5 +229,6 @@
   "edit_profile_title": "تعديل البيانات",
   "profile_updated": "تم تحديث البيانات بنجاح",
   "profile_update_failed": "فشل في تحديث البيانات",
-  "current_email": "البريد الإلكتروني الحالي"
+  "current_email": "البريد الإلكتروني الحالي",
+  "you_may_like": "منتجات قد تعجبك"
 }

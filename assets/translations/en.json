@@ -138,6 +138,7 @@
   "egp": "EGP",
   "items": "items",
   "no_favorites": "No favorites yet",
+  "no_favorites_desc": "You haven't added any products to favorites yet",
   "added_to_favorites": "Added to Favorites",
   "removed_from_favorites": "Removed from Favorites",
   "all": "All",
@@ -228,5 +229,6 @@
   "edit_profile_title": "Edit Profile",
   "profile_updated": "Profile updated successfully",
   "profile_update_failed": "Failed to update profile",
-  "current_email": "Current Email"
+  "current_email": "Current Email",
+  "you_may_like": "You May Also Like"
 }

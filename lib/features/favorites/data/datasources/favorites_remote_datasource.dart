@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/favorite_model.dart';
 
 abstract class FavoritesRemoteDataSource {
-  Future<List<FavoriteModel>> getFavorites(String userId);
+  Future<List<FavoriteModel>> getFavorites(String userId, {String? locale});
   Future<void> addToFavorites(String userId, String productId);
   Future<void> removeFromFavorites(String favoriteId);
   Future<bool> isFavorite(String userId, String productId);
@@ -13,13 +13,21 @@ abstract class FavoritesRemoteDataSource {
 class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
   final SupabaseClient _client;
   final _logger = Logger();
+  String _locale = 'ar';
 
   FavoritesRemoteDataSourceImpl(this._client);
 
+  void setLocale(String locale) {
+    _locale = locale;
+  }
+
   @override
-  Future<List<FavoriteModel>> getFavorites(String userId) async {
+  Future<List<FavoriteModel>> getFavorites(String userId,
+      {String? locale}) async {
     try {
-      _logger.d('🔍 Getting favorites for user: $userId');
+      final currentLocale = locale ?? _locale;
+      _logger
+          .d('🔍 Getting favorites for user: $userId (locale: $currentLocale)');
 
       final response = await _client
           .from('favorites')
@@ -28,7 +36,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
           .order('created_at', ascending: false);
 
       final favorites = (response as List)
-          .map((json) => FavoriteModel.fromJson(json))
+          .map((json) => FavoriteModel.fromJson(json, locale: currentLocale))
           .toList();
 
       _logger.d('✅ Found ${favorites.length} favorites');

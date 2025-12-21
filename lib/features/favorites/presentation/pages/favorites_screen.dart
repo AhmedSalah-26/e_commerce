@@ -23,12 +23,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   void initState() {
     super.initState();
-    _loadFavorites();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadFavorites();
+    });
   }
 
   void _loadFavorites() {
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
+      final locale = context.locale.languageCode;
+      context.read<FavoritesCubit>().setLocale(locale);
       context.read<FavoritesCubit>().loadFavorites(authState.user.id);
     }
   }
@@ -129,6 +133,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           const SizedBox(height: 20),
           Text(
             'no_favorites'.tr(),
+            style: AppTextStyle.semiBold_20_dark_brown,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'no_favorites_desc'.tr(),
             style: AppTextStyle.normal_16_greyDark,
           ),
         ],

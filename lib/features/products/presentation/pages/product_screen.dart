@@ -20,6 +20,7 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../reviews/presentation/cubit/reviews_cubit.dart';
 import '../../../reviews/presentation/widgets/reviews_section.dart';
+import '../widgets/suggested_products_slider.dart';
 
 class ProductScreen extends StatefulWidget {
   final ProductEntity product;
@@ -84,6 +85,11 @@ class _ProductScreenState extends State<ProductScreen> {
                     _buildQuantitySelector(screenWidth, isArabic),
                   SizedBox(height: screenWidth * 0.05),
                   _buildTotalPrice(screenWidth, isArabic, totalPrice),
+                  SizedBox(height: screenWidth * 0.05),
+                  SuggestedProductsSlider(
+                    currentProductId: _product.id,
+                    categoryId: _product.categoryId,
+                  ),
                   SizedBox(height: screenWidth * 0.05),
                   ReviewsSection(productId: _product.id),
                   SizedBox(height: screenWidth * 0.2),

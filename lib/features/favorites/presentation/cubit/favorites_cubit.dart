@@ -9,9 +9,15 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   final FavoritesRemoteDataSource _dataSource;
   final _logger = Logger();
   String? _userId;
+  String _locale = 'ar';
 
   FavoritesCubit(this._repository, this._dataSource)
       : super(FavoritesInitial());
+
+  void setLocale(String locale) {
+    _locale = locale;
+    _repository.setLocale(locale);
+  }
 
   void setUserId(String userId) {
     if (_userId == userId) return; // Already set
@@ -22,7 +28,7 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   Future<void> loadFavorites(String userId) async {
     emit(FavoritesLoading());
 
-    final result = await _repository.getFavorites(userId);
+    final result = await _repository.getFavorites(userId, locale: _locale);
 
     result.fold(
       (failure) {

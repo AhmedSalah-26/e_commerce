@@ -10,13 +10,15 @@ class FavoriteModel extends FavoriteEntity {
     super.createdAt,
   });
 
-  factory FavoriteModel.fromJson(Map<String, dynamic> json) {
+  factory FavoriteModel.fromJson(Map<String, dynamic> json,
+      {String locale = 'ar'}) {
     return FavoriteModel(
       id: json['id'] as String,
       userId: json['user_id'] as String,
       productId: json['product_id'] as String,
       product: json['products'] != null
-          ? ProductModel.fromJson(json['products'] as Map<String, dynamic>)
+          ? ProductModel.fromJson(json['products'] as Map<String, dynamic>,
+              locale: locale)
           : null,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)

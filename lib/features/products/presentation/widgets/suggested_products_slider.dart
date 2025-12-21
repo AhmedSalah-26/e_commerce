@@ -1,0 +1,288 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_style.dart';
+import '../../domain/entities/product_entity.dart';
+import '../cubit/products_cubit.dart';
+import '../cubit/products_state.dart';
+import '../pages/product_screen.dart';
+
+class SuggestedProductsSlider extends StatefulWidget {
+  final String currentProductId;
+  final String? categoryId;
+
+  const SuggestedProductsSlider({
+    super.key,
+    required this.currentProductId,
+    this.categoryId,
+  });
+
+  @override
+  State<SuggestedProductsSlider> createState() =>
+      _SuggestedProductsSliderState();
+}
+
+class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
+  final PageController _pageController = PageController();
+  List<ProductEntity> _suggestedProducts = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSuggestedProducts();
+  }
+
+  Future<void> _loadSuggestedProducts() async {
+    final productsCubit = sl<ProductsCubit>();
+
+    // Load products from same category or all products
+    if (widget.categoryId != null) {
+      await productsCubit.loadProductsByCategory(widget.categoryId!);
+    } else {
+      await productsCubit.loadProducts();
+    }
+
+    final state = productsCubit.state;
+    if (state is ProductsLoaded) {
+      setState(() {
+        _suggestedProducts = state.products
+            .where((p) => p.id != widget.currentProductId)
+            .take(8)
+            .toList();
+        _isLoading = false;
+      });
+    } else {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_suggestedProducts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final pageCount = (_suggestedProducts.length / 4).ceil();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: screenWidth * 0.02),
+          child: Text(
+            'you_may_like'.tr(),
+            style: AppTextStyle.semiBold_20_dark_brown
+                .copyWith(fontSize: screenWidth * 0.045),
+          ),
+        ),
+        SizedBox(
+          height: screenWidth * 0.7,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: pageCount,
+            itemBuilder: (context, pageIndex) {
+              final startIndex = pageIndex * 4;
+              final endIndex =
+                  (startIndex + 4).clamp(0, _suggestedProducts.length);
+              final pageProducts =
+                  _suggestedProducts.sublist(startIndex, endIndex);
+
+              return GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: pageProducts.length,
+                itemBuilder: (context, index) {
+                  return _SuggestedProductCard(product: pageProducts[index]);
+                },
+              );
+            },
+          ),
+        ),
+        if (pageCount > 1)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _PageIndicator(
+                pageController: _pageController,
+                pageCount: pageCount,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _SuggestedProductCard extends StatelessWidget {
+  final ProductEntity product;
+
+  const _SuggestedProductCard({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductScreen(product: product),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColours.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
+                child: product.images.isNotEmpty
+                    ? Image.network(
+                        product.images.first,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                      )
+                    : _buildPlaceholder(),
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      product.name,
+                      style: AppTextStyle.semiBold_12_dark_brown,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Row(
+                      children: [
+                        if (product.hasDiscount)
+                          Text(
+                            '${product.price.toStringAsFixed(0)} ',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                        Text(
+                          '${product.effectivePrice.toStringAsFixed(0)} ${'egp'.tr()}',
+                          style: AppTextStyle.bold_14_medium_brown,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      color: AppColours.greyLight,
+      child: const Center(
+        child: Icon(Icons.image_not_supported, color: Colors.grey),
+      ),
+    );
+  }
+}
+
+class _PageIndicator extends StatefulWidget {
+  final PageController pageController;
+  final int pageCount;
+
+  const _PageIndicator({
+    required this.pageController,
+    required this.pageCount,
+  });
+
+  @override
+  State<_PageIndicator> createState() => _PageIndicatorState();
+}
+
+class _PageIndicatorState extends State<_PageIndicator> {
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.pageController.addListener(_onPageChanged);
+  }
+
+  void _onPageChanged() {
+    final page = widget.pageController.page?.round() ?? 0;
+    if (page != _currentPage) {
+      setState(() => _currentPage = page);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.pageController.removeListener(_onPageChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        widget.pageCount,
+        (index) => Container(
+          width: 8,
+          height: 8,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _currentPage == index
+                ? AppColours.brownLight
+                : AppColours.greyLight,
+          ),
+        ),
+      ),
+    );
+  }
+}

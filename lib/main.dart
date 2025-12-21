@@ -89,10 +89,20 @@ class _MyAppState extends State<MyApp> {
     final currentLocale = context.locale.languageCode;
     if (_lastLocale != currentLocale) {
       _lastLocale = currentLocale;
-      // Set locale for products, categories, and cart cubits
+      // Set locale for products, categories, cart, and favorites cubits
       context.read<ProductsCubit>().setLocale(currentLocale);
       context.read<CategoriesCubit>().setLocale(currentLocale);
       context.read<CartCubit>().setLocale(currentLocale);
+      context.read<FavoritesCubit>().setLocale(currentLocale);
+
+      // Reload favorites if user is authenticated
+      final authState = context.read<AuthCubit>().state;
+      if (authState is AuthAuthenticated) {
+        context.read<FavoritesCubit>().loadFavorites(
+              authState.user.id,
+              showLoading: false,
+            );
+      }
     }
   }
 

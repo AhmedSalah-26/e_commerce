@@ -38,6 +38,7 @@ class _ProductScreenState extends State<ProductScreen> {
   int _quantity = 1;
   late ProductEntity _product;
   bool _isLoadingStoreInfo = true;
+  bool _isDescriptionExpanded = false;
 
   @override
   void initState() {
@@ -73,8 +74,11 @@ class _ProductScreenState extends State<ProductScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
     final isArabic = context.locale.languageCode == 'ar';
 
-    return BlocProvider(
-      create: (context) => sl<ReviewsCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => sl<ReviewsCubit>()),
+        BlocProvider(create: (context) => sl<ProductsCubit>()),
+      ],
       child: Scaffold(
         backgroundColor: AppColours.white,
         appBar: _buildAppBar(context),
@@ -427,7 +431,47 @@ class _ProductScreenState extends State<ProductScreen> {
             _product.description,
             style: AppTextStyle.normal_12_black
                 .copyWith(fontSize: screenWidth * 0.04),
+            maxLines: _isDescriptionExpanded ? null : 6,
+            overflow: _isDescriptionExpanded
+                ? TextOverflow.visible
+                : TextOverflow.ellipsis,
           ),
+          if (_product.description.length >
+              200) // Show button if description is long
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _isDescriptionExpanded = !_isDescriptionExpanded;
+                });
+              },
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 30),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _isDescriptionExpanded
+                        ? 'show_less'.tr()
+                        : 'show_more'.tr(),
+                    style: TextStyle(
+                      color: AppColours.brownLight,
+                      fontSize: screenWidth * 0.035,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Icon(
+                    _isDescriptionExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: AppColours.brownLight,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

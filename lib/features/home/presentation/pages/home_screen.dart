@@ -566,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 min: _minPrice,
                 max: _maxPrice,
                 divisions: 100,
-                activeColor: AppColours.brownMedium,
+                activeColor: AppColours.brownLight,
                 inactiveColor: AppColours.greyLight,
                 onChanged: (values) {
                   setSheetState(() => tempPriceRange = values);
@@ -591,7 +591,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColours.brownMedium,
+                    backgroundColor: AppColours.brownLight,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
@@ -616,14 +616,14 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: const EdgeInsets.only(left: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColours.brownMedium : Colors.white,
+          color: isSelected ? AppColours.brownLight : Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColours.brownMedium),
+          border: Border.all(color: AppColours.brownLight),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : AppColours.brownMedium,
+            color: isSelected ? Colors.white : AppColours.brownLight,
             fontSize: 14,
           ),
         ),
@@ -838,6 +838,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           context.read<ProductsCubit>().loadProducts();
                         },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColours.brownLight,
+                          foregroundColor: Colors.white,
+                        ),
                         child: Text('retry'.tr()),
                       ),
                     ],

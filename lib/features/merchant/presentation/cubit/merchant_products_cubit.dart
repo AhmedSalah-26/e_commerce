@@ -47,11 +47,11 @@ class MerchantProductDeleted extends MerchantProductsState {}
 // Cubit
 class MerchantProductsCubit extends Cubit<MerchantProductsState> {
   final ProductRepository _productRepository;
-  final ImageUploadService? _imageUploadService;
+  final ImageUploadService _imageUploadService;
   String? _currentMerchantId;
 
   MerchantProductsCubit(this._productRepository,
-      {ImageUploadService? imageUploadService})
+      {required ImageUploadService imageUploadService})
       : _imageUploadService = imageUploadService,
         super(MerchantProductsInitial());
 
@@ -104,11 +104,6 @@ class MerchantProductsCubit extends Cubit<MerchantProductsState> {
 
       // Step 1: Upload images
       if (newImages != null && newImages.isNotEmpty) {
-        if (_imageUploadService == null) {
-          AppLogger.e('❌ ImageUploadService is NULL!');
-          return false;
-        }
-
         AppLogger.step(1, 'Uploading ${newImages.length} images...');
 
         for (int i = 0; i < newImages.length; i++) {
@@ -231,11 +226,6 @@ class MerchantProductsCubit extends Cubit<MerchantProductsState> {
 
       // Step 1: Upload new images if any
       if (newImages != null && newImages.isNotEmpty) {
-        if (_imageUploadService == null) {
-          AppLogger.e('❌ ImageUploadService is NULL!');
-          return false;
-        }
-
         AppLogger.step(1, 'Uploading ${newImages.length} new images...');
 
         for (int i = 0; i < newImages.length; i++) {

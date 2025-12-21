@@ -9,9 +9,10 @@ import 'categories_state.dart';
 /// Cubit for managing categories state
 class CategoriesCubit extends Cubit<CategoriesState> {
   final CategoryRepository _repository;
-  final ImageUploadService? _imageUploadService;
+  final ImageUploadService _imageUploadService;
 
-  CategoriesCubit(this._repository, {ImageUploadService? imageUploadService})
+  CategoriesCubit(this._repository,
+      {required ImageUploadService imageUploadService})
       : _imageUploadService = imageUploadService,
         super(const CategoriesInitial());
 
@@ -68,11 +69,6 @@ class CategoriesCubit extends Cubit<CategoriesState> {
 
       // Step 1: Upload image first if provided
       if (newImage != null) {
-        if (_imageUploadService == null) {
-          AppLogger.e('❌ ImageUploadService is NULL!');
-          return false;
-        }
-
         AppLogger.step(1, 'Uploading image to storage...', {
           'file_name': newImage.name,
           'file_size': '${newImage.bytes.length} bytes',
@@ -181,11 +177,6 @@ class CategoriesCubit extends Cubit<CategoriesState> {
 
       // Step 1: Upload new image first if provided
       if (newImage != null) {
-        if (_imageUploadService == null) {
-          AppLogger.e('❌ ImageUploadService is NULL!');
-          return false;
-        }
-
         AppLogger.step(1, 'Uploading NEW image to storage...', {
           'file_name': newImage.name,
           'file_size': '${newImage.bytes.length} bytes',

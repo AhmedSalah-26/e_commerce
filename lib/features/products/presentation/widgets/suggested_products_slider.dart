@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
@@ -26,80 +26,82 @@ class SuggestedProductsSlider extends StatefulWidget {
 }
 
 class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
-  List<ProductEntity> _suggestedProducts = [];
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    _loadSuggestedProducts();
-  }
+    // Load products only if not already loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cubit = context.read<ProductsCubit>();
+      final currentState = cubit.state;
 
-  Future<void> _loadSuggestedProducts() async {
-    final productsCubit = sl<ProductsCubit>();
-
-    if (widget.categoryId != null) {
-      await productsCubit.loadProductsByCategory(widget.categoryId!);
-    } else {
-      await productsCubit.loadProducts();
-    }
-
-    final state = productsCubit.state;
-    if (state is ProductsLoaded) {
-      setState(() {
-        _suggestedProducts = state.products
-            .where((p) => p.id != widget.currentProductId)
-            .take(10)
-            .toList();
-        _isLoading = false;
-      });
-    } else {
-      setState(() => _isLoading = false);
-    }
+      // Only load if we don't have products or if we need category-specific products
+      if (currentState is! ProductsLoaded ||
+          (widget.categoryId != null && currentState.products.isEmpty)) {
+        if (widget.categoryId != null) {
+          cubit.loadProductsByCategory(widget.categoryId!);
+        } else {
+          cubit.loadProducts();
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        child: ProductsGridSkeleton(itemCount: 4),
-      );
-    }
+    return BlocBuilder<ProductsCubit, ProductsState>(
+      builder: (context, state) {
+        if (state is ProductsLoading) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: ProductsGridSkeleton(itemCount: 4),
+          );
+        }
 
-    if (_suggestedProducts.isEmpty) {
-      return const SizedBox.shrink();
-    }
+        if (state is ProductsLoaded) {
+          final suggestedProducts = state.products
+              .where((p) => p.id != widget.currentProductId)
+              .take(10)
+              .toList();
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final cardWidth = screenWidth * 0.38;
-    final cardHeight = cardWidth * 1.5;
+          if (suggestedProducts.isEmpty) {
+            return const SizedBox.shrink();
+          }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: screenWidth * 0.02),
-          child: Text(
-            'you_may_like'.tr(),
-            style: AppTextStyle.semiBold_20_dark_brown
-                .copyWith(fontSize: screenWidth * 0.045),
-          ),
-        ),
-        SizedBox(
-          height: cardHeight,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: _suggestedProducts.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) => SizedBox(
-              width: cardWidth,
-              child: _SuggestedProductCard(product: _suggestedProducts[index]),
-            ),
-          ),
-        ),
-      ],
+          final screenWidth = MediaQuery.of(context).size.width;
+          final cardWidth = screenWidth * 0.38;
+          final cardHeight = cardWidth * 1.5;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: screenWidth * 0.02),
+                child: Text(
+                  'you_may_like'.tr(),
+                  style: AppTextStyle.semiBold_20_dark_brown
+                      .copyWith(fontSize: screenWidth * 0.045),
+                ),
+              ),
+              SizedBox(
+                height: cardHeight,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: suggestedProducts.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) => SizedBox(
+                    width: cardWidth,
+                    child: _SuggestedProductCard(
+                        product: suggestedProducts[index]),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
     );
   }
 }

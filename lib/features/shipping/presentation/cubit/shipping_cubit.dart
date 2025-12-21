@@ -31,12 +31,14 @@ class GovernoratesLoaded extends ShippingState {
 
   GovernoratesLoaded copyWith({
     List<GovernorateEntity>? governorates,
-    GovernorateEntity? selectedGovernorate,
+    GovernorateEntity? Function()? selectedGovernorate,
     double? shippingPrice,
   }) {
     return GovernoratesLoaded(
       governorates: governorates ?? this.governorates,
-      selectedGovernorate: selectedGovernorate ?? this.selectedGovernorate,
+      selectedGovernorate: selectedGovernorate != null
+          ? selectedGovernorate()
+          : this.selectedGovernorate,
       shippingPrice: shippingPrice ?? this.shippingPrice,
     );
   }
@@ -84,7 +86,7 @@ class ShippingCubit extends Cubit<ShippingState> {
     final currentState = state;
     if (currentState is GovernoratesLoaded) {
       emit(currentState.copyWith(
-        selectedGovernorate: governorate,
+        selectedGovernorate: () => governorate,
         shippingPrice: 0,
       ));
 

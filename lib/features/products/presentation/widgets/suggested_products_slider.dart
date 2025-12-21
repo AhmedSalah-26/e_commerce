@@ -68,19 +68,8 @@ class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
     }
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final cardWidth = screenWidth * 0.4;
-    final cardHeight = cardWidth * 1.4;
-
-    // Split products into two rows
-    final topRow = <ProductEntity>[];
-    final bottomRow = <ProductEntity>[];
-    for (int i = 0; i < _suggestedProducts.length; i++) {
-      if (i % 2 == 0) {
-        topRow.add(_suggestedProducts[i]);
-      } else {
-        bottomRow.add(_suggestedProducts[i]);
-      }
-    }
+    final cardWidth = screenWidth * 0.38;
+    final cardHeight = cardWidth * 1.5;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,36 +83,15 @@ class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
           ),
         ),
         SizedBox(
-          height: cardHeight * 2 + 16,
-          child: SingleChildScrollView(
+          height: cardHeight,
+          child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: List.generate(
-                topRow.length,
-                (index) => Padding(
-                  padding: EdgeInsets.only(
-                      right: index < topRow.length - 1 ? 12 : 0),
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        width: cardWidth,
-                        height: cardHeight,
-                        child: _SuggestedProductCard(product: topRow[index]),
-                      ),
-                      const SizedBox(height: 12),
-                      if (index < bottomRow.length)
-                        SizedBox(
-                          width: cardWidth,
-                          height: cardHeight,
-                          child:
-                              _SuggestedProductCard(product: bottomRow[index]),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+            itemCount: _suggestedProducts.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) => SizedBox(
+              width: cardWidth,
+              child: _SuggestedProductCard(product: _suggestedProducts[index]),
             ),
           ),
         ),

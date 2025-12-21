@@ -321,19 +321,28 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade400),
+        color: Colors.white,
+        border: Border.all(color: AppColours.brownLight, width: 1.5),
         borderRadius: BorderRadius.circular(12),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<GovernorateEntity>(
           value: selected,
-          hint: Text('select_governorate'.tr()),
+          hint: Text(
+            'select_governorate'.tr(),
+            style: TextStyle(color: AppColours.brownMedium),
+          ),
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down),
+          icon: const Icon(Icons.keyboard_arrow_down,
+              color: AppColours.brownMedium),
+          dropdownColor: Colors.white,
           items: governorates.map((gov) {
             return DropdownMenuItem<GovernorateEntity>(
               value: gov,
-              child: Text(gov.getName(locale)),
+              child: Text(
+                gov.getName(locale),
+                style: const TextStyle(color: AppColours.brownMedium),
+              ),
             );
           }).toList(),
           onChanged: (gov) {

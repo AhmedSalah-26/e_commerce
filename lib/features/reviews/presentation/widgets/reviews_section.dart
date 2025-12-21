@@ -203,6 +203,8 @@ class _ReviewsSectionState extends State<ReviewsSection> {
     return Container(
       padding: const EdgeInsets.all(32),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const Icon(
             Icons.rate_review_outlined,
@@ -213,6 +215,7 @@ class _ReviewsSectionState extends State<ReviewsSection> {
           Text(
             'no_reviews'.tr(),
             style: AppTextStyle.normal_16_greyDark,
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
@@ -220,6 +223,7 @@ class _ReviewsSectionState extends State<ReviewsSection> {
             style: AppTextStyle.normal_12_black.copyWith(
               color: AppColours.greyMedium,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

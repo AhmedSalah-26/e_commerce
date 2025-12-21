@@ -419,8 +419,8 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
       ),
       backgroundColor: Colors.white,
       side: BorderSide(
-        color: Colors.black,
-        width: isSelected ? 2 : 1,
+        color: AppColours.primary,
+        width: 1,
       ),
     );
   }

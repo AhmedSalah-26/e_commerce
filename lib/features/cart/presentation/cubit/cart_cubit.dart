@@ -24,7 +24,7 @@ class CartCubit extends Cubit<CartState> {
   /// Set the locale for fetching cart items
   void setLocale(String locale) {
     if (_repository is CartRepositoryImpl) {
-      (_repository as CartRepositoryImpl).setLocale(locale);
+      (_repository).setLocale(locale);
     }
   }
 

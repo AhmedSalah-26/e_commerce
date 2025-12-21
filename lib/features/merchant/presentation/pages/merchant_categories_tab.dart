@@ -47,7 +47,7 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
               // Header
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
                       AppColours.primary,
@@ -91,10 +91,10 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
                   decoration: InputDecoration(
                     hintText:
                         isRtl ? 'البحث عن تصنيف...' : 'Search categories...',
-                    prefixIcon: Icon(Icons.search, color: AppColours.primary),
+                    prefixIcon: const Icon(Icons.search, color: AppColours.primary),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
-                            icon: Icon(Icons.clear, color: AppColours.greyDark),
+                            icon: const Icon(Icons.clear, color: AppColours.greyDark),
                             onPressed: () {
                               _searchController.clear();
                               setState(() {
@@ -107,16 +107,16 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColours.primary),
+                      borderSide: const BorderSide(color: AppColours.primary),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColours.primary),
+                      borderSide: const BorderSide(color: AppColours.primary),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide:
-                          BorderSide(color: AppColours.primary, width: 2),
+                          const BorderSide(color: AppColours.primary, width: 2),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -167,7 +167,7 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.search_off,
                                 size: 64,
                                 color: AppColours.greyLight,
@@ -240,7 +240,7 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
                                         _showEditCategoryDialog(
                                             context, category, isRtl);
                                       },
-                                      icon: Icon(
+                                      icon: const Icon(
                                         Icons.edit_outlined,
                                         color: AppColours.primary,
                                       ),
@@ -398,7 +398,7 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
         color: AppColours.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Icon(
+      child: const Icon(
         Icons.category,
         color: AppColours.primary,
         size: 24,

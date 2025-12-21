@@ -89,7 +89,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           backgroundColor: AppColours.white,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: AppColours.brownDark),
+            icon: const Icon(Icons.arrow_back, color: AppColours.brownDark),
             onPressed: () => context.pop(),
           ),
           title: Text(
@@ -119,7 +119,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         child: Text(
                           (state.user.name ?? state.user.email)[0]
                               .toUpperCase(),
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: AppColours.brownDark,
                             fontSize: 36,
                             fontWeight: FontWeight.bold,
@@ -132,7 +132,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     // Email (read-only)
                     Text(
                       'current_email'.tr(),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: AppColours.greyDark,
@@ -148,7 +148,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                       child: Text(
                         state.user.email,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           color: AppColours.greyDark,
                         ),
@@ -159,7 +159,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     // Name field
                     Text(
                       'full_name'.tr(),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: AppColours.greyDark,
@@ -170,21 +170,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       controller: _nameController,
                       decoration: InputDecoration(
                         hintText: 'full_name'.tr(),
-                        prefixIcon: Icon(
+                        prefixIcon: const Icon(
                           Icons.person_outline,
                           color: AppColours.brownMedium,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColours.greyLight),
+                          borderSide: const BorderSide(color: AppColours.greyLight),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColours.greyLight),
+                          borderSide: const BorderSide(color: AppColours.greyLight),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColours.brownMedium),
+                          borderSide: const BorderSide(color: AppColours.brownMedium),
                         ),
                       ),
                       validator: (value) {
@@ -202,7 +202,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     // Phone field
                     Text(
                       '${'phone'.tr()} (${'optional'.tr()})',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: AppColours.greyDark,
@@ -214,21 +214,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
                         hintText: 'phone'.tr(),
-                        prefixIcon: Icon(
+                        prefixIcon: const Icon(
                           Icons.phone_outlined,
                           color: AppColours.brownMedium,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColours.greyLight),
+                          borderSide: const BorderSide(color: AppColours.greyLight),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColours.greyLight),
+                          borderSide: const BorderSide(color: AppColours.greyLight),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColours.brownMedium),
+                          borderSide: const BorderSide(color: AppColours.brownMedium),
                         ),
                       ),
                     ),

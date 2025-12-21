@@ -64,7 +64,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       colors: [
                         AppColours.primary,
                         AppColours.brownLight,
@@ -83,7 +83,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   child: Column(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.store,
                         size: 80,
                         color: Colors.white,
@@ -130,7 +130,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.info_outline,
                             color: AppColours.primary,
                             size: 24,
@@ -173,7 +173,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.star_outline,
                             color: AppColours.primary,
                             size: 24,
@@ -245,7 +245,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.business_outlined,
                             color: AppColours.primary,
                             size: 24,

@@ -79,7 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
+                            gradient: const LinearGradient(
                               colors: [
                                 AppColours.brownMedium,
                                 AppColours.brownLight,
@@ -105,7 +105,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 child: Text(
                                   (state.user.name ?? state.user.email)[0]
                                       .toUpperCase(),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: AppColours.brownMedium,
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
@@ -217,7 +217,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.only(right: 4, left: 4),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppColours.greyDark,
@@ -238,7 +238,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildDivider() {
-    return Divider(
+    return const Divider(
       height: 1,
       thickness: 1,
       color: AppColours.greyLighter,
@@ -258,7 +258,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'cancel'.tr(),
-              style: TextStyle(color: AppColours.greyDark),
+              style: const TextStyle(color: AppColours.greyDark),
             ),
           ),
           TextButton(
@@ -304,7 +304,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: isDestructive ? Colors.red : AppColours.brownDark,
         ),
       ),
-      trailing: Icon(
+      trailing: const Icon(
         Icons.arrow_forward_ios,
         color: AppColours.greyMedium,
         size: 16,
@@ -324,7 +324,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: AppColours.brownLight.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(
+        child: const Icon(
           Icons.language,
           color: AppColours.brownMedium,
           size: 22,
@@ -332,7 +332,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       title: Text(
         'language'.tr(),
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 16,
           color: AppColours.brownDark,
         ),
@@ -342,13 +342,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Text(
             isArabic ? 'العربية' : 'English',
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColours.greyMedium,
               fontSize: 14,
             ),
           ),
           const SizedBox(width: 8),
-          Icon(
+          const Icon(
             Icons.arrow_forward_ios,
             color: AppColours.greyMedium,
             size: 16,
@@ -368,7 +368,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: AppColours.brownLight.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(
+        child: const Icon(
           Icons.notifications_outlined,
           color: AppColours.brownMedium,
           size: 22,
@@ -376,7 +376,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       title: Text(
         'notifications'.tr(),
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 16,
           color: AppColours.brownDark,
         ),
@@ -384,7 +384,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       trailing: Switch(
         value: _notificationsEnabled,
         onChanged: _toggleNotifications,
-        activeColor: AppColours.brownMedium,
+        activeThumbColor: AppColours.brownMedium,
         activeTrackColor: AppColours.brownLight.withValues(alpha: 0.5),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),

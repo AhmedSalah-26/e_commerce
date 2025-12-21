@@ -149,25 +149,30 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
   Widget _buildEmptyFavorites() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.favorite_border,
-            size: 100,
-            color: AppColours.greyMedium,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'no_favorites'.tr(),
-            style: AppTextStyle.semiBold_20_dark_brown,
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'no_favorites_desc'.tr(),
-            style: AppTextStyle.normal_16_greyDark,
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.favorite_border,
+              size: 80,
+              color: AppColours.greyMedium,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'no_favorites'.tr(),
+              style: AppTextStyle.semiBold_16_dark_brown,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'no_favorites_desc'.tr(),
+              style: AppTextStyle.normal_14_greyDark,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

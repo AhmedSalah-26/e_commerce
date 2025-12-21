@@ -28,7 +28,7 @@ class MerchantEmptyState extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColours.greyLighter,
                 shape: BoxShape.circle,
               ),

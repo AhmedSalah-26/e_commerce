@@ -59,7 +59,7 @@ class OrderCard extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.person_outline,
+                  const Icon(Icons.person_outline,
                       size: 16, color: AppColours.greyDark),
                   const SizedBox(width: 8),
                   Text(
@@ -72,7 +72,7 @@ class OrderCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.shopping_bag_outlined,
+                  const Icon(Icons.shopping_bag_outlined,
                       size: 16, color: AppColours.greyDark),
                   const SizedBox(width: 8),
                   Text(
@@ -90,7 +90,7 @@ class OrderCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.access_time, size: 16, color: AppColours.greyDark),
+                  const Icon(Icons.access_time, size: 16, color: AppColours.greyDark),
                   const SizedBox(width: 8),
                   Text(
                     DateFormat('dd/MM/yyyy HH:mm')

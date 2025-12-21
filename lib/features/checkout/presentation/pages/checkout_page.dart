@@ -332,7 +332,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           value: selected,
           hint: Text(
             'select_governorate'.tr(),
-            style: TextStyle(color: AppColours.brownMedium),
+            style: const TextStyle(color: AppColours.brownMedium),
           ),
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down,
@@ -403,9 +403,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
               Text(
                 shippingPrice > 0
                     ? '${shippingPrice.toStringAsFixed(2)} ${'egp'.tr()}'
-                    : 'free_shipping'.tr(),
+                    : '-',
                 style: TextStyle(
-                  color: shippingPrice > 0 ? null : Colors.green,
+                  color: shippingPrice > 0 ? null : Colors.grey,
                 ),
               ),
             ],

@@ -90,7 +90,7 @@ class _ImagesCardBodyState extends State<_ImagesCardBody> {
         SmoothPageIndicator(
           controller: _pageController,
           count: widget.images.length,
-          effect: ExpandingDotsEffect(
+          effect: const ExpandingDotsEffect(
             dotHeight: 8,
             dotWidth: 8,
             activeDotColor: AppColours.brownLight,

@@ -271,7 +271,7 @@ class _ProductScreenState extends State<ProductScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.store, size: 14, color: AppColours.brownMedium),
+                  const Icon(Icons.store, size: 14, color: AppColours.brownMedium),
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
@@ -291,7 +291,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.location_on,
+                    const Icon(Icons.location_on,
                         size: 14, color: AppColours.brownMedium),
                     const SizedBox(width: 4),
                     Flexible(
@@ -311,7 +311,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.phone, size: 14, color: AppColours.brownMedium),
+                    const Icon(Icons.phone, size: 14, color: AppColours.brownMedium),
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(

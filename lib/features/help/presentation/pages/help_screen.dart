@@ -64,7 +64,7 @@ class HelpScreen extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       colors: [
                         AppColours.primary,
                         AppColours.brownLight,
@@ -83,7 +83,7 @@ class HelpScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.support_agent,
                         size: 64,
                         color: Colors.white,
@@ -155,7 +155,7 @@ class HelpScreen extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.access_time,
                             color: AppColours.primary,
                             size: 24,
@@ -251,7 +251,7 @@ class HelpScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(
+                const Icon(
                   Icons.arrow_forward_ios,
                   color: AppColours.greyMedium,
                   size: 18,

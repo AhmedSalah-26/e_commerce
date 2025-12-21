@@ -106,10 +106,10 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
             // Header
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColours.primary,
                 borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
+                    BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -243,7 +243,7 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
                                               children: [
-                                                Icon(Icons.add_photo_alternate,
+                                                const Icon(Icons.add_photo_alternate,
                                                     color: AppColours.primary,
                                                     size: 40),
                                                 const SizedBox(height: 4),
@@ -251,7 +251,7 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                                                   widget.isRtl
                                                       ? 'إضافة صورة'
                                                       : 'Add Image',
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: AppColours.primary,
                                                     fontSize: 12,
                                                   ),

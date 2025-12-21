@@ -128,10 +128,10 @@ class _ProductFormDialogState extends State<ProductFormDialog> {
             // Header
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColours.primary,
                 borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
+                    BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -191,13 +191,13 @@ class _ProductFormDialogState extends State<ProductFormDialog> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.add_photo_alternate,
+                                          const Icon(Icons.add_photo_alternate,
                                               color: AppColours.primary,
                                               size: 32),
                                           const SizedBox(height: 4),
                                           Text(
                                             widget.isRtl ? 'إضافة' : 'Add',
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: AppColours.primary,
                                               fontSize: 12,
                                             ),
@@ -358,7 +358,7 @@ class _ProductFormDialogState extends State<ProductFormDialog> {
                                     builder: (context, state) {
                                       if (state is CategoriesLoaded) {
                                         return DropdownButtonFormField<String>(
-                                          value: _selectedCategoryId,
+                                          initialValue: _selectedCategoryId,
                                           isExpanded: true,
                                           decoration: InputDecoration(
                                             labelText: widget.isRtl

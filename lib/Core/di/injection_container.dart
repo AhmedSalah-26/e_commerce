@@ -55,6 +55,12 @@ import '../../features/reviews/presentation/cubit/reviews_cubit.dart';
 import '../../features/merchant/presentation/cubit/merchant_products_cubit.dart';
 import '../services/image_upload_service.dart';
 
+// Shipping imports
+import '../../features/shipping/data/datasources/shipping_remote_datasource.dart';
+import '../../features/shipping/data/repositories/shipping_repository_impl.dart';
+import '../../features/shipping/domain/repositories/shipping_repository.dart';
+import '../../features/shipping/presentation/cubit/shipping_cubit.dart';
+
 final sl = GetIt.instance;
 
 Future<void> initializeDependencies() async {
@@ -167,4 +173,13 @@ Future<void> initializeDependencies() async {
       imageUploadService: imageService,
     );
   });
+
+  // Shipping Feature
+  sl.registerLazySingleton<ShippingRemoteDataSource>(
+    () => ShippingRemoteDataSourceImpl(sl<SupabaseService>().client),
+  );
+  sl.registerLazySingleton<ShippingRepository>(
+    () => ShippingRepositoryImpl(sl<ShippingRemoteDataSource>()),
+  );
+  sl.registerFactory(() => ShippingCubit(sl<ShippingRepository>()));
 }

@@ -230,5 +230,16 @@
   "profile_updated": "تم تحديث البيانات بنجاح",
   "profile_update_failed": "فشل في تحديث البيانات",
   "current_email": "البريد الإلكتروني الحالي",
-  "you_may_like": "منتجات قد تعجبك"
+  "you_may_like": "منتجات قد تعجبك",
+
+  "governorate": "المحافظة",
+  "select_governorate": "اختر المحافظة",
+  "shipping_cost": "تكلفة الشحن",
+  "free_shipping": "شحن مجاني",
+  "shipping_prices": "أسعار الشحن",
+  "manage_shipping": "إدارة أسعار الشحن",
+  "set_shipping_price": "تحديد سعر الشحن",
+  "shipping_price_updated": "تم تحديث سعر الشحن",
+  "no_shipping_prices": "لم يتم تحديد أسعار شحن بعد",
+  "add_shipping_price": "إضافة سعر شحن"
 }

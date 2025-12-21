@@ -19,8 +19,10 @@ abstract class OrderRepository {
     String? deliveryAddress,
     String? customerName,
     String? customerPhone,
-    String? notes,
-  );
+    String? notes, {
+    double? shippingCost,
+    String? governorateId,
+  });
 
   /// Update order status
   Future<Either<Failure, void>> updateOrderStatus(

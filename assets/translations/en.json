@@ -230,5 +230,16 @@
   "profile_updated": "Profile updated successfully",
   "profile_update_failed": "Failed to update profile",
   "current_email": "Current Email",
-  "you_may_like": "You May Also Like"
+  "you_may_like": "You May Also Like",
+
+  "governorate": "Governorate",
+  "select_governorate": "Select Governorate",
+  "shipping_cost": "Shipping Cost",
+  "free_shipping": "Free Shipping",
+  "shipping_prices": "Shipping Prices",
+  "manage_shipping": "Manage Shipping Prices",
+  "set_shipping_price": "Set Shipping Price",
+  "shipping_price_updated": "Shipping price updated",
+  "no_shipping_prices": "No shipping prices set yet",
+  "add_shipping_price": "Add Shipping Price"
 }

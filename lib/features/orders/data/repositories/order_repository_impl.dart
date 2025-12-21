@@ -53,8 +53,10 @@ class OrderRepositoryImpl implements OrderRepository {
     String? deliveryAddress,
     String? customerName,
     String? customerPhone,
-    String? notes,
-  ) async {
+    String? notes, {
+    double? shippingCost,
+    String? governorateId,
+  }) async {
     try {
       final orderId = await _remoteDataSource.createOrderFromCart(
         userId,
@@ -62,6 +64,8 @@ class OrderRepositoryImpl implements OrderRepository {
         customerName,
         customerPhone,
         notes,
+        shippingCost: shippingCost,
+        governorateId: governorateId,
       );
       return Right(orderId);
     } on ServerException catch (e) {

@@ -15,8 +15,10 @@ abstract class OrderRemoteDataSource {
     String? deliveryAddress,
     String? customerName,
     String? customerPhone,
-    String? notes,
-  );
+    String? notes, {
+    double? shippingCost,
+    String? governorateId,
+  });
   Future<void> updateOrderStatus(String orderId, OrderStatus status);
   Stream<List<OrderModel>> watchOrders();
   Stream<List<OrderModel>> watchUserOrders(String userId);
@@ -136,8 +138,10 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     String? deliveryAddress,
     String? customerName,
     String? customerPhone,
-    String? notes,
-  ) async {
+    String? notes, {
+    double? shippingCost,
+    String? governorateId,
+  }) async {
     try {
       final response = await _client.rpc('create_order_from_cart', params: {
         'p_user_id': userId,
@@ -145,6 +149,8 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         'p_customer_name': customerName,
         'p_customer_phone': customerPhone,
         'p_notes': notes,
+        'p_shipping_cost': shippingCost ?? 0,
+        'p_governorate_id': governorateId,
       });
 
       return response as String;

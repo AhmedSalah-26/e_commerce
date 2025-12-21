@@ -10,40 +10,22 @@ class ProductsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        int crossAxisCount;
-        double childAspectRatio;
-
-        if (constraints.maxWidth > 1200) {
-          crossAxisCount = 4;
-          childAspectRatio = 0.72;
-        } else if (constraints.maxWidth > 800) {
-          crossAxisCount = 3;
-          childAspectRatio = 0.70;
-        } else {
-          crossAxisCount = 2;
-          childAspectRatio = 0.68;
-        }
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: childAspectRatio,
-            ),
-            itemCount: products.length,
-            itemBuilder: (BuildContext context, int index) {
-              return ProductGridCard(product: products[index]);
-            },
-          ),
-        );
-      },
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.65,
+        ),
+        itemCount: products.length,
+        itemBuilder: (BuildContext context, int index) {
+          return ProductGridCard(product: products[index]);
+        },
+      ),
     );
   }
 }

@@ -140,6 +140,7 @@
   "items": "items",
   "no_favorites": "No favorites yet",
   "no_favorites_desc": "You haven't added any products to favorites yet",
+  "login_to_see_favorites": "Login to see your favorites",
   "added_to_favorites": "Added to Favorites",
   "removed_from_favorites": "Removed from Favorites",
   "all": "All",
@@ -241,6 +242,9 @@
   "manage_shipping": "Manage Shipping Prices",
   "set_shipping_price": "Set Shipping Price",
   "shipping_price_updated": "Shipping price updated",
-  "no_shipping_prices": "No shipping prices set yet",
-  "add_shipping_price": "Add Shipping Price"
+  "no_shipping_prices": "No shipping price set",
+  "add_shipping_price": "Add Shipping Price",
+  "add_shipping_zone": "Add Shipping Zone",
+  "active_shipping_zones": "Active Shipping Zones",
+  "inactive_shipping_zones": "Inactive Zones"
 }

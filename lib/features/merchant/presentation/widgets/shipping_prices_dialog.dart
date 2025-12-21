@@ -142,21 +142,205 @@ class ShippingPricesDialog extends StatelessWidget {
       priceMap[price.governorateId] = price.price;
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: governorates.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (context, index) {
-        final gov = governorates[index];
-        final price = priceMap[gov.id];
+    // Separate governorates with and without prices
+    final withPrices =
+        governorates.where((g) => priceMap.containsKey(g.id)).toList();
+    final withoutPrices =
+        governorates.where((g) => !priceMap.containsKey(g.id)).toList();
 
-        return _GovernorateShippingCard(
-          governorate: gov,
-          price: price,
-          locale: locale,
-          onEdit: () => _showEditPriceDialog(context, gov, price, locale),
-        );
-      },
+    return Column(
+      children: [
+        // Add new shipping zone button
+        if (withoutPrices.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: InkWell(
+              onTap: () =>
+                  _showAddShippingZoneDialog(context, withoutPrices, locale),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColours.brownLight.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColours.brownLight,
+                    style: BorderStyle.solid,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.add_circle_outline,
+                        color: AppColours.brownMedium),
+                    const SizedBox(width: 8),
+                    Text(
+                      'add_shipping_zone'.tr(),
+                      style: const TextStyle(
+                        color: AppColours.brownMedium,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        const SizedBox(height: 8),
+        // Active shipping zones header
+        if (withPrices.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Row(
+              children: [
+                const Icon(Icons.local_shipping, size: 18, color: Colors.green),
+                const SizedBox(width: 8),
+                Text(
+                  'active_shipping_zones'.tr(),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.green.shade700,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${withPrices.length}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        // List of governorates with prices
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: withPrices.length +
+                (withoutPrices.isNotEmpty ? 1 + withoutPrices.length : 0),
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              if (index < withPrices.length) {
+                final gov = withPrices[index];
+                final price = priceMap[gov.id];
+                return _GovernorateShippingCard(
+                  governorate: gov,
+                  price: price,
+                  locale: locale,
+                  onEdit: () =>
+                      _showEditPriceDialog(context, gov, price, locale),
+                );
+              }
+
+              // Inactive zones header
+              if (index == withPrices.length && withoutPrices.isNotEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 16, bottom: 8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_off,
+                          size: 18, color: Colors.grey),
+                      const SizedBox(width: 8),
+                      Text(
+                        'inactive_shipping_zones'.tr(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${withoutPrices.length}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Inactive zones
+              final inactiveIndex = index - withPrices.length - 1;
+              if (inactiveIndex >= 0 && inactiveIndex < withoutPrices.length) {
+                final gov = withoutPrices[inactiveIndex];
+                return _GovernorateShippingCard(
+                  governorate: gov,
+                  price: null,
+                  locale: locale,
+                  onEdit: () =>
+                      _showEditPriceDialog(context, gov, null, locale),
+                );
+              }
+
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showAddShippingZoneDialog(
+    BuildContext parentContext,
+    List<GovernorateEntity> availableGovernorates,
+    String locale,
+  ) {
+    showDialog(
+      context: parentContext,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('add_shipping_zone'.tr()),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: availableGovernorates.length,
+            itemBuilder: (context, index) {
+              final gov = availableGovernorates[index];
+              return ListTile(
+                leading: const Icon(Icons.location_city,
+                    color: AppColours.brownMedium),
+                title: Text(gov.getName(locale)),
+                trailing: const Icon(Icons.add, color: Colors.green),
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  _showEditPriceDialog(parentContext, gov, null, locale);
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('cancel'.tr()),
+          ),
+        ],
+      ),
     );
   }
 

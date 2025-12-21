@@ -140,6 +140,7 @@
   "items": "عناصر",
   "no_favorites": "لا توجد منتجات في المفضلة",
   "no_favorites_desc": "لم تقم بإضافة أي منتجات للمفضلة بعد",
+  "login_to_see_favorites": "سجل دخولك لرؤية المفضلة",
   "added_to_favorites": "تمت الإضافة للمفضلة",
   "removed_from_favorites": "تم الإزالة من المفضلة",
   "all": "الكل",
@@ -241,6 +242,9 @@
   "manage_shipping": "إدارة أسعار الشحن",
   "set_shipping_price": "تحديد سعر الشحن",
   "shipping_price_updated": "تم تحديث سعر الشحن",
-  "no_shipping_prices": "لم يتم تحديد أسعار شحن بعد",
-  "add_shipping_price": "إضافة سعر شحن"
+  "no_shipping_prices": "لم يتم تحديد سعر شحن",
+  "add_shipping_price": "إضافة سعر شحن",
+  "add_shipping_zone": "إضافة منطقة شحن",
+  "active_shipping_zones": "مناطق الشحن النشطة",
+  "inactive_shipping_zones": "مناطق بدون شحن"
 }

@@ -40,6 +40,13 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
           .toList();
 
       _logger.d('✅ Found ${favorites.length} favorites');
+
+      // Log products status
+      for (var fav in favorites) {
+        _logger.d(
+            '  - Favorite ${fav.id}: product=${fav.product != null ? fav.product!.name : "NULL"}');
+      }
+
       return favorites;
     } catch (e) {
       _logger.e('❌ Error getting favorites: $e');

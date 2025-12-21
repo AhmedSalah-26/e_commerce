@@ -20,13 +20,18 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   }
 
   void setUserId(String userId) {
-    if (_userId == userId) return; // Already set
+    if (_userId == userId && state is FavoritesLoaded) return; // Already loaded
     _userId = userId;
     loadFavorites(userId);
   }
 
-  Future<void> loadFavorites(String userId) async {
-    emit(FavoritesLoading());
+  Future<void> loadFavorites(String userId, {bool showLoading = true}) async {
+    _userId = userId;
+
+    // Only show loading if not already loaded
+    if (showLoading && state is! FavoritesLoaded) {
+      emit(FavoritesLoading());
+    }
 
     final result = await _repository.getFavorites(userId, locale: _locale);
 
@@ -66,7 +71,7 @@ class FavoritesCubit extends Cubit<FavoritesState> {
 
   Future<void> _addToFavorites(
       String productId, FavoritesLoaded currentState) async {
-    // Optimistic update
+    // Optimistic update - just update the product IDs for now
     final newProductIds = {...currentState.favoriteProductIds, productId};
     emit(FavoritesLoaded(
       favorites: currentState.favorites,
@@ -83,7 +88,8 @@ class FavoritesCubit extends Cubit<FavoritesState> {
       },
       (_) {
         _logger.d('✅ Added to favorites: $productId');
-        // Don't reload - optimistic update is enough for UI
+        // Reload to get the full favorite with product data (without showing loading)
+        loadFavorites(_userId!, showLoading: false);
       },
     );
   }

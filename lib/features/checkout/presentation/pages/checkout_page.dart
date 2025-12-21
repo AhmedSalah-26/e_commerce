@@ -172,6 +172,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             _buildSectionTitle('governorate'.tr()),
                             const SizedBox(height: 12),
                             _buildGovernorateDropdown(
+                              context,
                               governorates,
                               selectedGovernorate,
                               locale,
@@ -307,6 +308,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Widget _buildGovernorateDropdown(
+    BuildContext context,
     List<GovernorateEntity> governorates,
     GovernorateEntity? selected,
     String locale,

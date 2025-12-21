@@ -52,6 +52,7 @@ class ProductGridCard extends StatelessWidget {
             Expanded(
               flex: 3,
               child: Stack(
+                clipBehavior: Clip.hardEdge,
                 children: [
                   Container(
                     width: double.infinity,

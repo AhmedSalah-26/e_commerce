@@ -19,13 +19,28 @@ class FavoritesScreen extends StatefulWidget {
   State<FavoritesScreen> createState() => _FavoritesScreenState();
 }
 
-class _FavoritesScreenState extends State<FavoritesScreen> {
+class _FavoritesScreenState extends State<FavoritesScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadFavorites();
+      _loadFavoritesIfNeeded();
     });
+  }
+
+  void _loadFavoritesIfNeeded() {
+    final authState = context.read<AuthCubit>().state;
+    if (authState is AuthAuthenticated) {
+      final currentState = context.read<FavoritesCubit>().state;
+      // Only load if not already loaded
+      if (currentState is! FavoritesLoaded) {
+        _loadFavorites();
+      }
+    }
   }
 
   void _loadFavorites() {
@@ -39,6 +54,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final isRtl = context.locale.languageCode == 'ar';
 
     return Directionality(
@@ -59,6 +75,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         ),
         body: BlocBuilder<FavoritesCubit, FavoritesState>(
           builder: (context, state) {
+            // Check if user is authenticated first
+            final authState = context.read<AuthCubit>().state;
+            if (authState is! AuthAuthenticated) {
+              return _buildLoginRequired();
+            }
+
             if (state is FavoritesLoading) {
               return const SingleChildScrollView(
                 padding: EdgeInsets.all(16),
@@ -87,33 +109,38 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             }
 
             if (state is FavoritesLoaded) {
-              if (state.favorites.isEmpty) {
+              // Filter favorites that have valid products
+              final validFavorites =
+                  state.favorites.where((f) => f.product != null).toList();
+
+              if (validFavorites.isEmpty) {
                 return _buildEmptyFavorites();
               }
 
               return RefreshIndicator(
                 onRefresh: () async => _loadFavorites(),
                 child: GridView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     childAspectRatio: 0.6,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),
-                  itemCount: state.favorites.length,
+                  itemCount: validFavorites.length,
                   itemBuilder: (context, index) {
-                    final favorite = state.favorites[index];
-                    if (favorite.product != null) {
-                      return ProductGridCard(product: favorite.product!);
-                    }
-                    return const SizedBox.shrink();
+                    return ProductGridCard(
+                        product: validFavorites[index].product!);
                   },
                 ),
               );
             }
 
-            return _buildEmptyFavorites();
+            // FavoritesInitial state - show shimmer loading
+            return const SingleChildScrollView(
+              padding: EdgeInsets.all(16),
+              child: ProductsGridSkeleton(itemCount: 4),
+            );
           },
         ),
       ),
@@ -138,6 +165,31 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           const SizedBox(height: 10),
           Text(
             'no_favorites_desc'.tr(),
+            style: AppTextStyle.normal_16_greyDark,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoginRequired() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.favorite_border,
+            size: 100,
+            color: AppColours.greyMedium,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'login_required'.tr(),
+            style: AppTextStyle.semiBold_20_dark_brown,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'login_to_see_favorites'.tr(),
             style: AppTextStyle.normal_16_greyDark,
           ),
         ],

@@ -15,7 +15,20 @@ class Tost {
       alignment: Alignment.topCenter,
       style: ToastificationStyle.flat,
       backgroundColor: backgroundColor,
+      foregroundColor: textColor,
+      primaryColor: textColor,
       showProgressBar: false,
+      closeButtonShowType: CloseButtonShowType.none,
+      icon: Icon(
+        backgroundColor == Colors.green
+            ? Icons.check_circle
+            : backgroundColor == Colors.red
+                ? Icons.error
+                : backgroundColor == Colors.orange
+                    ? Icons.warning
+                    : Icons.info,
+        color: textColor,
+      ),
     );
   }
 
@@ -23,9 +36,13 @@ class Tost {
     toastification.show(
       context: context,
       type: ToastificationType.success,
-      title: Text(message),
+      title: Text(message, style: const TextStyle(color: Colors.white)),
       autoCloseDuration: const Duration(seconds: 3),
       alignment: Alignment.topCenter,
+      backgroundColor: Colors.green,
+      foregroundColor: Colors.white,
+      primaryColor: Colors.white,
+      closeButtonShowType: CloseButtonShowType.none,
     );
   }
 
@@ -33,9 +50,13 @@ class Tost {
     toastification.show(
       context: context,
       type: ToastificationType.error,
-      title: Text(message),
+      title: Text(message, style: const TextStyle(color: Colors.white)),
       autoCloseDuration: const Duration(seconds: 3),
       alignment: Alignment.topCenter,
+      backgroundColor: Colors.red,
+      foregroundColor: Colors.white,
+      primaryColor: Colors.white,
+      closeButtonShowType: CloseButtonShowType.none,
     );
   }
 }

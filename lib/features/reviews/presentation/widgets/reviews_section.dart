@@ -6,6 +6,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/shared_widgets/toast.dart';
+import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -56,12 +57,7 @@ class _ReviewsSectionState extends State<ReviewsSection> {
       },
       builder: (context, state) {
         if (state is ReviewsLoading) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: CircularProgressIndicator(color: AppColours.brownMedium),
-            ),
-          );
+          return const ReviewsSectionSkeleton();
         }
 
         if (state is ReviewsLoaded) {
@@ -181,18 +177,18 @@ class _ReviewsSectionState extends State<ReviewsSection> {
       );
     }
 
-    return ElevatedButton.icon(
+    return OutlinedButton.icon(
       onPressed: () => _showReviewDialog(state.userReview),
       icon: Icon(
         state.userReview != null ? Icons.edit : Icons.rate_review,
-        color: Colors.white,
+        color: AppColours.brownMedium,
       ),
       label: Text(
         state.userReview != null ? 'edit_review'.tr() : 'add_review'.tr(),
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: AppColours.brownMedium),
       ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColours.brownMedium,
+      style: OutlinedButton.styleFrom(
+        side: const BorderSide(color: AppColours.brownMedium, width: 1.5),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -200,32 +196,34 @@ class _ReviewsSectionState extends State<ReviewsSection> {
   }
 
   Widget _buildEmptyReviews() {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.rate_review_outlined,
-            size: 60,
-            color: AppColours.greyMedium,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'no_reviews'.tr(),
-            style: AppTextStyle.normal_16_greyDark,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'be_first_review'.tr(),
-            style: AppTextStyle.normal_12_black.copyWith(
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.rate_review_outlined,
+              size: 60,
               color: AppColours.greyMedium,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            const SizedBox(height: 16),
+            Text(
+              'no_reviews'.tr(),
+              style: AppTextStyle.normal_16_greyDark,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'be_first_review'.tr(),
+              style: AppTextStyle.normal_12_black.copyWith(
+                color: AppColours.greyMedium,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

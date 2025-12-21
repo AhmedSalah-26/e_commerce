@@ -114,10 +114,9 @@ Future<void> initializeDependencies() async {
     () => CategoryRepositoryImpl(sl<CategoryRemoteDataSource>()),
   );
   sl.registerFactory(() {
-    final imageService = sl<ImageUploadService>();
     return CategoriesCubit(
       sl<CategoryRepository>(),
-      imageUploadService: imageService,
+      imageUploadService: sl<ImageUploadService>(),
     );
   });
 
@@ -167,10 +166,9 @@ Future<void> initializeDependencies() async {
 
   // Merchant Feature
   sl.registerFactory(() {
-    final imageService = sl<ImageUploadService>();
     return MerchantProductsCubit(
       sl<ProductRepository>(),
-      imageUploadService: imageService,
+      imageUploadService: sl<ImageUploadService>(),
     );
   });
 

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../Core/Theme/app_text_style.dart';
+import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
@@ -11,6 +11,8 @@ import '../../../orders/presentation/cubit/orders_state.dart';
 import '../widgets/merchant_empty_state.dart';
 import '../widgets/order_card.dart';
 import '../widgets/order_details_sheet.dart';
+import '../widgets/orders_header.dart';
+import '../widgets/orders_filter_section.dart';
 import '../widgets/orders_statistics_tab.dart';
 
 class MerchantOrdersTab extends StatefulWidget {
@@ -36,11 +38,9 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
   int _todayDelivered = 0;
   String? _merchantId;
 
-  // Pagination state per tab
   final Map<String, int> _currentPage = {};
   final Map<String, ScrollController> _scrollControllers = {};
 
-  // Search and filter state for delivered and cancelled tabs
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _deliveredPeriod = 'week';
@@ -49,18 +49,15 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-        length: _statuses.length + 1, vsync: this); // +1 for statistics
+    _tabController = TabController(length: _statuses.length + 1, vsync: this);
     _tabController.addListener(_onTabChanged);
 
-    // Initialize scroll controllers for each status tab
     for (final status in _statuses) {
       _currentPage[status] = 0;
       _scrollControllers[status] = ScrollController()
         ..addListener(() => _onScroll(status));
     }
 
-    // Set default date ranges for delivered and cancelled
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadInitialData());
   }
 
@@ -78,7 +75,6 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
   void _onScroll(String status) {
     final controller = _scrollControllers[status];
     if (controller == null) return;
-
     if (controller.position.pixels >=
         controller.position.maxScrollExtent - 200) {
       _loadMoreOrders(status);
@@ -155,84 +151,17 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
           body: SafeArea(
             child: Column(
               children: [
-                _buildHeader(isRtl),
+                OrdersHeader(
+                  isRtl: isRtl,
+                  todayPending: _todayPending,
+                  todayDelivered: _todayDelivered,
+                ),
                 _buildTabBar(isRtl),
                 Expanded(child: _buildTabContent(isRtl)),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(bool isRtl) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColours.primary, AppColours.brownLight],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(isRtl ? 'إدارة الطلبات' : 'Manage Orders',
-                  style: AppTextStyle.semiBold_22_white),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(isRtl ? 'اليوم' : 'Today',
-                    style: const TextStyle(color: Colors.white, fontSize: 12)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                  child: _buildStatCard(isRtl ? 'قيد الانتظار' : 'Pending',
-                      _todayPending.toString(), Icons.pending_actions)),
-              const SizedBox(width: 12),
-              Expanded(
-                  child: _buildStatCard(isRtl ? 'تم التوصيل' : 'Delivered',
-                      _todayDelivered.toString(), Icons.check_circle)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.white, size: 24),
-          const SizedBox(height: 8),
-          Text(value,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(label,
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-              textAlign: TextAlign.center),
-        ],
       ),
     );
   }
@@ -270,7 +199,6 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
       controller: _tabController,
       children: [
         ..._statuses.map((status) => _buildOrdersListForStatus(status, isRtl)),
-        // Statistics tab
         _merchantId != null
             ? OrdersStatisticsTab(merchantId: _merchantId!)
             : const Center(child: CircularProgressIndicator()),
@@ -279,162 +207,91 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
   }
 
   Widget _buildOrdersListForStatus(String status, bool isRtl) {
-    // Add filter and search for delivered and cancelled tabs
     final showFilters = status == 'delivered' || status == 'cancelled';
+    final selectedPeriod =
+        status == 'delivered' ? _deliveredPeriod : _cancelledPeriod;
 
     return Column(
       children: [
-        if (showFilters) _buildFilterSection(status, isRtl),
-        Expanded(
-          child: BlocBuilder<OrdersCubit, OrdersState>(
-            builder: (context, state) {
-              if (state is OrdersLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is OrdersError) {
-                return _buildErrorState(state.message, isRtl, status);
-              } else if (state is OrdersLoaded) {
-                // Only show orders if they match the current tab's status
-                if (state.currentStatus != status) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                // Filter by search query if provided
-                var filteredOrders = state.orders;
-                if (_searchQuery.isNotEmpty && showFilters) {
-                  filteredOrders = filteredOrders
-                      .where((order) => order.id
-                          .toLowerCase()
-                          .contains(_searchQuery.toLowerCase()))
-                      .toList();
-                }
-
-                if (filteredOrders.isEmpty) {
-                  return MerchantEmptyState(
-                    icon: Icons.inbox_outlined,
-                    title: isRtl ? 'لا توجد طلبات' : 'No orders',
-                    subtitle: isRtl
-                        ? 'لا توجد طلبات بهذه الحالة'
-                        : 'No orders with this status',
-                  );
-                }
-
-                return RefreshIndicator(
-                  onRefresh: () async => _loadOrdersForStatus(status),
-                  child: ListView.builder(
-                    controller: _scrollControllers[status],
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filteredOrders.length + (state.hasMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == filteredOrders.length) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-                      final order = filteredOrders[index];
-                      return OrderCard(
-                        order: order,
-                        onTap: () =>
-                            OrderDetailsSheet.show(context, order, isRtl),
-                      );
-                    },
-                  ),
-                );
-              }
-              return const Center(child: CircularProgressIndicator());
+        if (showFilters)
+          OrdersFilterSection(
+            isRtl: isRtl,
+            searchController: _searchController,
+            searchQuery: _searchQuery,
+            selectedPeriod: selectedPeriod,
+            onSearchChanged: (value) => setState(() => _searchQuery = value),
+            onClearSearch: () {
+              _searchController.clear();
+              setState(() => _searchQuery = '');
             },
+            onPeriodChanged: (period) => _setFilterPeriod(status, period),
           ),
-        ),
+        Expanded(child: _buildOrdersList(status, isRtl, showFilters)),
       ],
     );
   }
 
-  Widget _buildFilterSection(String status, bool isRtl) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      color: AppColours.greyLighter,
-      child: Column(
-        children: [
-          // Search by order ID
-          TextField(
-            controller: _searchController,
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
-            },
-            decoration: InputDecoration(
-              hintText: isRtl ? 'بحث برقم الطلب...' : 'Search by order ID...',
-              prefixIcon: Icon(Icons.search, color: AppColours.primary),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: Icon(Icons.clear, color: AppColours.greyDark),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {
-                          _searchQuery = '';
-                        });
-                      },
-                    )
-                  : null,
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Period filter chips
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildFilterChip(isRtl ? 'يوم' : 'Day', 'day', status, isRtl),
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                    isRtl ? 'أسبوع' : 'Week', 'week', status, isRtl),
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                    isRtl ? 'شهر' : 'Month', 'month', status, isRtl),
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                    isRtl ? '3 شهور' : '3 Months', '3months', status, isRtl),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildOrdersList(String status, bool isRtl, bool showFilters) {
+    return BlocBuilder<OrdersCubit, OrdersState>(
+      builder: (context, state) {
+        if (state is OrdersLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-  Widget _buildFilterChip(
-      String label, String period, String status, bool isRtl) {
-    final selectedPeriod =
-        status == 'delivered' ? _deliveredPeriod : _cancelledPeriod;
-    final isSelected = selectedPeriod == period;
+        if (state is OrdersError) {
+          return _buildErrorState(state.message, isRtl, status);
+        }
 
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) {
-        _setFilterPeriod(status, period);
+        if (state is OrdersLoaded) {
+          if (state.currentStatus != status) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          var filteredOrders = state.orders;
+          if (_searchQuery.isNotEmpty && showFilters) {
+            filteredOrders = filteredOrders
+                .where((order) =>
+                    order.id.toLowerCase().contains(_searchQuery.toLowerCase()))
+                .toList();
+          }
+
+          if (filteredOrders.isEmpty) {
+            return MerchantEmptyState(
+              icon: Icons.inbox_outlined,
+              title: isRtl ? 'لا توجد طلبات' : 'No orders',
+              subtitle: isRtl
+                  ? 'لا توجد طلبات بهذه الحالة'
+                  : 'No orders with this status',
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: () async => _loadOrdersForStatus(status),
+            child: ListView.builder(
+              controller: _scrollControllers[status],
+              padding: const EdgeInsets.all(16),
+              itemCount: filteredOrders.length + (state.hasMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == filteredOrders.length) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+                final order = filteredOrders[index];
+                return OrderCard(
+                  order: order,
+                  onTap: () => OrderDetailsSheet.show(context, order, isRtl),
+                );
+              },
+            ),
+          );
+        }
+
+        return const Center(child: CircularProgressIndicator());
       },
-      selectedColor: AppColours.primary,
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppColours.greyDark,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-      ),
-      backgroundColor: Colors.white,
-      side: BorderSide(
-        color: isSelected ? AppColours.primary : AppColours.primary,
-        width: isSelected ? 2 : 1,
-      ),
     );
   }
 
@@ -446,8 +303,6 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
         _cancelledPeriod = period;
       }
     });
-
-    // Reload orders for this status
     _loadOrdersForStatus(status);
   }
 
@@ -456,7 +311,8 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 48, color: AppColours.greyLight),
+          const Icon(Icons.error_outline,
+              size: 48, color: AppColours.greyLight),
           const SizedBox(height: 16),
           Text(message,
               style: AppTextStyle.normal_16_greyDark,

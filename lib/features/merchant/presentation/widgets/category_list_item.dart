@@ -1,6 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../Core/Theme/app_text_style.dart';
+import '../../../../core/theme/app_text_style.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 
 class CategoryListItem extends StatelessWidget {
@@ -35,13 +36,14 @@ class CategoryListItem extends StatelessWidget {
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: category.imageUrl != null && category.imageUrl!.isNotEmpty
-              ? Image.network(
-                  category.imageUrl!,
+              ? CachedNetworkImage(
+                  imageUrl: category.imageUrl!,
                   width: 50,
                   height: 50,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      _buildCategoryPlaceholder(),
+                  memCacheWidth: 100,
+                  placeholder: (_, __) => _buildCategoryPlaceholder(),
+                  errorWidget: (_, __, ___) => _buildCategoryPlaceholder(),
                 )
               : _buildCategoryPlaceholder(),
         ),

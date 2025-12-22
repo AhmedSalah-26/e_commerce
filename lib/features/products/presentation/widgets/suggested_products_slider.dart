@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -143,11 +144,13 @@ class _SuggestedProductCard extends StatelessWidget {
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(12)),
                 child: product.images.isNotEmpty
-                    ? Image.network(
-                        product.images.first,
+                    ? CachedNetworkImage(
+                        imageUrl: product.images.first,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                        memCacheWidth: 200,
+                        placeholder: (_, __) => _buildPlaceholder(),
+                        errorWidget: (_, __, ___) => _buildPlaceholder(),
                       )
                     : _buildPlaceholder(),
               ),

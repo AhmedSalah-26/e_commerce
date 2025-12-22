@@ -1,6 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../Core/Theme/app_text_style.dart';
+import '../../../../../core/theme/app_text_style.dart';
 import '../../../../../core/services/image_upload_service.dart';
 import '../../../../../core/di/injection_container.dart';
 
@@ -127,11 +128,22 @@ class ProductImagesSection extends StatelessWidget {
                     height: 100,
                     fit: BoxFit.cover,
                   )
-                : Image.network(
-                    imageUrl!,
+                : CachedNetworkImage(
+                    imageUrl: imageUrl!,
                     width: 100,
                     height: 100,
                     fit: BoxFit.cover,
+                    memCacheWidth: 200,
+                    placeholder: (_, __) => Container(
+                      color: AppColours.greyLight,
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                    errorWidget: (_, __, ___) => Container(
+                      color: AppColours.greyLight,
+                      child: const Icon(Icons.error),
+                    ),
                   ),
           ),
           Positioned(

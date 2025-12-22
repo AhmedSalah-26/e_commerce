@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -80,12 +81,13 @@ class CartItemCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     child: productImage.isNotEmpty
                         ? (productImage.startsWith('http')
-                            ? Image.network(
-                                productImage,
+                            ? CachedNetworkImage(
+                                imageUrl: productImage,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return _buildPlaceholder();
-                                },
+                                memCacheWidth: 160,
+                                placeholder: (_, __) => _buildPlaceholder(),
+                                errorWidget: (_, __, ___) =>
+                                    _buildPlaceholder(),
                               )
                             : Image.asset(
                                 productImage,

@@ -189,7 +189,7 @@ class ProductFormFields extends StatelessWidget {
             builder: (context, state) {
               if (state is CategoriesLoaded) {
                 return DropdownButtonFormField<String>(
-                  value: selectedCategoryId,
+                  initialValue: selectedCategoryId,
                   isExpanded: true,
                   decoration: InputDecoration(
                     labelText: isRtl ? 'التصنيف' : 'Category',

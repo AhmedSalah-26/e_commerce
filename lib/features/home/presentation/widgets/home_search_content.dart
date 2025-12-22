@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/shared_widgets/product_grid_card.dart';
+import '../../../../core/shared_widgets/product_card/product_grid_card.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../products/domain/entities/product_entity.dart';

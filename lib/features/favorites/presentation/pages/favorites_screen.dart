@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
-import '../../../../core/shared_widgets/product_grid_card.dart';
+import '../../../../core/shared_widgets/product_card/product_grid_card.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../cubit/favorites_cubit.dart';

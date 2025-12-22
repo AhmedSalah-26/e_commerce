@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
@@ -221,10 +222,12 @@ class OrderItemCard extends StatelessWidget {
     }
 
     if (imageUrl.startsWith('http')) {
-      return Image.network(
-        imageUrl,
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+        memCacheWidth: 120,
+        placeholder: (_, __) => _buildPlaceholder(),
+        errorWidget: (_, __, ___) => _buildPlaceholder(),
       );
     }
 

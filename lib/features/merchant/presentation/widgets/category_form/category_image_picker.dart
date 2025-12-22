@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/services/image_upload_service.dart';
@@ -59,11 +60,26 @@ class CategoryImagePicker extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              existingImageUrl!,
+            child: CachedNetworkImage(
+              imageUrl: existingImageUrl!,
               width: 120,
               height: 120,
               fit: BoxFit.cover,
+              memCacheWidth: 240,
+              placeholder: (_, __) => Container(
+                width: 120,
+                height: 120,
+                color: AppColours.greyLight,
+                child: const Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+              errorWidget: (_, __, ___) => Container(
+                width: 120,
+                height: 120,
+                color: AppColours.greyLight,
+                child: const Icon(Icons.error),
+              ),
             ),
           ),
           _buildRemoveButton(),

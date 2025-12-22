@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -46,12 +47,14 @@ class OrderProductsCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: item.productImage != null && item.productImage!.isNotEmpty
-                ? Image.network(
-                    item.productImage!,
+                ? CachedNetworkImage(
+                    imageUrl: item.productImage!,
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                    memCacheWidth: 120,
+                    placeholder: (_, __) => _buildImagePlaceholder(),
+                    errorWidget: (_, __, ___) => _buildImagePlaceholder(),
                   )
                 : _buildImagePlaceholder(),
           ),

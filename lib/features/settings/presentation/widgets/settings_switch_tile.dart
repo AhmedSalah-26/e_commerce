@@ -58,7 +58,7 @@ class SettingsSwitchTile extends StatelessWidget {
               : null,
           value: value,
           onChanged: onChanged,
-          activeColor: AppColours.brownMedium,
+          activeThumbColor: AppColours.brownMedium,
         ),
         if (showDivider)
           const Divider(

@@ -1,6 +1,6 @@
 import 'dart:io';
-import '../lib/core/utils/file_analyzer.dart';
-import '../lib/core/utils/report_generator.dart';
+import 'package:e_commerce/core/utils/file_analyzer.dart';
+import 'package:e_commerce/core/utils/report_generator.dart';
 
 void main() async {
   print('Starting codebase analysis...');

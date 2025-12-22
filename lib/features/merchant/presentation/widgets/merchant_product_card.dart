@@ -1,7 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../Core/Theme/app_text_style.dart';
+import '../../../../core/theme/app_text_style.dart';
 import '../../../products/domain/entities/product_entity.dart';
 
 class MerchantProductCard extends StatelessWidget {
@@ -68,13 +69,14 @@ class MerchantProductCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: product.images.isNotEmpty
-                      ? Image.network(
-                          product.images.first,
+                      ? CachedNetworkImage(
+                          imageUrl: product.images.first,
                           width: 80,
                           height: 80,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              _buildPlaceholder(),
+                          memCacheWidth: 160,
+                          placeholder: (_, __) => _buildPlaceholder(),
+                          errorWidget: (_, __, ___) => _buildPlaceholder(),
                         )
                       : _buildPlaceholder(),
                 ),

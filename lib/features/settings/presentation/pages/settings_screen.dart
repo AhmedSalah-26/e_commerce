@@ -93,11 +93,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         icon: Icons.person_outline,
                         title: 'edit_profile'.tr(),
                         onTap: () => context.push('/edit-profile'),
+                        showDivider: false,
                       ),
                       SettingsTile(
                         icon: Icons.receipt_long_outlined,
                         title: 'my_orders'.tr(),
                         onTap: () => context.push('/orders'),
+                        showDivider: false,
                       ),
                       SettingsSwitchTile(
                         icon: Icons.notifications_outlined,
@@ -119,11 +121,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ? 'العربية'
                             : 'English',
                         onTap: () => _showLanguageDialog(context),
+                        showDivider: false,
                       ),
                       SettingsTile(
                         icon: Icons.help_outline,
                         title: 'help'.tr(),
                         onTap: () => context.push('/help'),
+                        showDivider: false,
                       ),
                       SettingsTile(
                         icon: Icons.info_outline,

@@ -47,19 +47,26 @@ class SettingsTile extends StatelessWidget {
               color: AppColours.brownDark,
             ),
           ),
-          subtitle: subtitle != null
-              ? Text(
-                  subtitle!,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColours.greyDark,
-                  ),
-                )
-              : null,
           trailing: trailing ??
-              const Icon(
-                Icons.chevron_right,
-                color: AppColours.greyMedium,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (subtitle != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Text(
+                        subtitle!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColours.greyDark,
+                        ),
+                      ),
+                    ),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: AppColours.greyMedium,
+                  ),
+                ],
               ),
           onTap: onTap,
         ),

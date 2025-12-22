@@ -16,7 +16,7 @@ import '../widgets/inventory_filters.dart';
 import '../widgets/category_search_dialog.dart';
 import '../widgets/merchant_product_card.dart';
 import '../widgets/merchant_empty_state.dart';
-import '../widgets/product_form_dialog.dart';
+import '../widgets/product_form/product_form_dialog.dart';
 
 class MerchantInventoryTab extends StatefulWidget {
   const MerchantInventoryTab({super.key});

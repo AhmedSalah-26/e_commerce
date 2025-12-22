@@ -6,6 +6,8 @@ import '../../../../core/services/image_upload_service.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
+import 'category_form/category_image_picker.dart';
+import 'category_form/category_form_fields.dart';
 
 class CategoryFormDialog extends StatefulWidget {
   final CategoryEntity? category;
@@ -108,8 +110,7 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
                 color: AppColours.primary,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -140,170 +141,33 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Image Section
                             Text(
                               widget.isRtl ? 'صورة التصنيف' : 'Category Image',
                               style: AppTextStyle.semiBold_16_dark_brown,
                             ),
                             const SizedBox(height: 8),
                             Center(
-                              child: GestureDetector(
-                                onTap: _pickImage,
-                                child: Container(
-                                  width: 120,
-                                  height: 120,
-                                  decoration: BoxDecoration(
-                                    color: AppColours.greyLighter,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: AppColours.primary,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: _selectedImage != null
-                                      ? Stack(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              child: Image.memory(
-                                                _selectedImage!.bytes,
-                                                width: 120,
-                                                height: 120,
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                            Positioned(
-                                              top: 4,
-                                              right: 4,
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  setState(() {
-                                                    _selectedImage = null;
-                                                  });
-                                                },
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets.all(4),
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                    color: Colors.red,
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: const Icon(Icons.close,
-                                                      color: Colors.white,
-                                                      size: 16),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : _existingImageUrl != null
-                                          ? Stack(
-                                              children: [
-                                                ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                  child: Image.network(
-                                                    _existingImageUrl!,
-                                                    width: 120,
-                                                    height: 120,
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                  top: 4,
-                                                  right: 4,
-                                                  child: GestureDetector(
-                                                    onTap: () {
-                                                      setState(() {
-                                                        _existingImageUrl =
-                                                            null;
-                                                      });
-                                                    },
-                                                    child: Container(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              4),
-                                                      decoration:
-                                                          const BoxDecoration(
-                                                        color: Colors.red,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                      child: const Icon(
-                                                          Icons.close,
-                                                          color: Colors.white,
-                                                          size: 16),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            )
-                                          : Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                const Icon(Icons.add_photo_alternate,
-                                                    color: AppColours.primary,
-                                                    size: 40),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  widget.isRtl
-                                                      ? 'إضافة صورة'
-                                                      : 'Add Image',
-                                                  style: const TextStyle(
-                                                    color: AppColours.primary,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                ),
+                              child: CategoryImagePicker(
+                                selectedImage: _selectedImage,
+                                existingImageUrl: _existingImageUrl,
+                                isRtl: widget.isRtl,
+                                onImagePicked: _pickImage,
+                                onImageRemoved: () {
+                                  setState(() {
+                                    _selectedImage = null;
+                                    _existingImageUrl = null;
+                                  });
+                                },
                               ),
                             ),
                             const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _nameArController,
-                              decoration: InputDecoration(
-                                labelText: widget.isRtl
-                                    ? 'الاسم بالعربية'
-                                    : 'Name (Arabic)',
-                                border: const OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return widget.isRtl
-                                      ? 'الرجاء إدخال الاسم'
-                                      : 'Please enter name';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _nameEnController,
-                              decoration: InputDecoration(
-                                labelText: widget.isRtl
-                                    ? 'الاسم بالإنجليزية'
-                                    : 'Name (English)',
-                                border: const OutlineInputBorder(),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _descriptionController,
-                              decoration: InputDecoration(
-                                labelText:
-                                    widget.isRtl ? 'الوصف' : 'Description',
-                                border: const OutlineInputBorder(),
-                              ),
-                              maxLines: 3,
-                            ),
-                            const SizedBox(height: 16),
-                            SwitchListTile(
-                              title: Text(widget.isRtl ? 'نشط' : 'Active'),
-                              value: _isActive,
-                              onChanged: (value) {
+                            CategoryFormFields(
+                              nameArController: _nameArController,
+                              nameEnController: _nameEnController,
+                              descriptionController: _descriptionController,
+                              isActive: _isActive,
+                              isRtl: widget.isRtl,
+                              onActiveChanged: (value) {
                                 setState(() {
                                   _isActive = value;
                                 });

@@ -1,17 +1,11 @@
-import 'dart:ui' as ui;
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:fan_carousel_image_slider/fan_carousel_image_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
-import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/product_entity.dart';
 import '../cubit/products_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
@@ -22,8 +16,12 @@ import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../favorites/presentation/cubit/favorites_cubit.dart';
 import '../../../favorites/presentation/cubit/favorites_state.dart';
 import '../../../reviews/presentation/cubit/reviews_cubit.dart';
-import '../../../reviews/presentation/widgets/reviews_section.dart';
+import '../../../reviews/presentation/widgets/review_widgets/reviews_section.dart';
 import '../widgets/suggested_products_slider.dart';
+import '../widgets/product_image_slider.dart';
+import '../widgets/product_info_section.dart';
+import '../widgets/product_store_info.dart';
+import '../widgets/product_details_widgets.dart';
 
 class ProductScreen extends StatefulWidget {
   final ProductEntity product;
@@ -38,7 +36,6 @@ class _ProductScreenState extends State<ProductScreen> {
   int _quantity = 1;
   late ProductEntity _product;
   bool _isLoadingStoreInfo = true;
-  bool _isDescriptionExpanded = false;
 
   @override
   void initState() {
@@ -88,22 +85,59 @@ class _ProductScreenState extends State<ProductScreen> {
               padding: EdgeInsets.all(screenWidth * 0.04),
               child: ListView(
                 children: [
-                  _buildImageSlider(screenWidth),
+                  ProductImageSlider(
+                    images: _product.images,
+                    screenWidth: screenWidth,
+                  ),
                   SizedBox(height: screenWidth * 0.05),
-                  _buildNameAndPrice(screenWidth, isArabic),
+                  ProductInfoSection(
+                    product: _product,
+                    screenWidth: screenWidth,
+                    isArabic: isArabic,
+                  ),
                   SizedBox(height: screenWidth * 0.02),
-                  _buildRating(screenWidth, isArabic),
+                  ProductRatingSection(
+                    product: _product,
+                    screenWidth: screenWidth,
+                    isArabic: isArabic,
+                    favoriteButton: _buildFavoriteButton(screenWidth),
+                  ),
                   SizedBox(height: screenWidth * 0.02),
-                  _buildStoreInfo(screenWidth, isArabic),
+                  ProductStoreInfo(
+                    product: _product,
+                    screenWidth: screenWidth,
+                    isArabic: isArabic,
+                    isLoading: _isLoadingStoreInfo,
+                  ),
                   SizedBox(height: screenWidth * 0.02),
-                  _buildStockStatus(screenWidth, isArabic),
+                  ProductStockStatus(
+                    product: _product,
+                    screenWidth: screenWidth,
+                    isArabic: isArabic,
+                  ),
                   SizedBox(height: screenWidth * 0.02),
-                  _buildDescription(screenWidth, isArabic),
+                  ProductDescription(
+                    product: _product,
+                    screenWidth: screenWidth,
+                    isArabic: isArabic,
+                  ),
                   SizedBox(height: screenWidth * 0.05),
                   if (!_product.isOutOfStock)
-                    _buildQuantitySelector(screenWidth, isArabic),
+                    ProductQuantitySelector(
+                      quantity: _quantity,
+                      maxStock: _product.stock,
+                      screenWidth: screenWidth,
+                      isArabic: isArabic,
+                      onQuantityChanged: (newQuantity) {
+                        setState(() => _quantity = newQuantity);
+                      },
+                    ),
                   SizedBox(height: screenWidth * 0.05),
-                  _buildTotalPrice(screenWidth, isArabic, totalPrice),
+                  ProductTotalPrice(
+                    totalPrice: totalPrice,
+                    screenWidth: screenWidth,
+                    isArabic: isArabic,
+                  ),
                   SizedBox(height: screenWidth * 0.05),
                   SuggestedProductsSlider(
                     currentProductId: _product.id,
@@ -119,6 +153,22 @@ class _ProductScreenState extends State<ProductScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFavoriteButton(double screenWidth) {
+    return BlocBuilder<FavoritesCubit, FavoritesState>(
+      builder: (context, state) {
+        final isFav = state is FavoritesLoaded && state.isFavorite(_product.id);
+        return IconButton(
+          onPressed: () => _toggleFavorite(context),
+          icon: Icon(
+            isFav ? Icons.favorite : Icons.favorite_border,
+            color: Colors.red,
+            size: screenWidth * 0.07,
+          ),
+        );
+      },
     );
   }
 
@@ -176,375 +226,6 @@ class _ProductScreenState extends State<ProductScreen> {
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildImageSlider(double screenWidth) {
-    if (_product.images.isNotEmpty) {
-      return FanCarouselImageSlider.sliderType1(
-        autoPlayInterval: const Duration(seconds: 3),
-        isClickable: true,
-        imagesLink: _product.images,
-        imageFitMode: BoxFit.cover,
-        isAssets: !_product.images.first.startsWith('http'),
-        expandImageHeight: screenWidth * 0.7,
-        initalPageIndex: 0,
-        autoPlay: _product.images.length > 1,
-        indicatorActiveColor: AppColours.brownLight,
-        sliderHeight: screenWidth * 0.5,
-        sliderWidth: screenWidth,
-        expandedImageFitMode: BoxFit.contain,
-        showIndicator: _product.images.length > 1,
-      );
-    }
-    return Container(
-      height: screenWidth * 0.5,
-      decoration: BoxDecoration(
-        color: AppColours.greyLight,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: const Center(
-          child: Icon(Icons.image_not_supported, size: 80, color: Colors.grey)),
-    );
-  }
-
-  Widget _buildNameAndPrice(double screenWidth, bool isArabic) {
-    return Directionality(
-      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            flex: 2,
-            child: AutoSizeText(
-              _product.name,
-              style: AppTextStyle.semiBold_20_dark_brown
-                  .copyWith(fontSize: screenWidth * 0.04),
-              minFontSize: 14,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (_product.hasDiscount)
-                  AutoSizeText(
-                    "${_product.price.toStringAsFixed(2)} ${'egp'.tr()}",
-                    style: TextStyle(
-                        fontSize: screenWidth * 0.03,
-                        color: Colors.grey,
-                        decoration: TextDecoration.lineThrough),
-                    minFontSize: 10,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                AutoSizeText(
-                  "${_product.effectivePrice.toStringAsFixed(2)} ${'egp'.tr()}",
-                  style: AppTextStyle.bold_18_medium_brown
-                      .copyWith(fontSize: screenWidth * 0.04),
-                  minFontSize: 14,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRating(double screenWidth, bool isArabic) {
-    return Directionality(
-      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Rating section
-          Row(
-            children: [
-              RatingBarIndicator(
-                rating: _product.rating,
-                direction: Axis.horizontal,
-                itemCount: 5,
-                itemSize: screenWidth * 0.05,
-                itemPadding:
-                    EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
-                itemBuilder: (context, _) =>
-                    const Icon(Icons.star, color: Colors.amber),
-              ),
-              SizedBox(width: screenWidth * 0.02),
-              AutoSizeText(
-                "(${_product.rating.toStringAsFixed(1)})",
-                style: AppTextStyle.normal_16_brownLight
-                    .copyWith(fontSize: screenWidth * 0.04),
-                minFontSize: 10,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-          // Favorite button
-          BlocBuilder<FavoritesCubit, FavoritesState>(
-            builder: (context, state) {
-              final isFav =
-                  state is FavoritesLoaded && state.isFavorite(_product.id);
-              return IconButton(
-                onPressed: () => _toggleFavorite(context),
-                icon: Icon(
-                  isFav ? Icons.favorite : Icons.favorite_border,
-                  color: Colors.red,
-                  size: screenWidth * 0.07,
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStoreInfo(double screenWidth, bool isArabic) {
-    // Show skeleton while loading
-    if (_isLoadingStoreInfo) {
-      return const StoreInfoSkeleton();
-    }
-
-    // Hide if no store info
-    if (!_product.hasStoreInfo) return const SizedBox.shrink();
-
-    return Directionality(
-      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColours.primary.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            // Store name
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.store,
-                      size: 14, color: AppColours.brownMedium),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      _product.storeName!,
-                      style: AppTextStyle.semiBold_16_dark_brown
-                          .copyWith(fontSize: 12),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Address
-            if (_product.storeAddress != null &&
-                _product.storeAddress!.isNotEmpty)
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.location_on,
-                        size: 14, color: AppColours.brownMedium),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        _product.storeAddress!,
-                        style: AppTextStyle.normal_14_greyDark
-                            .copyWith(fontSize: 11),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            // Phone
-            if (_product.storePhone != null && _product.storePhone!.isNotEmpty)
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.phone,
-                        size: 14, color: AppColours.brownMedium),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        _product.storePhone!,
-                        style: AppTextStyle.normal_14_greyDark
-                            .copyWith(fontSize: 11),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStockStatus(double screenWidth, bool isArabic) {
-    return Directionality(
-      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: _product.isOutOfStock
-                  ? Colors.red.shade100
-                  : Colors.green.shade100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              _product.isOutOfStock
-                  ? 'out_of_stock'.tr()
-                  : '${'in_stock'.tr()} (${_product.stock})',
-              style: TextStyle(
-                color: _product.isOutOfStock ? Colors.red : Colors.green,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDescription(double screenWidth, bool isArabic) {
-    return Directionality(
-      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            _product.description,
-            style: AppTextStyle.normal_12_black
-                .copyWith(fontSize: screenWidth * 0.04),
-            maxLines: _isDescriptionExpanded ? null : 6,
-            overflow: _isDescriptionExpanded
-                ? TextOverflow.visible
-                : TextOverflow.ellipsis,
-          ),
-          if (_product.description.length >
-              200) // Show button if description is long
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _isDescriptionExpanded = !_isDescriptionExpanded;
-                });
-              },
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(0, 30),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _isDescriptionExpanded
-                        ? 'show_less'.tr()
-                        : 'show_more'.tr(),
-                    style: TextStyle(
-                      color: AppColours.brownLight,
-                      fontSize: screenWidth * 0.035,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Icon(
-                    _isDescriptionExpanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: AppColours.brownLight,
-                    size: 20,
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuantitySelector(double screenWidth, bool isArabic) {
-    return Directionality(
-      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-      child: Row(
-        children: [
-          AutoSizeText(
-            '${'quantity'.tr()}:',
-            style: AppTextStyle.normal_16_brownLight
-                .copyWith(fontSize: screenWidth * 0.05),
-            minFontSize: 12,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(width: screenWidth * 0.04),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColours.brownLight),
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.remove),
-                  onPressed: () {
-                    if (_quantity > 1) setState(() => _quantity--);
-                  },
-                ),
-                AutoSizeText('$_quantity',
-                    style: AppTextStyle.normal_16_brownLight
-                        .copyWith(fontSize: screenWidth * 0.05),
-                    minFontSize: 12,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    if (_quantity < _product.stock) setState(() => _quantity++);
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTotalPrice(
-      double screenWidth, bool isArabic, double totalPrice) {
-    return Directionality(
-      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          AutoSizeText('${'total'.tr()}:',
-              style: AppTextStyle.bold_18_medium_brown
-                  .copyWith(fontSize: screenWidth * 0.04),
-              minFontSize: 14,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
-          AutoSizeText("${totalPrice.toStringAsFixed(2)} ${'egp'.tr()}",
-              style: AppTextStyle.bold_18_medium_brown
-                  .copyWith(fontSize: screenWidth * 0.04),
-              minFontSize: 14,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
-        ],
-      ),
     );
   }
 

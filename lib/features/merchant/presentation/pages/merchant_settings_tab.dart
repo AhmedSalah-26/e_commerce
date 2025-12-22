@@ -9,7 +9,7 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../widgets/profile_edit_dialog.dart';
 import '../widgets/store_info_dialog.dart';
 import '../widgets/settings_dialogs.dart';
-import '../widgets/shipping_prices_dialog.dart';
+import '../widgets/shipping_dialog/shipping_prices_dialog.dart';
 
 class MerchantSettingsTab extends StatelessWidget {
   const MerchantSettingsTab({super.key});

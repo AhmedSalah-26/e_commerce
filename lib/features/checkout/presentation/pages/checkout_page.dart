@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
 import '../../../../core/shared_widgets/toast.dart';
@@ -19,6 +18,10 @@ import '../../../orders/presentation/cubit/orders_cubit.dart';
 import '../../../orders/presentation/cubit/orders_state.dart';
 import '../../../shipping/domain/entities/governorate_entity.dart';
 import '../../../shipping/presentation/cubit/shipping_cubit.dart';
+import '../widgets/checkout_form_fields.dart';
+import '../widgets/governorate_dropdown.dart';
+import '../widgets/payment_method_card.dart';
+import '../widgets/order_summary_card.dart';
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
@@ -130,8 +133,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
               backgroundColor: Colors.white,
               elevation: 0,
               leading: IconButton(
-                icon:
-                    const Icon(Icons.arrow_back, color: AppColours.brownMedium),
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: AppColours.brownMedium,
+                ),
                 onPressed: () => context.pop(),
               ),
               title: Text(
@@ -168,110 +173,27 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Governorate Selection
-                            _buildSectionTitle('governorate'.tr()),
-                            const SizedBox(height: 12),
-                            _buildGovernorateDropdown(
-                              context,
-                              governorates,
-                              selectedGovernorate,
-                              locale,
-                              cartState,
+                            GovernorateDropdown(
+                              governorates: governorates,
+                              selected: selectedGovernorate,
+                              locale: locale,
+                              cartState: cartState,
                             ),
                             const SizedBox(height: 16),
-
-                            // Delivery Info Section
-                            _buildSectionTitle('delivery_address'.tr()),
-                            const SizedBox(height: 12),
-                            _buildTextField(
-                              controller: _addressController,
-                              hint: 'delivery_address_hint'.tr(),
-                              icon: Icons.location_on_outlined,
-                              maxLines: 3,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'field_required'.tr();
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            _buildSectionTitle('customer_name'.tr()),
-                            const SizedBox(height: 12),
-                            _buildTextField(
-                              controller: _nameController,
-                              hint: 'customer_name'.tr(),
-                              icon: Icons.person_outlined,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'field_required'.tr();
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            _buildSectionTitle('customer_phone'.tr()),
-                            const SizedBox(height: 12),
-                            _buildTextField(
-                              controller: _phoneController,
-                              hint: 'customer_phone'.tr(),
-                              icon: Icons.phone_outlined,
-                              keyboardType: TextInputType.phone,
-                              textDirection: ui.TextDirection.ltr,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'field_required'.tr();
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            _buildSectionTitle(
-                                '${'order_notes'.tr()} (${'optional'.tr()})'),
-                            const SizedBox(height: 12),
-                            _buildTextField(
-                              controller: _notesController,
-                              hint: 'order_notes_hint'.tr(),
-                              icon: Icons.note_outlined,
-                              maxLines: 2,
+                            CheckoutFormFields(
+                              addressController: _addressController,
+                              nameController: _nameController,
+                              phoneController: _phoneController,
+                              notesController: _notesController,
                             ),
                             const SizedBox(height: 24),
-
-                            // Payment Method
-                            _buildSectionTitle('payment_method'.tr()),
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(12),
-                                border:
-                                    Border.all(color: AppColours.brownLight),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.money,
-                                      color: AppColours.brownMedium),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'cash_on_delivery'.tr(),
-                                    style: AppTextStyle.normal_16_brownLight,
-                                  ),
-                                  const Spacer(),
-                                  const Icon(Icons.check_circle,
-                                      color: Colors.green),
-                                ],
-                              ),
-                            ),
+                            const PaymentMethodCard(),
                             const SizedBox(height: 24),
-
-                            // Order Summary
-                            _buildSectionTitle('order_summary'.tr()),
-                            const SizedBox(height: 12),
-                            _buildOrderSummary(cartState, shippingPrice),
+                            OrderSummaryCard(
+                              cartState: cartState,
+                              shippingPrice: shippingPrice,
+                            ),
                             const SizedBox(height: 32),
-
-                            // Place Order Button
                             BlocBuilder<OrdersCubit, OrdersState>(
                               builder: (context, orderState) {
                                 final isLoading = orderState is OrderCreating;
@@ -304,173 +226,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildGovernorateDropdown(
-    BuildContext context,
-    List<GovernorateEntity> governorates,
-    GovernorateEntity? selected,
-    String locale,
-    CartLoaded cartState,
-  ) {
-    // Get merchant ID from first cart item
-    String? merchantId;
-    if (cartState.items.isNotEmpty && cartState.items.first.product != null) {
-      merchantId = cartState.items.first.product!.merchantId;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppColours.brownLight, width: 1.5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<GovernorateEntity>(
-          value: selected,
-          hint: Text(
-            'select_governorate'.tr(),
-            style: const TextStyle(color: AppColours.brownMedium),
-          ),
-          isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down,
-              color: AppColours.brownMedium),
-          dropdownColor: Colors.white,
-          items: governorates.map((gov) {
-            return DropdownMenuItem<GovernorateEntity>(
-              value: gov,
-              child: Text(
-                gov.getName(locale),
-                style: const TextStyle(color: AppColours.brownMedium),
-              ),
-            );
-          }).toList(),
-          onChanged: (gov) {
-            if (gov != null) {
-              context.read<ShippingCubit>().selectGovernorate(gov, merchantId);
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOrderSummary(CartLoaded cartState, double shippingPrice) {
-    final total = cartState.total + shippingPrice;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          ...cartState.items.map((item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '${item.product?.name ?? 'منتج'} x${item.quantity}',
-                        style: const TextStyle(fontSize: 14),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text(
-                      '${item.itemTotal.toStringAsFixed(2)} ${'egp'.tr()}',
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
-              )),
-          const Divider(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('subtotal'.tr()),
-              Text('${cartState.total.toStringAsFixed(2)} ${'egp'.tr()}'),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('shipping_cost'.tr()),
-              Text(
-                shippingPrice > 0
-                    ? '${shippingPrice.toStringAsFixed(2)} ${'egp'.tr()}'
-                    : '-',
-                style: TextStyle(
-                  color: shippingPrice > 0 ? null : Colors.grey,
-                ),
-              ),
-            ],
-          ),
-          const Divider(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'total'.tr(),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                '${total.toStringAsFixed(2)} ${'egp'.tr()}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColours.brownMedium,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: AppColours.brownMedium,
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    String? hint,
-    required IconData icon,
-    int maxLines = 1,
-    TextInputType? keyboardType,
-    ui.TextDirection? textDirection,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      textDirection: textDirection,
-      decoration: InputDecoration(
-        hintText: hint,
-        prefixIcon: Icon(icon, color: AppColours.brownMedium),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColours.brownLight, width: 2),
-        ),
-      ),
-      validator: validator,
     );
   }
 }

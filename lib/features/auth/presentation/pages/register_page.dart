@@ -6,6 +6,8 @@ import '../../../../core/utils/error_helper.dart';
 import '../../domain/entities/user_entity.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import '../widgets/role_selection_card.dart';
+import '../widgets/register_form_fields.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -118,7 +120,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     Row(
                       children: [
                         Expanded(
-                          child: _RoleCard(
+                          child: RoleSelectionCard(
                             title: 'عميل',
                             subtitle: 'تصفح وشراء المنتجات',
                             icon: Icons.shopping_bag_outlined,
@@ -132,7 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _RoleCard(
+                          child: RoleSelectionCard(
                             title: 'تاجر',
                             subtitle: 'إدارة المنتجات والطلبات',
                             icon: Icons.store_outlined,
@@ -147,133 +149,23 @@ class _RegisterPageState extends State<RegisterPage> {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    // Name field
-                    TextFormField(
-                      controller: _nameController,
-                      keyboardType: TextInputType.name,
-                      decoration: InputDecoration(
-                        labelText: 'الاسم الكامل',
-                        prefixIcon: const Icon(Icons.person_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال الاسم';
-                        }
-                        if (value.length < 2) {
-                          return 'الاسم يجب أن يكون حرفين على الأقل';
-                        }
-                        return null;
+                    RegisterFormFields(
+                      nameController: _nameController,
+                      phoneController: _phoneController,
+                      emailController: _emailController,
+                      passwordController: _passwordController,
+                      confirmPasswordController: _confirmPasswordController,
+                      obscurePassword: _obscurePassword,
+                      obscureConfirmPassword: _obscureConfirmPassword,
+                      onTogglePassword: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
                       },
-                    ),
-                    const SizedBox(height: 16),
-                    // Phone field
-                    TextFormField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      textDirection: TextDirection.ltr,
-                      decoration: InputDecoration(
-                        labelText: 'رقم الهاتف (اختياري)',
-                        prefixIcon: const Icon(Icons.phone_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Email field
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      textDirection: TextDirection.ltr,
-                      decoration: InputDecoration(
-                        labelText: 'البريد الإلكتروني',
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال البريد الإلكتروني';
-                        }
-                        if (!value.contains('@')) {
-                          return 'البريد الإلكتروني غير صالح';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    // Password field
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      textDirection: TextDirection.ltr,
-                      decoration: InputDecoration(
-                        labelText: 'كلمة المرور',
-                        prefixIcon: const Icon(Icons.lock_outlined),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال كلمة المرور';
-                        }
-                        if (value.length < 6) {
-                          return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    // Confirm password field
-                    TextFormField(
-                      controller: _confirmPasswordController,
-                      obscureText: _obscureConfirmPassword,
-                      textDirection: TextDirection.ltr,
-                      decoration: InputDecoration(
-                        labelText: 'تأكيد كلمة المرور',
-                        prefixIcon: const Icon(Icons.lock_outlined),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureConfirmPassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscureConfirmPassword =
-                                  !_obscureConfirmPassword;
-                            });
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'يرجى تأكيد كلمة المرور';
-                        }
-                        if (value != _passwordController.text) {
-                          return 'كلمة المرور غير متطابقة';
-                        }
-                        return null;
+                      onToggleConfirmPassword: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
                       },
                     ),
                     const SizedBox(height: 24),
@@ -326,71 +218,6 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _RoleCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _RoleCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColours.primary.withValues(alpha: 0.1)
-              : Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColours.primary : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 40,
-              color: isSelected ? AppColours.primary : Colors.grey,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? AppColours.primary : Colors.black,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: isSelected
-                    ? AppColours.primary.withValues(alpha: 0.7)
-                    : Colors.grey,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }

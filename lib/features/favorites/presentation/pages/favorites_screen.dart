@@ -142,49 +142,27 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
               return RefreshIndicator(
                 onRefresh: () async => _loadFavorites(),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: GridView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.55,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
-                        itemCount: validFavorites.length,
-                        addAutomaticKeepAlives: false,
-                        addRepaintBoundaries: true,
-                        cacheExtent: 500,
-                        itemBuilder: (context, index) {
-                          return RepaintBoundary(
-                            child: ProductGridCard(
-                              key: ValueKey(validFavorites[index].id),
-                              product: validFavorites[index].product!,
-                            ),
-                          );
-                        },
+                child: GridView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.55,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: validFavorites.length,
+                  addAutomaticKeepAlives: false,
+                  addRepaintBoundaries: true,
+                  cacheExtent: 500,
+                  itemBuilder: (context, index) {
+                    return RepaintBoundary(
+                      child: ProductGridCard(
+                        key: ValueKey(validFavorites[index].id),
+                        product: validFavorites[index].product!,
                       ),
-                    ),
-                    if (state.isLoadingMore)
-                      const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                    if (!state.hasMore && validFavorites.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8, bottom: 16),
-                        child: Center(
-                          child: Text(
-                            'no_more_favorites'.tr(),
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                        ),
-                      ),
-                  ],
+                    );
+                  },
                 ),
               );
             }

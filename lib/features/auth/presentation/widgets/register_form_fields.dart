@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 
 class RegisterFormFields extends StatelessWidget {
   final TextEditingController nameController;
@@ -32,7 +33,7 @@ class RegisterFormFields extends StatelessWidget {
           controller: nameController,
           keyboardType: TextInputType.name,
           decoration: InputDecoration(
-            labelText: 'الاسم الكامل',
+            labelText: 'full_name'.tr(),
             prefixIcon: const Icon(Icons.person_outlined),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -40,10 +41,10 @@ class RegisterFormFields extends StatelessWidget {
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'يرجى إدخال الاسم';
+              return 'field_required'.tr();
             }
             if (value.length < 2) {
-              return 'الاسم يجب أن يكون حرفين على الأقل';
+              return 'name_min_length'.tr();
             }
             return null;
           },
@@ -54,7 +55,7 @@ class RegisterFormFields extends StatelessWidget {
           keyboardType: TextInputType.phone,
           textDirection: TextDirection.ltr,
           decoration: InputDecoration(
-            labelText: 'رقم الهاتف (اختياري)',
+            labelText: '${'phone'.tr()} (${'optional'.tr()})',
             prefixIcon: const Icon(Icons.phone_outlined),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -67,7 +68,7 @@ class RegisterFormFields extends StatelessWidget {
           keyboardType: TextInputType.emailAddress,
           textDirection: TextDirection.ltr,
           decoration: InputDecoration(
-            labelText: 'البريد الإلكتروني',
+            labelText: 'email'.tr(),
             prefixIcon: const Icon(Icons.email_outlined),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -75,10 +76,10 @@ class RegisterFormFields extends StatelessWidget {
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'يرجى إدخال البريد الإلكتروني';
+              return 'field_required'.tr();
             }
             if (!value.contains('@')) {
-              return 'البريد الإلكتروني غير صالح';
+              return 'invalid_email'.tr();
             }
             return null;
           },
@@ -89,7 +90,7 @@ class RegisterFormFields extends StatelessWidget {
           obscureText: obscurePassword,
           textDirection: TextDirection.ltr,
           decoration: InputDecoration(
-            labelText: 'كلمة المرور',
+            labelText: 'password'.tr(),
             prefixIcon: const Icon(Icons.lock_outlined),
             suffixIcon: IconButton(
               icon: Icon(
@@ -105,10 +106,10 @@ class RegisterFormFields extends StatelessWidget {
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'يرجى إدخال كلمة المرور';
+              return 'field_required'.tr();
             }
             if (value.length < 6) {
-              return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+              return 'password_min_length'.tr();
             }
             return null;
           },
@@ -119,7 +120,7 @@ class RegisterFormFields extends StatelessWidget {
           obscureText: obscureConfirmPassword,
           textDirection: TextDirection.ltr,
           decoration: InputDecoration(
-            labelText: 'تأكيد كلمة المرور',
+            labelText: 'confirm_password'.tr(),
             prefixIcon: const Icon(Icons.lock_outlined),
             suffixIcon: IconButton(
               icon: Icon(
@@ -135,10 +136,10 @@ class RegisterFormFields extends StatelessWidget {
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'يرجى تأكيد كلمة المرور';
+              return 'field_required'.tr();
             }
             if (value != passwordController.text) {
-              return 'كلمة المرور غير متطابقة';
+              return 'passwords_not_match'.tr();
             }
             return null;
           },

@@ -46,6 +46,10 @@
   "dont_have_account": "ليس لديك حساب؟",
   "forgot_password": "نسيت كلمة المرور؟",
   "login_required": "يجب تسجيل الدخول",
+  "login_title": "تسجيل الدخول",
+  "welcome_back": "مرحباً بك مجدداً",
+  "enter_your_data": "أدخل بياناتك للتسجيل",
+  "create_new_account": "إنشاء حساب جديد",
 
   "products": "المنتجات",
   "product_details": "تفاصيل المنتج",
@@ -156,6 +160,7 @@
   "search_results": "نتائج البحث",
   "no_more_results": "لا يوجد المزيد من النتائج",
   "no_more_products": "لا يوجد المزيد من المنتجات",
+  "no_more_favorites": "لا يوجد المزيد من المفضلة",
   "preferences": "التفضيلات",
   "no_notifications": "لا توجد إشعارات",
   "mark_all_read": "تحديد الكل كمقروء",

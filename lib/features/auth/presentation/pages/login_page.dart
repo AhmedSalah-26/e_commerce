@@ -44,7 +44,6 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            // Navigate based on role
             if (state.user.isMerchant) {
               context.go('/merchant-dashboard');
             } else {
@@ -75,38 +74,35 @@ class _LoginPageState extends State<LoginPage> {
                       child: const LanguageToggleButton(),
                     ),
                     const SizedBox(height: 20),
-                    // Logo
                     Image.asset(
                       'assets/on_bording/logo-2.png',
                       height: 120,
                     ),
                     const SizedBox(height: 40),
-                    // Title
-                    const Text(
-                      'تسجيل الدخول',
-                      style: TextStyle(
+                    Text(
+                      'login_title'.tr(),
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'مرحباً بك مجدداً',
-                      style: TextStyle(
+                    Text(
+                      'welcome_back'.tr(),
+                      style: const TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 40),
-                    // Email field
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       textDirection: TextDirection.ltr,
                       decoration: InputDecoration(
-                        labelText: 'البريد الإلكتروني',
+                        labelText: 'email'.tr(),
                         prefixIcon: const Icon(Icons.email_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -114,22 +110,21 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال البريد الإلكتروني';
+                          return 'field_required'.tr();
                         }
                         if (!value.contains('@')) {
-                          return 'البريد الإلكتروني غير صالح';
+                          return 'invalid_email'.tr();
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
-                    // Password field
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       textDirection: TextDirection.ltr,
                       decoration: InputDecoration(
-                        labelText: 'كلمة المرور',
+                        labelText: 'password'.tr(),
                         prefixIcon: const Icon(Icons.lock_outlined),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -149,16 +144,15 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'يرجى إدخال كلمة المرور';
+                          return 'field_required'.tr();
                         }
                         if (value.length < 6) {
-                          return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                          return 'password_min_length'.tr();
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 24),
-                    // Login button
                     SizedBox(
                       height: 50,
                       child: ElevatedButton(
@@ -173,9 +167,9 @@ class _LoginPageState extends State<LoginPage> {
                             ? const CircularProgressIndicator(
                                 color: Colors.white,
                               )
-                            : const Text(
-                                'تسجيل الدخول',
-                                style: TextStyle(
+                            : Text(
+                                'login'.tr(),
+                                style: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.white,
                                 ),
@@ -183,16 +177,15 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Register link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('ليس لديك حساب؟'),
+                        Text('dont_have_account'.tr()),
                         TextButton(
                           onPressed: () => context.push('/register'),
-                          child: const Text(
-                            'إنشاء حساب',
-                            style: TextStyle(
+                          child: Text(
+                            'register'.tr(),
+                            style: const TextStyle(
                               color: AppColours.primary,
                               fontWeight: FontWeight.bold,
                             ),

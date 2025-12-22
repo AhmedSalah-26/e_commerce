@@ -46,6 +46,10 @@
   "dont_have_account": "Don't have an account?",
   "forgot_password": "Forgot Password?",
   "login_required": "Login required",
+  "login_title": "Login",
+  "welcome_back": "Welcome back",
+  "enter_your_data": "Enter your data to register",
+  "create_new_account": "Create New Account",
 
   "products": "Products",
   "product_details": "Product Details",
@@ -156,6 +160,7 @@
   "search_results": "Search results",
   "no_more_results": "No more results",
   "no_more_products": "No more products",
+  "no_more_favorites": "No more favorites",
   "preferences": "Preferences",
   "no_notifications": "No notifications",
   "mark_all_read": "Mark all as read",

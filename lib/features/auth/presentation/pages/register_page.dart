@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/shared_widgets/language_toggle_button.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/error_helper.dart';
@@ -97,28 +98,27 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'إنشاء حساب جديد',
-                      style: TextStyle(
+                    Text(
+                      'create_new_account'.tr(),
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'أدخل بياناتك للتسجيل',
-                      style: TextStyle(
+                    Text(
+                      'enter_your_data'.tr(),
+                      style: const TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
-                    // Role selection
-                    const Text(
-                      'نوع الحساب',
-                      style: TextStyle(
+                    Text(
+                      'account_type'.tr(),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -128,8 +128,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       children: [
                         Expanded(
                           child: RoleSelectionCard(
-                            title: 'عميل',
-                            subtitle: 'تصفح وشراء المنتجات',
+                            title: 'customer'.tr(),
+                            subtitle: 'customer_desc'.tr(),
                             icon: Icons.shopping_bag_outlined,
                             isSelected: _selectedRole == UserRole.customer,
                             onTap: () {
@@ -142,8 +142,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: RoleSelectionCard(
-                            title: 'تاجر',
-                            subtitle: 'إدارة المنتجات والطلبات',
+                            title: 'merchant'.tr(),
+                            subtitle: 'merchant_desc'.tr(),
                             icon: Icons.store_outlined,
                             isSelected: _selectedRole == UserRole.merchant,
                             onTap: () {
@@ -176,7 +176,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       },
                     ),
                     const SizedBox(height: 24),
-                    // Register button
                     SizedBox(
                       height: 50,
                       child: ElevatedButton(
@@ -192,9 +191,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             ? const CircularProgressIndicator(
                                 color: Colors.white,
                               )
-                            : const Text(
-                                'إنشاء حساب',
-                                style: TextStyle(
+                            : Text(
+                                'register'.tr(),
+                                style: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.white,
                                 ),
@@ -202,16 +201,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Login link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('لديك حساب بالفعل؟'),
+                        Text('already_have_account'.tr()),
                         TextButton(
                           onPressed: () => context.pop(),
-                          child: const Text(
-                            'تسجيل الدخول',
-                            style: TextStyle(
+                          child: Text(
+                            'login'.tr(),
+                            style: const TextStyle(
                               color: AppColours.primary,
                               fontWeight: FontWeight.bold,
                             ),

@@ -176,7 +176,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                       ),
                     if (!state.hasMore && validFavorites.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.only(top: 8, bottom: 16),
                         child: Center(
                           child: Text(
                             'no_more_favorites'.tr(),
@@ -184,7 +184,6 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                           ),
                         ),
                       ),
-                    const SizedBox(height: 80),
                   ],
                 ),
               );

@@ -68,7 +68,8 @@ class ProductModel extends ProductEntity {
       categoryId: json['category_id'] as String?,
       stock: json['stock'] as int? ?? 0,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      ratingCount: json['rating_count'] as int? ?? 0,
+      ratingCount:
+          json['review_count'] as int? ?? json['rating_count'] as int? ?? 0,
       isActive: json['is_active'] as bool? ?? true,
       isFeatured: json['is_featured'] as bool? ?? false,
       createdAt: json['created_at'] != null

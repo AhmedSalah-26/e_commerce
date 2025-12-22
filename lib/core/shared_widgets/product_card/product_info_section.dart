@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 import '../../../features/products/domain/entities/product_entity.dart';
 import '../../theme/app_colors.dart';
@@ -30,7 +31,10 @@ class ProductInfoSection extends StatelessWidget {
             const SizedBox(height: 8),
             _PriceSection(product: product),
             const SizedBox(height: 8),
-            _RatingStars(rating: product.rating),
+            _RatingStars(
+              rating: product.rating,
+              ratingCount: product.ratingCount,
+            ),
             const SizedBox(height: 12),
             ProductCartButton(product: product),
           ],
@@ -96,24 +100,31 @@ class _PriceSection extends StatelessWidget {
 
 class _RatingStars extends StatelessWidget {
   final double rating;
+  final int ratingCount;
 
-  const _RatingStars({required this.rating});
+  const _RatingStars({required this.rating, required this.ratingCount});
 
   @override
   Widget build(BuildContext context) {
-    final floorRating = rating.floor();
     return Row(
       children: [
-        for (int i = 0; i < 5; i++)
-          Icon(
-            i < floorRating ? Icons.star : Icons.star_border,
-            color: AppColours.jumiaYellow,
-            size: 14,
+        RatingBarIndicator(
+          rating: rating,
+          direction: Axis.horizontal,
+          itemCount: 5,
+          itemSize: 14,
+          itemBuilder: (context, _) => const Icon(
+            Icons.star,
+            color: Colors.amber,
           ),
+        ),
         const SizedBox(width: 4),
-        const Text(
-          "(0)",
-          style: TextStyle(fontSize: 11, color: AppColours.jumiaGrey),
+        Text(
+          '($ratingCount)',
+          style: const TextStyle(
+            fontSize: 11,
+            color: AppColours.jumiaGrey,
+          ),
         ),
       ],
     );

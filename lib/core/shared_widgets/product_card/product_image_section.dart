@@ -57,7 +57,7 @@ class ProductImageSection extends StatelessWidget {
 /// Optimized product image with caching
 class _ProductImage extends StatelessWidget {
   final String imageUrl;
-  static const int _cacheSize = 200;
+  static const int _cacheSize = 300;
 
   const _ProductImage({required this.imageUrl});
 
@@ -77,8 +77,8 @@ class _ProductImage extends StatelessWidget {
         maxHeightDiskCache: _cacheSize * 2,
         placeholder: (_, __) => const _ImageLoading(),
         errorWidget: (_, __, ___) => const _ImagePlaceholder(),
-        fadeInDuration: const Duration(milliseconds: 150),
-        fadeOutDuration: const Duration(milliseconds: 150),
+        fadeInDuration: Duration.zero,
+        fadeOutDuration: Duration.zero,
       );
     }
 
@@ -155,6 +155,18 @@ class _FavoriteButton extends StatelessWidget {
 
   const _FavoriteButton({required this.productId});
 
+  static const _favoriteIcon = Icon(
+    Icons.favorite,
+    color: AppColours.brownLight,
+    size: 20,
+  );
+
+  static const _notFavoriteIcon = Icon(
+    Icons.favorite_border,
+    color: AppColours.brownLight,
+    size: 20,
+  );
+
   @override
   Widget build(BuildContext context) {
     return BlocSelector<FavoritesCubit, FavoritesState, bool>(
@@ -169,11 +181,7 @@ class _FavoriteButton extends StatelessWidget {
               color: AppColours.jumiaDark,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: AppColours.brownLight,
-              size: 20,
-            ),
+            child: isFavorite ? _favoriteIcon : _notFavoriteIcon,
           ),
         );
       },

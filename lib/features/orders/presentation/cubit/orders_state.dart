@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/order_entity.dart';
+import '../../domain/entities/parent_order_entity.dart';
 
 /// Base class for all orders states
 abstract class OrdersState extends Equatable {
@@ -39,6 +40,26 @@ class OrdersLoaded extends OrdersState {
   int get pendingCount => getOrdersByStatus(OrderStatus.pending).length;
 }
 
+/// Parent orders loaded state
+class ParentOrdersLoaded extends OrdersState {
+  final List<ParentOrderEntity> parentOrders;
+
+  const ParentOrdersLoaded(this.parentOrders);
+
+  @override
+  List<Object?> get props => [parentOrders];
+}
+
+/// Single parent order loaded state
+class ParentOrderLoaded extends OrdersState {
+  final ParentOrderEntity parentOrder;
+
+  const ParentOrderLoaded(this.parentOrder);
+
+  @override
+  List<Object?> get props => [parentOrder];
+}
+
 /// Error state
 class OrdersError extends OrdersState {
   final String message;
@@ -62,4 +83,14 @@ class OrderCreated extends OrdersState {
 
   @override
   List<Object?> get props => [orderId];
+}
+
+/// Multi-vendor order created successfully
+class MultiVendorOrderCreated extends OrdersState {
+  final String parentOrderId;
+
+  const MultiVendorOrderCreated(this.parentOrderId);
+
+  @override
+  List<Object?> get props => [parentOrderId];
 }

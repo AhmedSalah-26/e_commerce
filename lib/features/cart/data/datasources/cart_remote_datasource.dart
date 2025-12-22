@@ -33,9 +33,31 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
           .order('created_at', ascending: false);
 
       logger.d('✅ Got ${(response as List).length} cart items');
-      return response
-          .map((json) => CartItemModel.fromJson(json, locale: locale))
-          .toList();
+
+      // Fetch store names for each product's merchant
+      final items = <CartItemModel>[];
+      for (final json in response) {
+        final productData = json['products'] as Map<String, dynamic>?;
+        if (productData != null && productData['merchant_id'] != null) {
+          // Try to get store name
+          try {
+            final storeResponse = await _client
+                .from('stores')
+                .select('name, phone')
+                .eq('merchant_id', productData['merchant_id'])
+                .maybeSingle();
+
+            if (storeResponse != null) {
+              productData['stores'] = storeResponse;
+            }
+          } catch (_) {
+            // Ignore store fetch errors
+          }
+        }
+        items.add(CartItemModel.fromJson(json, locale: locale));
+      }
+
+      return items;
     } catch (e, stackTrace) {
       logger.e('❌ Error getting cart items', error: e, stackTrace: stackTrace);
       throw ServerException('فشل في جلب السلة: ${e.toString()}');
@@ -120,14 +142,31 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
         .eq('user_id', userId)
         .order('created_at', ascending: false)
         .asyncMap((data) async {
-          // Fetch products for each cart item
+          // Fetch products with store info for each cart item
           final items = <CartItemModel>[];
           for (final item in data) {
             final productResponse = await _client
                 .from('products')
-                .select()
+                .select('*')
                 .eq('id', item['product_id'])
                 .single();
+
+            // Try to get store name
+            if (productResponse['merchant_id'] != null) {
+              try {
+                final storeResponse = await _client
+                    .from('stores')
+                    .select('name, phone')
+                    .eq('merchant_id', productResponse['merchant_id'])
+                    .maybeSingle();
+
+                if (storeResponse != null) {
+                  productResponse['stores'] = storeResponse;
+                }
+              } catch (_) {
+                // Ignore store fetch errors
+              }
+            }
 
             items.add(CartItemModel.fromJson({
               ...item,

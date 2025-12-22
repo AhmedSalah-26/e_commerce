@@ -52,4 +52,31 @@ mixin OrderCreateMixin {
       throw ServerException('فشل في إنشاء الطلب من السلة: ${e.toString()}');
     }
   }
+
+  /// Create multi-vendor order (splits cart by merchant)
+  Future<String> createMultiVendorOrder(
+    String userId,
+    String? deliveryAddress,
+    String? customerName,
+    String? customerPhone,
+    String? notes, {
+    double? shippingCost,
+    String? governorateId,
+  }) async {
+    try {
+      final response = await client.rpc('create_multi_vendor_order', params: {
+        'p_user_id': userId,
+        'p_delivery_address': deliveryAddress,
+        'p_customer_name': customerName,
+        'p_customer_phone': customerPhone,
+        'p_notes': notes,
+        'p_shipping_cost': shippingCost ?? 0,
+        'p_governorate_id': governorateId,
+      });
+
+      return response as String;
+    } catch (e) {
+      throw ServerException('فشل في إنشاء الطلب المجمع: ${e.toString()}');
+    }
+  }
 }

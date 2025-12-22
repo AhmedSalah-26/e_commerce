@@ -255,6 +255,9 @@
   "active_shipping_zones": "Active Shipping Zones",
   "inactive_shipping_zones": "Inactive Zones",
 
+  "shipping_unavailable": "Unavailable",
+  "shipping_not_supported": "Some merchants don't support shipping to this governorate",
+
   "flash_sale": "Flash Sale",
   "flash_sale_badge": "Special Offer",
   "ends_in": "Ends in",
@@ -268,5 +271,19 @@
   "flash_sale_end": "Sale End",
   "flash_sale_duration": "Sale Duration",
   "select_date": "Select Date",
-  "select_time": "Select Time"
+  "select_time": "Select Time",
+
+  "merchant_orders": "Merchant Orders",
+  "merchants_count": "Merchants Count",
+  "merchants": "merchants",
+  "merchant_total": "Merchant Total",
+  "delivery_info": "Delivery Information",
+  "order_number": "Order Number",
+  "unknown_merchant": "Unknown Merchant",
+  "partially_cancelled": "Partially Cancelled",
+  "pending": "Pending",
+  "processing": "Processing",
+  "shipped": "Shipped",
+  "delivered": "Delivered",
+  "notes": "Notes"
 }

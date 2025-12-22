@@ -60,7 +60,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     super.dispose();
   }
 
-  void _placeOrder(double shippingCost, String? governorateId) {
+  void _placeOrder(double shippingCost, String? governorateId,
+      Map<String, double>? merchantShippingPrices, CartLoaded cartState) {
     if (_formKey.currentState!.validate()) {
       if (governorateId == null) {
         Tost.showCustomToast(
@@ -72,9 +73,33 @@ class _CheckoutPageState extends State<CheckoutPage> {
         return;
       }
 
+      // Check if any merchant has unavailable shipping
+      if (merchantShippingPrices != null && merchantShippingPrices.isNotEmpty) {
+        final merchantIds = <String>{};
+        for (final item in cartState.items) {
+          final merchantId = item.product?.merchantId;
+          if (merchantId != null) {
+            merchantIds.add(merchantId);
+          }
+        }
+
+        for (final merchantId in merchantIds) {
+          if (!merchantShippingPrices.containsKey(merchantId)) {
+            Tost.showCustomToast(
+              context,
+              'shipping_not_supported'.tr(),
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+            );
+            return;
+          }
+        }
+      }
+
       final authState = context.read<AuthCubit>().state;
       if (authState is AuthAuthenticated) {
-        context.read<OrdersCubit>().createOrderFromCart(
+        // Use multi-vendor order to split by merchant
+        context.read<OrdersCubit>().createMultiVendorOrder(
               authState.user.id,
               deliveryAddress: _addressController.text.trim(),
               customerName: _nameController.text.trim(),
@@ -118,6 +143,24 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 context.read<CartCubit>().loadCart(authState.user.id);
               }
               context.go('/orders');
+            } else if (state is MultiVendorOrderCreated) {
+              sl<LocalNotificationService>().createOrderStatusNotification(
+                orderId: state.parentOrderId,
+                status: 'pending',
+                locale: context.locale.languageCode,
+              );
+
+              Tost.showCustomToast(
+                context,
+                'order_placed'.tr(),
+                backgroundColor: Colors.green,
+                textColor: Colors.white,
+              );
+              final authState = context.read<AuthCubit>().state;
+              if (authState is AuthAuthenticated) {
+                context.read<CartCubit>().loadCart(authState.user.id);
+              }
+              context.go('/parent-order/${state.parentOrderId}');
             } else if (state is OrdersError) {
               Tost.showCustomToast(
                 context,
@@ -165,6 +208,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     final shippingPrice = shippingState is GovernoratesLoaded
                         ? shippingState.shippingPrice
                         : 0.0;
+                    final merchantShippingPrices =
+                        shippingState is GovernoratesLoaded
+                            ? shippingState.merchantShippingPrices
+                            : <String, double>{};
+                    final totalShippingPrice =
+                        shippingState is GovernoratesLoaded
+                            ? shippingState.totalShippingPrice
+                            : 0.0;
 
                     return SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
@@ -192,19 +243,26 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             OrderSummaryCard(
                               cartState: cartState,
                               shippingPrice: shippingPrice,
+                              merchantShippingPrices: merchantShippingPrices,
                             ),
                             const SizedBox(height: 32),
                             BlocBuilder<OrdersCubit, OrdersState>(
                               builder: (context, orderState) {
                                 final isLoading = orderState is OrderCreating;
+                                // Use total shipping price for the order
+                                final orderShippingCost = totalShippingPrice > 0
+                                    ? totalShippingPrice
+                                    : shippingPrice;
                                 return SizedBox(
                                   width: double.infinity,
                                   child: CustomButton(
                                     onPressed: isLoading
                                         ? () {}
                                         : () => _placeOrder(
-                                              shippingPrice,
+                                              orderShippingCost,
                                               selectedGovernorate?.id,
+                                              merchantShippingPrices,
+                                              cartState,
                                             ),
                                     label: isLoading
                                         ? 'loading'.tr()

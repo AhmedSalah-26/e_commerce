@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/order_entity.dart';
+import '../../domain/entities/parent_order_entity.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../datasources/order_remote_datasource.dart';
 
@@ -73,6 +74,66 @@ class OrderRepositoryImpl implements OrderRepository {
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
+  }
+
+  @override
+  Future<Either<Failure, String>> createMultiVendorOrder(
+    String userId,
+    String? deliveryAddress,
+    String? customerName,
+    String? customerPhone,
+    String? notes, {
+    double? shippingCost,
+    String? governorateId,
+  }) async {
+    try {
+      final parentOrderId = await _remoteDataSource.createMultiVendorOrder(
+        userId,
+        deliveryAddress,
+        customerName,
+        customerPhone,
+        notes,
+        shippingCost: shippingCost,
+        governorateId: governorateId,
+      );
+      return Right(parentOrderId);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, code: e.code));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ParentOrderEntity>> getParentOrderDetails(
+      String parentOrderId) async {
+    try {
+      final parentOrder =
+          await _remoteDataSource.getParentOrderDetails(parentOrderId);
+      return Right(parentOrder);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, code: e.code));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<ParentOrderEntity>>> getUserParentOrders(
+      String userId) async {
+    try {
+      final parentOrders = await _remoteDataSource.getUserParentOrders(userId);
+      return Right(parentOrders);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, code: e.code));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Stream<List<ParentOrderEntity>> watchUserParentOrders(String userId) {
+    return _remoteDataSource.watchUserParentOrders(userId);
   }
 
   @override

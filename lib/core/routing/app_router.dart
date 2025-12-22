@@ -14,7 +14,9 @@ import '../../features/navigation/presentation/pages/main_navigation_screen.dart
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
 import '../../features/notifications/presentation/pages/notifications_screen.dart';
 import '../../features/onbording_screen/ui/onboarding_screen.dart';
+import '../../features/orders/presentation/cubit/orders_cubit.dart';
 import '../../features/orders/presentation/pages/orders_page.dart';
+import '../../features/orders/presentation/pages/parent_order_details_page.dart';
 import '../../features/settings/presentation/pages/edit_profile_screen.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
 
@@ -70,6 +72,16 @@ class AppRouter {
         path: '/orders',
         builder: (BuildContext context, GoRouterState state) =>
             const OrdersPage(),
+      ),
+      GoRoute(
+        path: '/parent-order/:id',
+        builder: (BuildContext context, GoRouterState state) {
+          final parentOrderId = state.pathParameters['id']!;
+          return BlocProvider(
+            create: (_) => sl<OrdersCubit>(),
+            child: ParentOrderDetailsPage(parentOrderId: parentOrderId),
+          );
+        },
       ),
       GoRoute(
         path: '/notifications',

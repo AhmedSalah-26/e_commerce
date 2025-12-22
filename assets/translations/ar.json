@@ -255,6 +255,9 @@
   "active_shipping_zones": "مناطق الشحن النشطة",
   "inactive_shipping_zones": "مناطق بدون شحن",
 
+  "shipping_unavailable": "غير متوفر",
+  "shipping_not_supported": "بعض التجار لا يدعمون التوصيل لهذه المحافظة",
+
   "flash_sale": "عرض خاص",
   "flash_sale_badge": "عرض خاص",
   "ends_in": "ينتهي خلال",
@@ -268,5 +271,19 @@
   "flash_sale_end": "نهاية العرض",
   "flash_sale_duration": "مدة العرض",
   "select_date": "اختر التاريخ",
-  "select_time": "اختر الوقت"
+  "select_time": "اختر الوقت",
+
+  "merchant_orders": "طلبات التجار",
+  "merchants_count": "عدد التجار",
+  "merchants": "تجار",
+  "merchant_total": "إجمالي التاجر",
+  "delivery_info": "معلومات التوصيل",
+  "order_number": "رقم الطلب",
+  "unknown_merchant": "تاجر غير معروف",
+  "partially_cancelled": "ملغي جزئياً",
+  "pending": "قيد الانتظار",
+  "processing": "قيد المعالجة",
+  "shipped": "تم الشحن",
+  "delivered": "تم التوصيل",
+  "notes": "ملاحظات"
 }

@@ -11,7 +11,8 @@ import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../cubit/orders_cubit.dart';
 import '../cubit/orders_state.dart';
-import '../widgets/order_item_card.dart';
+import '../../domain/entities/parent_order_entity.dart';
+import '../widgets/parent_order_item_card.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
@@ -21,24 +22,35 @@ class OrdersPage extends StatefulWidget {
 }
 
 class _OrdersPageState extends State<OrdersPage> {
+  // Cache the last loaded parent orders to avoid white screen
+  List<ParentOrderEntity>? _cachedParentOrders;
+
   @override
   void initState() {
     super.initState();
-    _watchOrders();
+    _loadOrdersIfNeeded();
+  }
+
+  void _loadOrdersIfNeeded() {
+    final currentState = context.read<OrdersCubit>().state;
+    // Only reload if not already showing parent orders list
+    if (currentState is! ParentOrdersLoaded) {
+      _watchOrders();
+    }
   }
 
   void _watchOrders() {
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
-      // Use real-time watching for order status updates
-      context.read<OrdersCubit>().watchUserOrders(authState.user.id);
+      // Use real-time watching for parent orders (multi-vendor)
+      context.read<OrdersCubit>().watchUserParentOrders(authState.user.id);
     }
   }
 
   void _loadOrders() {
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
-      context.read<OrdersCubit>().loadOrders(authState.user.id);
+      context.read<OrdersCubit>().loadUserParentOrders(authState.user.id);
     }
   }
 
@@ -66,8 +78,26 @@ class _OrdersPageState extends State<OrdersPage> {
           centerTitle: true,
         ),
         body: BlocBuilder<OrdersCubit, OrdersState>(
+          buildWhen: (previous, current) {
+            // Don't rebuild for ParentOrderLoaded (single order details)
+            // We want to keep showing the list
+            if (current is ParentOrderLoaded) {
+              return false;
+            }
+            return true;
+          },
           builder: (context, state) {
+            // If we have cached orders and state is ParentOrderLoaded, use cache
+            if (state is ParentOrderLoaded && _cachedParentOrders != null) {
+              return _buildOrdersList(_cachedParentOrders!);
+            }
+
             if (state is OrdersLoading) {
+              // If we have cached data, show it instead of skeleton
+              if (_cachedParentOrders != null &&
+                  _cachedParentOrders!.isNotEmpty) {
+                return _buildOrdersList(_cachedParentOrders!);
+              }
               return const SingleChildScrollView(
                 child: OrdersListSkeleton(itemCount: 4),
               );
@@ -98,20 +128,48 @@ class _OrdersPageState extends State<OrdersPage> {
                 return _buildEmptyOrders();
               }
 
-              return RefreshIndicator(
-                onRefresh: () async => _loadOrders(),
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: state.orders.length,
-                  itemBuilder: (context, index) {
-                    final order = state.orders[index];
-                    return OrderItemCard(order: order);
-                  },
-                ),
-              );
+              // Convert to parent orders for display
+              final parentOrders = state.orders
+                  .map((order) => ParentOrderEntity(
+                        id: order.id,
+                        userId: order.userId,
+                        total: order.total,
+                        subtotal: order.subtotal,
+                        shippingCost: order.shippingCost,
+                        deliveryAddress: order.deliveryAddress,
+                        customerName: order.customerName,
+                        customerPhone: order.customerPhone,
+                        notes: order.notes,
+                        createdAt: order.createdAt,
+                        subOrders: [order],
+                      ))
+                  .toList();
+
+              _cachedParentOrders = parentOrders;
+              return _buildOrdersList(parentOrders);
             }
 
-            // Show loading for initial state (waiting for stream)
+            if (state is ParentOrdersLoaded) {
+              _cachedParentOrders = state.parentOrders;
+
+              if (state.parentOrders.isEmpty) {
+                return _buildEmptyOrders();
+              }
+
+              return _buildOrdersList(state.parentOrders);
+            }
+
+            // For any other state, reload orders
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _watchOrders();
+            });
+
+            // Show cached data if available
+            if (_cachedParentOrders != null &&
+                _cachedParentOrders!.isNotEmpty) {
+              return _buildOrdersList(_cachedParentOrders!);
+            }
+
             return const SingleChildScrollView(
               child: OrdersListSkeleton(itemCount: 4),
             );
@@ -148,6 +206,20 @@ class _OrdersPageState extends State<OrdersPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildOrdersList(List<ParentOrderEntity> parentOrders) {
+    return RefreshIndicator(
+      onRefresh: () async => _loadOrders(),
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: parentOrders.length,
+        itemBuilder: (context, index) {
+          final parentOrder = parentOrders[index];
+          return ParentOrderItemCard(parentOrder: parentOrder);
+        },
       ),
     );
   }

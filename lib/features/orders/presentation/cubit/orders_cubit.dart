@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/order_entity.dart';
+import '../../domain/entities/parent_order_entity.dart';
 import '../../domain/repositories/order_repository.dart';
 import 'orders_state.dart';
 
@@ -8,6 +9,7 @@ import 'orders_state.dart';
 class OrdersCubit extends Cubit<OrdersState> {
   final OrderRepository _repository;
   StreamSubscription<List<OrderEntity>>? _ordersSubscription;
+  StreamSubscription<List<ParentOrderEntity>>? _parentOrdersSubscription;
 
   OrdersCubit(this._repository) : super(const OrdersInitial());
 
@@ -191,6 +193,73 @@ class OrdersCubit extends Cubit<OrdersState> {
     );
   }
 
+  /// Create multi-vendor order from cart (splits by merchant)
+  Future<void> createMultiVendorOrder(
+    String userId, {
+    String? deliveryAddress,
+    String? customerName,
+    String? customerPhone,
+    String? notes,
+    double? shippingCost,
+    String? governorateId,
+  }) async {
+    emit(const OrderCreating());
+
+    final result = await _repository.createMultiVendorOrder(
+      userId,
+      deliveryAddress,
+      customerName,
+      customerPhone,
+      notes,
+      shippingCost: shippingCost,
+      governorateId: governorateId,
+    );
+
+    result.fold(
+      (failure) => emit(OrdersError(failure.message)),
+      (parentOrderId) => emit(MultiVendorOrderCreated(parentOrderId)),
+    );
+  }
+
+  /// Load parent order details
+  Future<void> loadParentOrderDetails(String parentOrderId) async {
+    emit(const OrdersLoading());
+
+    final result = await _repository.getParentOrderDetails(parentOrderId);
+
+    result.fold(
+      (failure) => emit(OrdersError(failure.message)),
+      (parentOrder) => emit(ParentOrderLoaded(parentOrder)),
+    );
+  }
+
+  /// Load user's parent orders
+  Future<void> loadUserParentOrders(String userId) async {
+    emit(const OrdersLoading());
+
+    final result = await _repository.getUserParentOrders(userId);
+
+    result.fold(
+      (failure) => emit(OrdersError(failure.message)),
+      (parentOrders) => emit(ParentOrdersLoaded(parentOrders)),
+    );
+  }
+
+  /// Watch user's parent orders (real-time)
+  void watchUserParentOrders(String userId) {
+    _parentOrdersSubscription?.cancel();
+    emit(const OrdersLoading());
+    _parentOrdersSubscription =
+        _repository.watchUserParentOrders(userId).listen(
+      (parentOrders) {
+        emit(ParentOrdersLoaded(parentOrders));
+      },
+      onError: (error) {
+        emit(OrdersError(error.toString()));
+      },
+    );
+  }
+
   /// Update order status
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
     final currentState = state;
@@ -211,6 +280,7 @@ class OrdersCubit extends Cubit<OrdersState> {
   @override
   Future<void> close() {
     _ordersSubscription?.cancel();
+    _parentOrdersSubscription?.cancel();
     return super.close();
   }
 }

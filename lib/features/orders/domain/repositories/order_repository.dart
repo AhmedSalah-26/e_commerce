@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/order_entity.dart';
+import '../entities/parent_order_entity.dart';
 
 /// Abstract repository interface for orders
 abstract class OrderRepository {
@@ -23,6 +24,28 @@ abstract class OrderRepository {
     double? shippingCost,
     String? governorateId,
   });
+
+  /// Create multi-vendor order from cart (splits by merchant)
+  Future<Either<Failure, String>> createMultiVendorOrder(
+    String userId,
+    String? deliveryAddress,
+    String? customerName,
+    String? customerPhone,
+    String? notes, {
+    double? shippingCost,
+    String? governorateId,
+  });
+
+  /// Get parent order details with sub-orders
+  Future<Either<Failure, ParentOrderEntity>> getParentOrderDetails(
+      String parentOrderId);
+
+  /// Get user's parent orders
+  Future<Either<Failure, List<ParentOrderEntity>>> getUserParentOrders(
+      String userId);
+
+  /// Watch user's parent orders stream
+  Stream<List<ParentOrderEntity>> watchUserParentOrders(String userId);
 
   /// Update order status
   Future<Either<Failure, void>> updateOrderStatus(

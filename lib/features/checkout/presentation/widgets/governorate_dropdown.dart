@@ -22,10 +22,14 @@ class GovernorateDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? merchantId;
-    if (cartState.items.isNotEmpty && cartState.items.first.product != null) {
-      merchantId = cartState.items.first.product!.merchantId;
+    // Get all unique merchant IDs from cart
+    final merchantIds = <String>{};
+    for (final item in cartState.items) {
+      if (item.product?.merchantId != null) {
+        merchantIds.add(item.product!.merchantId!);
+      }
     }
+    final merchantIdsList = merchantIds.toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,9 +74,11 @@ class GovernorateDropdown extends StatelessWidget {
               }).toList(),
               onChanged: (gov) {
                 if (gov != null) {
+                  // Use multi-merchant shipping calculation
                   context
                       .read<ShippingCubit>()
-                      .selectGovernorate(gov, merchantId);
+                      .selectGovernorateForMultipleMerchants(
+                          gov, merchantIdsList);
                 }
               },
             ),

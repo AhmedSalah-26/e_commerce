@@ -10,6 +10,8 @@ abstract class ShippingRemoteDataSource {
   Future<void> setShippingPrice(
       String merchantId, String governorateId, double price);
   Future<void> deleteShippingPrice(String merchantId, String governorateId);
+  Future<Map<String, double>> getMultipleMerchantsShippingPrices(
+      List<String> merchantIds, String governorateId);
 }
 
 class ShippingRemoteDataSourceImpl implements ShippingRemoteDataSource {
@@ -131,6 +133,40 @@ class ShippingRemoteDataSourceImpl implements ShippingRemoteDataSource {
     } catch (e) {
       _logger.e('❌ Error deleting shipping price: $e');
       rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, double>> getMultipleMerchantsShippingPrices(
+      List<String> merchantIds, String governorateId) async {
+    try {
+      _logger
+          .d('🔍 Getting shipping prices for ${merchantIds.length} merchants');
+
+      final Map<String, double> prices = {};
+
+      if (merchantIds.isEmpty) {
+        return prices;
+      }
+
+      final response = await _client
+          .from('merchant_shipping_prices')
+          .select('merchant_id, price')
+          .inFilter('merchant_id', merchantIds)
+          .eq('governorate_id', governorateId)
+          .eq('is_active', true);
+
+      for (final row in response as List) {
+        final merchantId = row['merchant_id'] as String;
+        final price = (row['price'] as num).toDouble();
+        prices[merchantId] = price;
+      }
+
+      _logger.d('✅ Found shipping prices for ${prices.length} merchants');
+      return prices;
+    } catch (e) {
+      _logger.e('❌ Error getting multiple merchants shipping prices: $e');
+      return {};
     }
   }
 }

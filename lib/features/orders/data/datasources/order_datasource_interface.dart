@@ -1,5 +1,6 @@
 import '../../domain/entities/order_entity.dart';
 import '../models/order_model.dart';
+import '../models/parent_order_model.dart';
 
 /// Abstract interface for order remote data source
 abstract class OrderRemoteDataSource {
@@ -21,6 +22,20 @@ abstract class OrderRemoteDataSource {
     double? shippingCost,
     String? governorateId,
   });
+
+  // Multi-vendor orders
+  Future<String> createMultiVendorOrder(
+    String userId,
+    String? deliveryAddress,
+    String? customerName,
+    String? customerPhone,
+    String? notes, {
+    double? shippingCost,
+    String? governorateId,
+  });
+  Future<ParentOrderModel> getParentOrderDetails(String parentOrderId);
+  Future<List<ParentOrderModel>> getUserParentOrders(String userId);
+  Stream<List<ParentOrderModel>> watchUserParentOrders(String userId);
 
   // Update orders
   Future<void> updateOrderStatus(String orderId, OrderStatus status);

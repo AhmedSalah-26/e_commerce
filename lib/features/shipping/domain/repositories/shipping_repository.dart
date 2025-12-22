@@ -13,4 +13,9 @@ abstract class ShippingRepository {
       String merchantId, String governorateId, double price);
   Future<Either<Failure, void>> deleteShippingPrice(
       String merchantId, String governorateId);
+
+  /// Get total shipping price for multiple merchants
+  Future<Either<Failure, Map<String, double>>>
+      getMultipleMerchantsShippingPrices(
+          List<String> merchantIds, String governorateId);
 }

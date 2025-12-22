@@ -26,22 +26,30 @@ class _HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
   String? selectedCategoryId;
   final ScrollController _scrollController = ScrollController();
   int _unreadNotifications = 0;
+  bool _isSearchInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize search manager
-    final repository = sl<ProductRepository>();
-    final locale = context.locale.languageCode;
-    if (repository is ProductRepositoryImpl) {
-      repository.setLocale(locale);
-    }
-    initializeSearchManager(repository);
-
     context.read<ProductsCubit>().loadProducts();
     context.read<CategoriesCubit>().loadCategories();
     _scrollController.addListener(_onScroll);
     _loadUnreadCount();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize search manager here after context is ready
+    if (!_isSearchInitialized) {
+      final repository = sl<ProductRepository>();
+      final locale = context.locale.languageCode;
+      if (repository is ProductRepositoryImpl) {
+        repository.setLocale(locale);
+      }
+      initializeSearchManager(repository);
+      _isSearchInitialized = true;
+    }
   }
 
   Future<void> _loadUnreadCount() async {

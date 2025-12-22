@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -139,6 +137,7 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
     if (imageUrl.startsWith('http')) {
       return CachedNetworkImage(
         imageUrl: imageUrl,
+        fit: BoxFit.cover,
         placeholder: (_, __) => const Center(
           child: CircularProgressIndicator(
             color: AppColours.brownLight,
@@ -150,37 +149,9 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
           size: 60,
           color: Colors.grey,
         ),
-        imageBuilder: (context, imageProvider) {
-          return FutureBuilder<ImageInfo>(
-            future: _getImageInfo(imageProvider),
-            builder: (context, snapshot) {
-              BoxFit fit = BoxFit.contain;
-              if (snapshot.hasData) {
-                final info = snapshot.data!;
-                // landscape/square → cover, portrait → contain
-                fit = info.image.width >= info.image.height
-                    ? BoxFit.cover
-                    : BoxFit.contain;
-              }
-              return Image(
-                image: imageProvider,
-                fit: fit,
-              );
-            },
-          );
-        },
       );
     }
-    return Image.asset(imageUrl, fit: BoxFit.contain);
-  }
-
-  Future<ImageInfo> _getImageInfo(ImageProvider provider) async {
-    final completer = Completer<ImageInfo>();
-    final stream = provider.resolve(const ImageConfiguration());
-    stream.addListener(ImageStreamListener((info, _) {
-      completer.complete(info);
-    }));
-    return completer.future;
+    return Image.asset(imageUrl, fit: BoxFit.cover);
   }
 
   Widget _buildPlaceholder() {

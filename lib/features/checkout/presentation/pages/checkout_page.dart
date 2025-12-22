@@ -190,100 +190,203 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
               centerTitle: true,
             ),
-            body: BlocBuilder<CartCubit, CartState>(
-              builder: (context, cartState) {
-                if (cartState is! CartLoaded || cartState.isEmpty) {
-                  return Center(child: Text('cart_empty'.tr()));
-                }
-
-                return BlocBuilder<ShippingCubit, ShippingState>(
-                  builder: (context, shippingState) {
-                    final governorates = shippingState is GovernoratesLoaded
-                        ? shippingState.governorates
-                        : <GovernorateEntity>[];
-                    final selectedGovernorate =
-                        shippingState is GovernoratesLoaded
-                            ? shippingState.selectedGovernorate
-                            : null;
-                    final shippingPrice = shippingState is GovernoratesLoaded
-                        ? shippingState.shippingPrice
-                        : 0.0;
-                    final merchantShippingPrices =
-                        shippingState is GovernoratesLoaded
-                            ? shippingState.merchantShippingPrices
-                            : <String, double>{};
-                    final totalShippingPrice =
-                        shippingState is GovernoratesLoaded
-                            ? shippingState.totalShippingPrice
-                            : 0.0;
-
-                    return SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            GovernorateDropdown(
-                              governorates: governorates,
-                              selected: selectedGovernorate,
-                              locale: locale,
-                              cartState: cartState,
-                            ),
-                            const SizedBox(height: 16),
-                            CheckoutFormFields(
-                              addressController: _addressController,
-                              nameController: _nameController,
-                              phoneController: _phoneController,
-                              notesController: _notesController,
-                            ),
-                            const SizedBox(height: 24),
-                            const PaymentMethodCard(),
-                            const SizedBox(height: 24),
-                            OrderSummaryCard(
-                              cartState: cartState,
-                              shippingPrice: shippingPrice,
-                              merchantShippingPrices: merchantShippingPrices,
-                            ),
-                            const SizedBox(height: 32),
-                            BlocBuilder<OrdersCubit, OrdersState>(
-                              builder: (context, orderState) {
-                                final isLoading = orderState is OrderCreating;
-                                // Use total shipping price for the order
-                                final orderShippingCost = totalShippingPrice > 0
-                                    ? totalShippingPrice
-                                    : shippingPrice;
-                                return SizedBox(
-                                  width: double.infinity,
-                                  child: CustomButton(
-                                    onPressed: isLoading
-                                        ? () {}
-                                        : () => _placeOrder(
-                                              orderShippingCost,
-                                              selectedGovernorate?.id,
-                                              merchantShippingPrices,
-                                              cartState,
-                                            ),
-                                    label: isLoading
-                                        ? 'loading'.tr()
-                                        : 'place_order'.tr(),
-                                    color: AppColours.brownLight,
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
+            body: _CheckoutBody(
+              formKey: _formKey,
+              addressController: _addressController,
+              nameController: _nameController,
+              phoneController: _phoneController,
+              notesController: _notesController,
+              locale: locale,
+              onPlaceOrder: _placeOrder,
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Optimized checkout body with selective rebuilds
+class _CheckoutBody extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController addressController;
+  final TextEditingController nameController;
+  final TextEditingController phoneController;
+  final TextEditingController notesController;
+  final String locale;
+  final void Function(double, String?, Map<String, double>?, CartLoaded)
+      onPlaceOrder;
+
+  const _CheckoutBody({
+    required this.formKey,
+    required this.addressController,
+    required this.nameController,
+    required this.phoneController,
+    required this.notesController,
+    required this.locale,
+    required this.onPlaceOrder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CartCubit, CartState>(
+      buildWhen: (prev, curr) =>
+          prev.runtimeType != curr.runtimeType ||
+          (prev is CartLoaded &&
+              curr is CartLoaded &&
+              prev.items != curr.items),
+      builder: (context, cartState) {
+        if (cartState is! CartLoaded || cartState.isEmpty) {
+          return Center(child: Text('cart_empty'.tr()));
+        }
+
+        return _CheckoutForm(
+          formKey: formKey,
+          addressController: addressController,
+          nameController: nameController,
+          phoneController: phoneController,
+          notesController: notesController,
+          locale: locale,
+          cartState: cartState,
+          onPlaceOrder: onPlaceOrder,
+        );
+      },
+    );
+  }
+}
+
+/// Form content with shipping state
+class _CheckoutForm extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController addressController;
+  final TextEditingController nameController;
+  final TextEditingController phoneController;
+  final TextEditingController notesController;
+  final String locale;
+  final CartLoaded cartState;
+  final void Function(double, String?, Map<String, double>?, CartLoaded)
+      onPlaceOrder;
+
+  const _CheckoutForm({
+    required this.formKey,
+    required this.addressController,
+    required this.nameController,
+    required this.phoneController,
+    required this.notesController,
+    required this.locale,
+    required this.cartState,
+    required this.onPlaceOrder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ShippingCubit, ShippingState>(
+      builder: (context, shippingState) {
+        final governorates = shippingState is GovernoratesLoaded
+            ? shippingState.governorates
+            : <GovernorateEntity>[];
+        final selectedGovernorate = shippingState is GovernoratesLoaded
+            ? shippingState.selectedGovernorate
+            : null;
+        final shippingPrice = shippingState is GovernoratesLoaded
+            ? shippingState.shippingPrice
+            : 0.0;
+        final merchantShippingPrices = shippingState is GovernoratesLoaded
+            ? shippingState.merchantShippingPrices
+            : <String, double>{};
+        final totalShippingPrice = shippingState is GovernoratesLoaded
+            ? shippingState.totalShippingPrice
+            : 0.0;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GovernorateDropdown(
+                  governorates: governorates,
+                  selected: selectedGovernorate,
+                  locale: locale,
+                  cartState: cartState,
+                ),
+                const SizedBox(height: 16),
+                CheckoutFormFields(
+                  addressController: addressController,
+                  nameController: nameController,
+                  phoneController: phoneController,
+                  notesController: notesController,
+                ),
+                const SizedBox(height: 24),
+                const PaymentMethodCard(),
+                const SizedBox(height: 24),
+                OrderSummaryCard(
+                  cartState: cartState,
+                  shippingPrice: shippingPrice,
+                  merchantShippingPrices: merchantShippingPrices,
+                ),
+                const SizedBox(height: 32),
+                _PlaceOrderButton(
+                  shippingPrice: shippingPrice,
+                  totalShippingPrice: totalShippingPrice,
+                  selectedGovernorate: selectedGovernorate,
+                  merchantShippingPrices: merchantShippingPrices,
+                  cartState: cartState,
+                  onPlaceOrder: onPlaceOrder,
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Optimized place order button - only rebuilds when order state changes
+class _PlaceOrderButton extends StatelessWidget {
+  final double shippingPrice;
+  final double totalShippingPrice;
+  final GovernorateEntity? selectedGovernorate;
+  final Map<String, double> merchantShippingPrices;
+  final CartLoaded cartState;
+  final void Function(double, String?, Map<String, double>?, CartLoaded)
+      onPlaceOrder;
+
+  const _PlaceOrderButton({
+    required this.shippingPrice,
+    required this.totalShippingPrice,
+    required this.selectedGovernorate,
+    required this.merchantShippingPrices,
+    required this.cartState,
+    required this.onPlaceOrder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<OrdersCubit, OrdersState, bool>(
+      selector: (state) => state is OrderCreating,
+      builder: (context, isLoading) {
+        final orderShippingCost =
+            totalShippingPrice > 0 ? totalShippingPrice : shippingPrice;
+        return SizedBox(
+          width: double.infinity,
+          child: CustomButton(
+            onPressed: isLoading
+                ? () {}
+                : () => onPlaceOrder(
+                      orderShippingCost,
+                      selectedGovernorate?.id,
+                      merchantShippingPrices,
+                      cartState,
+                    ),
+            label: isLoading ? 'loading'.tr() : 'place_order'.tr(),
+            color: AppColours.brownLight,
+          ),
+        );
+      },
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/shared_widgets/language_toggle_button.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../domain/entities/user_entity.dart';
@@ -62,6 +63,12 @@ class _RegisterPageState extends State<RegisterPage> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => context.pop(),
         ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(left: 16, right: 16),
+            child: LanguageToggleButton(),
+          ),
+        ],
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {

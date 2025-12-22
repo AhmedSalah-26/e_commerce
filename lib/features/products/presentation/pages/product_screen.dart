@@ -180,9 +180,10 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   Widget _buildFavoriteButton(double screenWidth) {
-    return BlocBuilder<FavoritesCubit, FavoritesState>(
-      builder: (context, state) {
-        final isFav = state is FavoritesLoaded && state.isFavorite(_product.id);
+    return BlocSelector<FavoritesCubit, FavoritesState, bool>(
+      selector: (state) =>
+          state is FavoritesLoaded && state.isFavorite(_product.id),
+      builder: (context, isFav) {
         return IconButton(
           onPressed: () => _toggleFavorite(context),
           icon: Icon(
@@ -204,12 +205,11 @@ class _ProductScreenState extends State<ProductScreen> {
         onPressed: () => Navigator.pop(context),
       ),
       actions: [
-        BlocBuilder<CartCubit, CartState>(
-          builder: (context, cartState) {
-            final cartItemCount = cartState is CartLoaded
-                ? cartState.items
-                    .fold<int>(0, (sum, item) => sum + item.quantity)
-                : 0;
+        BlocSelector<CartCubit, CartState, int>(
+          selector: (state) => state is CartLoaded
+              ? state.items.fold<int>(0, (sum, item) => sum + item.quantity)
+              : 0,
+          builder: (context, cartItemCount) {
             return Padding(
               padding: const EdgeInsets.only(left: 8),
               child: IconButton(

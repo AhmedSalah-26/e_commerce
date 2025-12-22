@@ -4,17 +4,22 @@ import '../../../products/domain/repositories/product_repository.dart';
 import 'search_state.dart';
 import 'filter_state.dart';
 
-/// Search manager to handle all search logic
+/// Search manager to handle all search logic with caching
 class SearchManager {
   final ProductRepository repository;
   final VoidCallback onStateChanged;
 
   static const int pageSize = 10;
   static const Duration debounceDuration = Duration(seconds: 1);
+  static const int _maxCacheSize = 20;
 
   SearchState _searchState = const SearchState();
   FilterState _filterState = const FilterState();
   Timer? _debounceTimer;
+
+  // Simple LRU cache for search results
+  final Map<String, List<dynamic>> _searchCache = {};
+  final List<String> _cacheKeys = [];
 
   SearchManager({
     required this.repository,
@@ -73,6 +78,19 @@ class SearchManager {
   Future<void> performSearch(String query) async {
     if (query.isEmpty) return;
 
+    // Check cache first
+    final cacheKey = _buildCacheKey(query, _filterState);
+    if (_searchCache.containsKey(cacheKey)) {
+      _searchState = _searchState.copyWith(
+        isSearching: false,
+        searchResults: _searchCache[cacheKey]!.cast(),
+        hasMore: _searchCache[cacheKey]!.length >= pageSize,
+        currentPage: 0,
+      );
+      onStateChanged();
+      return;
+    }
+
     _searchState = _searchState.copyWith(
       isSearching: true,
       currentPage: 0,
@@ -101,6 +119,9 @@ class SearchManager {
         onStateChanged();
       },
       (products) {
+        // Cache the results
+        _addToCache(cacheKey, products);
+
         _searchState = _searchState.copyWith(
           isSearching: false,
           searchResults: products,
@@ -109,6 +130,24 @@ class SearchManager {
         onStateChanged();
       },
     );
+  }
+
+  String _buildCacheKey(String query, FilterState filter) {
+    return '${query}_${filter.categoryId ?? ''}_${filter.priceRange.start}_${filter.priceRange.end}';
+  }
+
+  void _addToCache(String key, List<dynamic> results) {
+    if (_cacheKeys.length >= _maxCacheSize) {
+      final oldestKey = _cacheKeys.removeAt(0);
+      _searchCache.remove(oldestKey);
+    }
+    _searchCache[key] = results;
+    _cacheKeys.add(key);
+  }
+
+  void clearCache() {
+    _searchCache.clear();
+    _cacheKeys.clear();
   }
 
   // Load more search results
@@ -294,5 +333,6 @@ class SearchManager {
   // Dispose
   void dispose() {
     _debounceTimer?.cancel();
+    clearCache();
   }
 }

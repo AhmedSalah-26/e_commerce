@@ -84,8 +84,15 @@ class HomeSearchContent extends StatelessWidget {
               mainAxisSpacing: 12,
             ),
             itemCount: searchResults.length,
+            addAutomaticKeepAlives: false,
+            addRepaintBoundaries: true,
             itemBuilder: (context, index) {
-              return ProductGridCard(product: searchResults[index]);
+              return RepaintBoundary(
+                child: ProductGridCard(
+                  key: ValueKey(searchResults[index].id),
+                  product: searchResults[index],
+                ),
+              );
             },
           ),
         ),
@@ -167,9 +174,11 @@ class _CategoriesGrid extends StatelessWidget {
                     mainAxisSpacing: 12,
                   ),
                   itemCount: categories.length,
+                  addAutomaticKeepAlives: false,
                   itemBuilder: (context, index) {
                     final category = categories[index];
                     return _CategoryCard(
+                      key: ValueKey(category.id),
                       category: category,
                       onTap: () =>
                           onCategoryTap?.call(category.id, category.name),
@@ -193,7 +202,7 @@ class _CategoryCard extends StatelessWidget {
   final CategoryEntity category;
   final VoidCallback? onTap;
 
-  const _CategoryCard({required this.category, this.onTap});
+  const _CategoryCard({super.key, required this.category, this.onTap});
 
   @override
   Widget build(BuildContext context) {

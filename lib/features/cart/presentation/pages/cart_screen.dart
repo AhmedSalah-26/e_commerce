@@ -93,9 +93,12 @@ class _CartScreenState extends State<CartScreen> {
                     Expanded(
                       child: ListView.builder(
                         itemCount: state.items.length,
+                        addAutomaticKeepAlives: false,
+                        cacheExtent: 300,
                         itemBuilder: (context, index) {
                           final cartItem = state.items[index];
                           return CartItemCard(
+                            key: ValueKey(cartItem.id),
                             cartItem: cartItem,
                             onRemove: () {
                               context

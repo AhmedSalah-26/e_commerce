@@ -10,6 +10,7 @@ import 'categories_state.dart';
 class CategoriesCubit extends Cubit<CategoriesState> {
   final CategoryRepository _repository;
   final ImageUploadService _imageUploadService;
+  bool _isLoading = false;
 
   CategoriesCubit(this._repository,
       {required ImageUploadService imageUploadService})
@@ -37,11 +38,19 @@ class CategoriesCubit extends Cubit<CategoriesState> {
   }
 
   /// Load all categories
-  Future<void> loadCategories() async {
+  Future<void> loadCategories({bool forceReload = false}) async {
+    // Prevent duplicate loading
+    if (_isLoading) return;
+
+    // Skip if already loaded and not forcing reload
+    if (!forceReload && state is CategoriesLoaded) return;
+
+    _isLoading = true;
     emit(const CategoriesLoading());
 
     final result = await _repository.getCategories();
 
+    _isLoading = false;
     result.fold(
       (failure) => emit(CategoriesError(failure.message)),
       (categories) => emit(CategoriesLoaded(categories)),
@@ -240,6 +249,6 @@ class CategoriesCubit extends Cubit<CategoriesState> {
 
   /// Refresh categories
   Future<void> refresh() async {
-    await loadCategories();
+    await loadCategories(forceReload: true);
   }
 }

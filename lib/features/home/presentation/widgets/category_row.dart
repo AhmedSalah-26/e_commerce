@@ -32,6 +32,7 @@ class HorizontalCategoriesView extends StatelessWidget {
       child: ListView.builder(
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
+        addAutomaticKeepAlives: false,
         itemCount: categories.length + 2, // +2 for "All" and "Offers"
         itemBuilder: (context, index) {
           if (index == 0) {

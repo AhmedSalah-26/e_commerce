@@ -216,6 +216,8 @@ class _OrdersPageState extends State<OrdersPage> {
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: parentOrders.length,
+        addAutomaticKeepAlives: false,
+        cacheExtent: 500,
         itemBuilder: (context, index) {
           final parentOrder = parentOrders[index];
           return ParentOrderItemCard(parentOrder: parentOrder);

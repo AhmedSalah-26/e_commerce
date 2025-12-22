@@ -10,6 +10,7 @@ class ProductsCubit extends Cubit<ProductsState> {
   final ProductRepository _repository;
   static const int _pageSize = 10;
   Timer? _debounceTimer;
+  bool _isLoading = false;
 
   ProductsCubit({required ProductRepository repository})
       : _repository = repository,
@@ -23,11 +24,26 @@ class ProductsCubit extends Cubit<ProductsState> {
   }
 
   /// Load all products (first page)
-  Future<void> loadProducts() async {
+  Future<void> loadProducts({bool forceReload = false}) async {
+    // Prevent duplicate loading
+    if (_isLoading) return;
+
+    // Skip if already loaded and not forcing reload
+    if (!forceReload && state is ProductsLoaded) {
+      final loaded = state as ProductsLoaded;
+      if (loaded.selectedCategoryId == null &&
+          loaded.searchQuery == null &&
+          !loaded.isOffersMode) {
+        return;
+      }
+    }
+
+    _isLoading = true;
     emit(const ProductsLoading());
 
     final result = await _repository.getProducts(page: 0, limit: _pageSize);
 
+    _isLoading = false;
     result.fold(
       (failure) => emit(ProductsError(failure.message)),
       (products) => emit(ProductsLoaded(

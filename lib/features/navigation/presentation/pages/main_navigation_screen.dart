@@ -17,7 +17,8 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  final List<Widget> screens = const [
+  // Use late final to create screens only once
+  late final List<Widget> screens = const [
     HomeScreen(),
     CartScreen(),
     FavoritesScreen(),
@@ -29,13 +30,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: screens[_bottomNavIndex],
-      bottomNavigationBar: BlocBuilder<CartCubit, CartState>(
-        builder: (context, cartState) {
-          final cartItemCount = cartState is CartLoaded
-              ? cartState.items.fold<int>(0, (sum, item) => sum + item.quantity)
-              : 0;
-
+      // Use IndexedStack to keep screens alive and avoid rebuilds
+      body: IndexedStack(
+        index: _bottomNavIndex,
+        children: screens,
+      ),
+      bottomNavigationBar: BlocSelector<CartCubit, CartState, int>(
+        selector: (state) => state is CartLoaded
+            ? state.items.fold<int>(0, (sum, item) => sum + item.quantity)
+            : 0,
+        builder: (context, cartItemCount) {
           return Container(
             decoration: BoxDecoration(
               color: AppColours.white,

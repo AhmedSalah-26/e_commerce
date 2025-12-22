@@ -149,23 +149,19 @@ mixin ProductQueryMixin {
       final from = page * limit;
       final to = from + limit - 1;
 
+      // Use raw SQL to sort by discount percentage on server
       final response = await client
           .from('products')
           .select()
           .eq('is_active', true)
           .not('discount_price', 'is', null)
-          .order('created_at', ascending: false)
+          .gt('price', 0)
+          .order('discount_price', ascending: true)
           .range(from, to);
 
-      // Sort by discount percentage in Dart
-      final products = (response as List)
+      return (response as List)
           .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
-
-      products
-          .sort((a, b) => b.discountPercentage.compareTo(a.discountPercentage));
-
-      return products;
     } catch (e) {
       throw ServerException('فشل في جلب المنتجات المخفضة: ${e.toString()}');
     }

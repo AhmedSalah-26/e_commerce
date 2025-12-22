@@ -3,7 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/favorite_model.dart';
 
 abstract class FavoritesRemoteDataSource {
-  Future<List<FavoriteModel>> getFavorites(String userId, {String? locale});
+  Future<List<FavoriteModel>> getFavorites(String userId,
+      {String? locale, int page, int limit});
   Future<void> addToFavorites(String userId, String productId);
   Future<void> removeFromFavorites(String favoriteId);
   Future<bool> isFavorite(String userId, String productId);
@@ -23,29 +24,27 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
 
   @override
   Future<List<FavoriteModel>> getFavorites(String userId,
-      {String? locale}) async {
+      {String? locale, int page = 0, int limit = 10}) async {
     try {
       final currentLocale = locale ?? _locale;
-      _logger
-          .d('🔍 Getting favorites for user: $userId (locale: $currentLocale)');
+      final from = page * limit;
+      final to = from + limit - 1;
+
+      _logger.d(
+          '🔍 Getting favorites for user: $userId (locale: $currentLocale, page: $page)');
 
       final response = await _client
           .from('favorites')
           .select('*, products(*)')
           .eq('user_id', userId)
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .range(from, to);
 
       final favorites = (response as List)
           .map((json) => FavoriteModel.fromJson(json, locale: currentLocale))
           .toList();
 
       _logger.d('✅ Found ${favorites.length} favorites');
-
-      // Log products status
-      for (var fav in favorites) {
-        _logger.d(
-            '  - Favorite ${fav.id}: product=${fav.product != null ? fav.product!.name : "NULL"}');
-      }
 
       return favorites;
     } catch (e) {

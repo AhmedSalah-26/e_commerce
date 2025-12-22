@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -57,7 +55,7 @@ class ProductImageSection extends StatelessWidget {
   }
 }
 
-/// Optimized product image with caching
+/// Optimized product image with caching - uses cover fit for better performance
 class _ProductImage extends StatelessWidget {
   final String imageUrl;
   static const int _cacheSize = 300;
@@ -81,33 +79,13 @@ class _ProductImage extends StatelessWidget {
         errorWidget: (_, __, ___) => const _ImagePlaceholder(),
         fadeInDuration: Duration.zero,
         fadeOutDuration: Duration.zero,
-        imageBuilder: (context, imageProvider) {
-          return FutureBuilder<ImageInfo>(
-            future: _getImageInfo(imageProvider),
-            builder: (context, snapshot) {
-              BoxFit fit = BoxFit.contain;
-              if (snapshot.hasData) {
-                final info = snapshot.data!;
-                // landscape/square → cover, portrait → contain
-                fit = info.image.width >= info.image.height
-                    ? BoxFit.cover
-                    : BoxFit.contain;
-              }
-              return Image(
-                image: imageProvider,
-                fit: fit,
-                width: double.infinity,
-                height: double.infinity,
-              );
-            },
-          );
-        },
+        fit: BoxFit.cover,
       );
     }
 
     return Image.asset(
       imageUrl,
-      fit: BoxFit.contain,
+      fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
       cacheWidth: _cacheSize,
@@ -115,15 +93,6 @@ class _ProductImage extends StatelessWidget {
       errorBuilder: (_, __, ___) => const _ImagePlaceholder(),
     );
   }
-}
-
-Future<ImageInfo> _getImageInfo(ImageProvider provider) async {
-  final completer = Completer<ImageInfo>();
-  final stream = provider.resolve(const ImageConfiguration());
-  stream.addListener(ImageStreamListener((info, _) {
-    completer.complete(info);
-  }));
-  return completer.future;
 }
 
 class _ImagePlaceholder extends StatelessWidget {

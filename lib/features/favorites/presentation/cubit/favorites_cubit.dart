@@ -10,6 +10,8 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   final _logger = Logger();
   String? _userId;
   String _locale = 'ar';
+  bool _isLoading = false;
+  static const int _pageSize = 10;
 
   FavoritesCubit(this._repository, this._dataSource)
       : super(FavoritesInitial());
@@ -26,6 +28,10 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   }
 
   Future<void> loadFavorites(String userId, {bool showLoading = true}) async {
+    // Prevent duplicate loading
+    if (_isLoading) return;
+    _isLoading = true;
+
     _userId = userId;
 
     // Only show loading if not already loaded
@@ -33,7 +39,10 @@ class FavoritesCubit extends Cubit<FavoritesState> {
       emit(FavoritesLoading());
     }
 
-    final result = await _repository.getFavorites(userId, locale: _locale);
+    final result = await _repository.getFavorites(userId,
+        locale: _locale, page: 0, limit: _pageSize);
+
+    _isLoading = false;
 
     result.fold(
       (failure) {
@@ -46,6 +55,41 @@ class FavoritesCubit extends Cubit<FavoritesState> {
         emit(FavoritesLoaded(
           favorites: favorites,
           favoriteProductIds: productIds,
+          hasMore: favorites.length >= _pageSize,
+          currentPage: 0,
+        ));
+      },
+    );
+  }
+
+  /// Load more favorites (pagination)
+  Future<void> loadMoreFavorites() async {
+    if (_userId == null) return;
+
+    final currentState = state;
+    if (currentState is! FavoritesLoaded) return;
+    if (currentState.isLoadingMore || !currentState.hasMore) return;
+
+    emit(currentState.copyWith(isLoadingMore: true));
+
+    final nextPage = currentState.currentPage + 1;
+
+    final result = await _repository.getFavorites(_userId!,
+        locale: _locale, page: nextPage, limit: _pageSize);
+
+    result.fold(
+      (failure) {
+        emit(currentState.copyWith(isLoadingMore: false));
+      },
+      (newFavorites) {
+        final allFavorites = [...currentState.favorites, ...newFavorites];
+        final productIds = allFavorites.map((f) => f.productId).toSet();
+        emit(currentState.copyWith(
+          favorites: allFavorites,
+          favoriteProductIds: productIds,
+          hasMore: newFavorites.length >= _pageSize,
+          currentPage: nextPage,
+          isLoadingMore: false,
         ));
       },
     );

@@ -21,15 +21,38 @@ class FavoritesScreen extends StatefulWidget {
 
 class _FavoritesScreenState extends State<FavoritesScreen>
     with AutomaticKeepAliveClientMixin {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadFavoritesIfNeeded();
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_isBottom) {
+      context.read<FavoritesCubit>().loadMoreFavorites();
+    }
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return currentScroll >= (maxScroll - 200);
   }
 
   void _loadFavoritesIfNeeded() {
@@ -119,19 +142,50 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
               return RefreshIndicator(
                 onRefresh: () async => _loadFavorites(),
-                child: GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.55,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemCount: validFavorites.length,
-                  itemBuilder: (context, index) {
-                    return ProductGridCard(
-                        product: validFavorites[index].product!);
-                  },
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: GridView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.55,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
+                        itemCount: validFavorites.length,
+                        addAutomaticKeepAlives: false,
+                        addRepaintBoundaries: true,
+                        cacheExtent: 500,
+                        itemBuilder: (context, index) {
+                          return RepaintBoundary(
+                            child: ProductGridCard(
+                              key: ValueKey(validFavorites[index].id),
+                              product: validFavorites[index].product!,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    if (state.isLoadingMore)
+                      const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    if (!state.hasMore && validFavorites.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Center(
+                          child: Text(
+                            'no_more_favorites'.tr(),
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 80),
+                  ],
                 ),
               );
             }

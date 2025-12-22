@@ -18,10 +18,10 @@ class FavoritesRepositoryImpl implements FavoritesRepository {
 
   @override
   Future<Either<Failure, List<FavoriteEntity>>> getFavorites(String userId,
-      {String? locale}) async {
+      {String? locale, int page = 0, int limit = 10}) async {
     try {
-      final favorites =
-          await _remoteDataSource.getFavorites(userId, locale: locale);
+      final favorites = await _remoteDataSource.getFavorites(userId,
+          locale: locale, page: page, limit: limit);
       return Right(favorites);
     } catch (e) {
       return Left(ServerFailure(e.toString()));

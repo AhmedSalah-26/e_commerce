@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -69,7 +71,6 @@ class _ProductImage extends StatelessWidget {
     if (imageUrl.startsWith('http')) {
       return CachedNetworkImage(
         imageUrl: imageUrl,
-        fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
         memCacheWidth: _cacheSize,
@@ -80,12 +81,33 @@ class _ProductImage extends StatelessWidget {
         errorWidget: (_, __, ___) => const _ImagePlaceholder(),
         fadeInDuration: Duration.zero,
         fadeOutDuration: Duration.zero,
+        imageBuilder: (context, imageProvider) {
+          return FutureBuilder<ImageInfo>(
+            future: _getImageInfo(imageProvider),
+            builder: (context, snapshot) {
+              BoxFit fit = BoxFit.contain;
+              if (snapshot.hasData) {
+                final info = snapshot.data!;
+                // landscape/square → cover, portrait → contain
+                fit = info.image.width >= info.image.height
+                    ? BoxFit.cover
+                    : BoxFit.contain;
+              }
+              return Image(
+                image: imageProvider,
+                fit: fit,
+                width: double.infinity,
+                height: double.infinity,
+              );
+            },
+          );
+        },
       );
     }
 
     return Image.asset(
       imageUrl,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       width: double.infinity,
       height: double.infinity,
       cacheWidth: _cacheSize,
@@ -93,6 +115,15 @@ class _ProductImage extends StatelessWidget {
       errorBuilder: (_, __, ___) => const _ImagePlaceholder(),
     );
   }
+}
+
+Future<ImageInfo> _getImageInfo(ImageProvider provider) async {
+  final completer = Completer<ImageInfo>();
+  final stream = provider.resolve(const ImageConfiguration());
+  stream.addListener(ImageStreamListener((info, _) {
+    completer.complete(info);
+  }));
+  return completer.future;
 }
 
 class _ImagePlaceholder extends StatelessWidget {
@@ -156,18 +187,6 @@ class _FavoriteButton extends StatelessWidget {
 
   const _FavoriteButton({required this.productId});
 
-  static const _favoriteIcon = Icon(
-    Icons.favorite,
-    color: AppColours.brownLight,
-    size: 20,
-  );
-
-  static const _notFavoriteIcon = Icon(
-    Icons.favorite_border,
-    color: AppColours.brownLight,
-    size: 20,
-  );
-
   @override
   Widget build(BuildContext context) {
     return BlocSelector<FavoritesCubit, FavoritesState, bool>(
@@ -177,12 +196,17 @@ class _FavoriteButton extends StatelessWidget {
         return GestureDetector(
           onTap: () => _toggleFavorite(context, isFavorite),
           child: Container(
-            padding: const EdgeInsets.all(8),
+            width: 28,
+            height: 28,
             decoration: const BoxDecoration(
               color: AppColours.jumiaDark,
               shape: BoxShape.circle,
             ),
-            child: isFavorite ? _favoriteIcon : _notFavoriteIcon,
+            child: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: AppColours.brownLight,
+              size: 14,
+            ),
           ),
         );
       },

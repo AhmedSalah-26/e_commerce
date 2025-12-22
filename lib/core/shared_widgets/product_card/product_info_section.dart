@@ -51,15 +51,18 @@ class _ProductName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      name,
-      style: const TextStyle(
-        fontSize: 13,
-        color: AppColours.jumiaDark,
-        height: 1.3,
+    return SizedBox(
+      height: 36, // Fixed height for 2 lines
+      child: Text(
+        name,
+        style: const TextStyle(
+          fontSize: 13,
+          color: AppColours.jumiaDark,
+          height: 1.3,
+        ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
       ),
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
     );
   }
 }
@@ -71,29 +74,31 @@ class _PriceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "${product.effectivePrice.toStringAsFixed(2)} ${'egp'.tr()}",
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColours.jumiaDark,
-          ),
-        ),
-        if (product.hasDiscount) ...[
-          const SizedBox(height: 2),
+    return SizedBox(
+      height: 40, // Fixed height for price section
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
           Text(
-            "${product.price.toStringAsFixed(2)} ${'egp'.tr()}",
+            "${product.effectivePrice.toStringAsFixed(2)} ${'egp'.tr()}",
             style: const TextStyle(
-              fontSize: 12,
-              color: AppColours.jumiaGrey,
-              decoration: TextDecoration.lineThrough,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColours.jumiaDark,
             ),
           ),
+          if (product.hasDiscount)
+            Text(
+              "${product.price.toStringAsFixed(2)} ${'egp'.tr()}",
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColours.jumiaGrey,
+                decoration: TextDecoration.lineThrough,
+              ),
+            ),
         ],
-      ],
+      ),
     );
   }
 }

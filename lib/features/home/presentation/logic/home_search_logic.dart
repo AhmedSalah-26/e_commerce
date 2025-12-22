@@ -74,6 +74,11 @@ mixin HomeSearchLogic<T extends StatefulWidget> on State<T> {
     );
   }
 
+  // Search by category
+  Future<void> searchByCategory(String categoryId, String categoryName) async {
+    await _searchManager.searchByCategory(categoryId, categoryName);
+  }
+
   // Clear filters
   void clearFilters() {
     _searchManager.clearFilters();

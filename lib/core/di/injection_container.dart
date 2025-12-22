@@ -18,6 +18,7 @@ import '../../features/products/domain/repositories/product_repository.dart';
 import '../../features/products/domain/usecases/get_products_usecase.dart';
 import '../../features/products/domain/usecases/get_products_by_category_usecase.dart';
 import '../../features/products/presentation/cubit/products_cubit.dart';
+import '../../features/home/presentation/cubit/home_sliders_cubit.dart';
 
 // Categories imports
 import '../../features/categories/data/datasources/category_remote_datasource.dart';
@@ -105,6 +106,7 @@ Future<void> initializeDependencies() async {
   sl.registerFactory(() => ProductsCubit(
         repository: sl<ProductRepository>(),
       ));
+  sl.registerFactory(() => HomeSlidersCubit(sl<ProductRepository>()));
 
   // Categories Feature
   sl.registerLazySingleton<CategoryRemoteDataSource>(

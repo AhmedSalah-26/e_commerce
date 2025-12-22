@@ -7,9 +7,11 @@ import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../categories/presentation/cubit/categories_state.dart';
 import '../../../products/presentation/cubit/products_cubit.dart';
 import '../../../products/presentation/cubit/products_state.dart';
+import '../cubit/home_sliders_cubit.dart';
 import 'images_card_slider.dart';
 import 'category_row.dart';
 import 'products_grid.dart';
+import 'horizontal_products_slider.dart';
 
 class HomeContentBuilder {
   static List<Widget> buildHomeContent({
@@ -17,6 +19,8 @@ class HomeContentBuilder {
     required List<String> sliderImages,
     required String? selectedCategoryId,
     required Function(String?) onCategorySelected,
+    required VoidCallback onOffersSelected,
+    required bool isOffersSelected,
   }) {
     return [
       SliverToBoxAdapter(
@@ -24,6 +28,29 @@ class HomeContentBuilder {
           children: <Widget>[
             ImagesCard(images: sliderImages),
             const SizedBox(height: 10),
+            // Discounted Products Slider
+            BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
+              builder: (context, state) {
+                return HorizontalProductsSlider(
+                  title: 'best_deals'.tr(),
+                  products: state.discountedProducts,
+                  isLoading: state.isLoadingDiscounted,
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+            // Newest Products Slider
+            BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
+              builder: (context, state) {
+                return HorizontalProductsSlider(
+                  title: 'new_arrivals'.tr(),
+                  products: state.newestProducts,
+                  isLoading: state.isLoadingNewest,
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+            // Categories Row
             BlocBuilder<CategoriesCubit, CategoriesState>(
               builder: (context, state) {
                 if (state is CategoriesLoading) {
@@ -33,7 +60,9 @@ class HomeContentBuilder {
                   return HorizontalCategoriesView(
                     categories: state.categories,
                     selectedCategoryId: selectedCategoryId,
+                    isOffersSelected: isOffersSelected,
                     onCategorySelected: onCategorySelected,
+                    onOffersSelected: onOffersSelected,
                   );
                 }
                 if (state is CategoriesError) {

@@ -8,10 +8,12 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/auth/presentation/cubit/auth_state.dart';
 import 'features/products/presentation/cubit/products_cubit.dart';
+import 'features/products/data/datasources/product_remote_datasource.dart';
 import 'features/categories/presentation/cubit/categories_cubit.dart';
 import 'features/cart/presentation/cubit/cart_cubit.dart';
 import 'features/orders/presentation/cubit/orders_cubit.dart';
 import 'features/favorites/presentation/cubit/favorites_cubit.dart';
+import 'features/home/presentation/cubit/home_sliders_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +21,9 @@ void main() async {
 
   // Initialize dependencies (Supabase, etc.)
   await di.initializeDependencies();
+
+  // Cleanup expired flash sales on app start
+  _cleanupExpiredFlashSales();
 
   // Check onboarding status
   await AppRouter.checkOnboardingStatus();
@@ -49,11 +54,24 @@ void main() async {
           BlocProvider<FavoritesCubit>(
             create: (_) => di.sl<FavoritesCubit>(),
           ),
+          BlocProvider<HomeSlidersCubit>(
+            create: (_) => di.sl<HomeSlidersCubit>(),
+          ),
         ],
         child: const MyApp(),
       ),
     ),
   );
+}
+
+/// Cleanup expired flash sales in background
+void _cleanupExpiredFlashSales() {
+  try {
+    final datasource = di.sl<ProductRemoteDataSource>();
+    datasource.cleanupExpiredFlashSales();
+  } catch (_) {
+    // Silently fail - not critical
+  }
 }
 
 class MyApp extends StatefulWidget {

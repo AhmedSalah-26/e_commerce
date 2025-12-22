@@ -61,8 +61,12 @@
   "show_less": "عرض أقل",
   "reviews": "التقييمات",
   "featured": "مميز",
+  "best_deals": "أفضل العروض",
+  "new_arrivals": "وصل حديثاً",
   "categories": "التصنيفات",
+  "no_categories": "لا توجد تصنيفات",
   "all_products": "جميع المنتجات",
+  "offers": "العروض",
   "no_products": "لا توجد منتجات",
   "sold_by": "يباع بواسطة",
 
@@ -249,5 +253,20 @@
   "add_shipping_price": "إضافة سعر شحن",
   "add_shipping_zone": "إضافة منطقة شحن",
   "active_shipping_zones": "مناطق الشحن النشطة",
-  "inactive_shipping_zones": "مناطق بدون شحن"
+  "inactive_shipping_zones": "مناطق بدون شحن",
+
+  "flash_sale": "عرض خاص",
+  "flash_sale_badge": "عرض خاص",
+  "ends_in": "ينتهي خلال",
+  "days": "يوم",
+  "hours": "ساعة",
+  "minutes": "دقيقة",
+  "seconds": "ثانية",
+  "flash_sale_settings": "إعدادات العرض الخاص",
+  "enable_flash_sale": "تفعيل العرض الخاص",
+  "flash_sale_start": "بداية العرض",
+  "flash_sale_end": "نهاية العرض",
+  "flash_sale_duration": "مدة العرض",
+  "select_date": "اختر التاريخ",
+  "select_time": "اختر الوقت"
 }

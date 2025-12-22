@@ -241,4 +241,40 @@ class ProductRepositoryImpl implements ProductRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, List<ProductEntity>>> getDiscountedProducts({
+    int page = 0,
+    int limit = 10,
+  }) async {
+    try {
+      final products = await _remoteDataSource.getDiscountedProducts(
+        locale: _locale,
+        page: page,
+        limit: limit,
+      );
+      return Right(products);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, code: e.code));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<ProductEntity>>> getNewestProducts({
+    int limit = 10,
+  }) async {
+    try {
+      final products = await _remoteDataSource.getNewestProducts(
+        locale: _locale,
+        limit: limit,
+      );
+      return Right(products);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, code: e.code));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

@@ -19,15 +19,41 @@ class ProductGridCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => _navigateToProduct(context),
-      child: Container(
-        decoration: _cardDecoration,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(child: ProductImageSection(product: product)),
-            ProductInfoSection(product: product, isArabic: isArabic),
-          ],
-        ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            decoration: _cardDecoration,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: ProductImageSection(product: product)),
+                ProductInfoSection(product: product, isArabic: isArabic),
+              ],
+            ),
+          ),
+          // Flash Sale Badge - top right
+          if (product.isFlashSaleActive)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'flash_sale_badge'.tr(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

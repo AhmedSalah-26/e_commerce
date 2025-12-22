@@ -146,6 +146,13 @@ class MerchantProductsCubit extends Cubit<MerchantProductsState> {
         ratingCount: 0,
         isActive: productData['is_active'] ?? true,
         isFeatured: productData['is_featured'] ?? false,
+        isFlashSale: productData['is_flash_sale'] ?? false,
+        flashSaleStart: productData['flash_sale_start'] != null
+            ? DateTime.parse(productData['flash_sale_start'])
+            : null,
+        flashSaleEnd: productData['flash_sale_end'] != null
+            ? DateTime.parse(productData['flash_sale_end'])
+            : null,
       );
 
       final result = await _productRepository.createProduct(product,
@@ -274,6 +281,9 @@ class MerchantProductsCubit extends Cubit<MerchantProductsState> {
         'stock': productData['stock'] ?? 0,
         'is_active': productData['is_active'] ?? true,
         'is_featured': productData['is_featured'] ?? false,
+        'is_flash_sale': productData['is_flash_sale'] ?? false,
+        'flash_sale_start': productData['flash_sale_start'],
+        'flash_sale_end': productData['flash_sale_end'],
       };
 
       final result =

@@ -61,8 +61,12 @@
   "show_less": "Show Less",
   "reviews": "Reviews",
   "featured": "Featured",
+  "best_deals": "Best Deals",
+  "new_arrivals": "New Arrivals",
   "categories": "Categories",
+  "no_categories": "No categories found",
   "all_products": "All Products",
+  "offers": "Offers",
   "no_products": "No products found",
   "sold_by": "Sold by",
 
@@ -249,5 +253,20 @@
   "add_shipping_price": "Add Shipping Price",
   "add_shipping_zone": "Add Shipping Zone",
   "active_shipping_zones": "Active Shipping Zones",
-  "inactive_shipping_zones": "Inactive Zones"
+  "inactive_shipping_zones": "Inactive Zones",
+
+  "flash_sale": "Flash Sale",
+  "flash_sale_badge": "Special Offer",
+  "ends_in": "Ends in",
+  "days": "Days",
+  "hours": "Hours",
+  "minutes": "Min",
+  "seconds": "Sec",
+  "flash_sale_settings": "Flash Sale Settings",
+  "enable_flash_sale": "Enable Flash Sale",
+  "flash_sale_start": "Sale Start",
+  "flash_sale_end": "Sale End",
+  "flash_sale_duration": "Sale Duration",
+  "select_date": "Select Date",
+  "select_time": "Select Time"
 }

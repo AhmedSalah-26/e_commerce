@@ -20,6 +20,9 @@ class ProductModel extends ProductEntity {
     super.storeName,
     super.storePhone,
     super.storeAddress,
+    super.isFlashSale,
+    super.flashSaleStart,
+    super.flashSaleEnd,
   });
 
   /// Create ProductModel from JSON (Supabase response) with locale
@@ -79,6 +82,13 @@ class ProductModel extends ProductEntity {
       storeName: storeName,
       storePhone: storePhone,
       storeAddress: storeAddress,
+      isFlashSale: json['is_flash_sale'] as bool? ?? false,
+      flashSaleStart: json['flash_sale_start'] != null
+          ? DateTime.parse(json['flash_sale_start'] as String)
+          : null,
+      flashSaleEnd: json['flash_sale_end'] != null
+          ? DateTime.parse(json['flash_sale_end'] as String)
+          : null,
     );
   }
 
@@ -99,6 +109,9 @@ class ProductModel extends ProductEntity {
       'rating_count': ratingCount,
       'is_active': isActive,
       'is_featured': isFeatured,
+      'is_flash_sale': isFlashSale,
+      'flash_sale_start': flashSaleStart?.toIso8601String(),
+      'flash_sale_end': flashSaleEnd?.toIso8601String(),
     };
   }
 
@@ -128,6 +141,9 @@ class ProductModel extends ProductEntity {
     String? storeName,
     String? storePhone,
     String? storeAddress,
+    bool? isFlashSale,
+    DateTime? flashSaleStart,
+    DateTime? flashSaleEnd,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -147,6 +163,9 @@ class ProductModel extends ProductEntity {
       storeName: storeName ?? this.storeName,
       storePhone: storePhone ?? this.storePhone,
       storeAddress: storeAddress ?? this.storeAddress,
+      isFlashSale: isFlashSale ?? this.isFlashSale,
+      flashSaleStart: flashSaleStart ?? this.flashSaleStart,
+      flashSaleEnd: flashSaleEnd ?? this.flashSaleEnd,
     );
   }
 }

@@ -27,6 +27,7 @@ class ProductsLoaded extends ProductsState {
   final bool hasMore;
   final int currentPage;
   final bool isLoadingMore;
+  final bool isOffersMode;
 
   const ProductsLoaded({
     required this.products,
@@ -35,6 +36,7 @@ class ProductsLoaded extends ProductsState {
     this.hasMore = true,
     this.currentPage = 0,
     this.isLoadingMore = false,
+    this.isOffersMode = false,
   });
 
   @override
@@ -45,6 +47,7 @@ class ProductsLoaded extends ProductsState {
         hasMore,
         currentPage,
         isLoadingMore,
+        isOffersMode,
       ];
 
   ProductsLoaded copyWith({
@@ -54,6 +57,7 @@ class ProductsLoaded extends ProductsState {
     bool? hasMore,
     int? currentPage,
     bool? isLoadingMore,
+    bool? isOffersMode,
   }) {
     return ProductsLoaded(
       products: products ?? this.products,
@@ -62,6 +66,7 @@ class ProductsLoaded extends ProductsState {
       hasMore: hasMore ?? this.hasMore,
       currentPage: currentPage ?? this.currentPage,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      isOffersMode: isOffersMode ?? this.isOffersMode,
     );
   }
 
@@ -74,6 +79,7 @@ class ProductsLoaded extends ProductsState {
       hasMore: hasMore,
       currentPage: currentPage,
       isLoadingMore: isLoadingMore,
+      isOffersMode: isOffersMode,
     );
   }
 }

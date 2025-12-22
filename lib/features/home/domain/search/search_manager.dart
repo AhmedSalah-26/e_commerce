@@ -50,6 +50,11 @@ class SearchManager {
         isSearching: false,
       );
       onStateChanged();
+
+      // If there are active filters, reload filtered results
+      if (_filterState.hasActiveFilters) {
+        _performFilteredSearch();
+      }
       return;
     }
 
@@ -108,9 +113,7 @@ class SearchManager {
 
   // Load more search results
   Future<void> loadMoreResults() async {
-    if (_searchState.isLoadingMore ||
-        !_searchState.hasMore ||
-        _searchState.currentQuery.isEmpty) {
+    if (_searchState.isLoadingMore || !_searchState.hasMore) {
       return;
     }
 
@@ -154,25 +157,138 @@ class SearchManager {
     String? categoryId,
     RangeValues? priceRange,
   }) {
-    _filterState = _filterState.copyWith(
+    final currentQuery = _searchState.currentQuery;
+    final hasFilters = categoryId != null ||
+        (priceRange != null &&
+            (priceRange.start > _filterState.minPrice ||
+                priceRange.end < _filterState.maxPrice));
+
+    _filterState = FilterState(
       categoryId: categoryId,
-      priceRange: priceRange,
+      priceRange: priceRange ??
+          RangeValues(_filterState.minPrice, _filterState.maxPrice),
+      minPrice: _filterState.minPrice,
+      maxPrice: _filterState.maxPrice,
+    );
+
+    // If no filters and no query, show categories
+    if (!hasFilters && currentQuery.isEmpty) {
+      _searchState = const SearchState(
+        isSearchMode: true,
+        currentQuery: '',
+        searchResults: [],
+        isSearching: false,
+      );
+      onStateChanged();
+      return;
+    }
+
+    // Keep the query and perform filtered search
+    _searchState = SearchState(
+      isSearchMode: true,
+      currentQuery: currentQuery,
+      searchResults: const [],
+      isSearching: true,
     );
     onStateChanged();
 
-    if (_searchState.isSearchMode && _searchState.currentQuery.isNotEmpty) {
-      performSearch(_searchState.currentQuery);
-    }
+    // Perform filtered search
+    _performFilteredSearch();
   }
 
-  // Clear filters
-  void clearFilters() {
-    _filterState = _filterState.clear();
+  // Perform filtered search (with or without query)
+  Future<void> _performFilteredSearch() async {
+    _searchState = _searchState.copyWith(
+      isSearching: true,
+      currentPage: 0,
+    );
     onStateChanged();
 
-    if (_searchState.isSearchMode && _searchState.currentQuery.isNotEmpty) {
-      performSearch(_searchState.currentQuery);
-    }
+    final result = await repository.searchProducts(
+      _searchState.currentQuery, // Can be empty
+      page: 0,
+      limit: pageSize,
+      categoryId: _filterState.categoryId,
+      minPrice: _filterState.priceRange.start > _filterState.minPrice
+          ? _filterState.priceRange.start
+          : null,
+      maxPrice: _filterState.priceRange.end < _filterState.maxPrice
+          ? _filterState.priceRange.end
+          : null,
+    );
+
+    result.fold(
+      (failure) {
+        _searchState = _searchState.copyWith(
+          isSearching: false,
+          searchResults: [],
+        );
+        onStateChanged();
+      },
+      (products) {
+        _searchState = _searchState.copyWith(
+          isSearching: false,
+          searchResults: products,
+          hasMore: products.length >= pageSize,
+        );
+        onStateChanged();
+      },
+    );
+  }
+
+  // Search by category (loads all products in category)
+  Future<void> searchByCategory(String categoryId, String categoryName) async {
+    // Clear old results immediately
+    _searchState = const SearchState(
+      isSearchMode: true,
+      isSearching: true,
+      currentQuery: '',
+      searchResults: [],
+    );
+    _filterState = FilterState(
+      categoryId: categoryId,
+      priceRange: RangeValues(_filterState.minPrice, _filterState.maxPrice),
+      minPrice: _filterState.minPrice,
+      maxPrice: _filterState.maxPrice,
+    );
+    onStateChanged();
+
+    final result = await repository.searchProducts(
+      '', // Empty query to get all products
+      page: 0,
+      limit: pageSize,
+      categoryId: categoryId,
+    );
+
+    result.fold(
+      (failure) {
+        _searchState = _searchState.copyWith(
+          isSearching: false,
+          searchResults: [],
+        );
+        onStateChanged();
+      },
+      (products) {
+        _searchState = _searchState.copyWith(
+          isSearching: false,
+          searchResults: products,
+          hasMore: products.length >= pageSize,
+        );
+        onStateChanged();
+      },
+    );
+  }
+
+  // Clear filters - reset to show categories
+  void clearFilters() {
+    _filterState = _filterState.clear();
+    _searchState = const SearchState(
+      isSearchMode: true,
+      currentQuery: '',
+      searchResults: [],
+      isSearching: false,
+    );
+    onStateChanged();
   }
 
   // Dispose

@@ -20,6 +20,10 @@ class ProductEntity extends Equatable {
   final String? storeName;
   final String? storePhone;
   final String? storeAddress;
+  // Flash sale info
+  final bool isFlashSale;
+  final DateTime? flashSaleStart;
+  final DateTime? flashSaleEnd;
 
   const ProductEntity({
     required this.id,
@@ -39,6 +43,9 @@ class ProductEntity extends Equatable {
     this.storeName,
     this.storePhone,
     this.storeAddress,
+    this.isFlashSale = false,
+    this.flashSaleStart,
+    this.flashSaleEnd,
   });
 
   /// Check if product is out of stock
@@ -62,6 +69,20 @@ class ProductEntity extends Equatable {
   /// Check if store info is available
   bool get hasStoreInfo => storeName != null && storeName!.isNotEmpty;
 
+  /// Check if flash sale is currently active
+  bool get isFlashSaleActive {
+    if (!isFlashSale) return false;
+    if (flashSaleStart == null || flashSaleEnd == null) return false;
+    final now = DateTime.now();
+    return now.isAfter(flashSaleStart!) && now.isBefore(flashSaleEnd!);
+  }
+
+  /// Get remaining time for flash sale
+  Duration? get flashSaleRemainingTime {
+    if (!isFlashSaleActive) return null;
+    return flashSaleEnd!.difference(DateTime.now());
+  }
+
   @override
   List<Object?> get props => [
         id,
@@ -81,5 +102,8 @@ class ProductEntity extends Equatable {
         storeName,
         storePhone,
         storeAddress,
+        isFlashSale,
+        flashSaleStart,
+        flashSaleEnd,
       ];
 }

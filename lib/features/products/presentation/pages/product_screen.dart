@@ -4,9 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
+import '../../../../core/shared_widgets/flash_sale_banner.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/product_entity.dart';
+import '../../data/datasources/product_remote_datasource.dart';
 import '../cubit/products_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
@@ -65,6 +67,20 @@ class _ProductScreenState extends State<ProductScreen> {
     }
   }
 
+  /// Called when flash sale timer expires
+  Future<void> _onFlashSaleExpired() async {
+    // Cleanup this specific product's flash sale in database
+    try {
+      final datasource = sl<ProductRemoteDataSource>();
+      await datasource.cleanupExpiredFlashSaleForProduct(_product.id);
+    } catch (_) {
+      // Silently fail
+    }
+
+    // Reload product to get updated data (without discount)
+    await _loadProductWithStoreInfo();
+  }
+
   @override
   Widget build(BuildContext context) {
     double totalPrice = _quantity * _product.effectivePrice;
@@ -85,6 +101,13 @@ class _ProductScreenState extends State<ProductScreen> {
               padding: EdgeInsets.all(screenWidth * 0.04),
               child: ListView(
                 children: [
+                  // Flash Sale Banner
+                  if (_product.isFlashSaleActive &&
+                      _product.flashSaleEnd != null)
+                    FlashSaleBanner(
+                      endTime: _product.flashSaleEnd!,
+                      onExpired: _onFlashSaleExpired,
+                    ),
                   ProductImageSlider(
                     images: _product.images,
                     screenWidth: screenWidth,

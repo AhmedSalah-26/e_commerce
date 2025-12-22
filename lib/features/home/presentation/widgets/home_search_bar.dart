@@ -13,6 +13,7 @@ class HomeSearchBar extends StatelessWidget {
   final VoidCallback onEnterSearchMode;
   final VoidCallback onExitSearchMode;
   final VoidCallback onShowFilter;
+  final VoidCallback? onClearFilters;
   final bool hasActiveFilters;
   final int unreadNotifications;
   final VoidCallback onNotificationTap;
@@ -26,10 +27,26 @@ class HomeSearchBar extends StatelessWidget {
     required this.onEnterSearchMode,
     required this.onExitSearchMode,
     required this.onShowFilter,
+    this.onClearFilters,
     required this.hasActiveFilters,
     required this.unreadNotifications,
     required this.onNotificationTap,
   });
+
+  void _handleBackPress() {
+    // If there's text or filters, clear both together
+    if (searchController.text.isNotEmpty || hasActiveFilters) {
+      searchController.clear();
+      // Clear filters first (this will show categories)
+      if (onClearFilters != null) {
+        onClearFilters!();
+      }
+      return;
+    }
+
+    // Otherwise exit search mode
+    onExitSearchMode();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +114,7 @@ class HomeSearchBar extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.arrow_forward,
                   color: AppColours.brownMedium),
-              onPressed: onExitSearchMode,
+              onPressed: _handleBackPress,
             ),
           // Search bar (center)
           Expanded(

@@ -17,11 +17,17 @@ class ProductFormFields extends StatelessWidget {
   final String? selectedCategoryId;
   final bool isActive;
   final bool isFeatured;
+  final bool isFlashSale;
+  final DateTime? flashSaleStart;
+  final DateTime? flashSaleEnd;
   final List<PickedImageData> selectedImages;
   final List<String> existingImages;
   final ValueChanged<String?> onCategoryChanged;
   final ValueChanged<bool> onActiveChanged;
   final ValueChanged<bool> onFeaturedChanged;
+  final ValueChanged<bool> onFlashSaleChanged;
+  final ValueChanged<DateTime?> onFlashSaleStartChanged;
+  final ValueChanged<DateTime?> onFlashSaleEndChanged;
   final VoidCallback onImagesChanged;
 
   const ProductFormFields({
@@ -37,11 +43,17 @@ class ProductFormFields extends StatelessWidget {
     required this.selectedCategoryId,
     required this.isActive,
     required this.isFeatured,
+    required this.isFlashSale,
+    this.flashSaleStart,
+    this.flashSaleEnd,
     required this.selectedImages,
     required this.existingImages,
     required this.onCategoryChanged,
     required this.onActiveChanged,
     required this.onFeaturedChanged,
+    required this.onFlashSaleChanged,
+    required this.onFlashSaleStartChanged,
+    required this.onFlashSaleEndChanged,
     required this.onImagesChanged,
   });
 
@@ -238,7 +250,102 @@ class ProductFormFields extends StatelessWidget {
           value: isFeatured,
           onChanged: onFeaturedChanged,
         ),
+        const Divider(),
+        _buildFlashSaleSection(),
       ],
+    );
+  }
+
+  Widget _buildFlashSaleSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          title: Row(
+            children: [
+              const Icon(Icons.flash_on, color: Colors.orange, size: 20),
+              const SizedBox(width: 8),
+              Text(isRtl ? 'عرض خاص (Flash Sale)' : 'Flash Sale'),
+            ],
+          ),
+          subtitle: Text(
+            isRtl
+                ? 'تفعيل عداد تنازلي للعرض'
+                : 'Enable countdown timer for offer',
+            style: const TextStyle(fontSize: 12),
+          ),
+          value: isFlashSale,
+          onChanged: onFlashSaleChanged,
+        ),
+        if (isFlashSale) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                _buildDateTimePicker(
+                  label: isRtl ? 'بداية العرض' : 'Sale Start',
+                  value: flashSaleStart,
+                  onChanged: onFlashSaleStartChanged,
+                ),
+                const SizedBox(height: 12),
+                _buildDateTimePicker(
+                  label: isRtl ? 'نهاية العرض' : 'Sale End',
+                  value: flashSaleEnd,
+                  onChanged: onFlashSaleEndChanged,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildDateTimePicker({
+    required String label,
+    required DateTime? value,
+    required ValueChanged<DateTime?> onChanged,
+  }) {
+    return Builder(
+      builder: (context) {
+        final displayText = value != null
+            ? '${value.day}/${value.month}/${value.year} ${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}'
+            : (isRtl ? 'اختر التاريخ والوقت' : 'Select date & time');
+
+        return InkWell(
+          onTap: () async {
+            final date = await showDatePicker(
+              context: context,
+              initialDate: value ?? DateTime.now(),
+              firstDate: DateTime.now(),
+              lastDate: DateTime.now().add(const Duration(days: 365)),
+            );
+            if (date != null && context.mounted) {
+              final time = await showTimePicker(
+                context: context,
+                initialTime: TimeOfDay.fromDateTime(value ?? DateTime.now()),
+              );
+              if (time != null) {
+                onChanged(DateTime(
+                  date.year,
+                  date.month,
+                  date.day,
+                  time.hour,
+                  time.minute,
+                ));
+              }
+            }
+          },
+          child: InputDecorator(
+            decoration: InputDecoration(
+              labelText: label,
+              border: const OutlineInputBorder(),
+              suffixIcon: const Icon(Icons.calendar_today),
+            ),
+            child: Text(displayText),
+          ),
+        );
+      },
     );
   }
 }

@@ -62,4 +62,15 @@ abstract class ProductRepository {
     int page = 0,
     int limit = 100,
   });
+
+  /// Get products with highest discount
+  Future<Either<Failure, List<ProductEntity>>> getDiscountedProducts({
+    int page = 0,
+    int limit = 10,
+  });
+
+  /// Get newest products
+  Future<Either<Failure, List<ProductEntity>>> getNewestProducts({
+    int limit = 10,
+  });
 }

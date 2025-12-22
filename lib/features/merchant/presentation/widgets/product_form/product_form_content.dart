@@ -34,6 +34,9 @@ class _ProductFormContentState extends State<ProductFormContent> {
   String? _selectedCategoryId;
   bool _isActive = true;
   bool _isFeatured = false;
+  bool _isFlashSale = false;
+  DateTime? _flashSaleStart;
+  DateTime? _flashSaleEnd;
   bool _isSaving = false;
   bool _isLoadingData = false;
   final List<PickedImageData> _selectedImages = [];
@@ -83,6 +86,9 @@ class _ProductFormContentState extends State<ProductFormContent> {
     _selectedCategoryId = widget.product!.categoryId;
     _isActive = widget.product!.isActive;
     _isFeatured = widget.product!.isFeatured;
+    _isFlashSale = widget.product!.isFlashSale;
+    _flashSaleStart = widget.product!.flashSaleStart;
+    _flashSaleEnd = widget.product!.flashSaleEnd;
     _existingImages = widget.product!.images;
 
     setState(() => _isLoadingData = false);
@@ -125,6 +131,9 @@ class _ProductFormContentState extends State<ProductFormContent> {
                 selectedCategoryId: _selectedCategoryId,
                 isActive: _isActive,
                 isFeatured: _isFeatured,
+                isFlashSale: _isFlashSale,
+                flashSaleStart: _flashSaleStart,
+                flashSaleEnd: _flashSaleEnd,
                 selectedImages: _selectedImages,
                 existingImages: _existingImages,
                 onCategoryChanged: (value) {
@@ -135,6 +144,15 @@ class _ProductFormContentState extends State<ProductFormContent> {
                 },
                 onFeaturedChanged: (value) {
                   setState(() => _isFeatured = value);
+                },
+                onFlashSaleChanged: (value) {
+                  setState(() => _isFlashSale = value);
+                },
+                onFlashSaleStartChanged: (value) {
+                  setState(() => _flashSaleStart = value);
+                },
+                onFlashSaleEndChanged: (value) {
+                  setState(() => _flashSaleEnd = value);
                 },
                 onImagesChanged: () {
                   setState(() {});
@@ -174,6 +192,9 @@ class _ProductFormContentState extends State<ProductFormContent> {
         'category_id': _selectedCategoryId,
         'is_active': _isActive,
         'is_featured': _isFeatured,
+        'is_flash_sale': _isFlashSale,
+        'flash_sale_start': _flashSaleStart?.toIso8601String(),
+        'flash_sale_end': _flashSaleEnd?.toIso8601String(),
         'images': _existingImages,
         'new_images': _selectedImages,
       };

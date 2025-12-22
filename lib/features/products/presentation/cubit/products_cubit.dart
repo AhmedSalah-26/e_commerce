@@ -162,6 +162,53 @@ class ProductsCubit extends Cubit<ProductsState> {
     await loadProducts();
   }
 
+  /// Load products with discount (offers)
+  Future<void> loadDiscountedProducts() async {
+    emit(const ProductsLoading());
+
+    final result = await _repository.getDiscountedProducts(
+      page: 0,
+      limit: _pageSize,
+    );
+
+    result.fold(
+      (failure) => emit(ProductsError(failure.message)),
+      (products) => emit(ProductsLoaded(
+        products: products,
+        hasMore: products.length >= _pageSize,
+        currentPage: 0,
+        isOffersMode: true,
+      )),
+    );
+  }
+
+  /// Load more discounted products (pagination for offers)
+  Future<void> loadMoreDiscountedProducts() async {
+    final currentState = state;
+    if (currentState is! ProductsLoaded) return;
+    if (currentState.isLoadingMore || !currentState.hasMore) return;
+    if (!currentState.isOffersMode) return;
+
+    emit(currentState.copyWith(isLoadingMore: true));
+
+    final nextPage = currentState.currentPage + 1;
+
+    final result = await _repository.getDiscountedProducts(
+      page: nextPage,
+      limit: _pageSize,
+    );
+
+    result.fold(
+      (failure) => emit(currentState.copyWith(isLoadingMore: false)),
+      (newProducts) => emit(currentState.copyWith(
+        products: [...currentState.products, ...newProducts],
+        hasMore: newProducts.length >= _pageSize,
+        currentPage: nextPage,
+        isLoadingMore: false,
+      )),
+    );
+  }
+
   /// Refresh products
   Future<void> refresh() async {
     final currentState = state;

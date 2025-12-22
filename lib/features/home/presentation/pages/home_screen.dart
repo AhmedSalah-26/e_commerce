@@ -9,6 +9,7 @@ import '../../../products/data/repositories/product_repository_impl.dart';
 import '../../../products/domain/repositories/product_repository.dart';
 import '../../../products/presentation/cubit/products_cubit.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
+import '../cubit/home_sliders_cubit.dart';
 import '../widgets/home_search_bar.dart';
 import '../widgets/home_filter_sheet.dart';
 import '../widgets/home_search_content.dart';
@@ -24,6 +25,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
   String? selectedCategoryId;
+  bool isOffersSelected = false;
   final ScrollController _scrollController = ScrollController();
   int _unreadNotifications = 0;
   bool _isSearchInitialized = false;
@@ -33,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
     super.initState();
     context.read<ProductsCubit>().loadProducts();
     context.read<CategoriesCubit>().loadCategories();
+    context.read<HomeSlidersCubit>().loadSliders();
     _scrollController.addListener(_onScroll);
     _loadUnreadCount();
   }
@@ -71,10 +74,16 @@ class _HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
 
   void _onScroll() {
     if (_isBottom) {
-      if (searchState.isSearchMode && searchState.currentQuery.isNotEmpty) {
+      if (searchState.isSearchMode &&
+          (searchState.currentQuery.isNotEmpty ||
+              searchState.searchResults.isNotEmpty)) {
         loadMoreSearchResults();
-      } else {
-        context.read<ProductsCubit>().loadMoreProducts();
+      } else if (!searchState.isSearchMode) {
+        if (isOffersSelected) {
+          context.read<ProductsCubit>().loadMoreDiscountedProducts();
+        } else {
+          context.read<ProductsCubit>().loadMoreProducts();
+        }
       }
     }
   }
@@ -100,8 +109,10 @@ class _HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
         backgroundColor: AppColours.white,
         body: RefreshIndicator(
           onRefresh: _handleRefresh,
+          color: AppColours.brownLight,
           child: CustomScrollView(
             controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: <Widget>[
               SliverToBoxAdapter(
                 child: HomeSearchBar(
@@ -112,6 +123,7 @@ class _HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
                   onEnterSearchMode: enterSearchMode,
                   onExitSearchMode: exitSearchMode,
                   onShowFilter: _showFilterSheet,
+                  onClearFilters: clearFilters,
                   hasActiveFilters: filterState.hasActiveFilters,
                   unreadNotifications: _unreadNotifications,
                   onNotificationTap: () {
@@ -128,6 +140,7 @@ class _HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
                     searchResults: searchState.searchResults,
                     isLoadingMore: searchState.isLoadingMore,
                     hasMore: searchState.hasMore,
+                    onCategoryTap: _onCategoryTapFromSearch,
                   ),
                 )
               else
@@ -143,7 +156,9 @@ class _HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
     if (searchState.isSearchMode && searchState.currentQuery.isNotEmpty) {
       await refreshSearch();
     } else {
-      if (selectedCategoryId != null) {
+      if (isOffersSelected) {
+        context.read<ProductsCubit>().loadDiscountedProducts();
+      } else if (selectedCategoryId != null) {
         context
             .read<ProductsCubit>()
             .loadProductsByCategory(selectedCategoryId!);
@@ -151,6 +166,7 @@ class _HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
         context.read<ProductsCubit>().loadProducts();
       }
       context.read<CategoriesCubit>().loadCategories();
+      context.read<HomeSlidersCubit>().loadSliders();
     }
   }
 
@@ -172,20 +188,34 @@ class _HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
     );
   }
 
+  void _onCategoryTapFromSearch(String categoryId, String categoryName) {
+    // Stay in search mode and show category products
+    searchByCategory(categoryId, categoryName);
+  }
+
   List<Widget> _buildHomeContent() {
     return HomeContentBuilder.buildHomeContent(
       context: context,
       sliderImages: sliderImages,
       selectedCategoryId: selectedCategoryId,
+      isOffersSelected: isOffersSelected,
       onCategorySelected: (categoryId) {
         setState(() {
           selectedCategoryId = categoryId;
+          isOffersSelected = false;
         });
         if (categoryId == null) {
           context.read<ProductsCubit>().loadProducts();
         } else {
           context.read<ProductsCubit>().loadProductsByCategory(categoryId);
         }
+      },
+      onOffersSelected: () {
+        setState(() {
+          isOffersSelected = true;
+          selectedCategoryId = null;
+        });
+        context.read<ProductsCubit>().loadDiscountedProducts();
       },
     );
   }

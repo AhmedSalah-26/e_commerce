@@ -93,20 +93,23 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
                     height: 40,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: state.categories.length + 1,
+                      itemCount: state.categories.length,
                       itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return _buildCategoryChip(
-                            'all'.tr(),
-                            tempCategoryId == null,
-                            () => setState(() => tempCategoryId = null),
-                          );
-                        }
-                        final category = state.categories[index - 1];
+                        final category = state.categories[index];
+                        final isSelected = tempCategoryId == category.id;
                         return _buildCategoryChip(
                           category.name,
-                          tempCategoryId == category.id,
-                          () => setState(() => tempCategoryId = category.id),
+                          isSelected,
+                          () {
+                            setState(() {
+                              // Toggle selection - tap again to deselect
+                              if (isSelected) {
+                                tempCategoryId = null;
+                              } else {
+                                tempCategoryId = category.id;
+                              }
+                            });
+                          },
                         );
                       },
                     ),

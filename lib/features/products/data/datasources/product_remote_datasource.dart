@@ -41,6 +41,17 @@ abstract class ProductRemoteDataSource {
     int page = 0,
     int limit = 100,
   });
+  Future<List<ProductModel>> getDiscountedProducts({
+    String locale = 'ar',
+    int page = 0,
+    int limit = 10,
+  });
+  Future<List<ProductModel>> getNewestProducts({
+    String locale = 'ar',
+    int limit = 10,
+  });
+  Future<void> cleanupExpiredFlashSales();
+  Future<void> cleanupExpiredFlashSaleForProduct(String productId);
 }
 
 /// Implementation of product remote data source using Supabase
@@ -100,5 +111,31 @@ class ProductRemoteDataSourceImpl
         .map((data) => data
             .map((json) => ProductModel.fromJson(json, locale: locale))
             .toList());
+  }
+
+  @override
+  Future<void> cleanupExpiredFlashSales() async {
+    try {
+      // Call the database function to cleanup expired flash sales
+      await client.rpc('cleanup_expired_flash_sales');
+    } catch (e) {
+      // Silently fail - this is a background cleanup task
+      // The trigger will handle individual products on update
+    }
+  }
+
+  @override
+  Future<void> cleanupExpiredFlashSaleForProduct(String productId) async {
+    try {
+      // Directly update the product to remove flash sale and discount
+      await client.from('products').update({
+        'is_flash_sale': false,
+        'flash_sale_start': null,
+        'flash_sale_end': null,
+        'discount_price': null,
+      }).eq('id', productId);
+    } catch (_) {
+      // Silently fail
+    }
   }
 }

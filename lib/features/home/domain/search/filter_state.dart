@@ -9,19 +9,20 @@ class FilterState {
 
   const FilterState({
     this.categoryId,
-    this.priceRange = const RangeValues(0, 10000),
+    this.priceRange = const RangeValues(0, 100000),
     this.minPrice = 0,
-    this.maxPrice = 10000,
+    this.maxPrice = 100000,
   });
 
   FilterState copyWith({
     String? categoryId,
+    bool clearCategoryId = false,
     RangeValues? priceRange,
     double? minPrice,
     double? maxPrice,
   }) {
     return FilterState(
-      categoryId: categoryId ?? this.categoryId,
+      categoryId: clearCategoryId ? null : (categoryId ?? this.categoryId),
       priceRange: priceRange ?? this.priceRange,
       minPrice: minPrice ?? this.minPrice,
       maxPrice: maxPrice ?? this.maxPrice,

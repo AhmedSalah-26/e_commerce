@@ -139,4 +139,55 @@ mixin ProductQueryMixin {
       throw ServerException('فشل في جلب منتجات التاجر: ${e.toString()}');
     }
   }
+
+  Future<List<ProductModel>> getDiscountedProducts({
+    String locale = 'ar',
+    int page = 0,
+    int limit = 10,
+  }) async {
+    try {
+      final from = page * limit;
+      final to = from + limit - 1;
+
+      final response = await client
+          .from('products')
+          .select()
+          .eq('is_active', true)
+          .not('discount_price', 'is', null)
+          .order('created_at', ascending: false)
+          .range(from, to);
+
+      // Sort by discount percentage in Dart
+      final products = (response as List)
+          .map((json) => ProductModel.fromJson(json, locale: locale))
+          .toList();
+
+      products
+          .sort((a, b) => b.discountPercentage.compareTo(a.discountPercentage));
+
+      return products;
+    } catch (e) {
+      throw ServerException('فشل في جلب المنتجات المخفضة: ${e.toString()}');
+    }
+  }
+
+  Future<List<ProductModel>> getNewestProducts({
+    String locale = 'ar',
+    int limit = 10,
+  }) async {
+    try {
+      final response = await client
+          .from('products')
+          .select()
+          .eq('is_active', true)
+          .order('created_at', ascending: false)
+          .limit(limit);
+
+      return (response as List)
+          .map((json) => ProductModel.fromJson(json, locale: locale))
+          .toList();
+    } catch (e) {
+      throw ServerException('فشل في جلب المنتجات الجديدة: ${e.toString()}');
+    }
+  }
 }

@@ -21,11 +21,12 @@ class ProductsGrid extends StatelessWidget {
       child: GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
+        clipBehavior: Clip.none,
         // Use prototypeItem for better performance estimation
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
           childAspectRatio: _aspectRatio,
         ),
         itemCount: products.length,
@@ -62,8 +63,8 @@ class ProductsGridSliver extends StatelessWidget {
       sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
           childAspectRatio: ProductsGrid._aspectRatio,
         ),
         delegate: SliverChildBuilderDelegate(

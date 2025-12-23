@@ -18,6 +18,7 @@ class HomeSearchContent extends StatelessWidget {
   final List<ProductEntity> searchResults;
   final bool isLoadingMore;
   final bool hasMore;
+  final bool hasActiveFilters;
   final void Function(String categoryId, String categoryName)? onCategoryTap;
 
   const HomeSearchContent({
@@ -27,6 +28,7 @@ class HomeSearchContent extends StatelessWidget {
     required this.searchResults,
     required this.isLoadingMore,
     required this.hasMore,
+    this.hasActiveFilters = false,
     this.onCategoryTap,
   });
 
@@ -36,8 +38,8 @@ class HomeSearchContent extends StatelessWidget {
       return const ProductsGridSkeleton(itemCount: 4);
     }
 
-    // Show categories only if no query AND no results (no filters applied)
-    if (currentQuery.isEmpty && searchResults.isEmpty) {
+    // Show categories only if no query AND no results AND no active filters
+    if (currentQuery.isEmpty && searchResults.isEmpty && !hasActiveFilters) {
       return _CategoriesGrid(onCategoryTap: onCategoryTap);
     }
 

@@ -16,9 +16,11 @@ class MainNavigationScreen extends StatelessWidget {
   });
 
   void _onTap(int index) {
+    // Skip if already on this tab
+    if (index == navigationShell.currentIndex) return;
     navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: true,
     );
   }
 

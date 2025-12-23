@@ -57,7 +57,9 @@ class _SplashScreenState extends State<SplashScreen>
     final authState = context.read<AuthCubit>().state;
 
     if (authState is AuthAuthenticated) {
-      // User is logged in - check if merchant or customer
+      // User is logged in - set authenticated flag
+      AppRouter.setAuthenticated(true);
+      // Check if merchant or customer
       if (authState.user.isMerchant) {
         context.go('/merchant-dashboard');
       } else {
@@ -65,6 +67,7 @@ class _SplashScreenState extends State<SplashScreen>
       }
     } else {
       // User not logged in - go to login
+      AppRouter.setAuthenticated(false);
       context.go('/login');
     }
   }

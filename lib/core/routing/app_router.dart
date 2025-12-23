@@ -22,6 +22,7 @@ import '../../features/splash/presentation/pages/splash_screen.dart';
 
 class AppRouter {
   static bool? _onboardingCompleted;
+  static bool _isAuthenticated = false;
 
   static Future<void> checkOnboardingStatus() async {
     final prefs = await SharedPreferences.getInstance();
@@ -30,8 +31,27 @@ class AppRouter {
 
   static bool get isOnboardingCompleted => _onboardingCompleted ?? false;
 
+  static void setAuthenticated(bool value) {
+    _isAuthenticated = value;
+  }
+
   static final GoRouter router = GoRouter(
     initialLocation: '/splash',
+    redirect: (context, state) {
+      final path = state.uri.path;
+
+      // If user is authenticated and trying to go back to login/splash/onboarding
+      // redirect them to home
+      if (_isAuthenticated) {
+        if (path == '/login' ||
+            path == '/splash' ||
+            path == '/onboarding' ||
+            path == '/register') {
+          return '/home';
+        }
+      }
+      return null;
+    },
     routes: <RouteBase>[
       GoRoute(
         path: '/splash',

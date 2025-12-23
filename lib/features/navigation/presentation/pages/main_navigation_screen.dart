@@ -36,8 +36,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     ];
   }
 
-  /// Handle back button press
-  Future<bool> _onWillPop() async {
+  /// Handle back button press - returns true if should exit app
+  bool _handleBackPress() {
     // If on home tab and in search mode, exit search mode first
     if (_bottomNavIndex == 0) {
       final homeState = _homeScreenKey.currentState;
@@ -66,8 +66,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       );
       return false;
     }
+
     // Exit app
-    SystemNavigator.pop();
     return true;
   }
 
@@ -75,9 +75,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        await _onWillPop();
+
+        final shouldExit = _handleBackPress();
+        if (shouldExit) {
+          SystemNavigator.pop();
+        }
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,

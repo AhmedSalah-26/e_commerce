@@ -69,12 +69,12 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
   }
 
   void _handleBackPress() {
-    if (searchController.text.isNotEmpty || filterState.hasActiveFilters) {
-      searchController.clear();
-      clearFilters();
-      return;
-    }
     context.go('/home');
+  }
+
+  Future<bool> _handleSystemBack() async {
+    context.go('/home');
+    return true; // Handled
   }
 
   void _showFilterSheet() {
@@ -94,32 +94,35 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: AppColours.white,
-        body: RefreshIndicator(
-          onRefresh: refreshSearch,
-          color: AppColours.brownLight,
-          child: CustomScrollView(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              // Search bar
-              SliverToBoxAdapter(child: _buildSearchBar()),
-              // Search content
-              SliverToBoxAdapter(
-                child: HomeSearchContent(
-                  isSearching: searchState.isSearching,
-                  currentQuery: searchState.currentQuery,
-                  searchResults: searchState.searchResults,
-                  isLoadingMore: searchState.isLoadingMore,
-                  hasMore: searchState.hasMore,
-                  onCategoryTap: (categoryId, categoryName) {
-                    searchByCategory(categoryId, categoryName);
-                  },
+    return BackButtonListener(
+      onBackButtonPressed: _handleSystemBack,
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: AppColours.white,
+          body: RefreshIndicator(
+            onRefresh: refreshSearch,
+            color: AppColours.brownLight,
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                // Search bar
+                SliverToBoxAdapter(child: _buildSearchBar()),
+                // Search content
+                SliverToBoxAdapter(
+                  child: HomeSearchContent(
+                    isSearching: searchState.isSearching,
+                    currentQuery: searchState.currentQuery,
+                    searchResults: searchState.searchResults,
+                    isLoadingMore: searchState.isLoadingMore,
+                    hasMore: searchState.hasMore,
+                    onCategoryTap: (categoryId, categoryName) {
+                      searchByCategory(categoryId, categoryName);
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

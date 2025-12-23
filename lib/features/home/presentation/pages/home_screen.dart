@@ -20,15 +20,18 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
+class HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
   String? selectedCategoryId;
   bool isOffersSelected = false;
   final ScrollController _scrollController = ScrollController();
   int _unreadNotifications = 0;
   bool _isSearchInitialized = false;
+
+  /// Check if currently in search mode
+  bool get isInSearchMode => searchState.isSearchMode;
 
   @override
   void initState() {

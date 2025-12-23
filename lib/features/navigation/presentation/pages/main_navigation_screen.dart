@@ -18,18 +18,35 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  // Use late final to create screens only once
-  late final List<Widget> screens = const [
-    HomeScreen(),
-    CartScreen(),
-    FavoritesScreen(),
-    SettingsScreen(),
-  ];
+  final GlobalKey<HomeScreenState> _homeScreenKey =
+      GlobalKey<HomeScreenState>();
+
+  late final List<Widget> screens;
   int _bottomNavIndex = 0;
   DateTime? _lastBackPressTime;
 
+  @override
+  void initState() {
+    super.initState();
+    screens = [
+      HomeScreen(key: _homeScreenKey),
+      const CartScreen(),
+      const FavoritesScreen(),
+      const SettingsScreen(),
+    ];
+  }
+
   /// Handle back button press
   Future<bool> _onWillPop() async {
+    // If on home tab and in search mode, exit search mode first
+    if (_bottomNavIndex == 0) {
+      final homeState = _homeScreenKey.currentState;
+      if (homeState != null && homeState.isInSearchMode) {
+        homeState.exitSearchMode();
+        return false;
+      }
+    }
+
     // If not on home tab, go to home
     if (_bottomNavIndex != 0) {
       setState(() => _bottomNavIndex = 0);

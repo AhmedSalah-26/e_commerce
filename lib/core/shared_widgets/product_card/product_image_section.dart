@@ -55,7 +55,7 @@ class ProductImageSection extends StatelessWidget {
   }
 }
 
-/// Optimized product image with caching - uses cover fit for better performance
+/// Optimized product image with caching - uses contain fit for better display
 class _ProductImage extends StatelessWidget {
   final String imageUrl;
   static const int _cacheSize = 300;
@@ -79,13 +79,13 @@ class _ProductImage extends StatelessWidget {
         errorWidget: (_, __, ___) => const _ImagePlaceholder(),
         fadeInDuration: Duration.zero,
         fadeOutDuration: Duration.zero,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
       );
     }
 
     return Image.asset(
       imageUrl,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       width: double.infinity,
       height: double.infinity,
       cacheWidth: _cacheSize,

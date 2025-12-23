@@ -44,15 +44,19 @@ class _AboutScreenState extends State<AboutScreen> {
       child: Scaffold(
         backgroundColor: AppColours.white,
         appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppColours.brownMedium),
+            onPressed: () => Navigator.pop(context),
+          ),
           title: Text(
             isRtl ? 'عن التطبيق' : 'About the App',
-            style: const TextStyle(
-              fontFamily: 'Changa',
+            style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+              color: AppColours.brownMedium,
             ),
           ),
-          backgroundColor: AppColours.primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
+          centerTitle: true,
         ),
         body: SafeArea(
           child: SingleChildScrollView(

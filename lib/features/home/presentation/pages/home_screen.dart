@@ -1,20 +1,13 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../notifications/data/services/local_notification_service.dart';
-import '../../../products/data/repositories/product_repository_impl.dart';
-import '../../../products/domain/repositories/product_repository.dart';
 import '../../../products/presentation/cubit/products_cubit.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../cubit/home_sliders_cubit.dart';
-import '../widgets/home_search_bar.dart';
-import '../widgets/home_filter_sheet.dart';
-import '../widgets/home_search_content.dart';
 import '../widgets/home_content_builder.dart';
-import '../logic/home_search_logic.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,15 +16,11 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => HomeScreenState();
 }
 
-class HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
+class HomeScreenState extends State<HomeScreen> {
   String? selectedCategoryId;
   bool isOffersSelected = false;
   final ScrollController _scrollController = ScrollController();
   int _unreadNotifications = 0;
-  bool _isSearchInitialized = false;
-
-  /// Check if currently in search mode
-  bool get isInSearchMode => searchState.isSearchMode;
 
   @override
   void initState() {
@@ -43,27 +32,10 @@ class HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
     _loadUnreadCount();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Initialize search manager here after context is ready
-    if (!_isSearchInitialized) {
-      final repository = sl<ProductRepository>();
-      final locale = context.locale.languageCode;
-      if (repository is ProductRepositoryImpl) {
-        repository.setLocale(locale);
-      }
-      initializeSearchManager(repository);
-      _isSearchInitialized = true;
-    }
-  }
-
   Future<void> _loadUnreadCount() async {
     final count = await sl<LocalNotificationService>().getUnreadCount();
     if (mounted) {
-      setState(() {
-        _unreadNotifications = count;
-      });
+      setState(() => _unreadNotifications = count);
     }
   }
 
@@ -71,22 +43,15 @@ class HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
-    disposeSearch();
     super.dispose();
   }
 
   void _onScroll() {
     if (_isBottom) {
-      if (searchState.isSearchMode &&
-          (searchState.currentQuery.isNotEmpty ||
-              searchState.searchResults.isNotEmpty)) {
-        loadMoreSearchResults();
-      } else if (!searchState.isSearchMode) {
-        if (isOffersSelected) {
-          context.read<ProductsCubit>().loadMoreDiscountedProducts();
-        } else {
-          context.read<ProductsCubit>().loadMoreProducts();
-        }
+      if (isOffersSelected) {
+        context.read<ProductsCubit>().loadMoreDiscountedProducts();
+      } else {
+        context.read<ProductsCubit>().loadMoreProducts();
       }
     }
   }
@@ -117,37 +82,8 @@ class HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: <Widget>[
-              SliverToBoxAdapter(
-                child: HomeSearchBar(
-                  isSearchMode: searchState.isSearchMode,
-                  searchController: searchController,
-                  searchFocusNode: searchFocusNode,
-                  onSearchChanged: onSearchChanged,
-                  onEnterSearchMode: enterSearchMode,
-                  onExitSearchMode: exitSearchMode,
-                  onShowFilter: _showFilterSheet,
-                  onClearFilters: clearFilters,
-                  hasActiveFilters: filterState.hasActiveFilters,
-                  unreadNotifications: _unreadNotifications,
-                  onNotificationTap: () {
-                    context.push('/notifications');
-                    _loadUnreadCount();
-                  },
-                ),
-              ),
-              if (searchState.isSearchMode)
-                SliverToBoxAdapter(
-                  child: HomeSearchContent(
-                    isSearching: searchState.isSearching,
-                    currentQuery: searchState.currentQuery,
-                    searchResults: searchState.searchResults,
-                    isLoadingMore: searchState.isLoadingMore,
-                    hasMore: searchState.hasMore,
-                    onCategoryTap: _onCategoryTapFromSearch,
-                  ),
-                )
-              else
-                ..._buildHomeContent(),
+              SliverToBoxAdapter(child: _buildSearchBar(context)),
+              ..._buildHomeContent(),
             ],
           ),
         ),
@@ -155,47 +91,113 @@ class HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
     );
   }
 
-  Future<void> _handleRefresh() async {
-    if (searchState.isSearchMode && searchState.currentQuery.isNotEmpty) {
-      await refreshSearch();
-    } else {
-      // Refresh sliders (force refresh)
-      context.read<HomeSlidersCubit>().refreshSliders();
-      context.read<CategoriesCubit>().loadCategories();
+  Widget _buildSearchBar(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
-      if (isOffersSelected) {
-        context.read<ProductsCubit>().loadDiscountedProducts();
-      } else if (selectedCategoryId != null) {
-        context
-            .read<ProductsCubit>()
-            .loadProductsByCategory(selectedCategoryId!);
-      } else {
-        context.read<ProductsCubit>().loadProducts();
-      }
-    }
-  }
-
-  void _showFilterSheet() {
-    showFilterSheet(
-      context,
-      HomeFilterSheet(
-        initialCategoryId: filterState.categoryId,
-        initialPriceRange: filterState.priceRange,
-        minPrice: filterState.minPrice,
-        maxPrice: filterState.maxPrice,
-        onApply: (categoryId, priceRange) {
-          applyFilters(
-            categoryId: categoryId,
-            priceRange: priceRange,
-          );
-        },
+    return Container(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Notification icon
+          GestureDetector(
+            onTap: () {
+              context.push('/notifications');
+              _loadUnreadCount();
+            },
+            child: Container(
+              width: screenWidth * 0.12,
+              height: screenHeight * 0.055,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: AppColours.greyLighter,
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Icon(
+                      Icons.notifications,
+                      size: screenWidth * 0.055,
+                      color: AppColours.brownLight,
+                    ),
+                  ),
+                  if (_unreadNotifications > 0)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          _unreadNotifications > 9
+                              ? '9+'
+                              : '$_unreadNotifications',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          // Search bar - opens search page
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: GestureDetector(
+                onTap: () => context.go('/home/search'),
+                child: Container(
+                  height: 45,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: AppColours.greyLighter,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        'بحث',
+                        style:
+                            TextStyle(fontSize: 12, color: AppColours.greyDark),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(Icons.search, color: AppColours.primaryColor),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  void _onCategoryTapFromSearch(String categoryId, String categoryName) {
-    // Stay in search mode and show category products
-    searchByCategory(categoryId, categoryName);
+  Future<void> _handleRefresh() async {
+    context.read<HomeSlidersCubit>().refreshSliders();
+    context.read<CategoriesCubit>().loadCategories();
+
+    if (isOffersSelected) {
+      context.read<ProductsCubit>().loadDiscountedProducts();
+    } else if (selectedCategoryId != null) {
+      context.read<ProductsCubit>().loadProductsByCategory(selectedCategoryId!);
+    } else {
+      context.read<ProductsCubit>().loadProducts();
+    }
   }
 
   List<Widget> _buildHomeContent() {

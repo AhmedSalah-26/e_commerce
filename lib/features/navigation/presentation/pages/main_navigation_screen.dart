@@ -1,107 +1,44 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
-import '../../../cart/presentation/pages/cart_screen.dart';
-import '../../../favorites/presentation/pages/favorites_screen.dart';
-import '../../../home/presentation/pages/home_screen.dart';
-import '../../../settings/presentation/pages/settings_screen.dart';
 
-class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({super.key});
+class MainNavigationScreen extends StatelessWidget {
+  final StatefulNavigationShell navigationShell;
 
-  @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
-}
+  const MainNavigationScreen({
+    super.key,
+    required this.navigationShell,
+  });
 
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  final GlobalKey<HomeScreenState> _homeScreenKey =
-      GlobalKey<HomeScreenState>();
-
-  late final List<Widget> screens;
-  int _bottomNavIndex = 0;
-  DateTime? _lastBackPressTime;
-
-  @override
-  void initState() {
-    super.initState();
-    screens = [
-      HomeScreen(key: _homeScreenKey),
-      const CartScreen(),
-      const FavoritesScreen(),
-      const SettingsScreen(),
-    ];
-  }
-
-  /// Navigate to a tab
-  void _navigateToTab(int index) {
-    if (_bottomNavIndex == index) return;
-    setState(() => _bottomNavIndex = index);
-  }
-
-  /// Callback for BackButtonListener (web support)
-  Future<bool> _onBackButtonPressed() async {
-    final shouldExit = _handleBackPress();
-    return !shouldExit; // Return true to prevent browser back
-  }
-
-  /// Handle back button press - returns true if should exit app
-  bool _handleBackPress() {
-    // If on home tab and in search mode, exit search mode first
-    if (_bottomNavIndex == 0) {
-      final homeState = _homeScreenKey.currentState;
-      if (homeState != null && homeState.isInSearchMode) {
-        homeState.exitSearchMode();
-        return false;
-      }
-    }
-
-    // If not on home tab, go to home
-    if (_bottomNavIndex != 0) {
-      setState(() => _bottomNavIndex = 0);
-      return false;
-    }
-
-    // If on home tab, check for double tap to exit
-    final now = DateTime.now();
-    if (_lastBackPressTime == null ||
-        now.difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
-      _lastBackPressTime = now;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('اضغط مرة أخرى للخروج'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return false;
-    }
-
-    // Exit app
-    return true;
+  void _onTap(int index) {
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget content = PopScope(
+    return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        final shouldExit = _handleBackPress();
-        if (shouldExit) {
+        // If not on home tab, go to home
+        if (navigationShell.currentIndex != 0) {
+          context.go('/home');
+        } else {
+          // Exit app
           SystemNavigator.pop();
         }
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        // Use IndexedStack to keep screens alive and avoid rebuilds
-        body: IndexedStack(
-          index: _bottomNavIndex,
-          children: screens,
-        ),
+        body: navigationShell,
         bottomNavigationBar: BlocSelector<CartCubit, CartState, int>(
           selector: (state) => state is CartLoaded
               ? state.items.fold<int>(0, (sum, item) => sum + item.quantity)
@@ -158,22 +95,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         ),
       ),
     );
-
-    // Wrap with BackButtonListener for web support
-    if (kIsWeb) {
-      return BackButtonListener(
-        onBackButtonPressed: _onBackButtonPressed,
-        child: content,
-      );
-    }
-
-    return content;
   }
 
   Widget _buildNavItem(int index, IconData icon, IconData activeIcon) {
-    final isSelected = _bottomNavIndex == index;
+    final isSelected = navigationShell.currentIndex == index;
     return IconButton(
-      onPressed: () => _navigateToTab(index),
+      onPressed: () => _onTap(index),
       icon: Icon(
         isSelected ? activeIcon : icon,
         color: isSelected ? AppColours.primary : AppColours.greyMedium,
@@ -188,9 +115,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     IconData activeIcon,
     int badgeCount,
   ) {
-    final isSelected = _bottomNavIndex == index;
+    final isSelected = navigationShell.currentIndex == index;
     return IconButton(
-      onPressed: () => _navigateToTab(index),
+      onPressed: () => _onTap(index),
       icon: Stack(
         clipBehavior: Clip.none,
         children: [

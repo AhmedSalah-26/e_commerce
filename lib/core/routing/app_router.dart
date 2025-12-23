@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,8 +6,12 @@ import '../di/injection_container.dart';
 import '../../features/about/presentation/pages/about_screen.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/cart/presentation/pages/cart_screen.dart';
 import '../../features/checkout/presentation/pages/checkout_page.dart';
+import '../../features/favorites/presentation/pages/favorites_screen.dart';
 import '../../features/help/presentation/pages/help_screen.dart';
+import '../../features/home/presentation/pages/home_screen.dart';
+import '../../features/home/presentation/pages/search_screen.dart';
 import '../../features/merchant/presentation/pages/merchant_dashboard_page.dart';
 import '../../features/navigation/presentation/pages/main_navigation_screen.dart';
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
@@ -18,6 +21,7 @@ import '../../features/orders/presentation/cubit/orders_cubit.dart';
 import '../../features/orders/presentation/pages/orders_page.dart';
 import '../../features/orders/presentation/pages/parent_order_details_page.dart';
 import '../../features/settings/presentation/pages/edit_profile_screen.dart';
+import '../../features/settings/presentation/pages/settings_screen.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
 
 class AppRouter {
@@ -40,8 +44,6 @@ class AppRouter {
     redirect: (context, state) {
       final path = state.uri.path;
 
-      // If user is authenticated and trying to go back to login/splash/onboarding
-      // redirect them to home
       if (_isAuthenticated) {
         if (path == '/login' ||
             path == '/splash' ||
@@ -55,47 +57,89 @@ class AppRouter {
     routes: <RouteBase>[
       GoRoute(
         path: '/splash',
-        builder: (BuildContext context, GoRouterState state) =>
-            const SplashScreen(),
+        builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
         path: '/onboarding',
-        builder: (BuildContext context, GoRouterState state) =>
-            const OnboardingScreen(),
+        builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: '/login',
-        builder: (BuildContext context, GoRouterState state) =>
-            const LoginPage(),
+        builder: (context, state) => const LoginPage(),
       ),
       GoRoute(
         path: '/register',
-        builder: (BuildContext context, GoRouterState state) =>
-            const RegisterPage(),
+        builder: (context, state) => const RegisterPage(),
       ),
       GoRoute(
         path: '/merchant-dashboard',
-        builder: (BuildContext context, GoRouterState state) =>
-            const MerchantDashboardPage(),
+        builder: (context, state) => const MerchantDashboardPage(),
       ),
-      GoRoute(
-        path: '/home',
-        pageBuilder: (BuildContext context, GoRouterState state) =>
-            const NoTransitionPage(child: MainNavigationScreen()),
+      // Shell route for bottom navigation
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainNavigationScreen(navigationShell: navigationShell);
+        },
+        branches: [
+          // Home tab
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: HomeScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'search',
+                    builder: (context, state) => const SearchScreen(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Cart tab
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/cart',
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: CartScreen()),
+              ),
+            ],
+          ),
+          // Favorites tab
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/favorites',
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: FavoritesScreen()),
+              ),
+            ],
+          ),
+          // Settings tab
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: SettingsScreen()),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: '/checkout',
-        builder: (BuildContext context, GoRouterState state) =>
-            const CheckoutPage(),
+        builder: (context, state) => const CheckoutPage(),
       ),
       GoRoute(
         path: '/orders',
-        builder: (BuildContext context, GoRouterState state) =>
-            const OrdersPage(),
+        builder: (context, state) => const OrdersPage(),
       ),
       GoRoute(
         path: '/parent-order/:id',
-        builder: (BuildContext context, GoRouterState state) {
+        builder: (context, state) {
           final parentOrderId = state.pathParameters['id']!;
           return BlocProvider(
             create: (_) => sl<OrdersCubit>(),
@@ -105,25 +149,22 @@ class AppRouter {
       ),
       GoRoute(
         path: '/notifications',
-        builder: (BuildContext context, GoRouterState state) => BlocProvider(
+        builder: (context, state) => BlocProvider(
           create: (_) => sl<NotificationsCubit>(),
           child: const NotificationsScreen(),
         ),
       ),
       GoRoute(
         path: '/help',
-        builder: (BuildContext context, GoRouterState state) =>
-            const HelpScreen(),
+        builder: (context, state) => const HelpScreen(),
       ),
       GoRoute(
         path: '/about',
-        builder: (BuildContext context, GoRouterState state) =>
-            const AboutScreen(),
+        builder: (context, state) => const AboutScreen(),
       ),
       GoRoute(
         path: '/edit-profile',
-        builder: (BuildContext context, GoRouterState state) =>
-            const EditProfileScreen(),
+        builder: (context, state) => const EditProfileScreen(),
       ),
     ],
   );

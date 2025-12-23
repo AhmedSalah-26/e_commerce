@@ -61,14 +61,14 @@ class _SplashScreenState extends State<SplashScreen>
       AppRouter.setAuthenticated(true);
       // Check if merchant or customer
       if (authState.user.isMerchant) {
-        context.go('/merchant-dashboard');
+        context.pushReplacement('/merchant-dashboard');
       } else {
-        context.go('/home');
+        context.pushReplacement('/home');
       }
     } else {
       // User not logged in - go to login
       AppRouter.setAuthenticated(false);
-      context.go('/login');
+      context.pushReplacement('/login');
     }
   }
 

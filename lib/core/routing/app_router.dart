@@ -80,8 +80,8 @@ class AppRouter {
       ),
       GoRoute(
         path: '/home',
-        builder: (BuildContext context, GoRouterState state) =>
-            const MainNavigationScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            const NoTransitionPage(child: MainNavigationScreen()),
       ),
       GoRoute(
         path: '/checkout',

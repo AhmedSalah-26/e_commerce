@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -198,8 +199,9 @@ class MerchantOrderCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${item.price.toStringAsFixed(2)} ${'egp'.tr()} × ${item.quantity}',
+                  '${item.quantity} × ${item.price.toStringAsFixed(2)} ${'egp'.tr()}',
                   style: AppTextStyle.normal_12_greyDark,
+                  textDirection: ui.TextDirection.ltr,
                 ),
               ],
             ),

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:equatable/equatable.dart';
 
 /// Order status enum
@@ -18,15 +19,15 @@ enum OrderStatus {
   String get displayName {
     switch (this) {
       case OrderStatus.pending:
-        return 'قيد الانتظار';
+        return 'status_pending'.tr();
       case OrderStatus.processing:
-        return 'قيد المعالجة';
+        return 'status_processing'.tr();
       case OrderStatus.shipped:
-        return 'تم الشحن';
+        return 'status_shipped'.tr();
       case OrderStatus.delivered:
-        return 'تم التوصيل';
+        return 'status_delivered'.tr();
       case OrderStatus.cancelled:
-        return 'ملغي';
+        return 'status_cancelled'.tr();
     }
   }
 }

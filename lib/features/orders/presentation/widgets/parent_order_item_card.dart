@@ -105,6 +105,7 @@ class ParentOrderItemCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
+
                 // Status summary and total
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 8),

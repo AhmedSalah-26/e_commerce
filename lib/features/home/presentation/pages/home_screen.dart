@@ -159,6 +159,10 @@ class HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
     if (searchState.isSearchMode && searchState.currentQuery.isNotEmpty) {
       await refreshSearch();
     } else {
+      // Refresh sliders (force refresh)
+      context.read<HomeSlidersCubit>().refreshSliders();
+      context.read<CategoriesCubit>().loadCategories();
+
       if (isOffersSelected) {
         context.read<ProductsCubit>().loadDiscountedProducts();
       } else if (selectedCategoryId != null) {
@@ -168,8 +172,6 @@ class HomeScreenState extends State<HomeScreen> with HomeSearchLogic {
       } else {
         context.read<ProductsCubit>().loadProducts();
       }
-      context.read<CategoriesCubit>().loadCategories();
-      context.read<HomeSlidersCubit>().loadSliders();
     }
   }
 

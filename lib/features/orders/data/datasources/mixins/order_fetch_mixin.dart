@@ -26,7 +26,7 @@ mixin OrderFetchMixin {
           try {
             final storeResponse = await client
                 .from('stores')
-                .select('name, phone, address')
+                .select('name, phone')
                 .eq('merchant_id', order['merchant_id'])
                 .maybeSingle();
             storeInfo = storeResponse;
@@ -114,7 +114,7 @@ mixin OrderFetchMixin {
               try {
                 final storeResponse = await client
                     .from('stores')
-                    .select('name, phone, address')
+                    .select('name, phone')
                     .eq('merchant_id', order['merchant_id'])
                     .maybeSingle();
                 storeInfo = storeResponse;
@@ -144,29 +144,14 @@ mixin OrderFetchMixin {
       // Get sub-orders with items
       final ordersResponse = await client
           .from('orders')
-          .select('*, order_items(*)')
+          .select('*, order_items(*), stores(name, phone, address)')
           .eq('parent_order_id', parentOrderId)
           .order('created_at');
 
-      // Fetch store info for each order
-      final orders = <OrderModel>[];
-      for (final order in ordersResponse) {
-        Map<String, dynamic>? storeInfo;
-        if (order['merchant_id'] != null) {
-          try {
-            final storeResponse = await client
-                .from('stores')
-                .select('name, phone, address')
-                .eq('merchant_id', order['merchant_id'])
-                .maybeSingle();
-            storeInfo = storeResponse;
-          } catch (_) {}
-        }
-        orders.add(OrderModel.fromJson({
-          ...order,
-          if (storeInfo != null) 'stores': storeInfo,
-        }));
-      }
+      // Map orders
+      final orders = (ordersResponse as List)
+          .map((order) => OrderModel.fromJson(order))
+          .toList();
 
       return ParentOrderModel(
         id: parentResponse['id'] as String,
@@ -193,12 +178,20 @@ mixin OrderFetchMixin {
   /// Get user's parent orders
   Future<List<ParentOrderModel>> getUserParentOrders(String userId) async {
     try {
+      // Single query with all joins - much faster!
       final response = await client
           .from('parent_orders')
-          .select(
-              '*, orders(*, order_items(*), stores:merchant_id(name, phone, address))')
+          .select('''
+            *,
+            orders(
+              *,
+              order_items(*),
+              stores(name, phone, address)
+            )
+          ''')
           .eq('user_id', userId)
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .limit(20);
 
       return (response as List)
           .map((json) => ParentOrderModel.fromJson(json))
@@ -208,76 +201,40 @@ mixin OrderFetchMixin {
     }
   }
 
-  /// Watch user's parent orders - listens to orders table for status changes
+  /// Watch user's parent orders - optimized version
   Stream<List<ParentOrderModel>> watchUserParentOrders(String userId) {
-    // Listen to orders table to catch status changes
     return client
-        .from('orders')
+        .from('parent_orders')
         .stream(primaryKey: ['id'])
         .eq('user_id', userId)
         .order('created_at', ascending: false)
-        .asyncMap((ordersData) async {
-          // Group orders by parent_order_id
-          final Map<String, List<Map<String, dynamic>>> ordersByParent = {};
-          final Set<String> parentOrderIds = {};
-
-          for (final order in ordersData) {
-            final parentId = order['parent_order_id'] as String?;
-            if (parentId != null) {
-              parentOrderIds.add(parentId);
-              if (!ordersByParent.containsKey(parentId)) {
-                ordersByParent[parentId] = [];
-              }
-              ordersByParent[parentId]!.add(order);
-            }
-          }
-
-          if (parentOrderIds.isEmpty) {
+        .asyncMap((parentOrdersData) async {
+          if (parentOrdersData.isEmpty) {
             return <ParentOrderModel>[];
           }
 
-          // Fetch parent orders data
-          final parentOrdersResponse = await client
-              .from('parent_orders')
-              .select()
-              .inFilter('id', parentOrderIds.toList())
-              .order('created_at', ascending: false);
+          final parentOrderIds =
+              parentOrdersData.map((p) => p['id'] as String).toList();
 
-          final parentOrders = <ParentOrderModel>[];
-          for (final parentOrder in parentOrdersResponse) {
-            final parentId = parentOrder['id'] as String;
-            final subOrdersData = ordersByParent[parentId] ?? [];
+          // Fetch all orders in one query
+          final ordersResponse = await client
+              .from('orders')
+              .select('*, order_items(*), stores(name, phone, address)')
+              .inFilter('parent_order_id', parentOrderIds);
 
-            // Fetch order items and store info for each sub-order
-            final orders = <OrderModel>[];
-            for (final order in subOrdersData) {
-              // Fetch order items
-              final itemsResponse = await client
-                  .from('order_items')
-                  .select()
-                  .eq('order_id', order['id']);
-
-              // Fetch store info
-              Map<String, dynamic>? storeInfo;
-              if (order['merchant_id'] != null) {
-                try {
-                  final storeResponse = await client
-                      .from('stores')
-                      .select('name, phone, address')
-                      .eq('merchant_id', order['merchant_id'])
-                      .maybeSingle();
-                  storeInfo = storeResponse;
-                } catch (_) {}
-              }
-
-              orders.add(OrderModel.fromJson({
-                ...order,
-                'order_items': itemsResponse,
-                if (storeInfo != null) 'stores': storeInfo,
-              }));
+          // Group orders by parent_order_id
+          final Map<String, List<OrderModel>> ordersByParent = {};
+          for (final order in ordersResponse) {
+            final parentId = order['parent_order_id'] as String?;
+            if (parentId != null) {
+              ordersByParent.putIfAbsent(parentId, () => []);
+              ordersByParent[parentId]!.add(OrderModel.fromJson(order));
             }
+          }
 
-            parentOrders.add(ParentOrderModel(
+          return parentOrdersData.map((parentOrder) {
+            final parentId = parentOrder['id'] as String;
+            return ParentOrderModel(
               id: parentId,
               userId: parentOrder['user_id'] as String,
               total: (parentOrder['total'] as num).toDouble(),
@@ -292,11 +249,9 @@ mixin OrderFetchMixin {
               createdAt: parentOrder['created_at'] != null
                   ? DateTime.parse(parentOrder['created_at'] as String)
                   : null,
-              subOrders: orders,
-            ));
-          }
-
-          return parentOrders;
+              subOrders: ordersByParent[parentId] ?? [],
+            );
+          }).toList();
         });
   }
 }

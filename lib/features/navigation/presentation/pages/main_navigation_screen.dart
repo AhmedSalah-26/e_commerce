@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,6 +35,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       const FavoritesScreen(),
       const SettingsScreen(),
     ];
+  }
+
+  /// Navigate to a tab
+  void _navigateToTab(int index) {
+    if (_bottomNavIndex == index) return;
+    setState(() => _bottomNavIndex = index);
+  }
+
+  /// Callback for BackButtonListener (web support)
+  Future<bool> _onBackButtonPressed() async {
+    final shouldExit = _handleBackPress();
+    return !shouldExit; // Return true to prevent browser back
   }
 
   /// Handle back button press - returns true if should exit app
@@ -73,13 +86,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    Widget content = PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         final shouldExit = _handleBackPress();
         if (shouldExit) {
           SystemNavigator.pop();
         }
-        return false; // Never allow default back behavior
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -144,12 +158,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         ),
       ),
     );
+
+    // Wrap with BackButtonListener for web support
+    if (kIsWeb) {
+      return BackButtonListener(
+        onBackButtonPressed: _onBackButtonPressed,
+        child: content,
+      );
+    }
+
+    return content;
   }
 
   Widget _buildNavItem(int index, IconData icon, IconData activeIcon) {
     final isSelected = _bottomNavIndex == index;
     return IconButton(
-      onPressed: () => setState(() => _bottomNavIndex = index),
+      onPressed: () => _navigateToTab(index),
       icon: Icon(
         isSelected ? activeIcon : icon,
         color: isSelected ? AppColours.primary : AppColours.greyMedium,
@@ -166,7 +190,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   ) {
     final isSelected = _bottomNavIndex == index;
     return IconButton(
-      onPressed: () => setState(() => _bottomNavIndex = index),
+      onPressed: () => _navigateToTab(index),
       icon: Stack(
         clipBehavior: Clip.none,
         children: [

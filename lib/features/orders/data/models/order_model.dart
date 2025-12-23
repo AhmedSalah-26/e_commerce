@@ -77,6 +77,8 @@ class OrderModel extends OrderEntity {
       merchantName = store['name'] as String?;
       merchantPhone = store['phone'] as String?;
       merchantAddress = store['address'] as String?;
+      // Debug: print store data
+      print('🏪 Store data: $store');
     }
     // Fallback to profiles join
     else if (json['profiles'] != null) {

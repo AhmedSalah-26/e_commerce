@@ -146,18 +146,16 @@ mixin ProductQueryMixin {
     int limit = 10,
   }) async {
     try {
-      final from = page * limit;
-      final to = from + limit - 1;
+      final offset = page * limit;
 
-      // Use raw SQL to sort by discount percentage on server
-      final response = await client
-          .from('products')
-          .select()
-          .eq('is_active', true)
-          .not('discount_price', 'is', null)
-          .gt('price', 0)
-          .order('discount_price', ascending: true)
-          .range(from, to);
+      // Use RPC function to get products sorted by discount percentage on server
+      final response = await client.rpc(
+        'get_discounted_products_sorted',
+        params: {
+          'p_limit': limit,
+          'p_offset': offset,
+        },
+      );
 
       return (response as List)
           .map((json) => ProductModel.fromJson(json, locale: locale))

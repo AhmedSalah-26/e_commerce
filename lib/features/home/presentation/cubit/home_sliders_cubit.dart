@@ -49,7 +49,7 @@ class HomeSlidersCubit extends Cubit<HomeSlidersState> {
 
     // Load both in parallel
     final results = await Future.wait([
-      _repository.getDiscountedProducts(limit: 10),
+      _repository.getDiscountedProducts(limit: 20),
       _repository.getNewestProducts(limit: 10),
     ]);
 

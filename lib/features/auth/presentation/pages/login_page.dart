@@ -47,9 +47,9 @@ class _LoginPageState extends State<LoginPage> {
           if (state is AuthAuthenticated) {
             AppRouter.setAuthenticated(true);
             if (state.user.isMerchant) {
-              context.go('/merchant-dashboard');
+              context.pushReplacement('/merchant-dashboard');
             } else {
-              context.go('/home');
+              context.pushReplacement('/home');
             }
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(

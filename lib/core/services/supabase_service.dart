@@ -32,6 +32,9 @@ class SupabaseServiceImpl implements SupabaseService {
     await Supabase.initialize(
       url: supabaseUrl,
       anonKey: supabaseAnonKey,
+      authOptions: const FlutterAuthClientOptions(
+        autoRefreshToken: true,
+      ),
     );
     _client = Supabase.instance.client;
   }

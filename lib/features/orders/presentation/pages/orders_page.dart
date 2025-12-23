@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -24,11 +26,57 @@ class OrdersPage extends StatefulWidget {
 class _OrdersPageState extends State<OrdersPage> {
   // Cache the last loaded parent orders to avoid white screen
   List<ParentOrderEntity>? _cachedParentOrders;
+  StreamSubscription? _authSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadOrdersIfNeeded();
+    _setupAuthListener();
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
+
+  /// Listen to auth state changes for token refresh
+  void _setupAuthListener() {
+    _authSubscription =
+        Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+      final event = data.event;
+      if (event == AuthChangeEvent.tokenRefreshed) {
+        // Token refreshed - reload orders silently
+        _safeLoadOrders();
+      }
+      if (event == AuthChangeEvent.signedOut) {
+        // User signed out - navigate to login
+        if (mounted) {
+          context.go('/login');
+        }
+      }
+    });
+  }
+
+  /// Safe load orders with JWT error handling
+  Future<void> _safeLoadOrders() async {
+    try {
+      _loadOrders();
+    } catch (e) {
+      if (e.toString().contains('JWT') || e.toString().contains('token')) {
+        // Try to refresh session and reload
+        try {
+          await Supabase.instance.client.auth.refreshSession();
+          _loadOrders();
+        } catch (_) {
+          // If refresh fails, redirect to login
+          if (mounted) {
+            context.go('/login');
+          }
+        }
+      }
+    }
   }
 
   void _loadOrdersIfNeeded() {

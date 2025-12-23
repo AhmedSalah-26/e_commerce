@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../domain/entities/parent_order_entity.dart';
 import '../../domain/repositories/order_repository.dart';
@@ -13,8 +14,29 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   OrdersCubit(this._repository) : super(const OrdersInitial());
 
+  /// Helper to refresh token if needed
+  Future<void> _refreshTokenIfNeeded() async {
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        final expiresAt = session.expiresAt;
+        if (expiresAt != null) {
+          final expiryTime =
+              DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000);
+          // Refresh if token expires in less than 5 minutes
+          if (expiryTime.difference(DateTime.now()).inMinutes < 5) {
+            await Supabase.instance.client.auth.refreshSession();
+          }
+        }
+      }
+    } catch (_) {
+      // Silently fail - auto refresh should handle it
+    }
+  }
+
   /// Load orders for a user
   Future<void> loadOrders(String userId) async {
+    await _refreshTokenIfNeeded();
     emit(const OrdersLoading());
 
     final result = await _repository.getOrders(userId);
@@ -235,6 +257,7 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Load user's parent orders
   Future<void> loadUserParentOrders(String userId) async {
+    await _refreshTokenIfNeeded();
     emit(const OrdersLoading());
 
     final result = await _repository.getUserParentOrders(userId);
@@ -249,15 +272,31 @@ class OrdersCubit extends Cubit<OrdersState> {
   void watchUserParentOrders(String userId) {
     _parentOrdersSubscription?.cancel();
     emit(const OrdersLoading());
-    _parentOrdersSubscription =
-        _repository.watchUserParentOrders(userId).listen(
-      (parentOrders) {
-        emit(ParentOrdersLoaded(parentOrders));
-      },
-      onError: (error) {
-        emit(OrdersError(error.toString()));
-      },
-    );
+
+    // Refresh token before starting stream
+    _refreshTokenIfNeeded().then((_) {
+      _parentOrdersSubscription =
+          _repository.watchUserParentOrders(userId).listen(
+        (parentOrders) {
+          emit(ParentOrdersLoaded(parentOrders));
+        },
+        onError: (error) async {
+          final errorStr = error.toString();
+          // Handle JWT errors by refreshing and retrying
+          if (errorStr.contains('JWT') || errorStr.contains('token')) {
+            try {
+              await Supabase.instance.client.auth.refreshSession();
+              // Retry watching after refresh
+              watchUserParentOrders(userId);
+            } catch (_) {
+              emit(OrdersError(errorStr));
+            }
+          } else {
+            emit(OrdersError(errorStr));
+          }
+        },
+      );
+    });
   }
 
   /// Update order status

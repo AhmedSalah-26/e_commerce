@@ -88,8 +88,9 @@ class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
                   itemCount: suggestedProducts.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, __) => const SizedBox(width: 16),
                   itemBuilder: (context, index) => SizedBox(
                     width: cardWidth,
                     child: _SuggestedProductCard(

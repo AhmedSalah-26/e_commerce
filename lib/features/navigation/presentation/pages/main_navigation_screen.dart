@@ -73,15 +73,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-
+    return WillPopScope(
+      onWillPop: () async {
         final shouldExit = _handleBackPress();
         if (shouldExit) {
           SystemNavigator.pop();
         }
+        return false; // Never allow default back behavior
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,

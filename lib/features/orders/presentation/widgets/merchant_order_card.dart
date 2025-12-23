@@ -2,8 +2,11 @@ import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
+import '../../../products/domain/repositories/product_repository.dart';
+import '../../../products/presentation/pages/product_screen.dart';
 import '../../domain/entities/order_entity.dart';
 
 /// Card widget to display a single merchant's order within a parent order
@@ -30,7 +33,7 @@ class MerchantOrderCard extends StatelessWidget {
         children: [
           _buildMerchantHeader(),
           const Divider(height: 1),
-          _buildOrderItems(),
+          _buildOrderItems(context),
           const Divider(height: 1),
           _buildOrderSummary(),
         ],
@@ -155,7 +158,7 @@ class MerchantOrderCard extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderItems() {
+  Widget _buildOrderItems(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -163,56 +166,92 @@ class MerchantOrderCard extends StatelessWidget {
         children: [
           Text('products'.tr(), style: AppTextStyle.normal_12_greyDark),
           const SizedBox(height: 8),
-          ...order.items.map((item) => _buildOrderItemRow(item)),
+          ...order.items.map((item) => _buildOrderItemRow(context, item)),
         ],
       ),
     );
   }
 
-  Widget _buildOrderItemRow(OrderItemEntity item) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: item.productImage != null
-                ? Image.network(
-                    item.productImage!,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildPlaceholderImage(),
-                  )
-                : _buildPlaceholderImage(),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.productName,
-                  style: AppTextStyle.bodyMedium,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${item.quantity} × ${item.price.toStringAsFixed(2)} ${'egp'.tr()}',
-                  style: AppTextStyle.normal_12_greyDark,
-                  textDirection: ui.TextDirection.ltr,
-                ),
-              ],
+  Widget _buildOrderItemRow(BuildContext context, OrderItemEntity item) {
+    return GestureDetector(
+      onTap: item.productId != null
+          ? () => _navigateToProduct(context, item.productId!)
+          : null,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: item.productImage != null
+                  ? Image.network(
+                      item.productImage!,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _buildPlaceholderImage(),
+                    )
+                  : _buildPlaceholderImage(),
             ),
-          ),
-          Text(
-            '${item.itemTotal.toStringAsFixed(2)} ${'egp'.tr()}',
-            style: AppTextStyle.semiBold_12_dark_brown,
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.productName,
+                    style: AppTextStyle.bodyMedium.copyWith(
+                      color: item.productId != null
+                          ? AppColours.brownMedium
+                          : null,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${item.quantity} × ${item.price.toStringAsFixed(2)} ${'egp'.tr()}',
+                    style: AppTextStyle.normal_12_greyDark,
+                    textDirection: ui.TextDirection.ltr,
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              '${item.itemTotal.toStringAsFixed(2)} ${'egp'.tr()}',
+              style: AppTextStyle.semiBold_12_dark_brown,
+            ),
+            if (item.productId != null)
+              const Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+              ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _navigateToProduct(
+      BuildContext context, String productId) async {
+    try {
+      final repository = sl<ProductRepository>();
+      final result = await repository.getProductById(productId);
+      result.fold(
+        (failure) {},
+        (product) {
+          if (context.mounted) {
+            Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(
+                builder: (_) => ProductScreen(product: product),
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      // Product not found or error
+    }
   }
 
   Widget _buildPlaceholderImage() {

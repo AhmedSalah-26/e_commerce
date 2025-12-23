@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -139,6 +140,7 @@ class _DiscountBadge extends StatelessWidget {
         ),
         child: Text(
           '-$percentage%',
+          textDirection: ui.TextDirection.ltr,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 12,

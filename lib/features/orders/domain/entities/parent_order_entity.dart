@@ -103,6 +103,18 @@ class ParentOrderEntity extends Equatable {
     return grouped;
   }
 
+  /// Get first product image from all sub-orders
+  String? get firstProductImage {
+    for (final order in subOrders) {
+      for (final item in order.items) {
+        if (item.productImage != null && item.productImage!.isNotEmpty) {
+          return item.productImage;
+        }
+      }
+    }
+    return null;
+  }
+
   @override
   List<Object?> get props => [
         id,

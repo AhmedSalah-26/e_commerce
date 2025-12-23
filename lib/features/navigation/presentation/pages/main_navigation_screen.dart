@@ -7,7 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 
-class MainNavigationScreen extends StatelessWidget {
+class MainNavigationScreen extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainNavigationScreen({
@@ -15,32 +15,43 @@ class MainNavigationScreen extends StatelessWidget {
     required this.navigationShell,
   });
 
+  @override
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+}
+
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void _onTap(int index) {
     // Skip if already on this tab
-    if (index == navigationShell.currentIndex) return;
-    navigationShell.goBranch(
+    if (index == widget.navigationShell.currentIndex) return;
+    widget.navigationShell.goBranch(
       index,
       initialLocation: true,
     );
   }
 
+  Future<bool> _onWillPop() async {
+    // If not on home tab, go to home
+    if (widget.navigationShell.currentIndex != 0) {
+      widget.navigationShell.goBranch(0, initialLocation: true);
+      return false;
+    }
+    // Exit app
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        // If not on home tab, go to home
-        if (navigationShell.currentIndex != 0) {
-          context.go('/home');
-        } else {
-          // Exit app
+    return BackButtonListener(
+      onBackButtonPressed: () async {
+        final shouldPop = await _onWillPop();
+        if (shouldPop) {
           SystemNavigator.pop();
         }
+        return true; // Always handle the back button
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        body: navigationShell,
+        body: widget.navigationShell,
         bottomNavigationBar: BlocSelector<CartCubit, CartState, int>(
           selector: (state) => state is CartLoaded
               ? state.items.fold<int>(0, (sum, item) => sum + item.quantity)
@@ -100,7 +111,7 @@ class MainNavigationScreen extends StatelessWidget {
   }
 
   Widget _buildNavItem(int index, IconData icon, IconData activeIcon) {
-    final isSelected = navigationShell.currentIndex == index;
+    final isSelected = widget.navigationShell.currentIndex == index;
     return IconButton(
       onPressed: () => _onTap(index),
       icon: Icon(
@@ -117,7 +128,7 @@ class MainNavigationScreen extends StatelessWidget {
     IconData activeIcon,
     int badgeCount,
   ) {
-    final isSelected = navigationShell.currentIndex == index;
+    final isSelected = widget.navigationShell.currentIndex == index;
     return IconButton(
       onPressed: () => _onTap(index),
       icon: Stack(

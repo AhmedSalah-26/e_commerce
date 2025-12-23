@@ -59,8 +59,7 @@ class ProductGridCard extends StatelessWidget {
   }
 
   void _navigateToProduct(BuildContext context) {
-    Navigator.push(
-      context,
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(builder: (_) => ProductScreen(product: product)),
     );
   }

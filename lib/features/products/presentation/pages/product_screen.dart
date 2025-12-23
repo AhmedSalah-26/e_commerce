@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
@@ -12,7 +13,6 @@ import '../../data/datasources/product_remote_datasource.dart';
 import '../cubit/products_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
-import '../../../cart/presentation/pages/cart_screen.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../favorites/presentation/cubit/favorites_cubit.dart';
@@ -202,7 +202,13 @@ class _ProductScreenState extends State<ProductScreen> {
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: AppColours.brownMedium),
-        onPressed: () => Navigator.pop(context),
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/home');
+          }
+        },
       ),
       actions: [
         BlocSelector<CartCubit, CartState, int>(
@@ -213,10 +219,7 @@ class _ProductScreenState extends State<ProductScreen> {
             return Padding(
               padding: const EdgeInsets.only(left: 8),
               child: IconButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CartScreen()),
-                ),
+                onPressed: () => context.push('/cart'),
                 icon: Stack(
                   clipBehavior: Clip.none,
                   children: [

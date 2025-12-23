@@ -251,4 +251,11 @@ class CategoriesCubit extends Cubit<CategoriesState> {
   Future<void> refresh() async {
     await loadCategories(forceReload: true);
   }
+
+  /// Reset state and force reload - used when language changes
+  Future<void> reset() async {
+    _isLoading = false;
+    emit(const CategoriesInitial());
+    await loadCategories(forceReload: true);
+  }
 }

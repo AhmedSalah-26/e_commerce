@@ -169,4 +169,13 @@ class FavoritesCubit extends Cubit<FavoritesState> {
     }
     return false;
   }
+
+  /// Reset state and force reload - used when language changes
+  Future<void> reset() async {
+    _isLoading = false;
+    emit(FavoritesInitial());
+    if (_userId != null) {
+      await loadFavorites(_userId!);
+    }
+  }
 }

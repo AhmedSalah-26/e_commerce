@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../features/cart/presentation/cubit/cart_cubit.dart';
+import '../../features/categories/presentation/cubit/categories_cubit.dart';
+import '../../features/favorites/presentation/cubit/favorites_cubit.dart';
+import '../../features/home/presentation/cubit/home_sliders_cubit.dart';
+import '../../features/orders/presentation/cubit/orders_cubit.dart';
+import '../../features/products/presentation/cubit/products_cubit.dart';
+import '../../features/shipping/presentation/cubit/shipping_cubit.dart';
 
 class LanguageToggleButton extends StatelessWidget {
   final Color? iconColor;
@@ -59,11 +69,55 @@ class LanguageToggleButton extends StatelessWidget {
     );
   }
 
-  void _toggleLanguage(BuildContext context, bool isArabic) {
-    if (isArabic) {
-      context.setLocale(const Locale('en'));
-    } else {
-      context.setLocale(const Locale('ar'));
+  void _toggleLanguage(BuildContext context, bool isArabic) async {
+    final newLocale = isArabic ? const Locale('en') : const Locale('ar');
+
+    // Change locale
+    await context.setLocale(newLocale);
+
+    // Reset and reload all data
+    if (context.mounted) {
+      _resetAllData(context, newLocale.languageCode);
+
+      // Navigate to home
+      context.go('/home');
+    }
+  }
+
+  void _resetAllData(BuildContext context, String locale) {
+    try {
+      // Reset products cubit
+      final productsCubit = context.read<ProductsCubit>();
+      productsCubit.setLocale(locale);
+      productsCubit.reset();
+
+      // Reset categories cubit
+      final categoriesCubit = context.read<CategoriesCubit>();
+      categoriesCubit.setLocale(locale);
+      categoriesCubit.reset();
+
+      // Reset sliders cubit
+      final slidersCubit = context.read<HomeSlidersCubit>();
+      slidersCubit.setLocale(locale);
+      slidersCubit.reset();
+
+      // Reset favorites cubit
+      final favoritesCubit = context.read<FavoritesCubit>();
+      favoritesCubit.setLocale(locale);
+      favoritesCubit.reset();
+
+      // Reset cart cubit
+      final cartCubit = context.read<CartCubit>();
+      cartCubit.setLocale(locale);
+      cartCubit.reset();
+
+      // Reset orders cubit
+      context.read<OrdersCubit>().reset();
+
+      // Reset shipping cubit
+      context.read<ShippingCubit>().reset();
+    } catch (_) {
+      // Cubits might not be available in current context
     }
   }
 }

@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../features/products/domain/entities/product_entity.dart';
-import '../../../features/products/presentation/pages/product_screen.dart';
 import '../../theme/app_colors.dart';
 import 'product_image_section.dart';
 import 'product_info_section.dart';
@@ -59,9 +59,7 @@ class ProductGridCard extends StatelessWidget {
   }
 
   void _navigateToProduct(BuildContext context) {
-    Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(builder: (_) => ProductScreen(product: product)),
-    );
+    context.push('/product', extra: product);
   }
 
   static final _cardDecoration = BoxDecoration(

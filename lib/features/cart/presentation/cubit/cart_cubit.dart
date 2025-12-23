@@ -234,6 +234,14 @@ class CartCubit extends Cubit<CartState> {
     return 0;
   }
 
+  /// Reset state and force reload - used when language changes
+  Future<void> reset() async {
+    emit(const CartInitial());
+    if (_currentUserId != null) {
+      await loadCart(_currentUserId!);
+    }
+  }
+
   @override
   Future<void> close() {
     _cartSubscription?.cancel();

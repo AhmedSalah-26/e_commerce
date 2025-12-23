@@ -1,12 +1,12 @@
 import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../products/domain/repositories/product_repository.dart';
-import '../../../products/presentation/pages/product_screen.dart';
 import '../../domain/entities/order_entity.dart';
 
 /// Card widget to display a single merchant's order within a parent order
@@ -241,11 +241,7 @@ class MerchantOrderCard extends StatelessWidget {
         (failure) {},
         (product) {
           if (context.mounted) {
-            Navigator.of(context, rootNavigator: true).push(
-              MaterialPageRoute(
-                builder: (_) => ProductScreen(product: product),
-              ),
-            );
+            context.push('/product', extra: product);
           }
         },
       );

@@ -234,11 +234,18 @@ class ProductsCubit extends Cubit<ProductsState> {
       } else if (currentState.selectedCategoryId != null) {
         await loadProductsByCategory(currentState.selectedCategoryId!);
       } else {
-        await loadProducts();
+        await loadProducts(forceReload: true);
       }
     } else {
-      await loadProducts();
+      await loadProducts(forceReload: true);
     }
+  }
+
+  /// Reset state and force reload - used when language changes
+  Future<void> reset() async {
+    _isLoading = false;
+    emit(const ProductsInitial());
+    await loadProducts(forceReload: true);
   }
 
   /// Get a single product by ID with full details (including store info)

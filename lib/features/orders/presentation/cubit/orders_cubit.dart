@@ -316,6 +316,13 @@ class OrdersCubit extends Cubit<OrdersState> {
     );
   }
 
+  /// Reset state - used when language changes
+  void reset() {
+    _ordersSubscription?.cancel();
+    _parentOrdersSubscription?.cancel();
+    emit(const OrdersInitial());
+  }
+
   @override
   Future<void> close() {
     _ordersSubscription?.cancel();

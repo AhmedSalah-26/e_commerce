@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../products/data/repositories/product_repository_impl.dart';
 import '../../../products/domain/entities/product_entity.dart';
 import '../../../products/domain/repositories/product_repository.dart';
 
@@ -36,6 +37,13 @@ class HomeSlidersCubit extends Cubit<HomeSlidersState> {
 
   HomeSlidersCubit(this._repository) : super(const HomeSlidersState());
 
+  /// Set the locale for fetching products
+  void setLocale(String locale) {
+    if (_repository is ProductRepositoryImpl) {
+      _repository.setLocale(locale);
+    }
+  }
+
   Future<void> loadSliders() async {
     // Prevent duplicate loading
     if (_isLoading) return;
@@ -44,6 +52,24 @@ class HomeSlidersCubit extends Cubit<HomeSlidersState> {
       return; // Already loaded
     }
 
+    await _fetchSliders();
+  }
+
+  /// Force refresh sliders
+  Future<void> refreshSliders() async {
+    _isLoading = false;
+    emit(const HomeSlidersState());
+    await _fetchSliders();
+  }
+
+  /// Reset state and force reload - used when language changes
+  Future<void> reset() async {
+    _isLoading = false;
+    emit(const HomeSlidersState());
+    await _fetchSliders();
+  }
+
+  Future<void> _fetchSliders() async {
     _isLoading = true;
     emit(state.copyWith(isLoadingDiscounted: true, isLoadingNewest: true));
 
@@ -63,12 +89,5 @@ class HomeSlidersCubit extends Cubit<HomeSlidersState> {
       isLoadingDiscounted: false,
       isLoadingNewest: false,
     ));
-  }
-
-  /// Force refresh sliders
-  Future<void> refreshSliders() async {
-    _isLoading = false;
-    emit(const HomeSlidersState());
-    await loadSliders();
   }
 }

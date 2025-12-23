@@ -202,4 +202,9 @@ class ShippingCubit extends Cubit<ShippingState> {
       (_) => loadMerchantShippingPrices(merchantId),
     );
   }
+
+  /// Reset state - used when language changes
+  void reset() {
+    emit(ShippingInitial());
+  }
 }

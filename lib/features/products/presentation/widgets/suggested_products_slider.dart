@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -9,7 +10,6 @@ import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/product_entity.dart';
 import '../cubit/products_cubit.dart';
 import '../cubit/products_state.dart';
-import '../pages/product_screen.dart';
 
 class SuggestedProductsSlider extends StatefulWidget {
   final String currentProductId;
@@ -116,13 +116,7 @@ class _SuggestedProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(
-            builder: (context) => ProductScreen(product: product),
-          ),
-        );
-      },
+      onTap: () => context.push('/product', extra: product),
       child: Container(
         decoration: BoxDecoration(
           color: AppColours.white,

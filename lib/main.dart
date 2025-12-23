@@ -87,10 +87,9 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Check if user is already authenticated and set userId
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeUserData();
-      _updateLocale();
+      _initLocale();
     });
   }
 
@@ -103,38 +102,27 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _updateLocale() {
+  void _initLocale() {
     final currentLocale = context.locale.languageCode;
-    if (_lastLocale != currentLocale) {
-      _lastLocale = currentLocale;
-      // Set locale for products, categories, cart, and favorites cubits
-      context.read<ProductsCubit>().setLocale(currentLocale);
-      context.read<CategoriesCubit>().setLocale(currentLocale);
-      context.read<CartCubit>().setLocale(currentLocale);
-      context.read<FavoritesCubit>().setLocale(currentLocale);
-
-      // Reload favorites if user is authenticated
-      final authState = context.read<AuthCubit>().state;
-      if (authState is AuthAuthenticated) {
-        context.read<FavoritesCubit>().loadFavorites(
-              authState.user.id,
-              showLoading: false,
-            );
-      }
-    }
+    _lastLocale = currentLocale;
+    context.read<ProductsCubit>().setLocale(currentLocale);
+    context.read<CategoriesCubit>().setLocale(currentLocale);
+    context.read<CartCubit>().setLocale(currentLocale);
+    context.read<FavoritesCubit>().setLocale(currentLocale);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _updateLocale();
+    final currentLocale = context.locale.languageCode;
+    if (_lastLocale != null && _lastLocale != currentLocale) {
+      _lastLocale = currentLocale;
+      // Language changed - cubits are reset in LanguageToggleButton
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Update locale when it changes
-    _updateLocale();
-
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         // When user logs in, set userId for favorites and cart

@@ -119,7 +119,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           (state.user.name ?? state.user.email)[0]
                               .toUpperCase(),
                           style: const TextStyle(
-                            color: AppColours.brownDark,
+                            color: Colors.white,
                             fontSize: 36,
                             fontWeight: FontWeight.bold,
                           ),

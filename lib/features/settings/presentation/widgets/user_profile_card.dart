@@ -35,7 +35,7 @@ class UserProfileCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 30,
-            backgroundColor: AppColours.brownDark,
+            backgroundColor: AppColours.brownLight,
             child: Text(
               (user.name ?? user.email)[0].toUpperCase(),
               style: const TextStyle(

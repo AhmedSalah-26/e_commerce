@@ -23,6 +23,7 @@ import '../../features/orders/presentation/pages/parent_order_details_page.dart'
 import '../../features/products/domain/entities/product_entity.dart';
 import '../../features/products/presentation/pages/product_screen.dart';
 import '../../features/settings/presentation/pages/edit_profile_screen.dart';
+import '../../features/settings/presentation/pages/language_settings_screen.dart';
 import '../../features/settings/presentation/pages/settings_screen.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
 
@@ -167,6 +168,10 @@ class AppRouter {
       GoRoute(
         path: '/edit-profile',
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/language-settings',
+        builder: (context, state) => const LanguageSettingsScreen(),
       ),
       GoRoute(
         path: '/product',

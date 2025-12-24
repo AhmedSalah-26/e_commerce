@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 
 import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
@@ -29,36 +30,38 @@ void main() async {
   await AppRouter.checkOnboardingStatus();
 
   runApp(
-    EasyLocalization(
-      supportedLocales: const [Locale('ar'), Locale('en')],
-      path: 'assets/translations',
-      fallbackLocale: const Locale('ar'),
-      startLocale: const Locale('ar'),
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider<AuthCubit>(
-            create: (_) => di.sl<AuthCubit>()..checkAuthStatus(),
-          ),
-          BlocProvider<ProductsCubit>(
-            create: (_) => di.sl<ProductsCubit>(),
-          ),
-          BlocProvider<CategoriesCubit>(
-            create: (_) => di.sl<CategoriesCubit>(),
-          ),
-          BlocProvider<CartCubit>(
-            create: (_) => di.sl<CartCubit>(),
-          ),
-          BlocProvider<OrdersCubit>(
-            create: (_) => di.sl<OrdersCubit>(),
-          ),
-          BlocProvider<FavoritesCubit>(
-            create: (_) => di.sl<FavoritesCubit>(),
-          ),
-          BlocProvider<HomeSlidersCubit>(
-            create: (_) => di.sl<HomeSlidersCubit>(),
-          ),
-        ],
-        child: const MyApp(),
+    Phoenix(
+      child: EasyLocalization(
+        supportedLocales: const [Locale('ar'), Locale('en')],
+        path: 'assets/translations',
+        fallbackLocale: const Locale('ar'),
+        startLocale: const Locale('ar'),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider<AuthCubit>(
+              create: (_) => di.sl<AuthCubit>()..checkAuthStatus(),
+            ),
+            BlocProvider<ProductsCubit>(
+              create: (_) => di.sl<ProductsCubit>(),
+            ),
+            BlocProvider<CategoriesCubit>(
+              create: (_) => di.sl<CategoriesCubit>(),
+            ),
+            BlocProvider<CartCubit>(
+              create: (_) => di.sl<CartCubit>(),
+            ),
+            BlocProvider<OrdersCubit>(
+              create: (_) => di.sl<OrdersCubit>(),
+            ),
+            BlocProvider<FavoritesCubit>(
+              create: (_) => di.sl<FavoritesCubit>(),
+            ),
+            BlocProvider<HomeSlidersCubit>(
+              create: (_) => di.sl<HomeSlidersCubit>(),
+            ),
+          ],
+          child: const MyApp(),
+        ),
       ),
     ),
   );
@@ -82,18 +85,25 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String? _lastLocale;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeUserData();
-      _initLocale();
+      _initializeApp();
     });
   }
 
-  void _initializeUserData() {
+  void _initializeApp() {
+    final locale = context.locale.languageCode;
+
+    // Set locale for all cubits
+    context.read<ProductsCubit>().setLocale(locale);
+    context.read<CategoriesCubit>().setLocale(locale);
+    context.read<CartCubit>().setLocale(locale);
+    context.read<FavoritesCubit>().setLocale(locale);
+    context.read<HomeSlidersCubit>().setLocale(locale);
+
+    // Initialize user data if authenticated
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
       context.read<FavoritesCubit>().setUserId(authState.user.id);
@@ -102,30 +112,10 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _initLocale() {
-    final currentLocale = context.locale.languageCode;
-    _lastLocale = currentLocale;
-    context.read<ProductsCubit>().setLocale(currentLocale);
-    context.read<CategoriesCubit>().setLocale(currentLocale);
-    context.read<CartCubit>().setLocale(currentLocale);
-    context.read<FavoritesCubit>().setLocale(currentLocale);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final currentLocale = context.locale.languageCode;
-    if (_lastLocale != null && _lastLocale != currentLocale) {
-      _lastLocale = currentLocale;
-      // Language changed - cubits are reset in LanguageToggleButton
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
-        // When user logs in, set userId for favorites and cart
         if (state is AuthAuthenticated) {
           context.read<FavoritesCubit>().setUserId(state.user.id);
           context.read<CartCubit>().setUserId(state.user.id);

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/coupon_model.dart';
 import '../models/coupon_validation_result.dart';
@@ -47,7 +48,8 @@ class CouponRemoteDatasource {
   Future<List<CouponModel>> getStoreCoupons(String storeId) async {
     final response = await _client
         .from('coupons')
-        .select('*, coupon_products(product_id)')
+        .select(
+            '*, coupon_products(product_id), coupon_categories(category_id)')
         .eq('store_id', storeId)
         .order('created_at', ascending: false);
 
@@ -57,8 +59,11 @@ class CouponRemoteDatasource {
   }
 
   /// إنشاء كوبون جديد
-  Future<CouponModel> createCoupon(CouponModel coupon,
-      {List<String>? productIds}) async {
+  Future<CouponModel> createCoupon(
+    CouponModel coupon, {
+    List<String>? productIds,
+    List<String>? categoryIds,
+  }) async {
     final response = await _client
         .from('coupons')
         .insert(coupon.toInsertJson())
@@ -69,22 +74,39 @@ class CouponRemoteDatasource {
 
     // Add product associations if scope is 'products'
     if (productIds != null && productIds.isNotEmpty) {
-      await _client.from('coupon_products').insert(
-            productIds
-                .map((pid) => {
-                      'coupon_id': couponId,
-                      'product_id': pid,
-                    })
-                .toList(),
-          );
+      try {
+        await _client.from('coupon_products').insert(
+              productIds
+                  .map((pid) => {'coupon_id': couponId, 'product_id': pid})
+                  .toList(),
+            );
+      } catch (e) {
+        debugPrint('Error inserting coupon_products: $e');
+      }
+    }
+
+    // Add category associations if scope is 'categories'
+    if (categoryIds != null && categoryIds.isNotEmpty) {
+      try {
+        await _client.from('coupon_categories').insert(
+              categoryIds
+                  .map((cid) => {'coupon_id': couponId, 'category_id': cid})
+                  .toList(),
+            );
+      } catch (e) {
+        debugPrint('Error inserting coupon_categories: $e');
+      }
     }
 
     return CouponModel.fromJson(response);
   }
 
   /// تحديث كوبون
-  Future<CouponModel> updateCoupon(CouponModel coupon,
-      {List<String>? productIds}) async {
+  Future<CouponModel> updateCoupon(
+    CouponModel coupon, {
+    List<String>? productIds,
+    List<String>? categoryIds,
+  }) async {
     final response = await _client
         .from('coupons')
         .update(coupon.toInsertJson())
@@ -93,17 +115,21 @@ class CouponRemoteDatasource {
         .single();
 
     // Update product associations
-    // First delete existing
     await _client.from('coupon_products').delete().eq('coupon_id', coupon.id);
-
-    // Then add new ones if scope is 'products'
     if (productIds != null && productIds.isNotEmpty) {
       await _client.from('coupon_products').insert(
             productIds
-                .map((pid) => {
-                      'coupon_id': coupon.id,
-                      'product_id': pid,
-                    })
+                .map((pid) => {'coupon_id': coupon.id, 'product_id': pid})
+                .toList(),
+          );
+    }
+
+    // Update category associations
+    await _client.from('coupon_categories').delete().eq('coupon_id', coupon.id);
+    if (categoryIds != null && categoryIds.isNotEmpty) {
+      await _client.from('coupon_categories').insert(
+            categoryIds
+                .map((cid) => {'coupon_id': coupon.id, 'category_id': cid})
                 .toList(),
           );
     }

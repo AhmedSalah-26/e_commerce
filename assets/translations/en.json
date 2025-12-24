@@ -343,5 +343,14 @@
   "select_products": "Select Products",
   "selected_products": "Selected Products",
   "no_products_selected": "No products selected",
-  "selected": "selected"
+  "selected": "selected",
+  "specific_categories": "Specific Categories",
+  "select_categories": "Select Categories",
+  "selected_categories": "Selected Categories",
+  "no_categories_selected": "No categories selected",
+  "coupon_in_use": "Cannot delete coupon because it's used in previous orders",
+  "active_coupons": "Active",
+  "inactive_coupons": "Inactive",
+  "no_active_coupons": "No active coupons",
+  "no_inactive_coupons": "No inactive coupons"
 }

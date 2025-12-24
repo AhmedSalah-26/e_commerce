@@ -23,6 +23,7 @@ class CouponModel extends CouponEntity {
     super.storeId,
     required super.createdAt,
     super.productIds,
+    super.categoryIds,
   });
 
   factory CouponModel.fromJson(Map<String, dynamic> json) {
@@ -31,6 +32,14 @@ class CouponModel extends CouponEntity {
     if (json['coupon_products'] != null) {
       productIds = (json['coupon_products'] as List)
           .map((cp) => cp['product_id'] as String)
+          .toList();
+    }
+
+    // Parse category IDs from coupon_categories relation
+    List<String> categoryIds = [];
+    if (json['coupon_categories'] != null) {
+      categoryIds = (json['coupon_categories'] as List)
+          .map((cc) => cc['category_id'] as String)
           .toList();
     }
 
@@ -59,6 +68,7 @@ class CouponModel extends CouponEntity {
       storeId: json['store_id'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
       productIds: productIds,
+      categoryIds: categoryIds,
     );
   }
 

@@ -82,12 +82,20 @@ class MerchantCouponsCubit extends Cubit<CouponState> {
   }
 
   /// إنشاء كوبون جديد
-  Future<void> createCoupon(CouponModel coupon, String storeId,
-      {List<String>? productIds}) async {
+  Future<void> createCoupon(
+    CouponModel coupon,
+    String storeId, {
+    List<String>? productIds,
+    List<String>? categoryIds,
+  }) async {
     emit(CouponSaving());
 
     try {
-      await _datasource.createCoupon(coupon, productIds: productIds);
+      await _datasource.createCoupon(
+        coupon,
+        productIds: productIds,
+        categoryIds: categoryIds,
+      );
       emit(CouponSaved());
       loadCoupons(storeId);
     } catch (e) {
@@ -104,12 +112,20 @@ class MerchantCouponsCubit extends Cubit<CouponState> {
   }
 
   /// تحديث كوبون
-  Future<void> updateCoupon(CouponModel coupon, String storeId,
-      {List<String>? productIds}) async {
+  Future<void> updateCoupon(
+    CouponModel coupon,
+    String storeId, {
+    List<String>? productIds,
+    List<String>? categoryIds,
+  }) async {
     emit(CouponSaving());
 
     try {
-      await _datasource.updateCoupon(coupon, productIds: productIds);
+      await _datasource.updateCoupon(
+        coupon,
+        productIds: productIds,
+        categoryIds: categoryIds,
+      );
       emit(CouponSaved());
       loadCoupons(storeId);
     } catch (e) {
@@ -124,7 +140,15 @@ class MerchantCouponsCubit extends Cubit<CouponState> {
       emit(CouponDeleted());
       loadCoupons(storeId);
     } catch (e) {
-      emit(MerchantCouponsError(e.toString()));
+      final errorMsg = e.toString().toLowerCase();
+      // Check if coupon is used in orders (foreign key constraint)
+      if (errorMsg.contains('23503') ||
+          errorMsg.contains('foreign key') ||
+          errorMsg.contains('still referenced')) {
+        emit(const MerchantCouponsError('COUPON_IN_USE'));
+      } else {
+        emit(MerchantCouponsError(e.toString()));
+      }
     }
   }
 

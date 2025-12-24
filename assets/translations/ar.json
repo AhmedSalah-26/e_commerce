@@ -343,5 +343,14 @@
   "select_products": "اختر المنتجات",
   "selected_products": "المنتجات المختارة",
   "no_products_selected": "لم يتم اختيار منتجات",
-  "selected": "مختار"
+  "selected": "مختار",
+  "specific_categories": "فئات محددة",
+  "select_categories": "اختر الفئات",
+  "selected_categories": "الفئات المختارة",
+  "no_categories_selected": "لم يتم اختيار فئات",
+  "coupon_in_use": "لا يمكن حذف الكوبون لأنه مستخدم في طلبات سابقة",
+  "active_coupons": "نشطة",
+  "inactive_coupons": "متوقفة",
+  "no_active_coupons": "لا توجد كوبونات نشطة",
+  "no_inactive_coupons": "لا توجد كوبونات متوقفة"
 }

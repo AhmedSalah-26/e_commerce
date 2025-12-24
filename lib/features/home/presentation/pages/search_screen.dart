@@ -116,6 +116,7 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
                     searchResults: searchState.searchResults,
                     isLoadingMore: searchState.isLoadingMore,
                     hasMore: searchState.hasMore,
+                    hasActiveFilters: filterState.hasActiveFilters,
                     onCategoryTap: (categoryId, categoryName) {
                       searchByCategory(categoryId, categoryName);
                     },

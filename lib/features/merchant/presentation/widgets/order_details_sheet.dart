@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -83,19 +85,8 @@ class OrderDetailsSheet extends StatelessWidget {
         Text(isRtl ? 'المنتجات' : 'Products',
             style: AppTextStyle.semiBold_16_dark_brown),
         const SizedBox(height: 12),
-        ...order.items.map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                      child: Text('${item.productName} x${item.quantity}',
-                          style: AppTextStyle.normal_14_greyDark)),
-                  Text(
-                      '${item.price.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
-                      style: AppTextStyle.semiBold_16_dark_brown),
-                ],
-              ),
-            )),
+        ...order.items
+            .map((item) => _ExpandableOrderItem(item: item, isRtl: isRtl)),
         const Divider(height: 32),
         _buildDetailRow(isRtl ? 'المجموع الفرعي' : 'Subtotal',
             '${order.subtotal.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}'),
@@ -240,5 +231,172 @@ class OrderDetailsSheet extends StatelessWidget {
       case OrderStatus.cancelled:
         return isRtl ? 'ملغي' : 'Cancelled';
     }
+  }
+}
+
+/// Expandable widget for order item with product details
+class _ExpandableOrderItem extends StatefulWidget {
+  final OrderItemEntity item;
+  final bool isRtl;
+
+  const _ExpandableOrderItem({required this.item, required this.isRtl});
+
+  @override
+  State<_ExpandableOrderItem> createState() => _ExpandableOrderItemState();
+}
+
+class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: widget.item.productImage != null
+                        ? CachedNetworkImage(
+                            imageUrl: widget.item.productImage!,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => _buildPlaceholder(),
+                            errorWidget: (_, __, ___) => _buildPlaceholder(),
+                          )
+                        : _buildPlaceholder(),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.item.productName,
+                          style: AppTextStyle.bodyMedium,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${widget.item.quantity} × ${widget.item.price.toStringAsFixed(2)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
+                          style: AppTextStyle.normal_12_greyDark,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '${widget.item.itemTotal.toStringAsFixed(2)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
+                        style: AppTextStyle.semiBold_12_dark_brown,
+                      ),
+                      const SizedBox(height: 4),
+                      Icon(
+                        _isExpanded
+                            ? Icons.keyboard_arrow_up
+                            : Icons.keyboard_arrow_down,
+                        color: AppColours.brownMedium,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_isExpanded) _buildExpandedDetails(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpandedDetails() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.item.productImage != null) ...[
+            Text(
+              'product_image'.tr(),
+              style: AppTextStyle.normal_12_greyDark
+                  .copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: CachedNetworkImage(
+                imageUrl: widget.item.productImage!,
+                width: double.infinity,
+                height: 150,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  height: 150,
+                  color: Colors.grey.shade200,
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  height: 150,
+                  color: Colors.grey.shade200,
+                  child: const Icon(Icons.image_not_supported, size: 40),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          Text(
+            'product_name'.tr(),
+            style: AppTextStyle.normal_12_greyDark
+                .copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 4),
+          Text(widget.item.productName, style: AppTextStyle.bodyMedium),
+          const SizedBox(height: 12),
+          if (widget.item.productDescription != null &&
+              widget.item.productDescription!.isNotEmpty) ...[
+            Text(
+              'product_description'.tr(),
+              style: AppTextStyle.normal_12_greyDark
+                  .copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              widget.item.productDescription!,
+              style: AppTextStyle.normal_12_greyDark,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      width: 50,
+      height: 50,
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.image_outlined, color: Colors.grey),
+    );
   }
 }

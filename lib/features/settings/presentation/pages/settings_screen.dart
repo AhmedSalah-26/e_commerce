@@ -120,7 +120,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         subtitle: context.locale.languageCode == 'ar'
                             ? 'العربية'
                             : 'English',
-                        onTap: () => _showLanguageDialog(context),
+                        onTap: () => context.push('/language-settings'),
                         showDivider: false,
                       ),
                       SettingsTile(
@@ -186,43 +186,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showLanguageDialog(BuildContext context) {
-    final isArabic = context.locale.languageCode == 'ar';
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('change_language'.tr()),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: isArabic
-                  ? const Icon(Icons.check_circle, color: Colors.green)
-                  : const Icon(Icons.circle_outlined, color: Colors.grey),
-              title: const Text('العربية'),
-              onTap: () {
-                context.setLocale(const Locale('ar'));
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: !isArabic
-                  ? const Icon(Icons.check_circle, color: Colors.green)
-                  : const Icon(Icons.circle_outlined, color: Colors.grey),
-              title: const Text('English'),
-              onTap: () {
-                context.setLocale(const Locale('en'));
-                Navigator.pop(ctx);
-              },
-            ),
-          ],
-        ),
       ),
     );
   }

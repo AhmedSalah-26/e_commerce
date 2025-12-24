@@ -204,6 +204,7 @@ class _ProductByIdScreenState extends State<_ProductByIdScreen> {
   ProductEntity? _product;
   bool _isLoading = true;
   String? _error;
+  bool _isInactive = false;
 
   @override
   void initState() {
@@ -219,7 +220,11 @@ class _ProductByIdScreenState extends State<_ProductByIdScreen> {
         setState(() {
           _product = product;
           _isLoading = false;
-          if (product == null) _error = 'Product not found';
+          if (product == null) {
+            _error = 'Product not found';
+          } else if (!product.isActive) {
+            _isInactive = true;
+          }
         });
       }
     } catch (e) {
@@ -239,6 +244,12 @@ class _ProductByIdScreenState extends State<_ProductByIdScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
+
+    // Show inactive product message
+    if (_isInactive && _product != null) {
+      return _buildInactiveProductScreen(context);
+    }
+
     if (_error != null || _product == null) {
       return Scaffold(
         appBar: AppBar(),
@@ -255,5 +266,94 @@ class _ProductByIdScreenState extends State<_ProductByIdScreen> {
       );
     }
     return ProductScreen(product: _product!);
+  }
+
+  Widget _buildInactiveProductScreen(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.brown),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.remove_shopping_cart_outlined,
+                size: 80,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                _product?.name ?? '',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.brown,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange[200]!),
+                ),
+                child: const Text(
+                  'غير متوفر حالياً',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.orange,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'هذا المنتج غير متاح للشراء في الوقت الحالي',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () => context.go('/home'),
+                icon: const Icon(Icons.home_outlined),
+                label: const Text('العودة للرئيسية'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
@@ -36,7 +37,10 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('language_settings'.tr()),
+        title: Text(
+          'language_settings'.tr(),
+          style: AppTextStyle.semiBold_20_dark_brown,
+        ),
         backgroundColor: AppColours.white,
         foregroundColor: AppColours.brownDark,
         leading: IconButton(

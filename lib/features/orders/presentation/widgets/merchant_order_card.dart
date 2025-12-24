@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
@@ -172,73 +171,54 @@ class MerchantOrderCard extends StatelessWidget {
   }
 
   Widget _buildOrderItemRow(BuildContext context, OrderItemEntity item) {
-    return InkWell(
-      onTap: item.productId != null
-          ? () => context.push('/product/${item.productId}')
-          : null,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: item.productImage != null
-                  ? CachedNetworkImage(
-                      imageUrl: item.productImage!,
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => _buildPlaceholderImage(),
-                      errorWidget: (_, __, ___) => _buildPlaceholderImage(),
-                    )
-                  : _buildPlaceholderImage(),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.productName,
-                    style: AppTextStyle.bodyMedium,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${item.quantity} × ${item.price.toStringAsFixed(2)} ${'egp'.tr()}',
-                    style: AppTextStyle.normal_12_greyDark,
-                    textDirection: ui.TextDirection.ltr,
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: item.productImage != null
+                ? CachedNetworkImage(
+                    imageUrl: item.productImage!,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => _buildPlaceholderImage(),
+                    errorWidget: (_, __, ___) => _buildPlaceholderImage(),
+                  )
+                : _buildPlaceholderImage(),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${item.itemTotal.toStringAsFixed(2)} ${'egp'.tr()}',
-                  style: AppTextStyle.semiBold_12_dark_brown,
+                  item.productName,
+                  style: AppTextStyle.bodyMedium,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                if (item.productId != null) ...[
-                  const SizedBox(height: 4),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: AppColours.brownMedium,
-                    size: 14,
-                  ),
-                ],
+                const SizedBox(height: 4),
+                Text(
+                  '${item.quantity} × ${item.price.toStringAsFixed(2)} ${'egp'.tr()}',
+                  style: AppTextStyle.normal_12_greyDark,
+                  textDirection: ui.TextDirection.ltr,
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+          Text(
+            '${item.itemTotal.toStringAsFixed(2)} ${'egp'.tr()}',
+            style: AppTextStyle.semiBold_12_dark_brown,
+          ),
+        ],
       ),
     );
   }

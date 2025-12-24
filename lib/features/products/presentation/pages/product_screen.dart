@@ -179,6 +179,14 @@ class _ProductScreenState extends State<ProductScreen> {
     );
   }
 
+  void _handleBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/home');
+    }
+  }
+
   Widget _buildFavoriteButton(double screenWidth) {
     return BlocSelector<FavoritesCubit, FavoritesState, bool>(
       selector: (state) =>
@@ -202,13 +210,7 @@ class _ProductScreenState extends State<ProductScreen> {
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: AppColours.brownMedium),
-        onPressed: () {
-          if (context.canPop()) {
-            context.pop();
-          } else {
-            context.go('/home');
-          }
-        },
+        onPressed: () => _handleBack(context),
       ),
       actions: [
         BlocSelector<CartCubit, CartState, int>(

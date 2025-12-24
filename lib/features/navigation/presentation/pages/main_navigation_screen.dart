@@ -29,25 +29,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Future<bool> _onWillPop() async {
-    // If not on home tab, go to home
-    if (widget.navigationShell.currentIndex != 0) {
-      widget.navigationShell.goBranch(0, initialLocation: true);
-      return false;
-    }
-    // Exit app
-    return true;
-  }
-
   @override
   Widget build(BuildContext context) {
     return BackButtonListener(
       onBackButtonPressed: () async {
-        final shouldPop = await _onWillPop();
-        if (shouldPop) {
-          SystemNavigator.pop();
+        // Let the router handle back if there are pages to pop
+        if (context.canPop()) {
+          return false; // Don't handle, let router pop
         }
-        return true; // Always handle the back button
+        // If not on home tab, go to home
+        if (widget.navigationShell.currentIndex != 0) {
+          widget.navigationShell.goBranch(0, initialLocation: true);
+          return true; // Handled
+        }
+        // On home tab, exit app
+        SystemNavigator.pop();
+        return true; // Handled
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,

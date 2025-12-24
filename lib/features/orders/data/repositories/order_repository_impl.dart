@@ -85,6 +85,9 @@ class OrderRepositoryImpl implements OrderRepository {
     String? notes, {
     double? shippingCost,
     String? governorateId,
+    String? couponId,
+    String? couponCode,
+    double? couponDiscount,
   }) async {
     try {
       final parentOrderId = await _remoteDataSource.createMultiVendorOrder(
@@ -95,6 +98,9 @@ class OrderRepositoryImpl implements OrderRepository {
         notes,
         shippingCost: shippingCost,
         governorateId: governorateId,
+        couponId: couponId,
+        couponCode: couponCode,
+        couponDiscount: couponDiscount,
       );
       return Right(parentOrderId);
     } on ServerException catch (e) {

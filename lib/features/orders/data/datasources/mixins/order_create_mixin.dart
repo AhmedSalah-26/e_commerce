@@ -62,6 +62,9 @@ mixin OrderCreateMixin {
     String? notes, {
     double? shippingCost,
     String? governorateId,
+    String? couponId,
+    String? couponCode,
+    double? couponDiscount,
   }) async {
     try {
       final response = await client.rpc('create_multi_vendor_order', params: {
@@ -72,6 +75,9 @@ mixin OrderCreateMixin {
         'p_notes': notes,
         'p_shipping_cost': shippingCost ?? 0,
         'p_governorate_id': governorateId,
+        'p_coupon_id': couponId,
+        'p_coupon_code': couponCode,
+        'p_coupon_discount': couponDiscount ?? 0,
       });
 
       return response as String;

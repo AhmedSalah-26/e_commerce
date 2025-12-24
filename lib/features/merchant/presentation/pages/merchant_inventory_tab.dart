@@ -243,10 +243,12 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
           onSave: (productData) async {
             final authState = context.read<AuthCubit>().state;
             if (authState is AuthAuthenticated) {
-              final success = await context
-                  .read<MerchantProductsCubit>()
-                  .createProduct(productData, authState.user.id);
-              _showResultSnackBar(context, success, isRtl, isAdd: true);
+              final cubit = context.read<MerchantProductsCubit>();
+              final success =
+                  await cubit.createProduct(productData, authState.user.id);
+              if (context.mounted) {
+                _showResultSnackBar(context, success, isRtl, isAdd: true);
+              }
               return success;
             }
             return false;
@@ -270,10 +272,11 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
           product: product,
           isRtl: isRtl,
           onSave: (productData) async {
-            final success = await context
-                .read<MerchantProductsCubit>()
-                .updateProduct(product.id, productData);
-            _showResultSnackBar(context, success, isRtl, isAdd: false);
+            final cubit = context.read<MerchantProductsCubit>();
+            final success = await cubit.updateProduct(product.id, productData);
+            if (context.mounted) {
+              _showResultSnackBar(context, success, isRtl, isAdd: false);
+            }
             return success;
           },
         ),

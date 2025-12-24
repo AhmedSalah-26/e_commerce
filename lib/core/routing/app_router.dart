@@ -9,6 +9,7 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/cart/presentation/pages/cart_screen.dart';
 import '../../features/checkout/presentation/pages/checkout_page.dart';
+import '../../features/coupons/presentation/pages/merchant_coupons_page.dart';
 import '../../features/favorites/presentation/pages/favorites_screen.dart';
 import '../../features/help/presentation/pages/help_screen.dart';
 import '../../features/home/presentation/pages/home_screen.dart';
@@ -24,6 +25,7 @@ import '../../features/orders/presentation/pages/parent_order_details_page.dart'
 import '../../features/products/domain/entities/product_entity.dart';
 import '../../features/products/presentation/cubit/products_cubit.dart';
 import '../../features/products/presentation/pages/product_screen.dart';
+import '../../features/products/presentation/pages/store_products_screen.dart';
 import '../../features/settings/presentation/pages/edit_profile_screen.dart';
 import '../../features/settings/presentation/pages/language_settings_screen.dart';
 import '../../features/settings/presentation/pages/settings_screen.dart';
@@ -186,6 +188,21 @@ class AppRouter {
           final productId = state.pathParameters['id']!;
           return _ProductByIdScreen(productId: productId);
         },
+      ),
+      GoRoute(
+        path: '/store/:merchantId',
+        builder: (context, state) {
+          final merchantId = state.pathParameters['merchantId']!;
+          final storeName = state.uri.queryParameters['name'];
+          return StoreProductsScreen(
+            merchantId: merchantId,
+            storeName: storeName,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/merchant-coupons',
+        builder: (context, state) => const MerchantCouponsPage(),
       ),
     ],
   );

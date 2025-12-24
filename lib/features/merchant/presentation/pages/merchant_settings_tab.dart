@@ -74,6 +74,17 @@ class MerchantSettingsTab extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   _SettingsSection(
+                    title: isRtl ? 'التسويق' : 'Marketing',
+                    items: [
+                      _SettingsItem(
+                        title: 'coupons'.tr(),
+                        icon: Icons.local_offer_outlined,
+                        onTap: () => context.push('/merchant-coupons'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _SettingsSection(
                     title: isRtl ? 'التفضيلات' : 'Preferences',
                     items: [
                       _SettingsItem(

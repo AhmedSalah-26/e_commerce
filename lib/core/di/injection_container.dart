@@ -62,6 +62,10 @@ import '../../features/shipping/data/repositories/shipping_repository_impl.dart'
 import '../../features/shipping/domain/repositories/shipping_repository.dart';
 import '../../features/shipping/presentation/cubit/shipping_cubit.dart';
 
+// Coupons imports
+import '../../features/coupons/data/datasources/coupon_remote_datasource.dart';
+import '../../features/coupons/presentation/cubit/coupon_cubit.dart';
+
 final sl = GetIt.instance;
 
 Future<void> initializeDependencies() async {
@@ -182,4 +186,11 @@ Future<void> initializeDependencies() async {
     () => ShippingRepositoryImpl(sl<ShippingRemoteDataSource>()),
   );
   sl.registerFactory(() => ShippingCubit(sl<ShippingRepository>()));
+
+  // Coupons Feature
+  sl.registerLazySingleton<CouponRemoteDatasource>(
+    () => CouponRemoteDatasource(sl<SupabaseService>().client),
+  );
+  sl.registerFactory(() => CouponCubit(sl<CouponRemoteDatasource>()));
+  sl.registerFactory(() => MerchantCouponsCubit(sl<CouponRemoteDatasource>()));
 }

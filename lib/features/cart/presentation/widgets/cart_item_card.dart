@@ -202,15 +202,20 @@ class CartItemCard extends StatelessWidget {
             if (isFlashSale)
               Positioned(
                 top: screenHeight * 0.01,
-                left: 0,
+                left: isRtl ? null : 0,
+                right: isRtl ? 0 : null,
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      bottomRight: Radius.circular(10),
+                      topLeft: isRtl ? Radius.zero : const Radius.circular(10),
+                      topRight: isRtl ? const Radius.circular(10) : Radius.zero,
+                      bottomLeft:
+                          isRtl ? const Radius.circular(10) : Radius.zero,
+                      bottomRight:
+                          isRtl ? Radius.zero : const Radius.circular(10),
                     ),
                   ),
                   child: Row(
@@ -234,15 +239,20 @@ class CartItemCard extends StatelessWidget {
             else if (isInactive)
               Positioned(
                 top: screenHeight * 0.01,
-                left: 0,
+                left: isRtl ? null : 0,
+                right: isRtl ? 0 : null,
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   decoration: BoxDecoration(
                     color: Colors.orange[700],
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      bottomRight: Radius.circular(10),
+                    borderRadius: BorderRadius.only(
+                      topLeft: isRtl ? Radius.zero : const Radius.circular(10),
+                      topRight: isRtl ? const Radius.circular(10) : Radius.zero,
+                      bottomLeft:
+                          isRtl ? const Radius.circular(10) : Radius.zero,
+                      bottomRight:
+                          isRtl ? Radius.zero : const Radius.circular(10),
                     ),
                   ),
                   child: Text(
@@ -259,15 +269,20 @@ class CartItemCard extends StatelessWidget {
             else if (hasDiscount)
               Positioned(
                 top: screenHeight * 0.01,
-                left: 0,
+                left: isRtl ? null : 0,
+                right: isRtl ? 0 : null,
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppColours.brownLight,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      bottomRight: Radius.circular(10),
+                    borderRadius: BorderRadius.only(
+                      topLeft: isRtl ? Radius.zero : const Radius.circular(10),
+                      topRight: isRtl ? const Radius.circular(10) : Radius.zero,
+                      bottomLeft:
+                          isRtl ? const Radius.circular(10) : Radius.zero,
+                      bottomRight:
+                          isRtl ? Radius.zero : const Radius.circular(10),
                     ),
                   ),
                   child: Text(

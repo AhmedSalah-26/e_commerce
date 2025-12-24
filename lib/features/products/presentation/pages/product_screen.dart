@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
 import '../../../../core/shared_widgets/flash_sale_banner.dart';
+import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../data/datasources/product_remote_datasource.dart';
@@ -35,7 +36,7 @@ class ProductScreen extends StatefulWidget {
 class _ProductScreenState extends State<ProductScreen> {
   int _quantity = 1;
   late ProductEntity _product;
-  bool _isLoadingStoreInfo = true;
+  bool _isLoading = true;
 
   static const _actions = ProductActions();
 
@@ -43,26 +44,26 @@ class _ProductScreenState extends State<ProductScreen> {
   void initState() {
     super.initState();
     _product = widget.product;
-    _loadProductWithStoreInfo();
+    _loadFullProduct();
   }
 
-  Future<void> _loadProductWithStoreInfo() async {
+  Future<void> _loadFullProduct() async {
     try {
       final productsCubit = sl<ProductsCubit>();
       final fullProduct = await productsCubit.getProductById(widget.product.id);
       if (mounted && fullProduct != null) {
         setState(() {
           _product = fullProduct;
-          _isLoadingStoreInfo = false;
+          _isLoading = false;
         });
       } else {
         if (mounted) {
-          setState(() => _isLoadingStoreInfo = false);
+          setState(() => _isLoading = false);
         }
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _isLoadingStoreInfo = false);
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -78,7 +79,7 @@ class _ProductScreenState extends State<ProductScreen> {
     }
 
     // Reload product to get updated data (without discount)
-    await _loadProductWithStoreInfo();
+    await _loadFullProduct();
   }
 
   @override
@@ -96,96 +97,97 @@ class _ProductScreenState extends State<ProductScreen> {
       child: Scaffold(
         backgroundColor: AppColours.white,
         appBar: _buildAppBar(context),
-        body: Stack(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              child: ListView(
-                children: [
-                  // Flash Sale Banner (only if active)
-                  if (!isInactive &&
-                      _product.isFlashSaleActive &&
-                      _product.flashSaleEnd != null)
-                    FlashSaleBanner(
-                      endTime: _product.flashSaleEnd!,
-                      onExpired: _onFlashSaleExpired,
+        body: _isLoading
+            ? const ProductScreenSkeleton()
+            : Stack(
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(screenWidth * 0.04),
+                    child: ListView(
+                      children: [
+                        // Flash Sale Banner (only if active)
+                        if (!isInactive &&
+                            _product.isFlashSaleActive &&
+                            _product.flashSaleEnd != null)
+                          FlashSaleBanner(
+                            endTime: _product.flashSaleEnd!,
+                            onExpired: _onFlashSaleExpired,
+                          ),
+                        ProductImageSlider(
+                          images: _product.images,
+                          screenWidth: screenWidth,
+                        ),
+                        SizedBox(height: screenWidth * 0.05),
+                        // Show unavailable badge if inactive
+                        if (isInactive) ...[
+                          _buildUnavailableBadge(screenWidth),
+                          SizedBox(height: screenWidth * 0.03),
+                        ],
+                        ProductInfoSection(
+                          product: _product,
+                          screenWidth: screenWidth,
+                          isArabic: isArabic,
+                          hidePrice: isInactive,
+                        ),
+                        SizedBox(height: screenWidth * 0.02),
+                        ProductRatingSection(
+                          product: _product,
+                          screenWidth: screenWidth,
+                          isArabic: isArabic,
+                          favoriteButton: _buildFavoriteButton(screenWidth),
+                        ),
+                        SizedBox(height: screenWidth * 0.02),
+                        ProductStoreInfo(
+                          product: _product,
+                          screenWidth: screenWidth,
+                          isArabic: isArabic,
+                        ),
+                        SizedBox(height: screenWidth * 0.02),
+                        if (!isInactive)
+                          ProductStockStatus(
+                            product: _product,
+                            screenWidth: screenWidth,
+                            isArabic: isArabic,
+                          ),
+                        SizedBox(height: screenWidth * 0.02),
+                        ProductDescription(
+                          product: _product,
+                          screenWidth: screenWidth,
+                          isArabic: isArabic,
+                        ),
+                        SizedBox(height: screenWidth * 0.05),
+                        if (!isInactive && !_product.isOutOfStock)
+                          ProductQuantitySelector(
+                            quantity: _quantity,
+                            maxStock: _product.stock,
+                            screenWidth: screenWidth,
+                            isArabic: isArabic,
+                            onQuantityChanged: (newQuantity) {
+                              setState(() => _quantity = newQuantity);
+                            },
+                          ),
+                        if (!isInactive) ...[
+                          SizedBox(height: screenWidth * 0.05),
+                          ProductTotalPrice(
+                            totalPrice: totalPrice,
+                            screenWidth: screenWidth,
+                            isArabic: isArabic,
+                          ),
+                        ],
+                        SizedBox(height: screenWidth * 0.05),
+                        SuggestedProductsSlider(
+                          currentProductId: _product.id,
+                          categoryId: _product.categoryId,
+                        ),
+                        SizedBox(height: screenWidth * 0.05),
+                        ReviewsSection(productId: _product.id),
+                        SizedBox(height: screenWidth * 0.2),
+                      ],
                     ),
-                  ProductImageSlider(
-                    images: _product.images,
-                    screenWidth: screenWidth,
                   ),
-                  SizedBox(height: screenWidth * 0.05),
-                  // Show unavailable badge if inactive
-                  if (isInactive) ...[
-                    _buildUnavailableBadge(screenWidth),
-                    SizedBox(height: screenWidth * 0.03),
-                  ],
-                  ProductInfoSection(
-                    product: _product,
-                    screenWidth: screenWidth,
-                    isArabic: isArabic,
-                    hidePrice: isInactive,
-                  ),
-                  SizedBox(height: screenWidth * 0.02),
-                  ProductRatingSection(
-                    product: _product,
-                    screenWidth: screenWidth,
-                    isArabic: isArabic,
-                    favoriteButton: _buildFavoriteButton(screenWidth),
-                  ),
-                  SizedBox(height: screenWidth * 0.02),
-                  ProductStoreInfo(
-                    product: _product,
-                    screenWidth: screenWidth,
-                    isArabic: isArabic,
-                    isLoading: _isLoadingStoreInfo,
-                  ),
-                  SizedBox(height: screenWidth * 0.02),
-                  if (!isInactive)
-                    ProductStockStatus(
-                      product: _product,
-                      screenWidth: screenWidth,
-                      isArabic: isArabic,
-                    ),
-                  SizedBox(height: screenWidth * 0.02),
-                  ProductDescription(
-                    product: _product,
-                    screenWidth: screenWidth,
-                    isArabic: isArabic,
-                  ),
-                  SizedBox(height: screenWidth * 0.05),
-                  if (!isInactive && !_product.isOutOfStock)
-                    ProductQuantitySelector(
-                      quantity: _quantity,
-                      maxStock: _product.stock,
-                      screenWidth: screenWidth,
-                      isArabic: isArabic,
-                      onQuantityChanged: (newQuantity) {
-                        setState(() => _quantity = newQuantity);
-                      },
-                    ),
-                  if (!isInactive) ...[
-                    SizedBox(height: screenWidth * 0.05),
-                    ProductTotalPrice(
-                      totalPrice: totalPrice,
-                      screenWidth: screenWidth,
-                      isArabic: isArabic,
-                    ),
-                  ],
-                  SizedBox(height: screenWidth * 0.05),
-                  SuggestedProductsSlider(
-                    currentProductId: _product.id,
-                    categoryId: _product.categoryId,
-                  ),
-                  SizedBox(height: screenWidth * 0.05),
-                  ReviewsSection(productId: _product.id),
-                  SizedBox(height: screenWidth * 0.2),
+                  _buildAddToCartButton(context, isInactive),
                 ],
               ),
-            ),
-            _buildAddToCartButton(context, isInactive),
-          ],
-        ),
       ),
     );
   }

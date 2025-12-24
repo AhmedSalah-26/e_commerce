@@ -97,7 +97,7 @@ class OrderProductsCard extends StatelessWidget {
                 ),
                 if (item.productId != null) ...[
                   const SizedBox(height: 4),
-                  Icon(
+                  const Icon(
                     Icons.arrow_forward_ios,
                     size: 14,
                     color: AppColours.greyMedium,

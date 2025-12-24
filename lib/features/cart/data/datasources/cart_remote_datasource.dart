@@ -77,15 +77,15 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
           .maybeSingle();
 
       if (product == null) {
-        throw ServerException('المنتج غير موجود');
+        throw const ServerException('المنتج غير موجود');
       }
 
       if (product['is_active'] != true) {
-        throw ServerException('هذا المنتج غير متوفر حالياً');
+        throw const ServerException('هذا المنتج غير متوفر حالياً');
       }
 
       if ((product['stock'] as int? ?? 0) <= 0) {
-        throw ServerException('المنتج غير متوفر في المخزون');
+        throw const ServerException('المنتج غير متوفر في المخزون');
       }
 
       // Check if item already exists in cart

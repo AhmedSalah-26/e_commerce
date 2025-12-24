@@ -34,6 +34,9 @@ abstract class OrderRepository {
     String? notes, {
     double? shippingCost,
     String? governorateId,
+    String? couponId,
+    String? couponCode,
+    double? couponDiscount,
   });
 
   /// Get parent order details with sub-orders

@@ -224,6 +224,9 @@ class OrdersCubit extends Cubit<OrdersState> {
     String? notes,
     double? shippingCost,
     String? governorateId,
+    String? couponId,
+    String? couponCode,
+    double? couponDiscount,
   }) async {
     emit(const OrderCreating());
 
@@ -235,6 +238,9 @@ class OrdersCubit extends Cubit<OrdersState> {
       notes,
       shippingCost: shippingCost,
       governorateId: governorateId,
+      couponId: couponId,
+      couponCode: couponCode,
+      couponDiscount: couponDiscount,
     );
 
     result.fold(

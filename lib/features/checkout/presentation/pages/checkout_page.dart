@@ -8,16 +8,16 @@ import '../../../../core/shared_widgets/custom_button.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
-import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
-import '../../../notifications/data/services/local_notification_service.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
 import '../../../orders/presentation/cubit/orders_state.dart';
 import '../../../shipping/domain/entities/governorate_entity.dart';
 import '../../../shipping/presentation/cubit/shipping_cubit.dart';
+import '../../domain/checkout_validator.dart';
+import '../utils/order_state_handler.dart';
 import '../widgets/checkout_form_fields.dart';
 import '../widgets/governorate_dropdown.dart';
 import '../widgets/payment_method_card.dart';
@@ -36,6 +36,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
+
+  static const _validator = CheckoutValidator();
+  static const _stateHandler = OrderStateHandler();
 
   @override
   void initState() {
@@ -62,56 +65,44 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   void _placeOrder(double shippingCost, String? governorateId,
       Map<String, double>? merchantShippingPrices, CartLoaded cartState) {
-    if (_formKey.currentState!.validate()) {
-      if (governorateId == null) {
-        Tost.showCustomToast(
-          context,
-          'select_governorate'.tr(),
-          backgroundColor: Colors.orange,
-          textColor: Colors.white,
-        );
-        return;
-      }
+    if (!_formKey.currentState!.validate()) return;
 
-      // Check if any merchant has unavailable shipping
-      if (merchantShippingPrices != null && merchantShippingPrices.isNotEmpty) {
-        final merchantIds = <String>{};
-        for (final item in cartState.items) {
-          final merchantId = item.product?.merchantId;
-          if (merchantId != null) {
-            merchantIds.add(merchantId);
-          }
-        }
+    final validation = _validator.validate(
+      governorateId: governorateId,
+      merchantShippingPrices: merchantShippingPrices,
+      cartState: cartState,
+    );
 
-        for (final merchantId in merchantIds) {
-          if (!merchantShippingPrices.containsKey(merchantId)) {
-            Tost.showCustomToast(
-              context,
-              'shipping_not_supported'.tr(),
-              backgroundColor: Colors.red,
-              textColor: Colors.white,
-            );
-            return;
-          }
-        }
-      }
-
-      final authState = context.read<AuthCubit>().state;
-      if (authState is AuthAuthenticated) {
-        // Use multi-vendor order to split by merchant
-        context.read<OrdersCubit>().createMultiVendorOrder(
-              authState.user.id,
-              deliveryAddress: _addressController.text.trim(),
-              customerName: _nameController.text.trim(),
-              customerPhone: _phoneController.text.trim(),
-              notes: _notesController.text.trim().isEmpty
-                  ? null
-                  : _notesController.text.trim(),
-              shippingCost: shippingCost,
-              governorateId: governorateId,
-            );
-      }
+    if (!validation.isValid) {
+      Tost.showCustomToast(
+        context,
+        validation.errorKey!.tr(),
+        backgroundColor: validation.errorKey == 'select_governorate'
+            ? Colors.orange
+            : Colors.red,
+        textColor: Colors.white,
+      );
+      return;
     }
+
+    _submitOrder(shippingCost, governorateId!);
+  }
+
+  void _submitOrder(double shippingCost, String governorateId) {
+    final authState = context.read<AuthCubit>().state;
+    if (authState is! AuthAuthenticated) return;
+
+    context.read<OrdersCubit>().createMultiVendorOrder(
+          authState.user.id,
+          deliveryAddress: _addressController.text.trim(),
+          customerName: _nameController.text.trim(),
+          customerPhone: _phoneController.text.trim(),
+          notes: _notesController.text.trim().isEmpty
+              ? null
+              : _notesController.text.trim(),
+          shippingCost: shippingCost,
+          governorateId: governorateId,
+        );
   }
 
   @override
@@ -124,52 +115,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
       child: Directionality(
         textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
         child: BlocListener<OrdersCubit, OrdersState>(
-          listener: (context, state) {
-            if (state is OrderCreated) {
-              sl<LocalNotificationService>().createOrderStatusNotification(
-                orderId: state.orderId,
-                status: 'pending',
-                locale: context.locale.languageCode,
-              );
-
-              Tost.showCustomToast(
-                context,
-                'order_placed'.tr(),
-                backgroundColor: Colors.green,
-                textColor: Colors.white,
-              );
-              final authState = context.read<AuthCubit>().state;
-              if (authState is AuthAuthenticated) {
-                context.read<CartCubit>().loadCart(authState.user.id);
-              }
-              context.go('/orders');
-            } else if (state is MultiVendorOrderCreated) {
-              sl<LocalNotificationService>().createOrderStatusNotification(
-                orderId: state.parentOrderId,
-                status: 'pending',
-                locale: context.locale.languageCode,
-              );
-
-              Tost.showCustomToast(
-                context,
-                'order_placed'.tr(),
-                backgroundColor: Colors.green,
-                textColor: Colors.white,
-              );
-              final authState = context.read<AuthCubit>().state;
-              if (authState is AuthAuthenticated) {
-                context.read<CartCubit>().loadCart(authState.user.id);
-              }
-              context.go('/parent-order/${state.parentOrderId}');
-            } else if (state is OrdersError) {
-              Tost.showCustomToast(
-                context,
-                ErrorHelper.getUserFriendlyMessage(state.message),
-                backgroundColor: Colors.red,
-                textColor: Colors.white,
-              );
-            }
-          },
+          listener: (context, state) =>
+              _stateHandler.handleState(context, state),
           child: Scaffold(
             backgroundColor: Colors.white,
             appBar: AppBar(

@@ -59,7 +59,7 @@ class ProductGridCard extends StatelessWidget {
   }
 
   void _navigateToProduct(BuildContext context) {
-    context.push('/product', extra: product);
+    context.push('/product/${product.id}');
   }
 
   static final _cardDecoration = BoxDecoration(

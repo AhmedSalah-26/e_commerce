@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../products/domain/entities/product_entity.dart';
 import '../../../products/domain/repositories/product_repository.dart';
 import 'search_state.dart';
 import 'filter_state.dart';
@@ -78,58 +79,78 @@ class SearchManager {
   Future<void> performSearch(String query) async {
     if (query.isEmpty) return;
 
-    // Check cache first
     final cacheKey = _buildCacheKey(query, _filterState);
-    if (_searchCache.containsKey(cacheKey)) {
-      _searchState = _searchState.copyWith(
-        isSearching: false,
-        searchResults: _searchCache[cacheKey]!.cast(),
-        hasMore: _searchCache[cacheKey]!.length >= pageSize,
-        currentPage: 0,
-      );
-      onStateChanged();
-      return;
-    }
+    if (_tryLoadFromCache(cacheKey)) return;
+
+    _searchState = _searchState.copyWith(isSearching: true, currentPage: 0);
+    onStateChanged();
+
+    await _executeSearchQuery(query);
+  }
+
+  bool _tryLoadFromCache(String cacheKey) {
+    if (!_searchCache.containsKey(cacheKey)) return false;
 
     _searchState = _searchState.copyWith(
-      isSearching: true,
+      isSearching: false,
+      searchResults: _searchCache[cacheKey]!.cast(),
+      hasMore: _searchCache[cacheKey]!.length >= pageSize,
       currentPage: 0,
     );
     onStateChanged();
+    return true;
+  }
 
+  Future<void> _executeSearchQuery(String query) async {
     final result = await repository.searchProducts(
       query,
       page: 0,
       limit: pageSize,
       categoryId: _filterState.categoryId,
-      minPrice: _filterState.priceRange.start > _filterState.minPrice
-          ? _filterState.priceRange.start
-          : null,
-      maxPrice: _filterState.priceRange.end < _filterState.maxPrice
-          ? _filterState.priceRange.end
-          : null,
+      minPrice: _getMinPriceFilter(),
+      maxPrice: _getMaxPriceFilter(),
     );
 
     result.fold(
-      (failure) {
-        _searchState = _searchState.copyWith(
-          isSearching: false,
-          searchResults: [],
-        );
-        onStateChanged();
-      },
+      (_) => _updateSearchState(isSearching: false, results: []),
       (products) {
-        // Cache the results
-        _addToCache(cacheKey, products);
-
-        _searchState = _searchState.copyWith(
+        _addToCache(_buildCacheKey(query, _filterState), products);
+        _updateSearchState(
           isSearching: false,
-          searchResults: products,
+          results: products,
           hasMore: products.length >= pageSize,
         );
-        onStateChanged();
       },
     );
+  }
+
+  double? _getMinPriceFilter() {
+    return _filterState.priceRange.start > _filterState.minPrice
+        ? _filterState.priceRange.start
+        : null;
+  }
+
+  double? _getMaxPriceFilter() {
+    return _filterState.priceRange.end < _filterState.maxPrice
+        ? _filterState.priceRange.end
+        : null;
+  }
+
+  void _updateSearchState({
+    bool? isSearching,
+    List<ProductEntity>? results,
+    bool? hasMore,
+    bool? isLoadingMore,
+    int? currentPage,
+  }) {
+    _searchState = _searchState.copyWith(
+      isSearching: isSearching,
+      searchResults: results,
+      hasMore: hasMore,
+      isLoadingMore: isLoadingMore,
+      currentPage: currentPage,
+    );
+    onStateChanged();
   }
 
   String _buildCacheKey(String query, FilterState filter) {
@@ -152,13 +173,9 @@ class SearchManager {
 
   // Load more search results
   Future<void> loadMoreResults() async {
-    if (_searchState.isLoadingMore || !_searchState.hasMore) {
-      return;
-    }
+    if (_searchState.isLoadingMore || !_searchState.hasMore) return;
 
-    _searchState = _searchState.copyWith(isLoadingMore: true);
-    onStateChanged();
-
+    _updateSearchState(isLoadingMore: true);
     final nextPage = _searchState.currentPage + 1;
 
     final result = await repository.searchProducts(
@@ -166,28 +183,18 @@ class SearchManager {
       page: nextPage,
       limit: pageSize,
       categoryId: _filterState.categoryId,
-      minPrice: _filterState.priceRange.start > _filterState.minPrice
-          ? _filterState.priceRange.start
-          : null,
-      maxPrice: _filterState.priceRange.end < _filterState.maxPrice
-          ? _filterState.priceRange.end
-          : null,
+      minPrice: _getMinPriceFilter(),
+      maxPrice: _getMaxPriceFilter(),
     );
 
     result.fold(
-      (failure) {
-        _searchState = _searchState.copyWith(isLoadingMore: false);
-        onStateChanged();
-      },
-      (newProducts) {
-        _searchState = _searchState.copyWith(
-          isLoadingMore: false,
-          searchResults: [..._searchState.searchResults, ...newProducts],
-          currentPage: nextPage,
-          hasMore: newProducts.length >= pageSize,
-        );
-        onStateChanged();
-      },
+      (_) => _updateSearchState(isLoadingMore: false),
+      (newProducts) => _updateSearchState(
+        isLoadingMore: false,
+        results: [..._searchState.searchResults, ...newProducts],
+        currentPage: nextPage,
+        hasMore: newProducts.length >= pageSize,
+      ),
     );
   }
 
@@ -237,47 +244,29 @@ class SearchManager {
 
   // Perform filtered search (with or without query)
   Future<void> _performFilteredSearch() async {
-    _searchState = _searchState.copyWith(
-      isSearching: true,
-      currentPage: 0,
-    );
-    onStateChanged();
+    _updateSearchState(isSearching: true, currentPage: 0);
 
     final result = await repository.searchProducts(
-      _searchState.currentQuery, // Can be empty
+      _searchState.currentQuery,
       page: 0,
       limit: pageSize,
       categoryId: _filterState.categoryId,
-      minPrice: _filterState.priceRange.start > _filterState.minPrice
-          ? _filterState.priceRange.start
-          : null,
-      maxPrice: _filterState.priceRange.end < _filterState.maxPrice
-          ? _filterState.priceRange.end
-          : null,
+      minPrice: _getMinPriceFilter(),
+      maxPrice: _getMaxPriceFilter(),
     );
 
     result.fold(
-      (failure) {
-        _searchState = _searchState.copyWith(
-          isSearching: false,
-          searchResults: [],
-        );
-        onStateChanged();
-      },
-      (products) {
-        _searchState = _searchState.copyWith(
-          isSearching: false,
-          searchResults: products,
-          hasMore: products.length >= pageSize,
-        );
-        onStateChanged();
-      },
+      (_) => _updateSearchState(isSearching: false, results: []),
+      (products) => _updateSearchState(
+        isSearching: false,
+        results: products,
+        hasMore: products.length >= pageSize,
+      ),
     );
   }
 
   // Search by category (loads all products in category)
   Future<void> searchByCategory(String categoryId, String categoryName) async {
-    // Clear old results immediately
     _searchState = const SearchState(
       isSearchMode: true,
       isSearching: true,
@@ -293,28 +282,19 @@ class SearchManager {
     onStateChanged();
 
     final result = await repository.searchProducts(
-      '', // Empty query to get all products
+      '',
       page: 0,
       limit: pageSize,
       categoryId: categoryId,
     );
 
     result.fold(
-      (failure) {
-        _searchState = _searchState.copyWith(
-          isSearching: false,
-          searchResults: [],
-        );
-        onStateChanged();
-      },
-      (products) {
-        _searchState = _searchState.copyWith(
-          isSearching: false,
-          searchResults: products,
-          hasMore: products.length >= pageSize,
-        );
-        onStateChanged();
-      },
+      (_) => _updateSearchState(isSearching: false, results: []),
+      (products) => _updateSearchState(
+        isSearching: false,
+        results: products,
+        hasMore: products.length >= pageSize,
+      ),
     );
   }
 

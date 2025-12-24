@@ -116,7 +116,7 @@ class _SuggestedProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.pushReplacement('/product', extra: product),
+      onTap: () => context.pushReplacement('/product/${product.id}'),
       child: Container(
         decoration: BoxDecoration(
           color: AppColours.white,

@@ -177,10 +177,8 @@ class AppRouter {
       ),
       GoRoute(
         path: '/product',
-        builder: (context, state) {
-          final product = state.extra as ProductEntity;
-          return ProductScreen(product: product);
-        },
+        redirect: (context, state) => '/home',
+        builder: (context, state) => const SizedBox.shrink(),
       ),
       GoRoute(
         path: '/product/:id',

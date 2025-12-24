@@ -6,15 +6,13 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
 import '../../../../core/shared_widgets/flash_sale_banner.dart';
-import '../../../../core/shared_widgets/toast.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../data/datasources/product_remote_datasource.dart';
 import '../cubit/products_cubit.dart';
+import '../utils/product_actions.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
-import '../../../auth/presentation/cubit/auth_cubit.dart';
-import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../favorites/presentation/cubit/favorites_cubit.dart';
 import '../../../favorites/presentation/cubit/favorites_state.dart';
 import '../../../reviews/presentation/cubit/reviews_cubit.dart';
@@ -38,6 +36,8 @@ class _ProductScreenState extends State<ProductScreen> {
   int _quantity = 1;
   late ProductEntity _product;
   bool _isLoadingStoreInfo = true;
+
+  static const _actions = ProductActions();
 
   @override
   void initState() {
@@ -193,7 +193,7 @@ class _ProductScreenState extends State<ProductScreen> {
           state is FavoritesLoaded && state.isFavorite(_product.id),
       builder: (context, isFav) {
         return IconButton(
-          onPressed: () => _toggleFavorite(context),
+          onPressed: () => _actions.toggleFavorite(context, _product.id),
           icon: Icon(
             isFav ? Icons.favorite : Icons.favorite_border,
             color: Colors.red,
@@ -220,7 +220,7 @@ class _ProductScreenState extends State<ProductScreen> {
             return Padding(
               padding: const EdgeInsets.only(left: 8),
               child: IconButton(
-                onPressed: () => context.push('/cart'),
+                onPressed: () => context.go('/cart'),
                 icon: Stack(
                   clipBehavior: Clip.none,
                   children: [
@@ -257,52 +257,18 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   Widget _buildAddToCartButton(BuildContext context) {
+    final isOutOfStock = _product.isOutOfStock;
     return Positioned(
       bottom: 16,
       left: 16,
       right: 16,
       child: CustomButton(
-        color: _product.isOutOfStock ? Colors.grey : AppColours.brownLight,
-        onPressed: _product.isOutOfStock
-            ? () => Tost.showCustomToast(context, 'out_of_stock'.tr(),
-                backgroundColor: Colors.red, textColor: Colors.white)
-            : () => _addToCart(context),
-        label: _product.isOutOfStock ? 'out_of_stock'.tr() : 'add_to_cart'.tr(),
+        color: isOutOfStock ? Colors.grey : AppColours.brownLight,
+        onPressed: isOutOfStock
+            ? () => _actions.showOutOfStock(context)
+            : () => _actions.addToCart(context, _product.id, _quantity),
+        label: isOutOfStock ? 'out_of_stock'.tr() : 'add_to_cart'.tr(),
       ),
     );
-  }
-
-  void _addToCart(BuildContext context) {
-    final authState = context.read<AuthCubit>().state;
-    if (authState is AuthAuthenticated) {
-      context.read<CartCubit>().setUserId(authState.user.id);
-      context.read<CartCubit>().addToCart(_product.id, quantity: _quantity);
-      Tost.showCustomToast(context, 'added_to_cart'.tr(),
-          backgroundColor: Colors.green, textColor: Colors.white);
-    } else {
-      Tost.showCustomToast(context, 'login_required'.tr(),
-          backgroundColor: Colors.orange, textColor: Colors.white);
-    }
-  }
-
-  void _toggleFavorite(BuildContext context) {
-    final authState = context.read<AuthCubit>().state;
-    if (authState is AuthAuthenticated) {
-      final favoritesCubit = context.read<FavoritesCubit>();
-      favoritesCubit.setUserId(authState.user.id);
-      final isFav = favoritesCubit.isFavorite(_product.id);
-      favoritesCubit.toggleFavorite(_product.id);
-
-      if (isFav) {
-        Tost.showCustomToast(context, 'removed_from_favorites'.tr(),
-            backgroundColor: Colors.grey, textColor: Colors.white);
-      } else {
-        Tost.showCustomToast(context, 'added_to_favorites'.tr(),
-            backgroundColor: Colors.red, textColor: Colors.white);
-      }
-    } else {
-      Tost.showCustomToast(context, 'login_required'.tr(),
-          backgroundColor: Colors.orange, textColor: Colors.white);
-    }
   }
 }

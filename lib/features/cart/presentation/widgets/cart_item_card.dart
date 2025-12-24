@@ -39,6 +39,7 @@ class CartItemCard extends StatelessWidget {
     final hasDiscount = product?.hasDiscount ?? false;
     final isFlashSale = product?.isFlashSaleActive ?? false;
     final discountPercent = product?.discountPercentage ?? 0;
+    final isInactive = product != null && !product.isActive;
 
     return Slidable(
       key: ValueKey(cartItem.id),
@@ -226,6 +227,31 @@ class CartItemCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              )
+            // Inactive Product Badge
+            else if (isInactive)
+              Positioned(
+                top: screenHeight * 0.01,
+                left: 0,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[700],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    'shipping_unavailable'.tr(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               )

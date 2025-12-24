@@ -22,6 +22,12 @@ class CheckoutValidator {
     required Map<String, double>? merchantShippingPrices,
     required CartLoaded cartState,
   }) {
+    // Check for inactive products
+    final inactiveCheck = _validateActiveProducts(cartState);
+    if (!inactiveCheck.isValid) {
+      return inactiveCheck;
+    }
+
     // Check governorate selection
     if (governorateId == null) {
       return const CheckoutValidationResult.invalid('select_governorate');
@@ -36,6 +42,17 @@ class CheckoutValidator {
       return shippingCheck;
     }
 
+    return const CheckoutValidationResult.valid();
+  }
+
+  /// Check if all products in cart are active
+  CheckoutValidationResult _validateActiveProducts(CartLoaded cartState) {
+    for (final item in cartState.items) {
+      if (item.product != null && !item.product!.isActive) {
+        return const CheckoutValidationResult.invalid(
+            'cart_has_inactive_products');
+      }
+    }
     return const CheckoutValidationResult.valid();
   }
 

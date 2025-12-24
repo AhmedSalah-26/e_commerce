@@ -296,5 +296,6 @@
   "product_name": "Product Name",
   "product_description": "Product Description",
   "product_image": "Product Image",
-  "product_unavailable": "Currently Unavailable"
+  "product_unavailable": "Currently Unavailable",
+  "cart_has_inactive_products": "Cart contains unavailable products, please remove them first"
 }

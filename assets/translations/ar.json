@@ -296,5 +296,6 @@
   "product_name": "اسم المنتج",
   "product_description": "وصف المنتج",
   "product_image": "صورة المنتج",
-  "product_unavailable": "غير متوفر حالياً"
+  "product_unavailable": "غير متوفر حالياً",
+  "cart_has_inactive_products": "السلة تحتوي على منتجات غير متوفرة، يرجى إزالتها أولاً"
 }

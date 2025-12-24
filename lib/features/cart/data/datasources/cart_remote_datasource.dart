@@ -69,6 +69,25 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
     logger.i(
         '🛒 Adding to cart: userId=$userId, productId=$productId, qty=$quantity');
     try {
+      // Check if product is active
+      final product = await _client
+          .from('products')
+          .select('is_active, stock')
+          .eq('id', productId)
+          .maybeSingle();
+
+      if (product == null) {
+        throw ServerException('المنتج غير موجود');
+      }
+
+      if (product['is_active'] != true) {
+        throw ServerException('هذا المنتج غير متوفر حالياً');
+      }
+
+      if ((product['stock'] as int? ?? 0) <= 0) {
+        throw ServerException('المنتج غير متوفر في المخزون');
+      }
+
       // Check if item already exists in cart
       final existing = await _client
           .from('cart_items')
@@ -96,6 +115,7 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
       logger.i('✅ Added to cart successfully');
     } catch (e, stackTrace) {
       logger.e('❌ Error adding to cart', error: e, stackTrace: stackTrace);
+      if (e is ServerException) rethrow;
       throw ServerException('فشل في إضافة المنتج للسلة: ${e.toString()}');
     }
   }

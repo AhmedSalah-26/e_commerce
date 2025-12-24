@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
@@ -35,6 +36,9 @@ class CartItemCard extends StatelessWidget {
     final productPrice = product?.effectivePrice ?? 0;
     final productImage = product?.mainImage ?? '';
     double totalPrice = productPrice * cartItem.quantity;
+    final hasDiscount = product?.hasDiscount ?? false;
+    final isFlashSale = product?.isFlashSaleActive ?? false;
+    final discountPercent = product?.discountPercentage ?? 0;
 
     return Slidable(
       key: ValueKey(cartItem.id),
@@ -51,110 +55,202 @@ class CartItemCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.2),
-              spreadRadius: 1,
-              blurRadius: 2,
-              offset: const Offset(0, 1),
-            ),
-          ],
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColours.greyLighter),
-          color: Colors.white,
-        ),
-        child: Directionality(
-          textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-          child: Padding(
-            padding: EdgeInsets.all(screenWidth * 0.03),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Image
-                SizedBox(
-                  width: imageSize,
-                  height: imageSize,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: productImage.isNotEmpty
-                        ? (productImage.startsWith('http')
-                            ? CachedNetworkImage(
-                                imageUrl: productImage,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 160,
-                                placeholder: (_, __) => _buildPlaceholder(),
-                                errorWidget: (_, __, ___) =>
-                                    _buildPlaceholder(),
-                              )
-                            : Image.asset(
-                                productImage,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return _buildPlaceholder();
-                                },
-                              ))
-                        : _buildPlaceholder(),
-                  ),
-                ),
-                SizedBox(width: screenWidth * 0.03),
-                // Product Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: GestureDetector(
+        onTap: () {
+          if (product != null) {
+            context.push('/product/${product.id}');
+          }
+        },
+        child: Container(
+          margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.2),
+                spreadRadius: 1,
+                blurRadius: 2,
+                offset: const Offset(0, 1),
+              ),
+            ],
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColours.greyLighter),
+            color: Colors.white,
+          ),
+          child: Directionality(
+            textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+            child: Padding(
+              padding: EdgeInsets.all(screenWidth * 0.03),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Image with tags
+                  Stack(
                     children: [
-                      Text(
-                        productName,
-                        style: AppTextStyle.bold_18_medium_brown
-                            .copyWith(fontSize: fontSize),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                      SizedBox(
+                        width: imageSize,
+                        height: imageSize,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: productImage.isNotEmpty
+                              ? (productImage.startsWith('http')
+                                  ? CachedNetworkImage(
+                                      imageUrl: productImage,
+                                      fit: BoxFit.cover,
+                                      memCacheWidth: 160,
+                                      placeholder: (_, __) =>
+                                          _buildPlaceholder(),
+                                      errorWidget: (_, __, ___) =>
+                                          _buildPlaceholder(),
+                                    )
+                                  : Image.asset(
+                                      productImage,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return _buildPlaceholder();
+                                      },
+                                    ))
+                              : _buildPlaceholder(),
+                        ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${'unit_price'.tr()}: ${productPrice.toStringAsFixed(2)} ${'egp'.tr()}',
-                        style: AppTextStyle.normal_16_brownLight
-                            .copyWith(fontSize: fontSize * 0.8),
-                      ),
-                      Text(
-                        '${'total_price'.tr()}: ${totalPrice.toStringAsFixed(2)} ${'egp'.tr()}',
-                        style: AppTextStyle.semiBold_16_dark_brown
-                            .copyWith(fontSize: fontSize * 0.8),
-                      ),
+                      // Flash Sale Badge
+                      if (isFlashSale)
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 2),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                bottomRight: Radius.circular(8),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.flash_on,
+                                    color: Colors.yellow, size: 10),
+                                Text(
+                                  'flash_sale_badge'.tr(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      // Discount Badge (only if not flash sale)
+                      else if (hasDiscount)
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColours.brownLight,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                bottomRight: Radius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              '-$discountPercent%',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
-                ),
-                SizedBox(width: screenWidth * 0.03),
-                // Quantity control
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: AppColours.greyLight,
+                  SizedBox(width: screenWidth * 0.03),
+                  // Product Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Text(
+                          productName,
+                          style: AppTextStyle.bold_18_medium_brown
+                              .copyWith(fontSize: fontSize),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        // Price with discount display
+                        if (hasDiscount || isFlashSale)
+                          Row(
+                            children: [
+                              Text(
+                                '${product?.price.toStringAsFixed(0)} ',
+                                style: TextStyle(
+                                  fontSize: fontSize * 0.75,
+                                  color: Colors.grey,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
+                              Text(
+                                '${productPrice.toStringAsFixed(2)} ${'egp'.tr()}',
+                                style: AppTextStyle.normal_16_brownLight
+                                    .copyWith(
+                                        fontSize: fontSize * 0.8,
+                                        color: AppColours.brownLight),
+                              ),
+                            ],
+                          )
+                        else
+                          Text(
+                            '${'unit_price'.tr()}: ${productPrice.toStringAsFixed(2)} ${'egp'.tr()}',
+                            style: AppTextStyle.normal_16_brownLight
+                                .copyWith(fontSize: fontSize * 0.8),
+                          ),
+                        Text(
+                          '${'total_price'.tr()}: ${totalPrice.toStringAsFixed(2)} ${'egp'.tr()}',
+                          style: AppTextStyle.semiBold_16_dark_brown
+                              .copyWith(fontSize: fontSize * 0.8),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.add,
-                            color: Colors.green, size: fontSize * 1.2),
-                        onPressed: onIncreaseQuantity,
-                      ),
-                      Text(
-                        '${cartItem.quantity}',
-                        style: AppTextStyle.bold_18_medium_brown
-                            .copyWith(fontSize: fontSize),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.remove,
-                            color: Colors.red, size: fontSize * 1.2),
-                        onPressed: onDecreaseQuantity,
-                      ),
-                    ],
+                  SizedBox(width: screenWidth * 0.03),
+                  // Quantity control
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: AppColours.greyLight,
+                    ),
+                    child: Column(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.add,
+                              color: Colors.green, size: fontSize * 1.2),
+                          onPressed: onIncreaseQuantity,
+                        ),
+                        Text(
+                          '${cartItem.quantity}',
+                          style: AppTextStyle.bold_18_medium_brown
+                              .copyWith(fontSize: fontSize),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.remove,
+                              color: Colors.red, size: fontSize * 1.2),
+                          onPressed: onDecreaseQuantity,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

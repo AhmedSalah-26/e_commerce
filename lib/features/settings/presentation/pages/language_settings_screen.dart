@@ -1,9 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../cart/presentation/cubit/cart_cubit.dart';
+import '../../../categories/presentation/cubit/categories_cubit.dart';
+import '../../../favorites/presentation/cubit/favorites_cubit.dart';
+import '../../../home/presentation/cubit/home_sliders_cubit.dart';
+import '../../../products/presentation/cubit/products_cubit.dart';
 
 class LanguageSettingsScreen extends StatefulWidget {
   const LanguageSettingsScreen({super.key});
@@ -14,6 +21,7 @@ class LanguageSettingsScreen extends StatefulWidget {
 
 class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
   late String _selectedLanguage;
+  bool _isApplying = false;
 
   @override
   void didChangeDependencies() {
@@ -66,7 +74,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: hasChanges ? _applyLanguage : null,
+                onPressed: hasChanges && !_isApplying ? _applyLanguage : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColours.brownLight,
                   foregroundColor: Colors.white,
@@ -75,13 +83,22 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  'apply'.tr(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isApplying
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'apply'.tr(),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
           ),
@@ -151,12 +168,36 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
   }
 
   Future<void> _applyLanguage() async {
+    setState(() => _isApplying = true);
+
     final newLocale = Locale(_selectedLanguage);
     await context.setLocale(newLocale);
 
-    // Restart app with Phoenix
+    if (!mounted) return;
+
+    // Set locale for all cubits
+    final locale = _selectedLanguage;
+    context.read<ProductsCubit>().setLocale(locale);
+    context.read<CategoriesCubit>().setLocale(locale);
+    context.read<CartCubit>().setLocale(locale);
+    context.read<FavoritesCubit>().setLocale(locale);
+    context.read<HomeSlidersCubit>().setLocale(locale);
+
+    // Reset all cubits (this will reload data with new locale)
+    context.read<ProductsCubit>().reset();
+    context.read<CategoriesCubit>().reset();
+    context.read<HomeSlidersCubit>().reset();
+
+    // Reset user data if authenticated
+    final authState = context.read<AuthCubit>().state;
+    if (authState is AuthAuthenticated) {
+      context.read<FavoritesCubit>().reset();
+      context.read<CartCubit>().reset();
+    }
+
+    // Navigate to home
     if (mounted) {
-      Phoenix.rebirth(context);
+      context.go('/home');
     }
   }
 }

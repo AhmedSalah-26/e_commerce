@@ -48,8 +48,6 @@ dependencies:
   shared_preferences: ^2.3.3
   # Cached Network Image for optimized image loading
   cached_network_image: ^3.4.1
-  # App Restart
-  flutter_phoenix: ^1.1.1
 
 dev_dependencies:
   flutter_test:

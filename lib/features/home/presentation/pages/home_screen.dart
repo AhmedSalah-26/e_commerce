@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -21,15 +22,37 @@ class HomeScreenState extends State<HomeScreen> {
   bool isOffersSelected = false;
   final ScrollController _scrollController = ScrollController();
   int _unreadNotifications = 0;
+  String? _lastLocale;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
+    _loadUnreadCount();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final currentLocale = context.locale.languageCode;
+
+    // Load data on first time or when locale changes
+    if (_lastLocale == null || _lastLocale != currentLocale) {
+      _lastLocale = currentLocale;
+      _loadAllData();
+    }
+  }
+
+  void _loadAllData() {
     context.read<ProductsCubit>().loadProducts();
     context.read<CategoriesCubit>().loadCategories();
     context.read<HomeSlidersCubit>().loadSliders();
-    _scrollController.addListener(_onScroll);
-    _loadUnreadCount();
+
+    // Reset filters
+    setState(() {
+      selectedCategoryId = null;
+      isOffersSelected = false;
+    });
   }
 
   Future<void> _loadUnreadCount() async {

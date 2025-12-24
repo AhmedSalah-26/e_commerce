@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -26,6 +27,7 @@ class ProductInfoSection extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             _ProductName(name: product.name),
             const SizedBox(height: 8),
@@ -53,7 +55,7 @@ class _ProductName extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 36, // Fixed height for 2 lines
-      child: Text(
+      child: AutoSizeText(
         name,
         style: const TextStyle(
           fontSize: 13,
@@ -61,6 +63,7 @@ class _ProductName extends StatelessWidget {
           height: 1.3,
         ),
         maxLines: 2,
+        minFontSize: 10,
         overflow: TextOverflow.ellipsis,
       ),
     );
@@ -74,31 +77,32 @@ class _PriceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40, // Fixed height for price section
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Text(
-            "${product.effectivePrice.toStringAsFixed(2)} ${'egp'.tr()}",
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColours.jumiaDark,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AutoSizeText(
+          "${product.effectivePrice.toStringAsFixed(2)} ${'egp'.tr()}",
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: AppColours.jumiaDark,
           ),
-          if (product.hasDiscount)
-            Text(
-              "${product.price.toStringAsFixed(2)} ${'egp'.tr()}",
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColours.jumiaGrey,
-                decoration: TextDecoration.lineThrough,
-              ),
+          maxLines: 1,
+          minFontSize: 12,
+        ),
+        if (product.hasDiscount)
+          AutoSizeText(
+            "${product.price.toStringAsFixed(2)} ${'egp'.tr()}",
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColours.jumiaGrey,
+              decoration: TextDecoration.lineThrough,
             ),
-        ],
-      ),
+            maxLines: 1,
+            minFontSize: 9,
+          ),
+      ],
     );
   }
 }

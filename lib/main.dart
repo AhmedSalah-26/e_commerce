@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart';
 
 import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
@@ -30,38 +29,36 @@ void main() async {
   await AppRouter.checkOnboardingStatus();
 
   runApp(
-    Phoenix(
-      child: EasyLocalization(
-        supportedLocales: const [Locale('ar'), Locale('en')],
-        path: 'assets/translations',
-        fallbackLocale: const Locale('ar'),
-        startLocale: const Locale('ar'),
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider<AuthCubit>(
-              create: (_) => di.sl<AuthCubit>()..checkAuthStatus(),
-            ),
-            BlocProvider<ProductsCubit>(
-              create: (_) => di.sl<ProductsCubit>(),
-            ),
-            BlocProvider<CategoriesCubit>(
-              create: (_) => di.sl<CategoriesCubit>(),
-            ),
-            BlocProvider<CartCubit>(
-              create: (_) => di.sl<CartCubit>(),
-            ),
-            BlocProvider<OrdersCubit>(
-              create: (_) => di.sl<OrdersCubit>(),
-            ),
-            BlocProvider<FavoritesCubit>(
-              create: (_) => di.sl<FavoritesCubit>(),
-            ),
-            BlocProvider<HomeSlidersCubit>(
-              create: (_) => di.sl<HomeSlidersCubit>(),
-            ),
-          ],
-          child: const MyApp(),
-        ),
+    EasyLocalization(
+      supportedLocales: const [Locale('ar'), Locale('en')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('ar'),
+      startLocale: const Locale('ar'),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthCubit>(
+            create: (_) => di.sl<AuthCubit>()..checkAuthStatus(),
+          ),
+          BlocProvider<ProductsCubit>(
+            create: (_) => di.sl<ProductsCubit>(),
+          ),
+          BlocProvider<CategoriesCubit>(
+            create: (_) => di.sl<CategoriesCubit>(),
+          ),
+          BlocProvider<CartCubit>(
+            create: (_) => di.sl<CartCubit>(),
+          ),
+          BlocProvider<OrdersCubit>(
+            create: (_) => di.sl<OrdersCubit>(),
+          ),
+          BlocProvider<FavoritesCubit>(
+            create: (_) => di.sl<FavoritesCubit>(),
+          ),
+          BlocProvider<HomeSlidersCubit>(
+            create: (_) => di.sl<HomeSlidersCubit>(),
+          ),
+        ],
+        child: const MyApp(),
       ),
     ),
   );

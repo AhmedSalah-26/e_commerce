@@ -11,12 +11,14 @@ class ProductInfoSection extends StatelessWidget {
   final ProductEntity product;
   final double screenWidth;
   final bool isArabic;
+  final bool hidePrice;
 
   const ProductInfoSection({
     super.key,
     required this.product,
     required this.screenWidth,
     required this.isArabic,
+    this.hidePrice = false,
   });
 
   @override
@@ -41,26 +43,51 @@ class ProductInfoSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                if (product.hasDiscount)
-                  AutoSizeText(
-                    "${product.price.toStringAsFixed(2)} ${'egp'.tr()}",
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.03,
-                      color: Colors.grey,
-                      decoration: TextDecoration.lineThrough,
+                if (hidePrice)
+                  // Show unavailable text instead of price
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
                     ),
-                    minFontSize: 10,
+                    decoration: BoxDecoration(
+                      color: Colors.orange[100],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: AutoSizeText(
+                      'product_unavailable'.tr(),
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.03,
+                        color: Colors.orange[800],
+                        fontWeight: FontWeight.w600,
+                      ),
+                      minFontSize: 10,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  )
+                else ...[
+                  if (product.hasDiscount)
+                    AutoSizeText(
+                      "${product.price.toStringAsFixed(2)} ${'egp'.tr()}",
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.03,
+                        color: Colors.grey,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                      minFontSize: 10,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  AutoSizeText(
+                    "${product.effectivePrice.toStringAsFixed(2)} ${'egp'.tr()}",
+                    style: AppTextStyle.bold_18_medium_brown
+                        .copyWith(fontSize: screenWidth * 0.04),
+                    minFontSize: 14,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                AutoSizeText(
-                  "${product.effectivePrice.toStringAsFixed(2)} ${'egp'.tr()}",
-                  style: AppTextStyle.bold_18_medium_brown
-                      .copyWith(fontSize: screenWidth * 0.04),
-                  minFontSize: 14,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                ],
               ],
             ),
           ),

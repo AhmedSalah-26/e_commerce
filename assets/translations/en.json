@@ -295,5 +295,6 @@
   "order_products": "Order Products",
   "product_name": "Product Name",
   "product_description": "Product Description",
-  "product_image": "Product Image"
+  "product_image": "Product Image",
+  "product_unavailable": "Currently Unavailable"
 }

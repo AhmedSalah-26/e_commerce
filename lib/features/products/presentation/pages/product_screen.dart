@@ -86,6 +86,7 @@ class _ProductScreenState extends State<ProductScreen> {
     double totalPrice = _quantity * _product.effectivePrice;
     double screenWidth = MediaQuery.of(context).size.width;
     final isArabic = context.locale.languageCode == 'ar';
+    final isInactive = !_product.isActive;
 
     return MultiBlocProvider(
       providers: [
@@ -101,8 +102,9 @@ class _ProductScreenState extends State<ProductScreen> {
               padding: EdgeInsets.all(screenWidth * 0.04),
               child: ListView(
                 children: [
-                  // Flash Sale Banner
-                  if (_product.isFlashSaleActive &&
+                  // Flash Sale Banner (only if active)
+                  if (!isInactive &&
+                      _product.isFlashSaleActive &&
                       _product.flashSaleEnd != null)
                     FlashSaleBanner(
                       endTime: _product.flashSaleEnd!,
@@ -113,10 +115,16 @@ class _ProductScreenState extends State<ProductScreen> {
                     screenWidth: screenWidth,
                   ),
                   SizedBox(height: screenWidth * 0.05),
+                  // Show unavailable badge if inactive
+                  if (isInactive) ...[
+                    _buildUnavailableBadge(screenWidth),
+                    SizedBox(height: screenWidth * 0.03),
+                  ],
                   ProductInfoSection(
                     product: _product,
                     screenWidth: screenWidth,
                     isArabic: isArabic,
+                    hidePrice: isInactive,
                   ),
                   SizedBox(height: screenWidth * 0.02),
                   ProductRatingSection(
@@ -133,11 +141,12 @@ class _ProductScreenState extends State<ProductScreen> {
                     isLoading: _isLoadingStoreInfo,
                   ),
                   SizedBox(height: screenWidth * 0.02),
-                  ProductStockStatus(
-                    product: _product,
-                    screenWidth: screenWidth,
-                    isArabic: isArabic,
-                  ),
+                  if (!isInactive)
+                    ProductStockStatus(
+                      product: _product,
+                      screenWidth: screenWidth,
+                      isArabic: isArabic,
+                    ),
                   SizedBox(height: screenWidth * 0.02),
                   ProductDescription(
                     product: _product,
@@ -145,7 +154,7 @@ class _ProductScreenState extends State<ProductScreen> {
                     isArabic: isArabic,
                   ),
                   SizedBox(height: screenWidth * 0.05),
-                  if (!_product.isOutOfStock)
+                  if (!isInactive && !_product.isOutOfStock)
                     ProductQuantitySelector(
                       quantity: _quantity,
                       maxStock: _product.stock,
@@ -155,12 +164,14 @@ class _ProductScreenState extends State<ProductScreen> {
                         setState(() => _quantity = newQuantity);
                       },
                     ),
-                  SizedBox(height: screenWidth * 0.05),
-                  ProductTotalPrice(
-                    totalPrice: totalPrice,
-                    screenWidth: screenWidth,
-                    isArabic: isArabic,
-                  ),
+                  if (!isInactive) ...[
+                    SizedBox(height: screenWidth * 0.05),
+                    ProductTotalPrice(
+                      totalPrice: totalPrice,
+                      screenWidth: screenWidth,
+                      isArabic: isArabic,
+                    ),
+                  ],
                   SizedBox(height: screenWidth * 0.05),
                   SuggestedProductsSlider(
                     currentProductId: _product.id,
@@ -172,9 +183,42 @@ class _ProductScreenState extends State<ProductScreen> {
                 ],
               ),
             ),
-            _buildAddToCartButton(context),
+            _buildAddToCartButton(context, isInactive),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildUnavailableBadge(double screenWidth) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.04,
+        vertical: screenWidth * 0.03,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.orange[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.orange[300]!),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.info_outline,
+            color: Colors.orange[700],
+            size: screenWidth * 0.05,
+          ),
+          SizedBox(width: screenWidth * 0.02),
+          Text(
+            'product_unavailable'.tr(),
+            style: TextStyle(
+              fontSize: screenWidth * 0.04,
+              color: Colors.orange[700],
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -256,8 +300,12 @@ class _ProductScreenState extends State<ProductScreen> {
     );
   }
 
-  Widget _buildAddToCartButton(BuildContext context) {
-    final isOutOfStock = _product.isOutOfStock;
+  Widget _buildAddToCartButton(BuildContext context, bool isInactive) {
+    final isOutOfStock = _product.isOutOfStock || isInactive;
+    final buttonLabel = isInactive
+        ? 'product_unavailable'.tr()
+        : (isOutOfStock ? 'out_of_stock'.tr() : 'add_to_cart'.tr());
+
     return Positioned(
       bottom: 16,
       left: 16,
@@ -267,7 +315,7 @@ class _ProductScreenState extends State<ProductScreen> {
         onPressed: isOutOfStock
             ? () => _actions.showOutOfStock(context)
             : () => _actions.addToCart(context, _product.id, _quantity),
-        label: isOutOfStock ? 'out_of_stock'.tr() : 'add_to_cart'.tr(),
+        label: buttonLabel,
       ),
     );
   }

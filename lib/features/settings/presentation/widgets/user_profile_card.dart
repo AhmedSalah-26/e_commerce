@@ -35,11 +35,11 @@ class UserProfileCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 30,
-            backgroundColor: Colors.white,
+            backgroundColor: AppColours.brownDark,
             child: Text(
               (user.name ?? user.email)[0].toUpperCase(),
               style: const TextStyle(
-                color: AppColours.brownMedium,
+                color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),

@@ -291,5 +291,9 @@
   "processing": "قيد المعالجة",
   "shipped": "تم الشحن",
   "delivered": "تم التوصيل",
-  "notes": "ملاحظات"
+  "notes": "ملاحظات",
+  "order_products": "منتجات الطلب",
+  "product_name": "اسم المنتج",
+  "product_description": "وصف المنتج",
+  "product_image": "صورة المنتج"
 }

@@ -189,16 +189,16 @@ class HomeScreenState extends State<HomeScreen> {
                     color: AppColours.greyLighter,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        'بحث',
-                        style:
-                            TextStyle(fontSize: 12, color: AppColours.greyDark),
+                        'search'.tr(),
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColours.greyDark),
                       ),
-                      SizedBox(width: 8),
-                      Icon(Icons.search, color: AppColours.primaryColor),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.search, color: AppColours.primaryColor),
                     ],
                   ),
                 ),

@@ -291,5 +291,9 @@
   "processing": "Processing",
   "shipped": "Shipped",
   "delivered": "Delivered",
-  "notes": "Notes"
+  "notes": "Notes",
+  "order_products": "Order Products",
+  "product_name": "Product Name",
+  "product_description": "Product Description",
+  "product_image": "Product Image"
 }

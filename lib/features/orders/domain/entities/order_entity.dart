@@ -39,6 +39,7 @@ class OrderItemEntity extends Equatable {
   final String? productId;
   final String productName;
   final String? productImage;
+  final String? productDescription;
   final int quantity;
   final double price;
 
@@ -48,6 +49,7 @@ class OrderItemEntity extends Equatable {
     this.productId,
     required this.productName,
     this.productImage,
+    this.productDescription,
     required this.quantity,
     required this.price,
   });
@@ -61,6 +63,7 @@ class OrderItemEntity extends Equatable {
         productId,
         productName,
         productImage,
+        productDescription,
         quantity,
         price,
       ];

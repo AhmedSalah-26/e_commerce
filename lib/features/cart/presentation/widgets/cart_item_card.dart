@@ -61,31 +61,33 @@ class CartItemCard extends StatelessWidget {
             context.push('/product/${product.id}');
           }
         },
-        child: Container(
-          margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withValues(alpha: 0.2),
-                spreadRadius: 1,
-                blurRadius: 2,
-                offset: const Offset(0, 1),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    spreadRadius: 1,
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColours.greyLighter),
+                color: Colors.white,
               ),
-            ],
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColours.greyLighter),
-            color: Colors.white,
-          ),
-          child: Directionality(
-            textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-            child: Padding(
-              padding: EdgeInsets.all(screenWidth * 0.03),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Image with tags
-                  Stack(
+              child: Directionality(
+                textDirection:
+                    isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+                child: Padding(
+                  padding: EdgeInsets.all(screenWidth * 0.03),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      // Image
                       SizedBox(
                         width: imageSize,
                         height: imageSize,
@@ -113,147 +115,147 @@ class CartItemCard extends StatelessWidget {
                               : _buildPlaceholder(),
                         ),
                       ),
-                      // Flash Sale Badge
-                      if (isFlashSale)
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 2),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(8),
-                                bottomRight: Radius.circular(8),
-                              ),
+                      SizedBox(width: screenWidth * 0.03),
+                      // Product Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Text(
+                              productName,
+                              style: AppTextStyle.bold_18_medium_brown
+                                  .copyWith(fontSize: fontSize),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.flash_on,
-                                    color: Colors.yellow, size: 10),
-                                Text(
-                                  'flash_sale_badge'.tr(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.bold,
+                            const SizedBox(height: 4),
+                            // Price with discount display
+                            if (hasDiscount || isFlashSale)
+                              Row(
+                                children: [
+                                  Text(
+                                    '${product?.price.toStringAsFixed(0)} ',
+                                    style: TextStyle(
+                                      fontSize: fontSize * 0.75,
+                                      color: Colors.grey,
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      // Discount Badge (only if not flash sale)
-                      else if (hasDiscount)
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColours.brownLight,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(8),
-                                bottomRight: Radius.circular(8),
+                                  Text(
+                                    '${productPrice.toStringAsFixed(2)} ${'egp'.tr()}',
+                                    style: AppTextStyle.normal_16_brownLight
+                                        .copyWith(
+                                            fontSize: fontSize * 0.8,
+                                            color: AppColours.brownLight),
+                                  ),
+                                ],
+                              )
+                            else
+                              Text(
+                                '${'unit_price'.tr()}: ${productPrice.toStringAsFixed(2)} ${'egp'.tr()}',
+                                style: AppTextStyle.normal_16_brownLight
+                                    .copyWith(fontSize: fontSize * 0.8),
                               ),
+                            Text(
+                              '${'total_price'.tr()}: ${totalPrice.toStringAsFixed(2)} ${'egp'.tr()}',
+                              style: AppTextStyle.semiBold_16_dark_brown
+                                  .copyWith(fontSize: fontSize * 0.8),
                             ),
-                            child: Text(
-                              '-$discountPercent%',
-                              textDirection: ui.TextDirection.ltr,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                          ],
                         ),
+                      ),
+                      SizedBox(width: screenWidth * 0.03),
+                      // Quantity control
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: AppColours.greyLight,
+                        ),
+                        child: Column(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.add,
+                                  color: Colors.green, size: fontSize * 1.2),
+                              onPressed: onIncreaseQuantity,
+                            ),
+                            Text(
+                              '${cartItem.quantity}',
+                              style: AppTextStyle.bold_18_medium_brown
+                                  .copyWith(fontSize: fontSize),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.remove,
+                                  color: Colors.red, size: fontSize * 1.2),
+                              onPressed: onDecreaseQuantity,
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                  SizedBox(width: screenWidth * 0.03),
-                  // Product Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Text(
-                          productName,
-                          style: AppTextStyle.bold_18_medium_brown
-                              .copyWith(fontSize: fontSize),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        // Price with discount display
-                        if (hasDiscount || isFlashSale)
-                          Row(
-                            children: [
-                              Text(
-                                '${product?.price.toStringAsFixed(0)} ',
-                                style: TextStyle(
-                                  fontSize: fontSize * 0.75,
-                                  color: Colors.grey,
-                                  decoration: TextDecoration.lineThrough,
-                                ),
-                              ),
-                              Text(
-                                '${productPrice.toStringAsFixed(2)} ${'egp'.tr()}',
-                                style: AppTextStyle.normal_16_brownLight
-                                    .copyWith(
-                                        fontSize: fontSize * 0.8,
-                                        color: AppColours.brownLight),
-                              ),
-                            ],
-                          )
-                        else
-                          Text(
-                            '${'unit_price'.tr()}: ${productPrice.toStringAsFixed(2)} ${'egp'.tr()}',
-                            style: AppTextStyle.normal_16_brownLight
-                                .copyWith(fontSize: fontSize * 0.8),
-                          ),
-                        Text(
-                          '${'total_price'.tr()}: ${totalPrice.toStringAsFixed(2)} ${'egp'.tr()}',
-                          style: AppTextStyle.semiBold_16_dark_brown
-                              .copyWith(fontSize: fontSize * 0.8),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: screenWidth * 0.03),
-                  // Quantity control
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: AppColours.greyLight,
-                    ),
-                    child: Column(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.add,
-                              color: Colors.green, size: fontSize * 1.2),
-                          onPressed: onIncreaseQuantity,
-                        ),
-                        Text(
-                          '${cartItem.quantity}',
-                          style: AppTextStyle.bold_18_medium_brown
-                              .copyWith(fontSize: fontSize),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.remove,
-                              color: Colors.red, size: fontSize * 1.2),
-                          onPressed: onDecreaseQuantity,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
+            // Flash Sale Badge on Card
+            if (isFlashSale)
+              Positioned(
+                top: screenHeight * 0.01,
+                left: 0,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.flash_on,
+                          color: Colors.yellow, size: 12),
+                      Text(
+                        'flash_sale_badge'.tr(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            // Discount Badge on Card (only if not flash sale)
+            else if (hasDiscount)
+              Positioned(
+                top: screenHeight * 0.01,
+                left: 0,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColours.brownLight,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    '-$discountPercent%',
+                    textDirection: ui.TextDirection.ltr,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

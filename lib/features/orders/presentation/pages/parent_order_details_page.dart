@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
@@ -66,7 +67,7 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
         body: BlocBuilder<OrdersCubit, OrdersState>(
           builder: (context, state) {
             if (state is OrdersLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const OrderDetailsSkeleton();
             }
 
             if (state is OrdersError) {
@@ -94,7 +95,7 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               _loadDetails();
             });
-            return const Center(child: CircularProgressIndicator());
+            return const OrderDetailsSkeleton();
           },
         ),
       ),

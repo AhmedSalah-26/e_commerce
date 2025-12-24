@@ -10,6 +10,12 @@ class AppTheme {
         primary: AppColours.brownMedium,
         secondary: AppColours.brownLight,
       ),
+      appBarTheme: const AppBarTheme(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+      ),
       textTheme: const TextTheme(
         displayLarge: TextStyle(fontFamily: 'Changa'),
         displayMedium: TextStyle(fontFamily: 'Changa'),

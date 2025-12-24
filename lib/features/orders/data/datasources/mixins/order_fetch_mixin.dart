@@ -8,12 +8,16 @@ import '../../models/parent_order_model.dart';
 mixin OrderFetchMixin {
   SupabaseClient get client;
 
+  /// Order items query with product JOIN for translations
+  String get _orderItemsWithProduct =>
+      'order_items(*, products(name_ar, name_en, description_ar, description_en, images))';
+
   Future<List<OrderModel>> getOrders(String userId) async {
     logger.i('📦 Getting orders for user: $userId');
     try {
       final response = await client
           .from('orders')
-          .select('*, order_items(*)')
+          .select('*, $_orderItemsWithProduct')
           .eq('user_id', userId)
           .order('created_at', ascending: false);
 
@@ -48,7 +52,7 @@ mixin OrderFetchMixin {
     try {
       final response = await client
           .from('orders')
-          .select('*, order_items(*)')
+          .select('*, $_orderItemsWithProduct')
           .order('created_at', ascending: false);
 
       return (response as List)
@@ -63,7 +67,7 @@ mixin OrderFetchMixin {
     try {
       final response = await client
           .from('orders')
-          .select('*, order_items(*)')
+          .select('*, $_orderItemsWithProduct')
           .eq('id', orderId)
           .single();
 
@@ -83,7 +87,8 @@ mixin OrderFetchMixin {
           for (final order in data) {
             final itemsResponse = await client
                 .from('order_items')
-                .select()
+                .select(
+                    '*, products(name_ar, name_en, description_ar, description_en, images)')
                 .eq('order_id', order['id']);
 
             orders.add(OrderModel.fromJson({
@@ -106,7 +111,8 @@ mixin OrderFetchMixin {
           for (final order in data) {
             final itemsResponse = await client
                 .from('order_items')
-                .select()
+                .select(
+                    '*, products(name_ar, name_en, description_ar, description_en, images)')
                 .eq('order_id', order['id']);
 
             Map<String, dynamic>? storeInfo;
@@ -141,10 +147,10 @@ mixin OrderFetchMixin {
           .eq('id', parentOrderId)
           .single();
 
-      // Get sub-orders with items
+      // Get sub-orders with items and product translations
       final ordersResponse = await client
           .from('orders')
-          .select('*, order_items(*), stores(name, phone, address)')
+          .select('*, $_orderItemsWithProduct, stores(name, phone, address)')
           .eq('parent_order_id', parentOrderId)
           .order('created_at');
 
@@ -178,14 +184,14 @@ mixin OrderFetchMixin {
   /// Get user's parent orders
   Future<List<ParentOrderModel>> getUserParentOrders(String userId) async {
     try {
-      // Single query with all joins - much faster!
+      // Single query with all joins including product translations
       final response = await client
           .from('parent_orders')
           .select('''
             *,
             orders(
               *,
-              order_items(*),
+              order_items(*, products(name_ar, name_en, description_ar, description_en, images)),
               stores(name, phone, address)
             )
           ''')
@@ -216,10 +222,11 @@ mixin OrderFetchMixin {
           final parentOrderIds =
               parentOrdersData.map((p) => p['id'] as String).toList();
 
-          // Fetch all orders in one query
+          // Fetch all orders with product translations
           final ordersResponse = await client
               .from('orders')
-              .select('*, order_items(*), stores(name, phone, address)')
+              .select(
+                  '*, $_orderItemsWithProduct, stores(name, phone, address)')
               .inFilter('parent_order_id', parentOrderIds);
 
           // Group orders by parent_order_id

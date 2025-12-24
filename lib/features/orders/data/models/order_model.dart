@@ -16,15 +16,41 @@ class OrderItemModel extends OrderItemEntity {
   });
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
+    // Get product translations from JOIN if available
+    final product = json['products'] as Map<String, dynamic>?;
+
+    String productName = json['product_name'] as String? ?? 'Unknown';
+    String? productNameEn;
+    String? productImage = json['product_image'] as String?;
+    String? productDescription = json['product_description'] as String?;
+    String? productDescriptionEn;
+
+    if (product != null) {
+      // Use fresh translations from products table
+      productName = product['name_ar'] as String? ??
+          product['name_en'] as String? ??
+          productName;
+      productNameEn = product['name_en'] as String?;
+      productDescriptionEn = product['description_en'] as String?;
+      productDescription =
+          product['description_ar'] as String? ?? productDescription;
+
+      // Use fresh image if available
+      final images = product['images'] as List?;
+      if (images != null && images.isNotEmpty) {
+        productImage = images[0] as String?;
+      }
+    }
+
     return OrderItemModel(
       id: json['id'] as String,
       orderId: json['order_id'] as String,
       productId: json['product_id'] as String?,
-      productName: json['product_name'] as String,
-      productNameEn: json['product_name_en'] as String?,
-      productImage: json['product_image'] as String?,
-      productDescription: json['product_description'] as String?,
-      productDescriptionEn: json['product_description_en'] as String?,
+      productName: productName,
+      productNameEn: productNameEn,
+      productImage: productImage,
+      productDescription: productDescription,
+      productDescriptionEn: productDescriptionEn,
       quantity: json['quantity'] as int,
       price: (json['price'] as num).toDouble(),
     );
@@ -35,10 +61,7 @@ class OrderItemModel extends OrderItemEntity {
       'order_id': orderId,
       'product_id': productId,
       'product_name': productName,
-      'product_name_en': productNameEn,
       'product_image': productImage,
-      'product_description': productDescription,
-      'product_description_en': productDescriptionEn,
       'quantity': quantity,
       'price': price,
     };

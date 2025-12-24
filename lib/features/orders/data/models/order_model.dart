@@ -7,8 +7,10 @@ class OrderItemModel extends OrderItemEntity {
     required super.orderId,
     super.productId,
     required super.productName,
+    super.productNameEn,
     super.productImage,
     super.productDescription,
+    super.productDescriptionEn,
     required super.quantity,
     required super.price,
   });
@@ -19,8 +21,10 @@ class OrderItemModel extends OrderItemEntity {
       orderId: json['order_id'] as String,
       productId: json['product_id'] as String?,
       productName: json['product_name'] as String,
+      productNameEn: json['product_name_en'] as String?,
       productImage: json['product_image'] as String?,
       productDescription: json['product_description'] as String?,
+      productDescriptionEn: json['product_description_en'] as String?,
       quantity: json['quantity'] as int,
       price: (json['price'] as num).toDouble(),
     );
@@ -31,8 +35,10 @@ class OrderItemModel extends OrderItemEntity {
       'order_id': orderId,
       'product_id': productId,
       'product_name': productName,
+      'product_name_en': productNameEn,
       'product_image': productImage,
       'product_description': productDescription,
+      'product_description_en': productDescriptionEn,
       'quantity': quantity,
       'price': price,
     };

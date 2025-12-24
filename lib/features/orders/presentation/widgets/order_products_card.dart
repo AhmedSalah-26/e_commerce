@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,6 +22,7 @@ class OrderProductsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale.languageCode;
     return OrderCardWrapper(
       title: isRtl ? 'المنتجات' : 'Products',
       icon: Icons.shopping_bag_outlined,
@@ -30,7 +32,7 @@ class OrderProductsCard extends StatelessWidget {
           final item = entry.value;
           return Column(
             children: [
-              _buildProductItem(context, item),
+              _buildProductItem(context, item, locale),
               if (index < order.items.length - 1)
                 const Divider(height: 1, color: AppColours.greyLighter),
             ],
@@ -40,7 +42,8 @@ class OrderProductsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildProductItem(BuildContext context, OrderItemEntity item) {
+  Widget _buildProductItem(
+      BuildContext context, OrderItemEntity item, String locale) {
     return InkWell(
       onTap: item.productId != null
           ? () => context.push('/product/${item.productId}')
@@ -70,7 +73,7 @@ class OrderProductsCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.productName,
+                    item.getLocalizedName(locale),
                     style: AppTextStyle.semiBold_16_dark_brown,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

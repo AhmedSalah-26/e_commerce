@@ -158,6 +158,7 @@ class MerchantOrderCard extends StatelessWidget {
   }
 
   Widget _buildOrderItems(BuildContext context) {
+    final locale = context.locale.languageCode;
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -165,13 +166,15 @@ class MerchantOrderCard extends StatelessWidget {
         children: [
           Text('order_products'.tr(), style: AppTextStyle.normal_12_greyDark),
           const SizedBox(height: 8),
-          ...order.items.map((item) => _buildOrderItemRow(context, item)),
+          ...order.items
+              .map((item) => _buildOrderItemRow(context, item, locale)),
         ],
       ),
     );
   }
 
-  Widget _buildOrderItemRow(BuildContext context, OrderItemEntity item) {
+  Widget _buildOrderItemRow(
+      BuildContext context, OrderItemEntity item, String locale) {
     return InkWell(
       onTap: item.productId != null
           ? () => context.push('/product/${item.productId}')
@@ -206,7 +209,7 @@ class MerchantOrderCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.productName,
+                    item.getLocalizedName(locale),
                     style: AppTextStyle.bodyMedium,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -229,7 +232,7 @@ class MerchantOrderCard extends StatelessWidget {
                 ),
                 if (item.productId != null) ...[
                   const SizedBox(height: 4),
-                  Icon(
+                  const Icon(
                     Icons.arrow_forward_ios,
                     color: AppColours.brownMedium,
                     size: 14,

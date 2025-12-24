@@ -248,6 +248,8 @@ class _ExpandableOrderItem extends StatefulWidget {
 class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
   bool _isExpanded = false;
 
+  String get _locale => widget.isRtl ? 'ar' : 'en';
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -285,7 +287,7 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.item.productName,
+                          widget.item.getLocalizedName(_locale),
                           style: AppTextStyle.bodyMedium,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -326,6 +328,7 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
   }
 
   Widget _buildExpandedDetails() {
+    final localizedDescription = widget.item.getLocalizedDescription(_locale);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -371,10 +374,11 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
                 .copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
-          Text(widget.item.productName, style: AppTextStyle.bodyMedium),
+          Text(widget.item.getLocalizedName(_locale),
+              style: AppTextStyle.bodyMedium),
           const SizedBox(height: 12),
-          if (widget.item.productDescription != null &&
-              widget.item.productDescription!.isNotEmpty) ...[
+          if (localizedDescription != null &&
+              localizedDescription.isNotEmpty) ...[
             Text(
               'product_description'.tr(),
               style: AppTextStyle.normal_12_greyDark
@@ -382,7 +386,7 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
             ),
             const SizedBox(height: 4),
             Text(
-              widget.item.productDescription!,
+              localizedDescription,
               style: AppTextStyle.normal_12_greyDark,
             ),
           ],

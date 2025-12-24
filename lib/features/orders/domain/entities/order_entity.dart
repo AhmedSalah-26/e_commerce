@@ -38,8 +38,10 @@ class OrderItemEntity extends Equatable {
   final String orderId;
   final String? productId;
   final String productName;
+  final String? productNameEn;
   final String? productImage;
   final String? productDescription;
+  final String? productDescriptionEn;
   final int quantity;
   final double price;
 
@@ -48,13 +50,33 @@ class OrderItemEntity extends Equatable {
     required this.orderId,
     this.productId,
     required this.productName,
+    this.productNameEn,
     this.productImage,
     this.productDescription,
+    this.productDescriptionEn,
     required this.quantity,
     required this.price,
   });
 
   double get itemTotal => price * quantity;
+
+  /// Get localized product name based on locale
+  String getLocalizedName(String locale) {
+    if (locale == 'en' && productNameEn != null && productNameEn!.isNotEmpty) {
+      return productNameEn!;
+    }
+    return productName;
+  }
+
+  /// Get localized product description based on locale
+  String? getLocalizedDescription(String locale) {
+    if (locale == 'en' &&
+        productDescriptionEn != null &&
+        productDescriptionEn!.isNotEmpty) {
+      return productDescriptionEn;
+    }
+    return productDescription;
+  }
 
   @override
   List<Object?> get props => [
@@ -62,8 +84,10 @@ class OrderItemEntity extends Equatable {
         orderId,
         productId,
         productName,
+        productNameEn,
         productImage,
         productDescription,
+        productDescriptionEn,
         quantity,
         price,
       ];

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,6 +22,7 @@ import '../../features/orders/presentation/cubit/orders_cubit.dart';
 import '../../features/orders/presentation/pages/orders_page.dart';
 import '../../features/orders/presentation/pages/parent_order_details_page.dart';
 import '../../features/products/domain/entities/product_entity.dart';
+import '../../features/products/presentation/cubit/products_cubit.dart';
 import '../../features/products/presentation/pages/product_screen.dart';
 import '../../features/settings/presentation/pages/edit_profile_screen.dart';
 import '../../features/settings/presentation/pages/language_settings_screen.dart';
@@ -180,6 +182,80 @@ class AppRouter {
           return ProductScreen(product: product);
         },
       ),
+      GoRoute(
+        path: '/product/:id',
+        builder: (context, state) {
+          final productId = state.pathParameters['id']!;
+          return _ProductByIdScreen(productId: productId);
+        },
+      ),
     ],
   );
+}
+
+/// Screen that loads product by ID and shows ProductScreen
+class _ProductByIdScreen extends StatefulWidget {
+  final String productId;
+  const _ProductByIdScreen({required this.productId});
+
+  @override
+  State<_ProductByIdScreen> createState() => _ProductByIdScreenState();
+}
+
+class _ProductByIdScreenState extends State<_ProductByIdScreen> {
+  ProductEntity? _product;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProduct();
+  }
+
+  Future<void> _loadProduct() async {
+    try {
+      final productsCubit = sl<ProductsCubit>();
+      final product = await productsCubit.getProductById(widget.productId);
+      if (mounted) {
+        setState(() {
+          _product = product;
+          _isLoading = false;
+          if (product == null) _error = 'Product not found';
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _error = e.toString();
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_error != null || _product == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text(_error ?? 'Product not found'),
+            ],
+          ),
+        ),
+      );
+    }
+    return ProductScreen(product: _product!);
+  }
 }

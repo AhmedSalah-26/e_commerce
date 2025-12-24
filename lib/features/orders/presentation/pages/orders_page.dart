@@ -112,7 +112,6 @@ class _OrdersPageState extends State<OrdersPage> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
-          elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColours.brownMedium),
             onPressed: () => context.go('/home'),

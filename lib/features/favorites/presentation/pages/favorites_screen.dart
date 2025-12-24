@@ -86,7 +86,6 @@ class _FavoritesScreenState extends State<FavoritesScreen>
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
-          elevation: 0,
           title: Text(
             'favorites'.tr(),
             style: AppTextStyle.semiBold_20_dark_brown.copyWith(

@@ -46,7 +46,6 @@ class _CartScreenState extends State<CartScreen> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
-          elevation: 0,
           title: Text(
             'shopping_cart'.tr(),
             style: AppTextStyle.semiBold_20_dark_brown.copyWith(

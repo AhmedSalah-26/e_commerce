@@ -207,7 +207,6 @@ class _ProductScreenState extends State<ProductScreen> {
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: AppColours.white,
-      elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: AppColours.brownMedium),
         onPressed: () => _handleBack(context),

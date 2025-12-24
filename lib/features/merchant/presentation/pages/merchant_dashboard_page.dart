@@ -75,7 +75,6 @@ class _MerchantDashboardPageState extends State<MerchantDashboardPage> {
             },
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
-            elevation: 0,
             selectedItemColor: AppColours.primary,
             unselectedItemColor: Colors.grey,
             items: [

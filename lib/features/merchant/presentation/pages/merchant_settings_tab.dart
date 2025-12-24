@@ -79,7 +79,7 @@ class MerchantSettingsTab extends StatelessWidget {
                       _SettingsItem(
                         title: isRtl ? 'اللغة' : 'Language',
                         icon: Icons.language,
-                        onTap: () => LanguageDialog.show(context, isRtl),
+                        onTap: () => context.push('/language-settings'),
                       ),
                       _SettingsItem(
                         title: isRtl ? 'الإشعارات' : 'Notifications',

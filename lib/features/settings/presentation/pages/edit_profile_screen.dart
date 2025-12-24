@@ -87,7 +87,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         backgroundColor: AppColours.white,
         appBar: AppBar(
           backgroundColor: AppColours.white,
-          elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColours.brownDark),
             onPressed: () => context.pop(),
@@ -176,15 +175,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColours.greyLight),
+                          borderSide:
+                              const BorderSide(color: AppColours.greyLight),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColours.greyLight),
+                          borderSide:
+                              const BorderSide(color: AppColours.greyLight),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColours.brownMedium),
+                          borderSide:
+                              const BorderSide(color: AppColours.brownMedium),
                         ),
                       ),
                       validator: (value) {
@@ -220,15 +222,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColours.greyLight),
+                          borderSide:
+                              const BorderSide(color: AppColours.greyLight),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColours.greyLight),
+                          borderSide:
+                              const BorderSide(color: AppColours.greyLight),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColours.brownMedium),
+                          borderSide:
+                              const BorderSide(color: AppColours.brownMedium),
                         ),
                       ),
                     ),

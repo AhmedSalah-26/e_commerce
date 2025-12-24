@@ -1,19 +1,19 @@
 -- =====================================================
--- Optimize order_items table - use JOIN with products
--- Only store: order_id, product_id, quantity, price
--- Get name, image, description from products table
+-- Optimize order_items table - minimal structure
+-- Only store: id, order_id, product_id, quantity, price
+-- Get name, image, description from products table via JOIN
 -- =====================================================
 
--- Note: We keep product_name and product_image for backward compatibility
--- and for cases where product might be deleted
--- But we'll use JOIN to get fresh translated data
-
--- Update the queries to JOIN with products table for translations
--- This is done in the Flutter app by modifying order_fetch_mixin.dart
+-- Drop unnecessary columns from order_items
+ALTER TABLE order_items DROP COLUMN IF EXISTS product_name;
+ALTER TABLE order_items DROP COLUMN IF EXISTS product_name_en;
+ALTER TABLE order_items DROP COLUMN IF EXISTS product_image;
+ALTER TABLE order_items DROP COLUMN IF EXISTS product_description;
+ALTER TABLE order_items DROP COLUMN IF EXISTS product_description_en;
 
 -- =====================================================
 -- Update create_multi_vendor_order function
--- Store minimal data, rely on JOIN for translations
+-- Store only essential data
 -- =====================================================
 DROP FUNCTION IF EXISTS create_multi_vendor_order(UUID, TEXT, TEXT, TEXT, TEXT, DECIMAL, UUID);
 
@@ -120,20 +120,13 @@ BEGIN
     )
     RETURNING id INTO v_order_id;
     
-    -- Create order items - store only essential data
-    -- Name/image stored as fallback if product deleted
-    INSERT INTO order_items (
-      order_id, product_id, 
-      product_name, product_image,
-      quantity, price
-    )
+    -- Create order items - minimal data only
+    INSERT INTO order_items (order_id, product_id, quantity, price)
     SELECT 
       v_order_id,
       ci.product_id,
-      COALESCE(p.name_ar, p.name_en, 'منتج'),  -- Fallback name
-      p.images[1],  -- Fallback image
       ci.quantity,
-      COALESCE(p.discount_price, p.price)  -- Price at time of purchase
+      COALESCE(p.discount_price, p.price)
     FROM cart_items ci
     JOIN products p ON p.id = ci.product_id
     WHERE ci.user_id = p_user_id
@@ -152,5 +145,6 @@ GRANT EXECUTE ON FUNCTION create_multi_vendor_order TO authenticated;
 -- Success message
 DO $$
 BEGIN
-  RAISE NOTICE 'Order function updated - uses JOIN for product translations';
+  RAISE NOTICE 'order_items table optimized - only stores: id, order_id, product_id, quantity, price';
+  RAISE NOTICE 'Product details fetched via JOIN with products table';
 END $$;

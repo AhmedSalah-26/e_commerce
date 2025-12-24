@@ -39,7 +39,6 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
         title: Text('language_settings'.tr()),
         backgroundColor: AppColours.white,
         foregroundColor: AppColours.brownDark,
-        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),

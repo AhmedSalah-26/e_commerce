@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../products/domain/entities/product_entity.dart';
 import '../../cubit/merchant_products_cubit.dart';
 import '../../../../../core/services/image_upload_service.dart';
+import '../../../../../core/utils/date_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'product_form_fields.dart';
 import 'product_form_actions.dart';
@@ -193,8 +194,8 @@ class _ProductFormContentState extends State<ProductFormContent> {
         'is_active': _isActive,
         'is_featured': _isFeatured,
         'is_flash_sale': _isFlashSale,
-        'flash_sale_start': _flashSaleStart?.toIso8601String(),
-        'flash_sale_end': _flashSaleEnd?.toIso8601String(),
+        'flash_sale_start': AppDateUtils.toEgyptIsoString(_flashSaleStart),
+        'flash_sale_end': AppDateUtils.toEgyptIsoString(_flashSaleEnd),
         'images': _existingImages,
         'new_images': _selectedImages,
       };

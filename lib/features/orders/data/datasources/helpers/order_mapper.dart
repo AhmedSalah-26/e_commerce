@@ -76,6 +76,11 @@ class OrderMapper {
           ? DateTime.parse(parentOrder['created_at'] as String)
           : null,
       subOrders: subOrders,
+      paymentMethod:
+          parentOrder['payment_method'] as String? ?? 'cash_on_delivery',
+      couponId: parentOrder['coupon_id'] as String?,
+      couponCode: parentOrder['coupon_code'] as String?,
+      couponDiscount: (parentOrder['coupon_discount'] as num?)?.toDouble() ?? 0,
     );
   }
 

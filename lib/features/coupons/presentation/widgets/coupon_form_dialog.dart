@@ -1,7 +1,10 @@
+import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/date_utils.dart';
+import '../../../products/domain/entities/product_entity.dart';
 import '../../data/models/coupon_model.dart';
 import '../../domain/entities/coupon_entity.dart';
 import '../cubit/coupon_cubit.dart';
@@ -10,8 +13,14 @@ import '../cubit/coupon_state.dart';
 class CouponFormDialog extends StatefulWidget {
   final CouponEntity? coupon;
   final String storeId;
+  final List<ProductEntity> storeProducts;
 
-  const CouponFormDialog({super.key, this.coupon, required this.storeId});
+  const CouponFormDialog({
+    super.key,
+    this.coupon,
+    required this.storeId,
+    required this.storeProducts,
+  });
 
   @override
   State<CouponFormDialog> createState() => _CouponFormDialogState();
@@ -31,11 +40,23 @@ class _CouponFormDialogState extends State<CouponFormDialog> {
   late final TextEditingController _userLimitController;
 
   String _discountType = 'percentage';
+  String _scope = 'all'; // 'all' or 'products'
   DateTime _startDate = DateTime.now();
   DateTime? _endDate;
   bool _isActive = true;
+  List<String> _selectedProductIds = [];
 
   bool get isEditing => widget.coupon != null;
+
+  /// Generate random unique coupon code
+  String _generateRandomCode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final random = Random();
+    final timestamp = DateTime.now().millisecondsSinceEpoch % 10000;
+    final randomPart =
+        List.generate(4, (_) => chars[random.nextInt(chars.length)]).join();
+    return '$randomPart$timestamp';
+  }
 
   @override
   void initState() {
@@ -59,9 +80,11 @@ class _CouponFormDialogState extends State<CouponFormDialog> {
 
     if (c != null) {
       _discountType = c.discountType;
+      _scope = c.scope;
       _startDate = c.startDate;
       _endDate = c.endDate;
       _isActive = c.isActive;
+      _selectedProductIds = List.from(c.productIds);
     }
   }
 
@@ -82,6 +105,14 @@ class _CouponFormDialogState extends State<CouponFormDialog> {
 
   void _save() {
     if (!_formKey.currentState!.validate()) return;
+
+    // Validate product selection if scope is 'products'
+    if (_scope == 'products' && _selectedProductIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('no_products_selected'.tr())),
+      );
+      return;
+    }
 
     final coupon = CouponModel(
       id: widget.coupon?.id ?? '',
@@ -106,16 +137,20 @@ class _CouponFormDialogState extends State<CouponFormDialog> {
       usageLimitPerUser: int.tryParse(_userLimitController.text) ?? 1,
       startDate: _startDate,
       endDate: _endDate,
+      scope: _scope,
       isActive: _isActive,
       storeId: widget.storeId,
       createdAt: widget.coupon?.createdAt ?? DateTime.now(),
+      productIds: _scope == 'products' ? _selectedProductIds : [],
     );
 
     final cubit = context.read<MerchantCouponsCubit>();
+    final productIds = _scope == 'products' ? _selectedProductIds : null;
+
     if (isEditing) {
-      cubit.updateCoupon(coupon, widget.storeId);
+      cubit.updateCoupon(coupon, widget.storeId, productIds: productIds);
     } else {
-      cubit.createCoupon(coupon, widget.storeId);
+      cubit.createCoupon(coupon, widget.storeId, productIds: productIds);
     }
   }
 
@@ -176,14 +211,42 @@ class _CouponFormDialogState extends State<CouponFormDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Code
-                        _buildTextField(
-                          controller: _codeController,
-                          label: 'coupon_code'.tr(),
-                          hint: 'SAVE20',
-                          enabled: !isEditing,
-                          textCapitalization: TextCapitalization.characters,
-                          validator: (v) =>
-                              v?.isEmpty == true ? 'field_required'.tr() : null,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _codeController,
+                                label: 'coupon_code'.tr(),
+                                hint: 'SAVE20',
+                                enabled: !isEditing,
+                                textCapitalization:
+                                    TextCapitalization.characters,
+                                validator: (v) => v?.isEmpty == true
+                                    ? 'field_required'.tr()
+                                    : null,
+                              ),
+                            ),
+                            if (!isEditing) ...[
+                              const SizedBox(width: 8),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: IconButton.filled(
+                                  onPressed: () {
+                                    _codeController.text =
+                                        _generateRandomCode();
+                                  },
+                                  icon:
+                                      const Icon(Icons.auto_awesome, size: 20),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: AppColours.brownMedium,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  tooltip: 'generate_code'.tr(),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 16),
 
@@ -253,7 +316,7 @@ class _CouponFormDialogState extends State<CouponFormDialog> {
                                 keyboardType: TextInputType.number,
                                 suffix: _discountType == 'percentage'
                                     ? '%'
-                                    : 'currency'.tr(),
+                                    : 'egp'.tr(),
                                 validator: (v) {
                                   if (v?.isEmpty == true) {
                                     return 'field_required'.tr();
@@ -277,7 +340,7 @@ class _CouponFormDialogState extends State<CouponFormDialog> {
                                   controller: _maxDiscountController,
                                   label: 'max_discount'.tr(),
                                   keyboardType: TextInputType.number,
-                                  suffix: 'currency'.tr(),
+                                  suffix: 'egp'.tr(),
                                 ),
                               ),
                             ],
@@ -330,6 +393,42 @@ class _CouponFormDialogState extends State<CouponFormDialog> {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 16),
+
+                        // Coupon Scope
+                        Text('coupon_scope'.tr(),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w500)),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _DiscountTypeOption(
+                                label: 'all_store_products'.tr(),
+                                icon: Icons.store,
+                                isSelected: _scope == 'all',
+                                onTap: () => setState(() => _scope = 'all'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _DiscountTypeOption(
+                                label: 'specific_products'.tr(),
+                                icon: Icons.inventory_2,
+                                isSelected: _scope == 'products',
+                                onTap: () =>
+                                    setState(() => _scope = 'products'),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Product Selection (only if scope is 'products')
+                        if (_scope == 'products') ...[
+                          const SizedBox(height: 16),
+                          _buildProductSelection(),
+                        ],
+
                         const SizedBox(height: 16),
 
                         // Active Switch
@@ -424,6 +523,128 @@ class _CouponFormDialogState extends State<CouponFormDialog> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      ),
+    );
+  }
+
+  Widget _buildProductSelection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'selected_products'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+            TextButton.icon(
+              onPressed: _showProductSelectionDialog,
+              icon: const Icon(Icons.add, size: 18),
+              label: Text('select_products'.tr()),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColours.brownMedium,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (_selectedProductIds.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.info_outline, color: Colors.grey.shade600, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'no_products_selected'.tr(),
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+              ],
+            ),
+          )
+        else
+          Container(
+            constraints: const BoxConstraints(maxHeight: 150),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _selectedProductIds.length,
+              itemBuilder: (context, index) {
+                final productId = _selectedProductIds[index];
+                final product = widget.storeProducts.firstWhere(
+                  (p) => p.id == productId,
+                  orElse: () => widget.storeProducts.first,
+                );
+                return ListTile(
+                  dense: true,
+                  leading: product.images.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: Image.network(
+                            product.images.first,
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              width: 40,
+                              height: 40,
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.image, size: 20),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Icon(Icons.inventory_2, size: 20),
+                        ),
+                  title: Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.close, size: 18),
+                    onPressed: () {
+                      setState(() {
+                        _selectedProductIds.remove(productId);
+                      });
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showProductSelectionDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => _ProductSelectionDialog(
+        products: widget.storeProducts,
+        selectedIds: _selectedProductIds,
+        onConfirm: (ids) {
+          setState(() {
+            _selectedProductIds = ids;
+          });
+        },
       ),
     );
   }
@@ -525,6 +746,202 @@ class _DateField extends StatelessWidget {
               ),
             ),
             const Icon(Icons.calendar_today, size: 18, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProductSelectionDialog extends StatefulWidget {
+  final List<ProductEntity> products;
+  final List<String> selectedIds;
+  final ValueChanged<List<String>> onConfirm;
+
+  const _ProductSelectionDialog({
+    required this.products,
+    required this.selectedIds,
+    required this.onConfirm,
+  });
+
+  @override
+  State<_ProductSelectionDialog> createState() =>
+      _ProductSelectionDialogState();
+}
+
+class _ProductSelectionDialogState extends State<_ProductSelectionDialog> {
+  late List<String> _tempSelectedIds;
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _tempSelectedIds = List.from(widget.selectedIds);
+  }
+
+  List<ProductEntity> get _filteredProducts {
+    if (_searchQuery.isEmpty) return widget.products;
+    return widget.products
+        .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        constraints: const BoxConstraints(maxHeight: 500),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: AppColours.brownLight,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.inventory_2, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    'select_products'.tr(),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+
+            // Search
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: TextField(
+                onChanged: (v) => setState(() => _searchQuery = v),
+                decoration: InputDecoration(
+                  hintText: 'search_products'.tr(),
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                ),
+              ),
+            ),
+
+            // Products List
+            Flexible(
+              child: _filteredProducts.isEmpty
+                  ? Center(
+                      child: Text(
+                        'no_products'.tr(),
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: _filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = _filteredProducts[index];
+                        final isSelected =
+                            _tempSelectedIds.contains(product.id);
+                        return CheckboxListTile(
+                          value: isSelected,
+                          onChanged: (v) {
+                            setState(() {
+                              if (v == true) {
+                                _tempSelectedIds.add(product.id);
+                              } else {
+                                _tempSelectedIds.remove(product.id);
+                              }
+                            });
+                          },
+                          secondary: product.images.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Image.network(
+                                    product.images.first,
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 40,
+                                      height: 40,
+                                      color: Colors.grey.shade200,
+                                      child: const Icon(Icons.image, size: 20),
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade200,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child:
+                                      const Icon(Icons.inventory_2, size: 20),
+                                ),
+                          title: Text(
+                            product.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            '${product.price} ${'egp'.tr()}',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 12,
+                            ),
+                          ),
+                          activeColor: AppColours.brownMedium,
+                        );
+                      },
+                    ),
+            ),
+
+            // Actions
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: Colors.grey.shade200)),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    '${_tempSelectedIds.length} ${'selected'.tr()}',
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('cancel'.tr()),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () {
+                      widget.onConfirm(_tempSelectedIds);
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColours.brownMedium,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text('confirm'.tr()),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

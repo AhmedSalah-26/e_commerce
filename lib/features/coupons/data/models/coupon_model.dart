@@ -1,3 +1,4 @@
+import '../../../../core/utils/date_utils.dart';
 import '../../domain/entities/coupon_entity.dart';
 
 class CouponModel extends CouponEntity {
@@ -21,9 +22,18 @@ class CouponModel extends CouponEntity {
     super.isActive,
     super.storeId,
     required super.createdAt,
+    super.productIds,
   });
 
   factory CouponModel.fromJson(Map<String, dynamic> json) {
+    // Parse product IDs from coupon_products relation
+    List<String> productIds = [];
+    if (json['coupon_products'] != null) {
+      productIds = (json['coupon_products'] as List)
+          .map((cp) => cp['product_id'] as String)
+          .toList();
+    }
+
     return CouponModel(
       id: json['id'] as String,
       code: json['code'] as String,
@@ -40,14 +50,15 @@ class CouponModel extends CouponEntity {
       usageLimit: json['usage_limit'] as int?,
       usageCount: json['usage_count'] as int? ?? 0,
       usageLimitPerUser: json['usage_limit_per_user'] as int? ?? 1,
-      startDate: DateTime.parse(json['start_date'] as String),
+      startDate: DateTime.parse(json['start_date'] as String).toLocal(),
       endDate: json['end_date'] != null
-          ? DateTime.parse(json['end_date'] as String)
+          ? DateTime.parse(json['end_date'] as String).toLocal()
           : null,
       scope: json['scope'] as String? ?? 'all',
       isActive: json['is_active'] as bool? ?? true,
       storeId: json['store_id'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      productIds: productIds,
     );
   }
 
@@ -66,12 +77,12 @@ class CouponModel extends CouponEntity {
       'usage_limit': usageLimit,
       'usage_count': usageCount,
       'usage_limit_per_user': usageLimitPerUser,
-      'start_date': startDate.toIso8601String(),
-      'end_date': endDate?.toIso8601String(),
+      'start_date': startDate.toUtc().toIso8601String(),
+      'end_date': endDate?.toUtc().toIso8601String(),
       'scope': scope,
       'is_active': isActive,
       'store_id': storeId,
-      'created_at': createdAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
     };
   }
 
@@ -88,8 +99,8 @@ class CouponModel extends CouponEntity {
       'min_order_amount': minOrderAmount,
       'usage_limit': usageLimit,
       'usage_limit_per_user': usageLimitPerUser,
-      'start_date': startDate.toIso8601String(),
-      'end_date': endDate?.toIso8601String(),
+      'start_date': AppDateUtils.toEgyptIsoString(startDate),
+      'end_date': AppDateUtils.toEgyptIsoString(endDate),
       'scope': scope,
       'is_active': isActive,
       'store_id': storeId,

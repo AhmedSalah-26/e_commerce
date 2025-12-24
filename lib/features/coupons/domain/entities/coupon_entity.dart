@@ -14,10 +14,11 @@ class CouponEntity {
   final int usageLimitPerUser;
   final DateTime startDate;
   final DateTime? endDate;
-  final String scope;
+  final String scope; // 'all', 'products'
   final bool isActive;
   final String? storeId;
   final DateTime createdAt;
+  final List<String> productIds; // Products this coupon applies to
 
   const CouponEntity({
     required this.id,
@@ -39,6 +40,7 @@ class CouponEntity {
     this.isActive = true,
     this.storeId,
     required this.createdAt,
+    this.productIds = const [],
   });
 
   String getName(String locale) => locale == 'ar' ? nameAr : nameEn;
@@ -49,6 +51,7 @@ class CouponEntity {
   bool get isExpired => endDate != null && endDate!.isBefore(DateTime.now());
   bool get isStarted => startDate.isBefore(DateTime.now());
   bool get isValid => isActive && isStarted && !isExpired;
+  bool get isProductSpecific => scope == 'products' && productIds.isNotEmpty;
 
   double calculateDiscount(double orderAmount) {
     if (orderAmount < minOrderAmount) return 0;

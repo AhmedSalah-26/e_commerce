@@ -331,5 +331,17 @@
   "name_en": "الاسم بالإنجليزي",
   "invalid_value": "قيمة غير صحيحة",
   "max_100": "الحد الأقصى 100%",
-  "coupon_discount": "خصم الكوبون"
+  "coupon_discount": "خصم الكوبون",
+  "credit_card": "بطاقة ائتمان",
+  "wallet": "محفظة إلكترونية",
+  "payment_info": "معلومات الدفع",
+  "duplicate_coupon_code": "كود الكوبون موجود بالفعل",
+  "generate_code": "توليد كود عشوائي",
+  "coupon_scope": "نطاق الكوبون",
+  "all_store_products": "جميع منتجات المتجر",
+  "specific_products": "منتجات محددة",
+  "select_products": "اختر المنتجات",
+  "selected_products": "المنتجات المختارة",
+  "no_products_selected": "لم يتم اختيار منتجات",
+  "selected": "مختار"
 }

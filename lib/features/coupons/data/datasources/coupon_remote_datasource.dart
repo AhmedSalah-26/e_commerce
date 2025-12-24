@@ -13,12 +13,14 @@ class CouponRemoteDatasource {
     required String userId,
     required double orderAmount,
     String? storeId,
+    List<String>? productIds,
   }) async {
     final response = await _client.rpc('validate_coupon', params: {
       'p_coupon_code': code.toUpperCase(),
       'p_user_id': userId,
       'p_order_amount': orderAmount,
       'p_store_id': storeId,
+      'p_product_ids': productIds,
     });
 
     return CouponValidationResult.fromJson(response as Map<String, dynamic>);
@@ -45,7 +47,7 @@ class CouponRemoteDatasource {
   Future<List<CouponModel>> getStoreCoupons(String storeId) async {
     final response = await _client
         .from('coupons')
-        .select()
+        .select('*, coupon_products(product_id)')
         .eq('store_id', storeId)
         .order('created_at', ascending: false);
 
@@ -55,24 +57,56 @@ class CouponRemoteDatasource {
   }
 
   /// إنشاء كوبون جديد
-  Future<CouponModel> createCoupon(CouponModel coupon) async {
+  Future<CouponModel> createCoupon(CouponModel coupon,
+      {List<String>? productIds}) async {
     final response = await _client
         .from('coupons')
         .insert(coupon.toInsertJson())
         .select()
         .single();
 
+    final couponId = response['id'] as String;
+
+    // Add product associations if scope is 'products'
+    if (productIds != null && productIds.isNotEmpty) {
+      await _client.from('coupon_products').insert(
+            productIds
+                .map((pid) => {
+                      'coupon_id': couponId,
+                      'product_id': pid,
+                    })
+                .toList(),
+          );
+    }
+
     return CouponModel.fromJson(response);
   }
 
   /// تحديث كوبون
-  Future<CouponModel> updateCoupon(CouponModel coupon) async {
+  Future<CouponModel> updateCoupon(CouponModel coupon,
+      {List<String>? productIds}) async {
     final response = await _client
         .from('coupons')
         .update(coupon.toInsertJson())
         .eq('id', coupon.id)
         .select()
         .single();
+
+    // Update product associations
+    // First delete existing
+    await _client.from('coupon_products').delete().eq('coupon_id', coupon.id);
+
+    // Then add new ones if scope is 'products'
+    if (productIds != null && productIds.isNotEmpty) {
+      await _client.from('coupon_products').insert(
+            productIds
+                .map((pid) => {
+                      'coupon_id': coupon.id,
+                      'product_id': pid,
+                    })
+                .toList(),
+          );
+    }
 
     return CouponModel.fromJson(response);
   }

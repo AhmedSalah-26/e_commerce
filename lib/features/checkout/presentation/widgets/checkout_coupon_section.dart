@@ -7,8 +7,13 @@ import '../../../coupons/presentation/widgets/coupon_input_field.dart';
 /// Coupon section widget for checkout
 class CheckoutCouponSection extends StatelessWidget {
   final double orderAmount;
+  final List<String>? productIds;
 
-  const CheckoutCouponSection({super.key, required this.orderAmount});
+  const CheckoutCouponSection({
+    super.key,
+    required this.orderAmount,
+    this.productIds,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +23,7 @@ class CheckoutCouponSection extends StatelessWidget {
     return CouponInputField(
       userId: authState.user.id,
       orderAmount: orderAmount,
+      productIds: productIds,
     );
   }
 }

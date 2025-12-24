@@ -116,6 +116,8 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
           const SizedBox(height: 16),
           _buildCustomerInfoCard(parentOrder, isRtl),
           const SizedBox(height: 16),
+          _buildPaymentMethodCard(parentOrder, isRtl),
+          const SizedBox(height: 16),
           Text(
             'merchant_orders'.tr(),
             style: AppTextStyle.semiBold_16_dark_brown,
@@ -277,6 +279,70 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
     );
   }
 
+  Widget _buildPaymentMethodCard(ParentOrderEntity parentOrder, bool isRtl) {
+    final paymentMethod = parentOrder.paymentMethod ?? 'cash_on_delivery';
+
+    IconData paymentIcon;
+    String paymentLabel;
+    Color iconColor;
+
+    switch (paymentMethod) {
+      case 'credit_card':
+        paymentIcon = Icons.credit_card;
+        paymentLabel = 'credit_card'.tr();
+        iconColor = Colors.blue.shade600;
+        break;
+      case 'wallet':
+        paymentIcon = Icons.account_balance_wallet;
+        paymentLabel = 'wallet'.tr();
+        iconColor = Colors.purple.shade600;
+        break;
+      default:
+        paymentIcon = Icons.payments_outlined;
+        paymentLabel = 'cash_on_delivery'.tr();
+        iconColor = Colors.green.shade600;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'payment_method'.tr(),
+            style: AppTextStyle.semiBold_12_dark_brown,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(paymentIcon, size: 24, color: iconColor),
+              ),
+              const SizedBox(width: 12),
+              Text(paymentLabel, style: AppTextStyle.semiBold_16_dark_brown),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTotalSummaryCard(ParentOrderEntity parentOrder, bool isRtl) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -296,10 +362,43 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
           _buildPriceRow('subtotal'.tr(), parentOrder.subtotal),
           const SizedBox(height: 8),
           _buildPriceRow('shipping'.tr(), parentOrder.shippingCost),
+          if (parentOrder.hasCoupon) ...[
+            const SizedBox(height: 8),
+            _buildCouponRow(parentOrder),
+          ],
           const Divider(height: 24),
           _buildPriceRow('total'.tr(), parentOrder.total, isTotal: true),
         ],
       ),
+    );
+  }
+
+  Widget _buildCouponRow(ParentOrderEntity parentOrder) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.local_offer, size: 16, color: Colors.green.shade600),
+            const SizedBox(width: 6),
+            Text(
+              '${'coupon_discount'.tr()} (${parentOrder.couponCode})',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.green.shade600,
+              ),
+            ),
+          ],
+        ),
+        Text(
+          '-${parentOrder.couponDiscount.toStringAsFixed(2)} ${'egp'.tr()}',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.green.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 

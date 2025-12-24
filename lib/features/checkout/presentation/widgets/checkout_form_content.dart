@@ -133,7 +133,11 @@ class CheckoutFormContent extends StatelessWidget {
                 const SizedBox(height: 24),
                 const PaymentMethodCard(),
                 const SizedBox(height: 16),
-                CheckoutCouponSection(orderAmount: cartState.total),
+                CheckoutCouponSection(
+                  orderAmount: cartState.total,
+                  productIds:
+                      cartState.items.map((item) => item.productId).toList(),
+                ),
                 const SizedBox(height: 24),
                 OrderSummaryCard(
                   cartState: cartState,

@@ -1,7 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
+import '../../../coupons/presentation/cubit/coupon_cubit.dart';
+import '../../../coupons/presentation/cubit/coupon_state.dart';
 import 'order_summary/merchant_items_section.dart';
 import 'order_summary/order_totals_section.dart';
 import 'order_summary/shipping_warning.dart';
@@ -22,62 +25,73 @@ class OrderSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final groupedData = _groupItemsByMerchant();
     final totalShipping = _calculateTotalShipping(groupedData.merchantIds);
-    final total = cartState.total + totalShipping;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'order_summary'.tr(),
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColours.brownMedium,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            children: [
-              // Merchant sections
-              ...groupedData.itemsByMerchant.entries.map((entry) {
-                final merchantId = entry.key;
-                final items = entry.value;
-                final merchantName =
-                    groupedData.merchantNames[merchantId] ?? '';
-                final merchantShipping = _getMerchantShipping(merchantId);
-                final isUnavailable = _isShippingUnavailable(merchantId);
+    return BlocBuilder<CouponCubit, CouponState>(
+      builder: (context, couponState) {
+        final appliedCoupon =
+            couponState is CouponApplied ? couponState.result : null;
+        final couponDiscount = appliedCoupon?.discountAmount ?? 0;
+        final total = cartState.total + totalShipping - couponDiscount;
 
-                return MerchantItemsSection(
-                  merchantId: merchantId,
-                  merchantName: merchantName,
-                  items: items,
-                  merchantShipping: merchantShipping,
-                  isShippingUnavailable: isUnavailable,
-                  showMerchantHeader: groupedData.itemsByMerchant.length > 1,
-                );
-              }),
-              // Totals
-              OrderTotalsSection(
-                subtotal: cartState.total,
-                totalShipping: totalShipping,
-                total: total,
-                merchantCount: groupedData.itemsByMerchant.length,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'order_summary'.tr(),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColours.brownMedium,
               ),
-              // Warning
-              if (_hasUnavailableShipping(groupedData.merchantIds)) ...[
-                const SizedBox(height: 12),
-                const ShippingWarning(),
-              ],
-            ],
-          ),
-        ),
-      ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  // Merchant sections
+                  ...groupedData.itemsByMerchant.entries.map((entry) {
+                    final merchantId = entry.key;
+                    final items = entry.value;
+                    final merchantName =
+                        groupedData.merchantNames[merchantId] ?? '';
+                    final merchantShipping = _getMerchantShipping(merchantId);
+                    final isUnavailable = _isShippingUnavailable(merchantId);
+
+                    return MerchantItemsSection(
+                      merchantId: merchantId,
+                      merchantName: merchantName,
+                      items: items,
+                      merchantShipping: merchantShipping,
+                      isShippingUnavailable: isUnavailable,
+                      showMerchantHeader:
+                          groupedData.itemsByMerchant.length > 1,
+                    );
+                  }),
+                  // Totals with coupon
+                  OrderTotalsSection(
+                    subtotal: cartState.total,
+                    totalShipping: totalShipping,
+                    couponDiscount: couponDiscount,
+                    couponCode: appliedCoupon?.code,
+                    total: total,
+                    merchantCount: groupedData.itemsByMerchant.length,
+                  ),
+                  // Warning
+                  if (_hasUnavailableShipping(groupedData.merchantIds)) ...[
+                    const SizedBox(height: 12),
+                    const ShippingWarning(),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

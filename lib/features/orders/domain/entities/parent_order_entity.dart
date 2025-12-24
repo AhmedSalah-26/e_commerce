@@ -17,6 +17,12 @@ class ParentOrderEntity extends Equatable {
   final DateTime? createdAt;
   final List<OrderEntity> subOrders;
 
+  // Payment & Coupon fields
+  final String? paymentMethod;
+  final String? couponId;
+  final String? couponCode;
+  final double couponDiscount;
+
   const ParentOrderEntity({
     required this.id,
     required this.userId,
@@ -30,7 +36,14 @@ class ParentOrderEntity extends Equatable {
     this.governorateId,
     this.createdAt,
     this.subOrders = const [],
+    this.paymentMethod,
+    this.couponId,
+    this.couponCode,
+    this.couponDiscount = 0,
   });
+
+  /// Check if coupon was applied
+  bool get hasCoupon => couponCode != null && couponCode!.isNotEmpty;
 
   /// Get unique merchants count
   int get merchantCount => subOrders.length;
@@ -129,5 +142,9 @@ class ParentOrderEntity extends Equatable {
         governorateId,
         createdAt,
         subOrders,
+        paymentMethod,
+        couponId,
+        couponCode,
+        couponDiscount,
       ];
 }

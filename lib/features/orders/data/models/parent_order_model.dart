@@ -17,6 +17,10 @@ class ParentOrderModel extends ParentOrderEntity {
     super.governorateId,
     super.createdAt,
     super.subOrders,
+    super.paymentMethod,
+    super.couponId,
+    super.couponCode,
+    super.couponDiscount,
   });
 
   factory ParentOrderModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +46,10 @@ class ParentOrderModel extends ParentOrderEntity {
           ? DateTime.parse(json['created_at'] as String)
           : null,
       subOrders: subOrders,
+      paymentMethod: json['payment_method'] as String? ?? 'cash_on_delivery',
+      couponId: json['coupon_id'] as String?,
+      couponCode: json['coupon_code'] as String?,
+      couponDiscount: (json['coupon_discount'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -88,6 +96,11 @@ class ParentOrderModel extends ParentOrderEntity {
           ? DateTime.parse(firstRow['parent_created_at'] as String)
           : null,
       subOrders: subOrders,
+      paymentMethod:
+          firstRow['payment_method'] as String? ?? 'cash_on_delivery',
+      couponId: firstRow['coupon_id'] as String?,
+      couponCode: firstRow['coupon_code'] as String?,
+      couponDiscount: (firstRow['coupon_discount'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -102,6 +115,10 @@ class ParentOrderModel extends ParentOrderEntity {
       'customer_phone': customerPhone,
       'notes': notes,
       'governorate_id': governorateId,
+      'payment_method': paymentMethod,
+      'coupon_id': couponId,
+      'coupon_code': couponCode,
+      'coupon_discount': couponDiscount,
     };
   }
 
@@ -118,6 +135,10 @@ class ParentOrderModel extends ParentOrderEntity {
     String? governorateId,
     DateTime? createdAt,
     List<OrderEntity>? subOrders,
+    String? paymentMethod,
+    String? couponId,
+    String? couponCode,
+    double? couponDiscount,
   }) {
     return ParentOrderModel(
       id: id ?? this.id,
@@ -132,6 +153,10 @@ class ParentOrderModel extends ParentOrderEntity {
       governorateId: governorateId ?? this.governorateId,
       createdAt: createdAt ?? this.createdAt,
       subOrders: subOrders ?? this.subOrders,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      couponId: couponId ?? this.couponId,
+      couponCode: couponCode ?? this.couponCode,
+      couponDiscount: couponDiscount ?? this.couponDiscount,
     );
   }
 }

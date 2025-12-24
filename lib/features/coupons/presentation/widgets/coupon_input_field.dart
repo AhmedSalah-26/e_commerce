@@ -10,6 +10,7 @@ class CouponInputField extends StatefulWidget {
   final String userId;
   final double orderAmount;
   final String? storeId;
+  final List<String>? productIds;
   final void Function(CouponValidationResult?)? onCouponChanged;
 
   const CouponInputField({
@@ -17,6 +18,7 @@ class CouponInputField extends StatefulWidget {
     required this.userId,
     required this.orderAmount,
     this.storeId,
+    this.productIds,
     this.onCouponChanged,
   });
 
@@ -43,6 +45,7 @@ class _CouponInputFieldState extends State<CouponInputField> {
           userId: widget.userId,
           orderAmount: widget.orderAmount,
           storeId: widget.storeId,
+          productIds: widget.productIds,
         );
   }
 
@@ -127,7 +130,7 @@ class _CouponInputFieldState extends State<CouponInputField> {
                             if (state is CouponApplied) ...[
                               const SizedBox(height: 2),
                               Text(
-                                '${'discount'.tr()}: ${state.result.discountAmount?.toStringAsFixed(2)} ${'currency'.tr()}',
+                                '${'discount'.tr()}: ${state.result.discountAmount?.toStringAsFixed(2)} ${'egp'.tr()}',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: Colors.green.shade600,

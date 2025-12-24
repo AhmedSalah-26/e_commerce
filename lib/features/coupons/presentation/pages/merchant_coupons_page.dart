@@ -8,6 +8,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../products/domain/entities/product_entity.dart';
+import '../../../products/data/models/product_model.dart';
 import '../../domain/entities/coupon_entity.dart';
 import '../cubit/coupon_cubit.dart';
 import '../cubit/coupon_state.dart';
@@ -23,14 +25,15 @@ class MerchantCouponsPage extends StatefulWidget {
 class _MerchantCouponsPageState extends State<MerchantCouponsPage> {
   String? _storeId;
   bool _isLoading = true;
+  List<ProductEntity> _storeProducts = [];
 
   @override
   void initState() {
     super.initState();
-    _loadStoreId();
+    _loadStoreData();
   }
 
-  Future<void> _loadStoreId() async {
+  Future<void> _loadStoreData() async {
     final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) {
       setState(() => _isLoading = false);
@@ -38,17 +41,39 @@ class _MerchantCouponsPageState extends State<MerchantCouponsPage> {
     }
 
     try {
-      final response = await Supabase.instance.client
+      // Load store ID
+      final storeResponse = await Supabase.instance.client
           .from('stores')
           .select('id')
           .eq('merchant_id', authState.user.id)
           .maybeSingle();
 
-      if (mounted) {
-        setState(() {
-          _storeId = response?['id'] as String?;
-          _isLoading = false;
-        });
+      final storeId = storeResponse?['id'] as String?;
+
+      if (storeId != null) {
+        // Load store products
+        final productsResponse = await Supabase.instance.client
+            .from('products')
+            .select('*, stores!inner(merchant_id)')
+            .eq('stores.merchant_id', authState.user.id)
+            .eq('is_active', true)
+            .order('created_at', ascending: false);
+
+        final products = (productsResponse as List)
+            .map((json) => ProductModel.fromJson(json))
+            .toList();
+
+        if (mounted) {
+          setState(() {
+            _storeId = storeId;
+            _storeProducts = products;
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -99,7 +124,11 @@ class _MerchantCouponsPageState extends State<MerchantCouponsPage> {
       create: (_) => sl<MerchantCouponsCubit>()..loadCoupons(_storeId!),
       child: Directionality(
         textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-        child: _MerchantCouponsView(storeId: _storeId!, isRtl: isRtl),
+        child: _MerchantCouponsView(
+          storeId: _storeId!,
+          isRtl: isRtl,
+          storeProducts: _storeProducts,
+        ),
       ),
     );
   }
@@ -108,8 +137,13 @@ class _MerchantCouponsPageState extends State<MerchantCouponsPage> {
 class _MerchantCouponsView extends StatelessWidget {
   final String storeId;
   final bool isRtl;
+  final List<ProductEntity> storeProducts;
 
-  const _MerchantCouponsView({required this.storeId, required this.isRtl});
+  const _MerchantCouponsView({
+    required this.storeId,
+    required this.isRtl,
+    required this.storeProducts,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -145,6 +179,18 @@ class _MerchantCouponsView extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('coupon_deleted'.tr())),
             );
+          } else if (state is MerchantCouponsError) {
+            // Handle duplicate code error
+            if (state.message == 'DUPLICATE_CODE') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('duplicate_coupon_code'.tr()),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              // Reload coupons to restore state
+              context.read<MerchantCouponsCubit>().loadCoupons(storeId);
+            }
           }
         },
         builder: (context, state) {
@@ -215,7 +261,11 @@ class _MerchantCouponsView extends StatelessWidget {
       context: context,
       builder: (_) => BlocProvider.value(
         value: context.read<MerchantCouponsCubit>(),
-        child: CouponFormDialog(coupon: coupon, storeId: storeId),
+        child: CouponFormDialog(
+          coupon: coupon,
+          storeId: storeId,
+          storeProducts: storeProducts,
+        ),
       ),
     );
   }
@@ -342,6 +392,32 @@ class _CouponCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
+                if (coupon.isProductSpecific)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.inventory_2,
+                            size: 14, color: Colors.blue.shade700),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${coupon.productIds.length}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 const Spacer(),
                 Switch(
                   value: coupon.isActive,
@@ -373,7 +449,7 @@ class _CouponCard extends StatelessWidget {
                   icon: Icons.percent,
                   label: coupon.isPercentage
                       ? '${coupon.discountValue.toInt()}%'
-                      : '${coupon.discountValue.toStringAsFixed(0)} ${'currency'.tr()}',
+                      : '${coupon.discountValue.toStringAsFixed(0)} ${'egp'.tr()}',
                 ),
                 const SizedBox(width: 8),
                 if (coupon.minOrderAmount > 0)

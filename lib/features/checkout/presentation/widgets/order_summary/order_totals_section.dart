@@ -7,6 +7,8 @@ class OrderTotalsSection extends StatelessWidget {
   final double totalShipping;
   final double total;
   final int merchantCount;
+  final double couponDiscount;
+  final String? couponCode;
 
   const OrderTotalsSection({
     super.key,
@@ -14,6 +16,8 @@ class OrderTotalsSection extends StatelessWidget {
     required this.totalShipping,
     required this.total,
     required this.merchantCount,
+    this.couponDiscount = 0,
+    this.couponCode,
   });
 
   @override
@@ -32,6 +36,14 @@ class OrderTotalsSection extends StatelessWidget {
           totalShipping: totalShipping,
           merchantCount: merchantCount,
         ),
+        // Coupon discount
+        if (couponDiscount > 0) ...[
+          const SizedBox(height: 8),
+          _CouponRow(
+            couponDiscount: couponDiscount,
+            couponCode: couponCode,
+          ),
+        ],
         const Divider(),
         // Total
         _TotalRow(total: total),
@@ -92,6 +104,44 @@ class _ShippingRow extends StatelessWidget {
               ? '${totalShipping.toStringAsFixed(2)} ${'egp'.tr()}'
               : '-',
           style: TextStyle(color: totalShipping > 0 ? null : Colors.grey),
+        ),
+      ],
+    );
+  }
+}
+
+class _CouponRow extends StatelessWidget {
+  final double couponDiscount;
+  final String? couponCode;
+
+  const _CouponRow({
+    required this.couponDiscount,
+    this.couponCode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.local_offer, size: 16, color: Colors.green.shade600),
+            const SizedBox(width: 4),
+            Text(
+              couponCode != null
+                  ? '${'coupon_discount'.tr()} ($couponCode)'
+                  : 'coupon_discount'.tr(),
+              style: TextStyle(color: Colors.green.shade600),
+            ),
+          ],
+        ),
+        Text(
+          '-${couponDiscount.toStringAsFixed(2)} ${'egp'.tr()}',
+          style: TextStyle(
+            color: Colors.green.shade600,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );

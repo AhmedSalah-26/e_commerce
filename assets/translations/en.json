@@ -331,5 +331,17 @@
   "name_en": "Name (English)",
   "invalid_value": "Invalid value",
   "max_100": "Maximum is 100%",
-  "coupon_discount": "Coupon Discount"
+  "coupon_discount": "Coupon Discount",
+  "credit_card": "Credit Card",
+  "wallet": "E-Wallet",
+  "payment_info": "Payment Info",
+  "duplicate_coupon_code": "Coupon code already exists",
+  "generate_code": "Generate random code",
+  "coupon_scope": "Coupon Scope",
+  "all_store_products": "All Store Products",
+  "specific_products": "Specific Products",
+  "select_products": "Select Products",
+  "selected_products": "Selected Products",
+  "no_products_selected": "No products selected",
+  "selected": "selected"
 }

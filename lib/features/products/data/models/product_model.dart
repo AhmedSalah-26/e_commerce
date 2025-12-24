@@ -76,7 +76,7 @@ class ProductModel extends ProductEntity {
       isActive: json['is_active'] as bool? ?? true,
       isFeatured: json['is_featured'] as bool? ?? false,
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
+          ? DateTime.parse(json['created_at'] as String).toLocal()
           : null,
       merchantId: json['merchant_id'] as String?,
       storeName: storeName,
@@ -84,10 +84,10 @@ class ProductModel extends ProductEntity {
       storeAddress: storeAddress,
       isFlashSale: json['is_flash_sale'] as bool? ?? false,
       flashSaleStart: json['flash_sale_start'] != null
-          ? DateTime.parse(json['flash_sale_start'] as String)
+          ? DateTime.parse(json['flash_sale_start'] as String).toLocal()
           : null,
       flashSaleEnd: json['flash_sale_end'] != null
-          ? DateTime.parse(json['flash_sale_end'] as String)
+          ? DateTime.parse(json['flash_sale_end'] as String).toLocal()
           : null,
     );
   }
@@ -110,8 +110,8 @@ class ProductModel extends ProductEntity {
       'is_active': isActive,
       'is_featured': isFeatured,
       'is_flash_sale': isFlashSale,
-      'flash_sale_start': flashSaleStart?.toIso8601String(),
-      'flash_sale_end': flashSaleEnd?.toIso8601String(),
+      'flash_sale_start': flashSaleStart?.toUtc().toIso8601String(),
+      'flash_sale_end': flashSaleEnd?.toUtc().toIso8601String(),
     };
   }
 

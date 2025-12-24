@@ -18,6 +18,7 @@ class CouponCubit extends Cubit<CouponState> {
     required String userId,
     required double orderAmount,
     String? storeId,
+    List<String>? productIds,
   }) async {
     if (code.trim().isEmpty) return;
 
@@ -29,6 +30,7 @@ class CouponCubit extends Cubit<CouponState> {
         userId: userId,
         orderAmount: orderAmount,
         storeId: storeId,
+        productIds: productIds,
       );
 
       if (result.isValid) {
@@ -80,24 +82,34 @@ class MerchantCouponsCubit extends Cubit<CouponState> {
   }
 
   /// إنشاء كوبون جديد
-  Future<void> createCoupon(CouponModel coupon, String storeId) async {
+  Future<void> createCoupon(CouponModel coupon, String storeId,
+      {List<String>? productIds}) async {
     emit(CouponSaving());
 
     try {
-      await _datasource.createCoupon(coupon);
+      await _datasource.createCoupon(coupon, productIds: productIds);
       emit(CouponSaved());
       loadCoupons(storeId);
     } catch (e) {
-      emit(MerchantCouponsError(e.toString()));
+      // Check for duplicate code error
+      final errorMsg = e.toString().toLowerCase();
+      if (errorMsg.contains('unique') ||
+          errorMsg.contains('duplicate') ||
+          errorMsg.contains('23505')) {
+        emit(const MerchantCouponsError('DUPLICATE_CODE'));
+      } else {
+        emit(MerchantCouponsError(e.toString()));
+      }
     }
   }
 
   /// تحديث كوبون
-  Future<void> updateCoupon(CouponModel coupon, String storeId) async {
+  Future<void> updateCoupon(CouponModel coupon, String storeId,
+      {List<String>? productIds}) async {
     emit(CouponSaving());
 
     try {
-      await _datasource.updateCoupon(coupon);
+      await _datasource.updateCoupon(coupon, productIds: productIds);
       emit(CouponSaved());
       loadCoupons(storeId);
     } catch (e) {

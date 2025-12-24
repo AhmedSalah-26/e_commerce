@@ -162,6 +162,7 @@ class CartItemCard extends StatelessWidget {
                             ),
                             child: Text(
                               '-$discountPercent%',
+                              textDirection: ui.TextDirection.ltr,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 9,

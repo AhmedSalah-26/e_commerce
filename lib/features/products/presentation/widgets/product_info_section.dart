@@ -43,30 +43,7 @@ class ProductInfoSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                if (hidePrice)
-                  // Show unavailable text instead of price
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.orange[100],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: AutoSizeText(
-                      'product_unavailable'.tr(),
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.03,
-                        color: Colors.orange[800],
-                        fontWeight: FontWeight.w600,
-                      ),
-                      minFontSize: 10,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  )
-                else ...[
+                if (!hidePrice) ...[
                   if (product.hasDiscount)
                     AutoSizeText(
                       "${product.price.toStringAsFixed(2)} ${'egp'.tr()}",

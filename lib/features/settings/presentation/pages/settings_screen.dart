@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
@@ -52,6 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthUnauthenticated) {
+          AppRouter.setAuthenticated(false);
           context.go('/login');
         }
       },

@@ -367,5 +367,9 @@
   "global_coupons": "Global Coupons",
   "add_global_coupon": "Add Global Coupon",
   "edit_global_coupon": "Edit Global Coupon",
-  "global_coupon_info": "Global coupons work on all products from all merchants"
+  "global_coupon_info": "Global coupons work on all products from all merchants",
+
+  "share": "Share",
+  "share_product": "Share Product",
+  "link_copied": "Link copied"
 }

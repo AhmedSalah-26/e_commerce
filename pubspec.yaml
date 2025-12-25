@@ -48,6 +48,10 @@ dependencies:
   shared_preferences: ^2.3.3
   # Cached Network Image for optimized image loading
   cached_network_image: ^3.4.1
+  # Deep Links
+  app_links: ^6.3.3
+  # Share
+  share_plus: ^10.1.4
 
 dev_dependencies:
   flutter_test:

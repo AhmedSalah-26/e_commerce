@@ -1,9 +1,11 @@
+import 'package:app_links/app_links.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
+import 'core/services/deep_link_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/auth/presentation/cubit/auth_state.dart';
@@ -83,11 +85,34 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  late AppLinks _appLinks;
+
   @override
   void initState() {
     super.initState();
+    _initDeepLinks();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
+    });
+  }
+
+  /// Initialize deep links listener
+  Future<void> _initDeepLinks() async {
+    _appLinks = AppLinks();
+
+    // Handle initial link (app opened from link)
+    try {
+      final initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        DeepLinkService().handleDeepLink(initialUri);
+      }
+    } catch (e) {
+      debugPrint('Error getting initial deep link: $e');
+    }
+
+    // Listen for links while app is running
+    _appLinks.uriLinkStream.listen((uri) {
+      DeepLinkService().handleDeepLink(uri);
     });
   }
 
@@ -132,6 +157,9 @@ class _MyAppState extends State<MyApp> {
                 state.user.id,
                 locale: locale,
               );
+
+          // Navigate to pending deep link after login
+          DeepLinkService().navigateToPendingDeepLink();
         } else if (state is AuthUnauthenticated) {
           // Stop listening when user logs out
           di.sl<OrderStatusListener>().stopListening();

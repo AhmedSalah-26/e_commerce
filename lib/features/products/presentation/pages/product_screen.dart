@@ -2,12 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
 import '../../../../core/shared_widgets/flash_sale_banner.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/share_utils.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../data/datasources/product_remote_datasource.dart';
 import '../cubit/products_cubit.dart';
@@ -251,6 +253,8 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   AppBar _buildAppBar(BuildContext context) {
+    final locale = context.locale.languageCode;
+
     return AppBar(
       backgroundColor: AppColours.white,
       leading: IconButton(
@@ -258,6 +262,11 @@ class _ProductScreenState extends State<ProductScreen> {
         onPressed: () => _handleBack(context),
       ),
       actions: [
+        // Share button
+        IconButton(
+          onPressed: () => _shareProduct(locale),
+          icon: const Icon(Icons.share_outlined, color: AppColours.brownMedium),
+        ),
         BlocSelector<CartCubit, CartState, int>(
           selector: (state) => state is CartLoaded
               ? state.items.fold<int>(0, (sum, item) => sum + item.quantity)
@@ -300,6 +309,12 @@ class _ProductScreenState extends State<ProductScreen> {
         ),
       ],
     );
+  }
+
+  /// Share product link
+  void _shareProduct(String locale) {
+    final shareText = ShareUtils.getProductShareText(_product, locale);
+    Share.share(shareText);
   }
 
   Widget _buildAddToCartButton(BuildContext context, bool isInactive) {

@@ -53,9 +53,12 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
     var filtered = products;
 
     if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
       filtered = filtered.where((p) {
-        return p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            p.description.toLowerCase().contains(_searchQuery.toLowerCase());
+        // Search by name, description, or product ID
+        return p.name.toLowerCase().contains(query) ||
+            p.description.toLowerCase().contains(query) ||
+            p.id.toLowerCase().contains(query);
       }).toList();
     }
 

@@ -16,28 +16,31 @@ class OrderItemModel extends OrderItemEntity {
   });
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
-    // Get product data from JOIN (required now)
-    final product = json['products'] as Map<String, dynamic>?;
-
-    String productName = 'Unknown';
+    // First try to get from order_items table directly (stored at order creation)
+    String productName = json['product_name'] as String? ?? 'Unknown';
     String? productNameEn;
-    String? productImage;
+    String? productImage = json['product_image'] as String?;
     String? productDescription;
     String? productDescriptionEn;
 
+    // If product data is available from JOIN, use it for translations
+    final product = json['products'] as Map<String, dynamic>?;
     if (product != null) {
       // Get translations from products table
       productName = product['name_ar'] as String? ??
           product['name_en'] as String? ??
+          json['product_name'] as String? ??
           'Unknown';
       productNameEn = product['name_en'] as String?;
       productDescription = product['description_ar'] as String?;
       productDescriptionEn = product['description_en'] as String?;
 
-      // Get image
-      final images = product['images'] as List?;
-      if (images != null && images.isNotEmpty) {
-        productImage = images[0] as String?;
+      // Get image from products if not in order_items
+      if (productImage == null || productImage.isEmpty) {
+        final images = product['images'] as List?;
+        if (images != null && images.isNotEmpty) {
+          productImage = images[0] as String?;
+        }
       }
     }
 

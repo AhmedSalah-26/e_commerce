@@ -7,6 +7,10 @@ import '../../models/order_model.dart';
 mixin MerchantOrdersMixin {
   SupabaseClient get client;
 
+  /// Order items query with product JOIN for translations
+  String get _orderItemsWithProduct =>
+      '*, products(name_ar, name_en, description_ar, description_en, images)';
+
   Future<List<OrderModel>> getOrdersByMerchant(String merchantId) async {
     try {
       logger.i('📦 Getting orders for merchant: $merchantId');
@@ -24,7 +28,7 @@ mixin MerchantOrdersMixin {
       for (final order in ordersResponse) {
         final itemsResponse = await client
             .from('order_items')
-            .select()
+            .select(_orderItemsWithProduct)
             .eq('order_id', order['id']);
 
         logger.d(
@@ -58,7 +62,7 @@ mixin MerchantOrdersMixin {
           for (final order in data) {
             final itemsResponse = await client
                 .from('order_items')
-                .select()
+                .select(_orderItemsWithProduct)
                 .eq('order_id', order['id']);
 
             orders.add(OrderModel.fromJson({
@@ -87,7 +91,7 @@ mixin MerchantOrdersMixin {
           for (final order in filteredData) {
             final itemsResponse = await client
                 .from('order_items')
-                .select()
+                .select(_orderItemsWithProduct)
                 .eq('order_id', order['id']);
 
             orders.add(OrderModel.fromJson({
@@ -148,7 +152,7 @@ mixin MerchantOrdersMixin {
       for (final order in (ordersResponse as List)) {
         final itemsResponse = await client
             .from('order_items')
-            .select()
+            .select(_orderItemsWithProduct)
             .eq('order_id', order['id']);
 
         orders.add(OrderModel.fromJson({

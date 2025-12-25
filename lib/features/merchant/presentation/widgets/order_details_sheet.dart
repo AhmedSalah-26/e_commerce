@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../Core/Theme/app_text_style.dart';
@@ -252,6 +253,11 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
 
   @override
   Widget build(BuildContext context) {
+    final localizedName = widget.item.getLocalizedName(_locale);
+    final localizedDescription = widget.item.getLocalizedDescription(_locale);
+    final hasDescription =
+        localizedDescription != null && localizedDescription.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
@@ -268,6 +274,7 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
               padding: const EdgeInsets.all(10),
               child: Row(
                 children: [
+                  // Product Image
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: widget.item.productImage != null
@@ -286,17 +293,44 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Product Name
                         Text(
-                          widget.item.getLocalizedName(_locale),
-                          style: AppTextStyle.bodyMedium,
+                          localizedName,
+                          style: AppTextStyle.semiBold_12_dark_brown
+                              .copyWith(fontSize: 14),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          '${widget.item.quantity} × ${widget.item.price.toStringAsFixed(2)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
-                          style: AppTextStyle.normal_12_greyDark,
+                        // Quantity display
+                        Row(
+                          children: [
+                            Text(
+                              widget.isRtl ? 'الكمية: ' : 'Qty: ',
+                              style: AppTextStyle.normal_12_greyDark,
+                            ),
+                            Text(
+                              '${widget.item.quantity}',
+                              style: AppTextStyle.semiBold_12_dark_brown,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '× ${widget.item.price.toStringAsFixed(2)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
+                              style: AppTextStyle.normal_12_greyDark,
+                            ),
+                          ],
                         ),
+                        // Description preview
+                        if (hasDescription) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            localizedDescription,
+                            style: AppTextStyle.normal_12_greyDark
+                                .copyWith(fontSize: 11),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -329,6 +363,8 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
 
   Widget _buildExpandedDetails() {
     final localizedDescription = widget.item.getLocalizedDescription(_locale);
+    final productId = widget.item.productId ?? '';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -340,34 +376,6 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.item.productImage != null) ...[
-            Text(
-              'product_image'.tr(),
-              style: AppTextStyle.normal_12_greyDark
-                  .copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: CachedNetworkImage(
-                imageUrl: widget.item.productImage!,
-                width: double.infinity,
-                height: 150,
-                fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
-                  height: 150,
-                  color: Colors.grey.shade200,
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-                errorWidget: (_, __, ___) => Container(
-                  height: 150,
-                  color: Colors.grey.shade200,
-                  child: const Icon(Icons.image_not_supported, size: 40),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
           Text(
             'product_name'.tr(),
             style: AppTextStyle.normal_12_greyDark
@@ -377,6 +385,35 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
           Text(widget.item.getLocalizedName(_locale),
               style: AppTextStyle.bodyMedium),
           const SizedBox(height: 12),
+          if (productId.isNotEmpty) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${'product_id'.tr()}: $productId',
+                    style: AppTextStyle.normal_12_greyDark,
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: productId));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('product_id_copied'.tr()),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                  child: const Icon(
+                    Icons.copy,
+                    size: 16,
+                    color: AppColours.brownMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
           if (localizedDescription != null &&
               localizedDescription.isNotEmpty) ...[
             Text(

@@ -46,6 +46,13 @@ class AppTextStyle {
     fontFamily: 'Changa',
   );
 
+  static const TextStyle semiBold_14_dark_brown = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: AppColours.brownDark,
+    fontFamily: 'Changa',
+  );
+
   static const TextStyle normal_16_greyDark = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.normal,
@@ -62,6 +69,13 @@ class AppTextStyle {
 
   static const TextStyle normal_12_greyDark = TextStyle(
     fontSize: 12,
+    fontWeight: FontWeight.normal,
+    color: AppColours.greyDark,
+    fontFamily: 'Changa',
+  );
+
+  static const TextStyle normal_11_greyDark = TextStyle(
+    fontSize: 11,
     fontWeight: FontWeight.normal,
     color: AppColours.greyDark,
     fontFamily: 'Changa',

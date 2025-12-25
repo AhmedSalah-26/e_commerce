@@ -88,6 +88,9 @@ class OrderModel extends OrderEntity {
     super.merchantName,
     super.merchantPhone,
     super.merchantAddress,
+    super.paymentMethod,
+    super.couponCode,
+    super.couponDiscount,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -109,8 +112,6 @@ class OrderModel extends OrderEntity {
       merchantName = store['name'] as String?;
       merchantPhone = store['phone'] as String?;
       merchantAddress = store['address'] as String?;
-      // Debug: print store data
-      print('🏪 Store data: $store');
     }
     // Fallback to profiles join
     else if (json['profiles'] != null) {
@@ -140,6 +141,9 @@ class OrderModel extends OrderEntity {
       merchantName: merchantName,
       merchantPhone: merchantPhone,
       merchantAddress: merchantAddress,
+      paymentMethod: json['payment_method'] as String?,
+      couponCode: json['coupon_code'] as String?,
+      couponDiscount: (json['coupon_discount'] as num?)?.toDouble() ?? 0,
     );
   }
 

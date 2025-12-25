@@ -11,6 +11,62 @@ mixin MerchantOrdersMixin {
   String get _orderItemsWithProduct =>
       '*, products(name_ar, name_en, description_ar, description_en, images)';
 
+  /// Fetch parent order data for coupon/payment info
+  Future<Map<String, dynamic>?> _fetchParentOrderData(
+      String? parentOrderId) async {
+    if (parentOrderId == null) {
+      logger.d('No parent_order_id provided');
+      return null;
+    }
+    try {
+      logger.d('Fetching parent order data for: $parentOrderId');
+      final response = await client
+          .from('parent_orders')
+          .select('payment_method, coupon_code, coupon_discount, subtotal')
+          .eq('id', parentOrderId)
+          .maybeSingle();
+      logger.d('Parent order data: $response');
+      return response;
+    } catch (e) {
+      logger.w('Could not fetch parent order data: $e');
+      return null;
+    }
+  }
+
+  /// Calculate merchant's share of coupon discount
+  Map<String, dynamic> _calculateMerchantDiscount(
+    Map<String, dynamic> order,
+    Map<String, dynamic>? parentOrder,
+  ) {
+    if (parentOrder == null) {
+      return {
+        'payment_method': order['payment_method'],
+        'coupon_code': null,
+        'coupon_discount': 0.0,
+      };
+    }
+
+    final paymentMethod = parentOrder['payment_method'] as String?;
+    final couponCode = parentOrder['coupon_code'] as String?;
+    final totalCouponDiscount =
+        (parentOrder['coupon_discount'] as num?)?.toDouble() ?? 0.0;
+    final parentSubtotal = (parentOrder['subtotal'] as num?)?.toDouble() ?? 0.0;
+    final merchantSubtotal = (order['subtotal'] as num?)?.toDouble() ?? 0.0;
+
+    // Calculate merchant's proportional share of discount
+    double merchantDiscount = 0.0;
+    if (totalCouponDiscount > 0 && parentSubtotal > 0) {
+      merchantDiscount =
+          (merchantSubtotal / parentSubtotal) * totalCouponDiscount;
+    }
+
+    return {
+      'payment_method': paymentMethod,
+      'coupon_code': couponCode,
+      'coupon_discount': merchantDiscount,
+    };
+  }
+
   Future<List<OrderModel>> getOrdersByMerchant(String merchantId) async {
     try {
       logger.i('📦 Getting orders for merchant: $merchantId');
@@ -31,12 +87,18 @@ mixin MerchantOrdersMixin {
             .select(_orderItemsWithProduct)
             .eq('order_id', order['id']);
 
+        // Fetch parent order data for payment/coupon info
+        final parentOrderData =
+            await _fetchParentOrderData(order['parent_order_id'] as String?);
+        final discountInfo = _calculateMerchantDiscount(order, parentOrderData);
+
         logger.d(
             'Order ${order['id']} has ${(itemsResponse as List).length} items');
 
         orders.add(OrderModel.fromJson({
           ...order,
           'order_items': itemsResponse,
+          ...discountInfo,
         }));
       }
 
@@ -65,9 +127,16 @@ mixin MerchantOrdersMixin {
                 .select(_orderItemsWithProduct)
                 .eq('order_id', order['id']);
 
+            // Fetch parent order data for payment/coupon info
+            final parentOrderData = await _fetchParentOrderData(
+                order['parent_order_id'] as String?);
+            final discountInfo =
+                _calculateMerchantDiscount(order, parentOrderData);
+
             orders.add(OrderModel.fromJson({
               ...order,
               'order_items': itemsResponse,
+              ...discountInfo,
             }));
           }
           return orders;
@@ -94,9 +163,16 @@ mixin MerchantOrdersMixin {
                 .select(_orderItemsWithProduct)
                 .eq('order_id', order['id']);
 
+            // Fetch parent order data for payment/coupon info
+            final parentOrderData = await _fetchParentOrderData(
+                order['parent_order_id'] as String?);
+            final discountInfo =
+                _calculateMerchantDiscount(order, parentOrderData);
+
             orders.add(OrderModel.fromJson({
               ...order,
               'order_items': itemsResponse,
+              ...discountInfo,
             }));
           }
           return orders;
@@ -155,9 +231,15 @@ mixin MerchantOrdersMixin {
             .select(_orderItemsWithProduct)
             .eq('order_id', order['id']);
 
+        // Fetch parent order data for payment/coupon info
+        final parentOrderData =
+            await _fetchParentOrderData(order['parent_order_id'] as String?);
+        final discountInfo = _calculateMerchantDiscount(order, parentOrderData);
+
         orders.add(OrderModel.fromJson({
           ...order,
           'order_items': itemsResponse,
+          ...discountInfo,
         }));
       }
 

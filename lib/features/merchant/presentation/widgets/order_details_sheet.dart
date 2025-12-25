@@ -82,6 +82,18 @@ class OrderDetailsSheet extends StatelessWidget {
             order.customerPhone ?? (isRtl ? 'غير محدد' : 'N/A')),
         _buildDetailRow(isRtl ? 'عنوان التوصيل' : 'Delivery Address',
             order.deliveryAddress ?? (isRtl ? 'غير محدد' : 'N/A')),
+        // Payment Method
+        _buildDetailRow(
+          'payment_method'.tr(),
+          _getPaymentMethodText(order.paymentMethod),
+        ),
+        // Coupon info if exists
+        if (order.hasCoupon) ...[
+          _buildDetailRow(
+            'coupon_code'.tr(),
+            order.couponCode!,
+          ),
+        ],
         const Divider(height: 32),
         Text(isRtl ? 'المنتجات' : 'Products',
             style: AppTextStyle.semiBold_16_dark_brown),
@@ -91,20 +103,53 @@ class OrderDetailsSheet extends StatelessWidget {
         const Divider(height: 32),
         _buildDetailRow(isRtl ? 'المجموع الفرعي' : 'Subtotal',
             '${order.subtotal.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}'),
-        _buildDetailRow(isRtl ? 'الخصم' : 'Discount',
-            '${order.discount.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}'),
+        // Show coupon discount if exists
+        if (order.couponDiscount > 0)
+          _buildDetailRow(
+            'coupon_discount'.tr(),
+            '-${order.couponDiscount.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
+            valueColor: Colors.green,
+          ),
+        // Show regular discount only if > 0
+        if (order.discount > 0)
+          _buildDetailRow(isRtl ? 'الخصم' : 'Discount',
+              '-${order.discount.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}'),
         _buildDetailRow(isRtl ? 'الشحن' : 'Shipping',
             '${order.shippingCost.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}'),
         const Divider(height: 24),
-        _buildDetailRow(isRtl ? 'الإجمالي' : 'Total',
-            '${order.total.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
-            isBold: true),
+        _buildDetailRow(
+          isRtl ? 'الإجمالي' : 'Total',
+          '${_calculateTotal().toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
+          isBold: true,
+        ),
         const SizedBox(height: 24),
         if (order.status != OrderStatus.delivered &&
             order.status != OrderStatus.cancelled)
           _buildUpdateButton(context),
       ],
     );
+  }
+
+  /// Calculate total with coupon discount applied
+  double _calculateTotal() {
+    return order.subtotal -
+        order.couponDiscount -
+        order.discount +
+        order.shippingCost;
+  }
+
+  /// Get translated payment method text
+  String _getPaymentMethodText(String? method) {
+    switch (method) {
+      case 'cash_on_delivery':
+        return 'cash_on_delivery'.tr();
+      case 'credit_card':
+        return 'credit_card'.tr();
+      case 'wallet':
+        return 'wallet'.tr();
+      default:
+        return 'cash_on_delivery'.tr();
+    }
   }
 
   Widget _buildUpdateButton(BuildContext context) {
@@ -200,7 +245,8 @@ class OrderDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isBold = false}) {
+  Widget _buildDetailRow(String label, String value,
+      {bool isBold = false, Color? valueColor}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -210,10 +256,15 @@ class OrderDetailsSheet extends StatelessWidget {
               style: isBold
                   ? AppTextStyle.semiBold_16_dark_brown
                   : AppTextStyle.normal_14_greyDark),
-          Text(value,
-              style: isBold
-                  ? AppTextStyle.semiBold_16_dark_brown
-                  : AppTextStyle.normal_14_greyDark),
+          Text(
+            value,
+            style: isBold
+                ? AppTextStyle.semiBold_16_dark_brown
+                : valueColor != null
+                    ? AppTextStyle.normal_14_greyDark
+                        .copyWith(color: valueColor)
+                    : AppTextStyle.normal_14_greyDark,
+          ),
         ],
       ),
     );

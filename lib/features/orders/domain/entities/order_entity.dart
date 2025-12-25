@@ -113,6 +113,10 @@ class OrderEntity extends Equatable {
   final String? merchantName;
   final String? merchantPhone;
   final String? merchantAddress;
+  // Payment & Coupon info
+  final String? paymentMethod;
+  final String? couponCode;
+  final double couponDiscount;
 
   const OrderEntity({
     required this.id,
@@ -132,9 +136,13 @@ class OrderEntity extends Equatable {
     this.merchantName,
     this.merchantPhone,
     this.merchantAddress,
+    this.paymentMethod,
+    this.couponCode,
+    this.couponDiscount = 0,
   });
 
   bool get hasMerchantInfo => merchantName != null && merchantName!.isNotEmpty;
+  bool get hasCoupon => couponCode != null && couponCode!.isNotEmpty;
 
   @override
   List<Object?> get props => [
@@ -155,5 +163,8 @@ class OrderEntity extends Equatable {
         merchantName,
         merchantPhone,
         merchantAddress,
+        paymentMethod,
+        couponCode,
+        couponDiscount,
       ];
 }

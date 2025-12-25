@@ -354,5 +354,7 @@
   "active_coupons": "نشطة",
   "inactive_coupons": "متوقفة",
   "no_active_coupons": "لا توجد كوبونات نشطة",
-  "no_inactive_coupons": "لا توجد كوبونات متوقفة"
+  "no_inactive_coupons": "لا توجد كوبونات متوقفة",
+  "cart_has_non_covered_products": "السلة تحتوي على منتجات غير مشمولة بهذا الكوبون. يرجى إزالتها أولاً",
+  "cart_has_non_covered_categories": "السلة تحتوي على منتجات من فئات غير مشمولة بهذا الكوبون. يرجى إزالتها أولاً"
 }

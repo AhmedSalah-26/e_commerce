@@ -354,5 +354,7 @@
   "active_coupons": "Active",
   "inactive_coupons": "Inactive",
   "no_active_coupons": "No active coupons",
-  "no_inactive_coupons": "No inactive coupons"
+  "no_inactive_coupons": "No inactive coupons",
+  "cart_has_non_covered_products": "Cart contains products not covered by this coupon. Please remove them first",
+  "cart_has_non_covered_categories": "Cart contains products from categories not covered by this coupon. Please remove them first"
 }

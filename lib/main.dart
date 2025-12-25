@@ -14,6 +14,7 @@ import 'features/cart/presentation/cubit/cart_cubit.dart';
 import 'features/orders/presentation/cubit/orders_cubit.dart';
 import 'features/favorites/presentation/cubit/favorites_cubit.dart';
 import 'features/home/presentation/cubit/home_sliders_cubit.dart';
+import 'features/notifications/data/services/order_status_listener.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -106,6 +107,12 @@ class _MyAppState extends State<MyApp> {
       context.read<FavoritesCubit>().setUserId(authState.user.id);
       context.read<CartCubit>().setUserId(authState.user.id);
       context.read<CartCubit>().loadCart(authState.user.id);
+
+      // Start listening for order status changes
+      di.sl<OrderStatusListener>().startListening(
+            authState.user.id,
+            locale: locale,
+          );
     }
   }
 
@@ -113,10 +120,21 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
+        final locale = context.locale.languageCode;
+
         if (state is AuthAuthenticated) {
           context.read<FavoritesCubit>().setUserId(state.user.id);
           context.read<CartCubit>().setUserId(state.user.id);
           context.read<CartCubit>().loadCart(state.user.id);
+
+          // Start listening for order status changes
+          di.sl<OrderStatusListener>().startListening(
+                state.user.id,
+                locale: locale,
+              );
+        } else if (state is AuthUnauthenticated) {
+          // Stop listening when user logs out
+          di.sl<OrderStatusListener>().stopListening();
         }
       },
       child: MaterialApp.router(

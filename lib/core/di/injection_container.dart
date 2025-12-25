@@ -46,6 +46,7 @@ import '../../features/favorites/presentation/cubit/favorites_cubit.dart';
 
 // Notifications imports
 import '../../features/notifications/data/services/local_notification_service.dart';
+import '../../features/notifications/data/services/order_status_listener.dart';
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
 
 // Reviews imports
@@ -159,6 +160,12 @@ Future<void> initializeDependencies() async {
   // Notifications Feature
   sl.registerLazySingleton<LocalNotificationService>(
     () => LocalNotificationService(),
+  );
+  sl.registerLazySingleton<OrderStatusListener>(
+    () => OrderStatusListener(
+      client: sl<SupabaseService>().client,
+      notificationService: sl<LocalNotificationService>(),
+    ),
   );
   sl.registerFactory(() => NotificationsCubit(
         notificationService: sl<LocalNotificationService>(),

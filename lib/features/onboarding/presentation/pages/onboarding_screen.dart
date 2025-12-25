@@ -3,9 +3,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/shared_widgets/language_toggle_button.dart';
-import 'widgets/onboarding_action_buttons.dart';
-import 'widgets/onboarding_page_indicator.dart';
-import 'widgets/onboarding_page_view.dart';
+import '../widgets/onboarding_action_buttons.dart';
+import '../widgets/onboarding_page_indicator.dart';
+import '../widgets/onboarding_page_view.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

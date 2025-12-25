@@ -2,7 +2,7 @@
 
 // ignore_for_file: constant_identifier_names
 
-abstract class  LocaleKeys {
+abstract class LocaleKeys {
   static const app_name = 'app_name';
   static const loading = 'loading';
   static const error = 'error';
@@ -23,6 +23,11 @@ abstract class  LocaleKeys {
   static const done = 'done';
   static const optional = 'optional';
   static const required = 'required';
+  static const onboarding_skip = 'onboarding_skip';
+  static const onboarding_start = 'onboarding_start';
+  static const onboarding_welcome = 'onboarding_welcome';
+  static const onboarding_quality = 'onboarding_quality';
+  static const onboarding_get_started = 'onboarding_get_started';
   static const home = 'home';
   static const cart = 'cart';
   static const favorites = 'favorites';
@@ -142,7 +147,8 @@ abstract class  LocaleKeys {
   static const mark_all_read = 'mark_all_read';
   static const clear_all = 'clear_all';
   static const clear_all_notifications = 'clear_all_notifications';
-  static const clear_all_notifications_confirm = 'clear_all_notifications_confirm';
+  static const clear_all_notifications_confirm =
+      'clear_all_notifications_confirm';
   static const just_now = 'just_now';
   static const minutes_ago = 'minutes_ago';
   static const hours_ago = 'hours_ago';
@@ -207,5 +213,6 @@ abstract class  LocaleKeys {
   static const troubleshooting_orders = 'troubleshooting_orders';
   static const troubleshooting_payment = 'troubleshooting_payment';
   static const troubleshooting_app = 'troubleshooting_app';
-
+  static const profile_updated = 'profile_updated';
+  static const profile_update_failed = 'profile_update_failed';
 }

@@ -21,6 +21,12 @@
   "optional": "Optional",
   "required": "Required",
 
+  "onboarding_skip": "Skip",
+  "onboarding_start": "Start",
+  "onboarding_welcome": "Welcome to Zahret Al-Tamoor",
+  "onboarding_quality": "Quality & Authenticity in Every Date",
+  "onboarding_get_started": "Get Started",
+
   "home": "Home",
   "cart": "Cart",
   "favorites": "Favorites",

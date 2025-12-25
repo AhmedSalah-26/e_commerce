@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
+import '../../../../generated/locale_keys.g.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 
@@ -29,12 +31,12 @@ class OnboardingActionButtons extends StatelessWidget {
       children: [
         if (!isLastPage)
           _buildActionButton(
-            isRtl ? 'تخطي' : 'Skip',
+            LocaleKeys.onboarding_skip.tr(),
             onSkip,
             isOutlined: true,
           ),
         _buildActionButton(
-          isLastPage ? (isRtl ? 'ابدأ' : 'Start') : (isRtl ? 'التالي' : 'Next'),
+          isLastPage ? LocaleKeys.onboarding_start.tr() : LocaleKeys.next.tr(),
           onNextPage,
           isOutlined: false,
         ),

@@ -21,6 +21,12 @@
   "optional": "اختياري",
   "required": "مطلوب",
 
+  "onboarding_skip": "تخطي",
+  "onboarding_start": "ابدأ",
+  "onboarding_welcome": "مرحباً بكم في متجر زهرة التمور",
+  "onboarding_quality": "جودة وأصالة في كل تمرة",
+  "onboarding_get_started": "ابدأ الآن",
+
   "home": "الرئيسية",
   "cart": "السلة",
   "favorites": "المفضلة",

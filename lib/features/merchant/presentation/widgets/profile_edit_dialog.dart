@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import 'profile_edit/profile_avatar_section.dart';
+import 'profile_edit/profile_form_fields.dart';
 
 class ProfileEditDialog extends StatefulWidget {
   final bool isRtl;
@@ -64,9 +67,7 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
       Navigator.pop(context);
       Tost.showCustomToast(
         context,
-        success
-            ? (widget.isRtl ? 'تم حفظ البيانات' : 'Profile saved')
-            : (widget.isRtl ? 'فشل في حفظ البيانات' : 'Failed to save'),
+        success ? 'profile_updated'.tr() : 'profile_update_failed'.tr(),
         backgroundColor: success ? Colors.green : Colors.red,
       );
     }
@@ -83,59 +84,18 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: Text(widget.isRtl ? 'الملف الشخصي' : 'Profile'),
+      title: Text('profile'.tr()),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: AppColours.brownLight,
-              child: Text(
-                (user.name ?? 'M')[0].toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 32,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            ProfileAvatarSection(userName: user.name),
             const SizedBox(height: 16),
-            TextField(
-              controller: TextEditingController(text: user.email),
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: widget.isRtl ? 'البريد الإلكتروني' : 'Email',
-                prefixIcon: const Icon(Icons.email_outlined),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor: Colors.grey.shade100,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: widget.isRtl ? 'الاسم' : 'Name',
-                prefixIcon: const Icon(Icons.person_outline),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: widget.isRtl ? 'رقم الهاتف' : 'Phone',
-                prefixIcon: const Icon(Icons.phone_outlined),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
+            ProfileFormFields(
+              email: user.email,
+              nameController: _nameController,
+              phoneController: _phoneController,
+              isRtl: widget.isRtl,
             ),
           ],
         ),
@@ -143,7 +103,7 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: Text(widget.isRtl ? 'إلغاء' : 'Cancel'),
+          child: Text('cancel'.tr()),
         ),
         ElevatedButton(
           onPressed: _isLoading ? null : _saveProfile,
@@ -160,7 +120,7 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
                   ),
                 )
               : Text(
-                  widget.isRtl ? 'حفظ' : 'Save',
+                  'save'.tr(),
                   style: const TextStyle(color: Colors.white),
                 ),
         ),

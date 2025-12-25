@@ -5,6 +5,7 @@ import 'coupon_card.dart';
 class CouponsListView extends StatelessWidget {
   final List<CouponEntity> coupons;
   final String storeId;
+  final bool isGlobal;
   final Function(CouponEntity) onEdit;
   final Function(CouponEntity, bool) onToggle;
   final VoidCallback onRefresh;
@@ -13,6 +14,7 @@ class CouponsListView extends StatelessWidget {
     super.key,
     required this.coupons,
     required this.storeId,
+    this.isGlobal = false,
     required this.onEdit,
     required this.onToggle,
     required this.onRefresh,
@@ -29,6 +31,7 @@ class CouponsListView extends StatelessWidget {
           final coupon = coupons[index];
           return CouponCard(
             coupon: coupon,
+            isGlobal: isGlobal,
             onEdit: () => onEdit(coupon),
             onToggle: (value) => onToggle(coupon, value),
           );

@@ -58,6 +58,20 @@ class CouponRemoteDatasource {
         .toList();
   }
 
+  /// جلب الكوبونات العامة (للأدمن)
+  Future<List<CouponModel>> getGlobalCoupons() async {
+    final response = await _client
+        .from('coupons')
+        .select(
+            '*, coupon_products(product_id), coupon_categories(category_id)')
+        .isFilter('store_id', null)
+        .order('created_at', ascending: false);
+
+    return (response as List)
+        .map((json) => CouponModel.fromJson(json))
+        .toList();
+  }
+
   /// إنشاء كوبون جديد
   Future<CouponModel> createCoupon(
     CouponModel coupon, {

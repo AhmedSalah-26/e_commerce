@@ -163,3 +163,83 @@ class MerchantCouponsCubit extends Cubit<CouponState> {
     }
   }
 }
+
+/// Cubit لإدارة الكوبونات العامة (للأدمن)
+class GlobalCouponsCubit extends Cubit<CouponState> {
+  final CouponRemoteDatasource _datasource;
+
+  GlobalCouponsCubit(this._datasource) : super(CouponInitial());
+
+  /// جلب الكوبونات العامة
+  Future<void> loadGlobalCoupons() async {
+    emit(MerchantCouponsLoading());
+
+    try {
+      final coupons = await _datasource.getGlobalCoupons();
+      emit(MerchantCouponsLoaded(coupons));
+    } catch (e) {
+      emit(MerchantCouponsError(e.toString()));
+    }
+  }
+
+  /// إنشاء كوبون عام
+  Future<void> createGlobalCoupon(CouponModel coupon) async {
+    emit(CouponSaving());
+
+    try {
+      await _datasource.createCoupon(coupon);
+      emit(CouponSaved());
+      loadGlobalCoupons();
+    } catch (e) {
+      final errorMsg = e.toString().toLowerCase();
+      if (errorMsg.contains('unique') ||
+          errorMsg.contains('duplicate') ||
+          errorMsg.contains('23505')) {
+        emit(const MerchantCouponsError('DUPLICATE_CODE'));
+      } else {
+        emit(MerchantCouponsError(e.toString()));
+      }
+    }
+  }
+
+  /// تحديث كوبون عام
+  Future<void> updateGlobalCoupon(CouponModel coupon) async {
+    emit(CouponSaving());
+
+    try {
+      await _datasource.updateCoupon(coupon);
+      emit(CouponSaved());
+      loadGlobalCoupons();
+    } catch (e) {
+      emit(MerchantCouponsError(e.toString()));
+    }
+  }
+
+  /// حذف كوبون عام
+  Future<void> deleteGlobalCoupon(String couponId) async {
+    try {
+      await _datasource.deleteCoupon(couponId);
+      emit(CouponDeleted());
+      loadGlobalCoupons();
+    } catch (e) {
+      final errorMsg = e.toString().toLowerCase();
+      if (errorMsg.contains('23503') ||
+          errorMsg.contains('foreign key') ||
+          errorMsg.contains('still referenced')) {
+        emit(const MerchantCouponsError('COUPON_IN_USE'));
+      } else {
+        emit(MerchantCouponsError(e.toString()));
+      }
+    }
+  }
+
+  /// تفعيل/تعطيل كوبون عام
+  Future<void> toggleGlobalCouponStatus(String couponId, bool isActive) async {
+    try {
+      await _datasource.toggleCouponStatus(couponId, isActive);
+      loadGlobalCoupons();
+    } catch (e) {
+      emit(MerchantCouponsError(e.toString()));
+    }
+  }
+}

@@ -3,6 +3,8 @@
 -- Strict validation: reject coupon if cart has non-covered products
 -- ============================================================
 
+DROP FUNCTION IF EXISTS validate_coupon(VARCHAR, UUID, DECIMAL, UUID[], UUID);
+
 CREATE OR REPLACE FUNCTION validate_coupon(
     p_coupon_code VARCHAR,
     p_user_id UUID,
@@ -13,7 +15,7 @@ CREATE OR REPLACE FUNCTION validate_coupon(
 RETURNS JSON
 LANGUAGE plpgsql
 SECURITY DEFINER
-AS $$
+AS $func$
 DECLARE
     v_coupon RECORD;
     v_user_usage_count INTEGER;
@@ -96,13 +98,26 @@ BEGIN
     END IF;
     
     -- التحقق من المتجر (إذا كان الكوبون خاص بمتجر)
-    IF v_coupon.store_id IS NOT NULL AND v_coupon.store_id != p_store_id THEN
-        RETURN json_build_object(
-            'valid', false,
-            'error_code', 'MERCHANT_MISMATCH',
-            'error_ar', 'هذا الكوبون خاص بمتجر آخر',
-            'error_en', 'This coupon is for another store'
-        );
+    -- لو الكوبون له store_id، لازم كل المنتجات في السلة تكون من نفس المتجر
+    IF v_coupon.store_id IS NOT NULL THEN
+        -- التحقق من أن كل منتجات السلة تنتمي لنفس المتجر
+        IF p_product_ids IS NOT NULL AND array_length(p_product_ids, 1) > 0 THEN
+            -- البحث عن منتجات من متاجر أخرى
+            SELECT ARRAY_AGG(p.id) INTO v_non_matching_products
+            FROM products p
+            WHERE p.id = ANY(p_product_ids)
+            AND (p.merchant_id IS NULL OR p.merchant_id != v_coupon.store_id);
+            
+            -- لو فيه منتجات من متاجر أخرى، رفض الكوبون
+            IF v_non_matching_products IS NOT NULL AND array_length(v_non_matching_products, 1) > 0 THEN
+                RETURN json_build_object(
+                    'valid', false,
+                    'error_code', 'CART_HAS_OTHER_STORE_PRODUCTS',
+                    'error_ar', 'السلة تحتوي على منتجات من متاجر أخرى. هذا الكوبون خاص بمتجر واحد فقط',
+                    'error_en', 'Cart contains products from other stores. This coupon is for one store only'
+                );
+            END IF;
+        END IF;
     END IF;
     
     -- التحقق من المنتجات المحددة (إذا كان الكوبون خاص بمنتجات معينة)
@@ -125,6 +140,7 @@ BEGIN
         -- التحقق من أن السلة تحتوي فقط على منتجات من الكوبون
         IF p_product_ids IS NOT NULL AND array_length(p_product_ids, 1) > 0 THEN
             -- البحث عن منتجات غير مشمولة في السلة
+            v_non_matching_products := NULL;
             SELECT ARRAY_AGG(pid) INTO v_non_matching_products
             FROM unnest(p_product_ids) AS pid
             WHERE NOT (pid = ANY(v_coupon_product_ids));
@@ -167,6 +183,7 @@ BEGIN
             AND p.category_id = ANY(v_coupon_category_ids);
             
             -- البحث عن منتجات غير مشمولة (ليست في الفئات)
+            v_non_matching_products := NULL;
             SELECT ARRAY_AGG(pid) INTO v_non_matching_products
             FROM unnest(p_product_ids) AS pid
             WHERE NOT (pid = ANY(COALESCE(v_products_in_categories, ARRAY[]::UUID[])));
@@ -212,7 +229,7 @@ BEGIN
         'scope', v_coupon.scope
     );
 END;
-$$;
+$func$;
 
 -- منح الصلاحيات
 GRANT EXECUTE ON FUNCTION validate_coupon TO authenticated;

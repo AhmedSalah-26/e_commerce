@@ -7,12 +7,14 @@ import 'coupon_scope_badge.dart';
 
 class CouponCard extends StatelessWidget {
   final CouponEntity coupon;
+  final bool isGlobal;
   final VoidCallback onEdit;
   final ValueChanged<bool> onToggle;
 
   const CouponCard({
     super.key,
     required this.coupon,
+    this.isGlobal = false,
     required this.onEdit,
     required this.onToggle,
   });
@@ -29,7 +31,7 @@ class CouponCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
+            _buildHeader(locale),
             const SizedBox(height: 12),
             _buildTitle(locale),
             if (coupon.getDescription(locale) != null) ...[
@@ -53,7 +55,7 @@ class CouponCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(String locale) {
     return Row(
       children: [
         Container(
@@ -72,6 +74,29 @@ class CouponCard extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
+        if (isGlobal)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.green.shade100,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.public, size: 14, color: Colors.green.shade700),
+                const SizedBox(width: 4),
+                Text(
+                  locale == 'ar' ? 'عام' : 'Global',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.green.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ),
         if (coupon.isProductSpecific)
           CouponScopeBadge(
             icon: Icons.inventory_2,

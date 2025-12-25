@@ -2,8 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../categories/domain/entities/category_entity.dart';
-import '../../../products/domain/entities/product_entity.dart';
 import '../../data/models/coupon_model.dart';
 import '../../domain/entities/coupon_entity.dart';
 import '../cubit/coupon_cubit.dart';
@@ -14,32 +12,19 @@ import '../widgets/coupon_form/discount_type_selector.dart';
 import '../widgets/coupon_form/discount_value_fields.dart';
 import '../widgets/coupon_form/coupon_limits_fields.dart';
 import '../widgets/coupon_form/coupon_dates_fields.dart';
-import '../widgets/coupon_form/coupon_scope_selector.dart';
-import '../widgets/coupon_form/product_selection_section.dart';
-import '../widgets/coupon_form/category_selection_section.dart';
-import '../widgets/coupon_form/product_selection_dialog.dart';
-import '../widgets/coupon_form/category_selection_dialog.dart';
 import '../widgets/coupon_form/coupon_active_switch.dart';
 
-class CouponFormPage extends StatefulWidget {
+/// صفحة إنشاء/تعديل كوبون عام (للأدمن)
+class GlobalCouponFormPage extends StatefulWidget {
   final CouponEntity? coupon;
-  final String storeId;
-  final List<ProductEntity> storeProducts;
-  final List<CategoryEntity> categories;
 
-  const CouponFormPage({
-    super.key,
-    this.coupon,
-    required this.storeId,
-    required this.storeProducts,
-    required this.categories,
-  });
+  const GlobalCouponFormPage({super.key, this.coupon});
 
   @override
-  State<CouponFormPage> createState() => _CouponFormPageState();
+  State<GlobalCouponFormPage> createState() => _GlobalCouponFormPageState();
 }
 
-class _CouponFormPageState extends State<CouponFormPage> {
+class _GlobalCouponFormPageState extends State<GlobalCouponFormPage> {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _codeController;
@@ -51,12 +36,9 @@ class _CouponFormPageState extends State<CouponFormPage> {
   late final TextEditingController _usageLimitController;
 
   String _discountType = 'percentage';
-  String _scope = 'all';
   DateTime _startDate = DateTime.now();
   DateTime? _endDate;
   bool _isActive = true;
-  List<String> _selectedProductIds = [];
-  List<String> _selectedCategoryIds = [];
 
   bool get isEditing => widget.coupon != null;
 
@@ -82,12 +64,9 @@ class _CouponFormPageState extends State<CouponFormPage> {
 
     if (c != null) {
       _discountType = c.discountType;
-      _scope = c.scope;
       _startDate = c.startDate;
       _endDate = c.endDate;
       _isActive = c.isActive;
-      _selectedProductIds = List.from(c.productIds);
-      _selectedCategoryIds = List.from(c.categoryIds);
     }
   }
 
@@ -105,7 +84,9 @@ class _CouponFormPageState extends State<CouponFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<MerchantCouponsCubit, CouponState>(
+    final isRtl = context.locale.languageCode == 'ar';
+
+    return BlocConsumer<GlobalCouponsCubit, CouponState>(
       listenWhen: (previous, current) => current is CouponSaved,
       listener: (context, state) {
         if (state is CouponSaved && context.mounted) {
@@ -115,7 +96,7 @@ class _CouponFormPageState extends State<CouponFormPage> {
       builder: (context, state) {
         final isLoading = state is CouponSaving;
         return Scaffold(
-          appBar: _buildAppBar(),
+          appBar: _buildAppBar(isRtl),
           body: _buildBody(),
           bottomNavigationBar: _buildFormActions(isLoading),
         );
@@ -161,7 +142,7 @@ class _CouponFormPageState extends State<CouponFormPage> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(bool isRtl) {
     return AppBar(
       backgroundColor: AppColours.brownLight,
       leading: IconButton(
@@ -169,15 +150,22 @@ class _CouponFormPageState extends State<CouponFormPage> {
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
-        isEditing ? 'edit_coupon'.tr() : 'add_coupon'.tr(),
+        isEditing
+            ? (isRtl ? 'تعديل كوبون عام' : 'Edit Global Coupon')
+            : (isRtl ? 'إضافة كوبون عام' : 'Add Global Coupon'),
         style: const TextStyle(
-            fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
       ),
       centerTitle: true,
     );
   }
 
   Widget _buildBody() {
+    final isRtl = context.locale.languageCode == 'ar';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Form(
@@ -185,6 +173,33 @@ class _CouponFormPageState extends State<CouponFormPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Info banner
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue.shade700),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      isRtl
+                          ? 'الكوبونات العامة تعمل على جميع المنتجات من جميع التجار'
+                          : 'Global coupons work on all products from all merchants',
+                      style: TextStyle(
+                        color: Colors.blue.shade700,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             CouponCodeField(controller: _codeController, isEditing: isEditing),
             const SizedBox(height: 16),
             CouponNamesFields(
@@ -215,31 +230,6 @@ class _CouponFormPageState extends State<CouponFormPage> {
               onEndDateChanged: (d) => setState(() => _endDate = d),
             ),
             const SizedBox(height: 16),
-            CouponScopeSelector(
-              selectedScope: _scope,
-              onChanged: (scope) => setState(() => _scope = scope),
-            ),
-            if (_scope == 'products') ...[
-              const SizedBox(height: 16),
-              ProductSelectionSection(
-                selectedProductIds: _selectedProductIds,
-                storeProducts: widget.storeProducts,
-                onSelectProducts: _showProductSelectionDialog,
-                onRemoveProduct: (id) =>
-                    setState(() => _selectedProductIds.remove(id)),
-              ),
-            ],
-            if (_scope == 'categories') ...[
-              const SizedBox(height: 16),
-              CategorySelectionSection(
-                selectedCategoryIds: _selectedCategoryIds,
-                categories: widget.categories,
-                onSelectCategories: _showCategorySelectionDialog,
-                onRemoveCategory: (id) =>
-                    setState(() => _selectedCategoryIds.remove(id)),
-              ),
-            ],
-            const SizedBox(height: 16),
             CouponActiveSwitch(
               isActive: _isActive,
               onChanged: (v) => setState(() => _isActive = v),
@@ -252,20 +242,6 @@ class _CouponFormPageState extends State<CouponFormPage> {
 
   void _save() {
     if (!_formKey.currentState!.validate()) return;
-
-    if (_scope == 'products' && _selectedProductIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('no_products_selected'.tr())),
-      );
-      return;
-    }
-
-    if (_scope == 'categories' && _selectedCategoryIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('no_categories_selected'.tr())),
-      );
-      return;
-    }
 
     final coupon = CouponModel(
       id: widget.coupon?.id ?? '',
@@ -286,46 +262,20 @@ class _CouponFormPageState extends State<CouponFormPage> {
       usageLimitPerUser: 1,
       startDate: _startDate,
       endDate: _endDate,
-      scope: _scope,
+      scope: 'all', // Global coupons always apply to all
       isActive: _isActive,
-      storeId: widget.storeId,
+      storeId: null, // NULL = global coupon
       createdAt: widget.coupon?.createdAt ?? DateTime.now(),
-      productIds: _scope == 'products' ? _selectedProductIds : [],
-      categoryIds: _scope == 'categories' ? _selectedCategoryIds : [],
+      productIds: [],
+      categoryIds: [],
     );
 
-    final cubit = context.read<MerchantCouponsCubit>();
-    final productIds = _scope == 'products' ? _selectedProductIds : null;
-    final categoryIds = _scope == 'categories' ? _selectedCategoryIds : null;
+    final cubit = context.read<GlobalCouponsCubit>();
 
     if (isEditing) {
-      cubit.updateCoupon(coupon, widget.storeId,
-          productIds: productIds, categoryIds: categoryIds);
+      cubit.updateGlobalCoupon(coupon);
     } else {
-      cubit.createCoupon(coupon, widget.storeId,
-          productIds: productIds, categoryIds: categoryIds);
+      cubit.createGlobalCoupon(coupon);
     }
-  }
-
-  void _showProductSelectionDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => ProductSelectionDialog(
-        products: widget.storeProducts,
-        selectedIds: _selectedProductIds,
-        onConfirm: (ids) => setState(() => _selectedProductIds = ids),
-      ),
-    );
-  }
-
-  void _showCategorySelectionDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => CategorySelectionDialog(
-        categories: widget.categories,
-        selectedIds: _selectedCategoryIds,
-        onConfirm: (ids) => setState(() => _selectedCategoryIds = ids),
-      ),
-    );
   }
 }

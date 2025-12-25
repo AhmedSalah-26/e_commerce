@@ -356,5 +356,10 @@
   "no_active_coupons": "No active coupons",
   "no_inactive_coupons": "No inactive coupons",
   "cart_has_non_covered_products": "Cart contains products not covered by this coupon. Please remove them first",
-  "cart_has_non_covered_categories": "Cart contains products from categories not covered by this coupon. Please remove them first"
+  "cart_has_non_covered_categories": "Cart contains products from categories not covered by this coupon. Please remove them first",
+  "cart_has_other_store_products": "Cart contains products from other stores. This coupon is for one store only",
+  "global_coupons": "Global Coupons",
+  "add_global_coupon": "Add Global Coupon",
+  "edit_global_coupon": "Edit Global Coupon",
+  "global_coupon_info": "Global coupons work on all products from all merchants"
 }

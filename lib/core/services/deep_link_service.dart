@@ -33,34 +33,55 @@ class DeepLinkService {
 
   /// Convert URI to app path
   String? _uriToPath(Uri uri) {
-    List<String> segments = [];
+    debugPrint('Deep Link parsing URI: $uri');
+    debugPrint('  - scheme: ${uri.scheme}');
+    debugPrint('  - host: ${uri.host}');
+    debugPrint('  - path: ${uri.path}');
+    debugPrint('  - pathSegments: ${uri.pathSegments}');
+    debugPrint('  - queryParameters: ${uri.queryParameters}');
 
-    // Handle ChottuLink URLs: https://zaharadates.chottu.link/product/123
-    if (uri.host.contains('chottu.link') || uri.host.contains('zaharadates')) {
-      segments = uri.pathSegments;
-    }
-    // Handle legacy custom scheme: tamorzahra://product/123
-    else if (uri.scheme == 'tamorzahra') {
-      segments = uri.pathSegments;
-    }
-    // Handle website URLs: https://ahmedmohamedsalah.com/product/123
-    else if (uri.scheme == 'https' || uri.scheme == 'http') {
-      segments = uri.pathSegments;
-    }
+    List<String> segments = uri.pathSegments;
 
-    if (segments.isEmpty) return '/home';
+    // Always check query parameters first (for ?id= format)
+    final queryId = uri.queryParameters['id'];
+
+    if (segments.isEmpty) {
+      // No path segments, check if we have query params in the full path
+      if (queryId != null && queryId.isNotEmpty) {
+        // Determine type from path
+        if (uri.path.contains('product')) {
+          return '/product/$queryId';
+        } else if (uri.path.contains('store')) {
+          return '/store/$queryId';
+        }
+      }
+      return '/home';
+    }
 
     switch (segments.first) {
       case 'product':
+        // Handle /product/123 format
         if (segments.length > 1) {
           return '/product/${segments[1]}';
         }
+        // Handle /product?id=123 format
+        if (queryId != null && queryId.isNotEmpty) {
+          return '/product/$queryId';
+        }
+        debugPrint('Product link missing ID, redirecting to home');
         return '/home';
 
       case 'store':
+        // Handle /store/456 or /store?id=456
         if (segments.length > 1) {
           final name = uri.queryParameters['name'];
           return '/store/${segments[1]}${name != null ? '?name=$name' : ''}';
+        }
+        // Check query parameter
+        final storeId = uri.queryParameters['id'];
+        if (storeId != null) {
+          final name = uri.queryParameters['name'];
+          return '/store/$storeId${name != null ? '?name=$name' : ''}';
         }
         return '/home';
 
@@ -80,6 +101,16 @@ class DeepLinkService {
         return '/favorites';
 
       default:
+        // Handle short paths like /p123 for products, /s456 for stores
+        final firstSegment = segments.first;
+        if (firstSegment.startsWith('p') && firstSegment.length > 1) {
+          final productId = firstSegment.substring(1);
+          return '/product/$productId';
+        }
+        if (firstSegment.startsWith('s') && firstSegment.length > 1) {
+          final storeId = firstSegment.substring(1);
+          return '/store/$storeId';
+        }
         return '/home';
     }
   }

@@ -1,6 +1,4 @@
-import 'package:chottu_link/chottu_link.dart';
-import 'package:chottu_link/dynamic_link/cl_dynamic_link_behaviour.dart';
-import 'package:chottu_link/dynamic_link/cl_dynamic_link_parameters.dart';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../../features/products/domain/entities/product_entity.dart';
@@ -8,94 +6,60 @@ import '../../features/products/domain/entities/product_entity.dart';
 /// Utility class for sharing content
 class ShareUtils {
   static const String _domain = 'zaharadates.chottu.link';
-  static const String _fallbackUrl = 'https://ahmedmohamedsalah.com';
 
-  /// Generate deep link for a product using ChottuLink
-  static Future<String?> getProductLink(
+  /// Generate deep link for a product - using direct URL format
+  static Future<String> getProductLink(
     String productId, {
     String? productName,
     String? imageUrl,
   }) async {
-    String? generatedLink;
-
-    final parameters = CLDynamicLinkParameters(
-      link: Uri.parse('$_fallbackUrl/product/$productId'),
-      domain: _domain,
-      androidBehaviour: CLDynamicLinkBehaviour.app,
-      iosBehaviour: CLDynamicLinkBehaviour.app,
-      linkName: productName ?? 'Product $productId',
-      selectedPath: 'product/$productId',
-      socialTitle: productName,
-      socialImageUrl: imageUrl,
-      utmSource: 'app',
-      utmMedium: 'share',
-      utmCampaign: 'product_share',
-    );
-
-    ChottuLink.createDynamicLink(
-      parameters: parameters,
-      onSuccess: (link) {
-        generatedLink = link;
-        debugPrint('✅ Product Link: $link');
-      },
-      onError: (error) {
-        debugPrint('❌ Error creating product link: ${error.description}');
-      },
-    );
-
-    // Wait a bit for the async callback
-    await Future.delayed(const Duration(milliseconds: 500));
-    return generatedLink ?? 'https://$_domain/product/$productId';
+    // Use direct URL with product ID
+    final link = 'https://$_domain/product/$productId';
+    debugPrint('✅ Product Link: $link');
+    return link;
   }
 
-  /// Generate deep link for a store using ChottuLink
-  static Future<String?> getStoreLink(
+  /// Generate deep link for a store - using direct URL format
+  static Future<String> getStoreLink(
     String merchantId, {
     String? storeName,
     String? imageUrl,
   }) async {
-    String? generatedLink;
-
-    final parameters = CLDynamicLinkParameters(
-      link: Uri.parse('$_fallbackUrl/store/$merchantId'),
-      domain: _domain,
-      androidBehaviour: CLDynamicLinkBehaviour.app,
-      iosBehaviour: CLDynamicLinkBehaviour.app,
-      linkName: storeName ?? 'Store $merchantId',
-      selectedPath: 'store/$merchantId',
-      socialTitle: storeName,
-      socialImageUrl: imageUrl,
-      utmSource: 'app',
-      utmMedium: 'share',
-      utmCampaign: 'store_share',
-    );
-
-    ChottuLink.createDynamicLink(
-      parameters: parameters,
-      onSuccess: (link) {
-        generatedLink = link;
-        debugPrint('✅ Store Link: $link');
-      },
-      onError: (error) {
-        debugPrint('❌ Error creating store link: ${error.description}');
-      },
-    );
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    return generatedLink ?? 'https://$_domain/store/$merchantId';
+    // Use direct URL with merchant ID
+    final link = 'https://$_domain/store/$merchantId';
+    debugPrint('✅ Store Link: $link');
+    return link;
   }
 
-  /// Simple sync method for quick link generation (fallback)
+  /// Simple sync method for quick link generation
   static String getProductLinkSync(String productId) {
     return 'https://$_domain/product/$productId';
   }
 
-  /// Simple sync method for store link (fallback)
+  /// Simple sync method for store link
   static String getStoreLinkSync(String merchantId) {
     return 'https://$_domain/store/$merchantId';
   }
 
-  /// Generate shareable text for a product
+  /// Generate shareable text for a product (async version)
+  static Future<String> getProductShareTextAsync(
+    ProductEntity product,
+    String locale,
+  ) async {
+    final link = await getProductLink(
+      product.id,
+      productName: product.name,
+      imageUrl: product.mainImage,
+    );
+
+    if (locale == 'ar') {
+      return 'شوف المنتج ده: ${product.name}\n$link';
+    } else {
+      return 'Check out this product: ${product.name}\n$link';
+    }
+  }
+
+  /// Generate shareable text for a product (sync fallback)
   static String getProductShareText(ProductEntity product, String locale) {
     final link = getProductLinkSync(product.id);
 

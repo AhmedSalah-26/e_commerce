@@ -1,3 +1,4 @@
+import 'package:app_links/app_links.dart';
 import 'package:chottu_link/chottu_link.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
-  // Initialize ChottuLink SDK
+  // Initialize ChottuLink SDK (for analytics only, not for deep link handling)
   await ChottuLink.init(apiKey: "c_app_aj45jOSPqhk4Ea4M2v9cY6k6a1CeSMgt");
 
   // Initialize dependencies (Supabase, etc.)
@@ -88,6 +89,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  late AppLinks _appLinks;
+
   @override
   void initState() {
     super.initState();
@@ -97,11 +100,32 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  /// Initialize deep links listener using ChottuLink
+  /// Initialize deep links listener using app_links package
   void _initDeepLinks() {
-    ChottuLink.onLinkReceived.listen((String link) {
-      debugPrint('ChottuLink received: $link');
-      DeepLinkService().handleDeepLink(Uri.parse(link));
+    _appLinks = AppLinks();
+
+    // Handle initial link (app opened from link)
+    _appLinks.getInitialLink().then((uri) {
+      if (uri != null) {
+        debugPrint('═══════════════════════════════════════════════════════');
+        debugPrint('🔗 INITIAL DEEP LINK');
+        debugPrint('URI: $uri');
+        debugPrint('═══════════════════════════════════════════════════════');
+        DeepLinkService().handleDeepLink(uri);
+      }
+    });
+
+    // Handle links while app is running
+    _appLinks.uriLinkStream.listen((Uri uri) {
+      debugPrint('═══════════════════════════════════════════════════════');
+      debugPrint('🔗 DEEP LINK RECEIVED');
+      debugPrint('URI: $uri');
+      debugPrint('  HOST: ${uri.host}');
+      debugPrint('  PATH: ${uri.path}');
+      debugPrint('  QUERY: ${uri.query}');
+      debugPrint('  QUERY PARAMS: ${uri.queryParameters}');
+      debugPrint('═══════════════════════════════════════════════════════');
+      DeepLinkService().handleDeepLink(uri);
     });
   }
 

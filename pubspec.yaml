@@ -50,6 +50,7 @@ dependencies:
   cached_network_image: ^3.4.1
   # Deep Links
   chottu_link: 1.0.19
+  app_links: ^6.3.3
   # Share
   share_plus: ^10.1.4
 

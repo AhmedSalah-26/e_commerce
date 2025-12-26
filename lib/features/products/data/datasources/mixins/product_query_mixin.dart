@@ -137,7 +137,7 @@ mixin ProductQueryMixin {
       try {
         final storeResponse = await client
             .from('stores')
-            .select('name, phone, address, logo_url')
+            .select('name, description, phone, address, logo_url')
             .eq('merchant_id', merchantId)
             .maybeSingle();
         storeInfo = storeResponse;

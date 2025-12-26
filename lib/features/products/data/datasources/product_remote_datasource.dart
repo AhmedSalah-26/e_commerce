@@ -74,7 +74,7 @@ class ProductRemoteDataSourceImpl
         try {
           final storeResponse = await client
               .from('stores')
-              .select('name, phone, address')
+              .select('name, description, phone, address, logo_url')
               .eq('merchant_id', response['merchant_id'])
               .maybeSingle();
           storeInfo = storeResponse;

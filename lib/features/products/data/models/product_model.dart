@@ -18,6 +18,7 @@ class ProductModel extends ProductEntity {
     super.createdAt,
     super.merchantId,
     super.storeName,
+    super.storeDescription,
     super.storePhone,
     super.storeAddress,
     super.storeLogo,
@@ -45,11 +46,13 @@ class ProductModel extends ProductEntity {
 
     // Get store info from joined stores table or profiles table
     String? storeName;
+    String? storeDescription;
     String? storePhone;
     String? storeAddress;
     String? storeLogo;
     if (json['stores'] != null && json['stores'] is Map) {
       storeName = json['stores']['name'] as String?;
+      storeDescription = json['stores']['description'] as String?;
       storePhone = json['stores']['phone'] as String?;
       storeAddress = json['stores']['address'] as String?;
       storeLogo = json['stores']['logo_url'] as String?;
@@ -83,6 +86,7 @@ class ProductModel extends ProductEntity {
           : null,
       merchantId: json['merchant_id'] as String?,
       storeName: storeName,
+      storeDescription: storeDescription,
       storePhone: storePhone,
       storeAddress: storeAddress,
       storeLogo: storeLogo,
@@ -143,6 +147,7 @@ class ProductModel extends ProductEntity {
     DateTime? createdAt,
     String? merchantId,
     String? storeName,
+    String? storeDescription,
     String? storePhone,
     String? storeAddress,
     String? storeLogo,
@@ -166,6 +171,7 @@ class ProductModel extends ProductEntity {
       createdAt: createdAt ?? this.createdAt,
       merchantId: merchantId ?? this.merchantId,
       storeName: storeName ?? this.storeName,
+      storeDescription: storeDescription ?? this.storeDescription,
       storePhone: storePhone ?? this.storePhone,
       storeAddress: storeAddress ?? this.storeAddress,
       storeLogo: storeLogo ?? this.storeLogo,

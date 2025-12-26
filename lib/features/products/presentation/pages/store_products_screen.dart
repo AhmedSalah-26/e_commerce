@@ -94,6 +94,7 @@ class _StoreProductsScreenState extends State<StoreProductsScreen>
   Widget _buildHeader() {
     return StoreHeaderCard(
       storeName: storeState.storeName,
+      storeDescription: storeState.storeDescription,
       storeAddress: storeState.storeAddress,
       storePhone: storeState.storePhone,
       storeLogo: storeState.storeLogo,

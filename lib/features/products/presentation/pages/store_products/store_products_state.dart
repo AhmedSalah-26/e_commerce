@@ -11,6 +11,7 @@ class StoreProductsState {
 
   // Store info
   String? storeName;
+  String? storeDescription;
   String? storeAddress;
   String? storePhone;
   String? storeLogo;
@@ -59,6 +60,7 @@ class StoreProductsState {
   void updateStoreInfo(List<ProductEntity> products) {
     if (products.isNotEmpty) {
       storeName ??= products.first.storeName;
+      storeDescription ??= products.first.storeDescription;
       storeAddress ??= products.first.storeAddress;
       storePhone ??= products.first.storePhone;
       storeLogo ??= products.first.storeLogo;

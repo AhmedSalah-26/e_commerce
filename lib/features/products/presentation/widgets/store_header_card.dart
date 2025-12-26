@@ -5,6 +5,7 @@ import '../../../../core/theme/app_text_style.dart';
 
 class StoreHeaderCard extends StatelessWidget {
   final String? storeName;
+  final String? storeDescription;
   final String? storeAddress;
   final String? storePhone;
   final String? storeLogo;
@@ -12,6 +13,7 @@ class StoreHeaderCard extends StatelessWidget {
   const StoreHeaderCard({
     super.key,
     this.storeName,
+    this.storeDescription,
     this.storeAddress,
     this.storePhone,
     this.storeLogo,
@@ -48,6 +50,17 @@ class StoreHeaderCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildStoreName(displayName),
+                if (storeDescription != null &&
+                    storeDescription!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  AutoSizeText(
+                    storeDescription!,
+                    style: AppTextStyle.normal_12_greyDark,
+                    maxLines: 2,
+                    minFontSize: 10,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
                 if (_hasContactInfo) ...[
                   const SizedBox(height: 4),
                   _buildContactInfo(),

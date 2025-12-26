@@ -18,6 +18,7 @@ class ProductEntity extends Equatable {
   final String? merchantId;
   // Store info
   final String? storeName;
+  final String? storeDescription;
   final String? storePhone;
   final String? storeAddress;
   final String? storeLogo;
@@ -42,6 +43,7 @@ class ProductEntity extends Equatable {
     this.createdAt,
     this.merchantId,
     this.storeName,
+    this.storeDescription,
     this.storePhone,
     this.storeAddress,
     this.storeLogo,
@@ -102,6 +104,7 @@ class ProductEntity extends Equatable {
         createdAt,
         merchantId,
         storeName,
+        storeDescription,
         storePhone,
         storeAddress,
         storeLogo,

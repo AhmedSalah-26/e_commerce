@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/repository_helper.dart';
 import '../../domain/entities/product_entity.dart';
+import '../../domain/enums/sort_option.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../datasources/product_remote_datasource.dart';
 import '../models/product_model.dart';
@@ -47,6 +48,7 @@ class ProductRepositoryImpl implements ProductRepository {
     String? categoryId,
     double? minPrice,
     double? maxPrice,
+    SortOption? sortOption,
   }) {
     return _remoteDataSource
         .searchProducts(query,
@@ -55,7 +57,8 @@ class ProductRepositoryImpl implements ProductRepository {
             limit: limit,
             categoryId: categoryId,
             minPrice: minPrice,
-            maxPrice: maxPrice)
+            maxPrice: maxPrice,
+            sortOption: sortOption)
         .toEither();
   }
 

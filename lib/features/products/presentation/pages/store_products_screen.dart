@@ -53,6 +53,7 @@ class _StoreProductsScreenState extends State<StoreProductsScreen>
           initialPriceRange: storeState.priceRange,
           minPrice: storeState.minPrice,
           maxPrice: storeState.maxPrice,
+          initialSortOption: storeState.sortOption,
           onApply: applyFilters,
         ),
       ),

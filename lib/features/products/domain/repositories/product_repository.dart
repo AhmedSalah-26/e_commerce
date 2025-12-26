@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/product_entity.dart';
+import '../enums/sort_option.dart';
 
 /// Abstract repository interface for products
 abstract class ProductRepository {
@@ -25,6 +26,7 @@ abstract class ProductRepository {
     String? categoryId,
     double? minPrice,
     double? maxPrice,
+    SortOption? sortOption,
   });
 
   /// Get featured products

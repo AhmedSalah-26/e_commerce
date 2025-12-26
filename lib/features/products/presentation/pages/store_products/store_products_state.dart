@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../../domain/enums/sort_option.dart';
 
 /// State class for store products screen
 class StoreProductsState {
@@ -26,6 +27,7 @@ class StoreProductsState {
   RangeValues priceRange = const RangeValues(0, 10000);
   double minPrice = 0;
   double maxPrice = 10000;
+  SortOption sortOption = SortOption.newest;
 
   List<ProductEntity> get filteredProducts {
     var filtered = products;
@@ -49,13 +51,31 @@ class StoreProductsState {
       return price >= priceRange.start && price <= priceRange.end;
     }).toList();
 
+    // Apply sorting
+    switch (sortOption) {
+      case SortOption.newest:
+        filtered.sort((a, b) => (b.createdAt ?? DateTime(2000))
+            .compareTo(a.createdAt ?? DateTime(2000)));
+        break;
+      case SortOption.priceLowToHigh:
+        filtered.sort((a, b) => a.effectivePrice.compareTo(b.effectivePrice));
+        break;
+      case SortOption.priceHighToLow:
+        filtered.sort((a, b) => b.effectivePrice.compareTo(a.effectivePrice));
+        break;
+      case SortOption.highestRated:
+        filtered.sort((a, b) => b.rating.compareTo(a.rating));
+        break;
+    }
+
     return filtered;
   }
 
   bool get hasActiveFilters =>
       selectedCategoryId != null ||
       priceRange.start > minPrice ||
-      priceRange.end < maxPrice;
+      priceRange.end < maxPrice ||
+      sortOption != SortOption.newest;
 
   void updateStoreInfo(List<ProductEntity> products) {
     if (products.isNotEmpty) {
@@ -81,5 +101,6 @@ class StoreProductsState {
     searchQuery = '';
     selectedCategoryId = null;
     priceRange = RangeValues(minPrice, maxPrice);
+    sortOption = SortOption.newest;
   }
 }

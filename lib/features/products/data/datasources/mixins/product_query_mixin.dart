@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../../core/errors/exceptions.dart';
 import '../../models/product_model.dart';
+import '../../../domain/enums/sort_option.dart';
 
 mixin ProductQueryMixin {
   SupabaseClient get client;
@@ -63,16 +64,19 @@ mixin ProductQueryMixin {
     String? categoryId,
     double? minPrice,
     double? maxPrice,
+    SortOption? sortOption,
   }) async {
     try {
       final from = page * limit;
       final to = from + limit - 1;
 
-      var queryBuilder = client
-          .from('products')
-          .select()
-          .eq('is_active', true)
-          .or('name_ar.ilike.%$query%,name_en.ilike.%$query%');
+      var queryBuilder = client.from('products').select().eq('is_active', true);
+
+      // Apply search filter only if query is not empty
+      if (query.isNotEmpty) {
+        queryBuilder =
+            queryBuilder.or('name_ar.ilike.%$query%,name_en.ilike.%$query%');
+      }
 
       if (categoryId != null) {
         queryBuilder = queryBuilder.eq('category_id', categoryId);
@@ -86,8 +90,10 @@ mixin ProductQueryMixin {
         queryBuilder = queryBuilder.lte('price', maxPrice);
       }
 
+      // Apply sorting
+      final sort = sortOption ?? SortOption.newest;
       final response = await queryBuilder
-          .order('created_at', ascending: false)
+          .order(sort.orderColumn, ascending: sort.isAscending)
           .range(from, to);
 
       return (response as List)

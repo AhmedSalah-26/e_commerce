@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../products/domain/entities/product_entity.dart';
+import '../../../products/domain/enums/sort_option.dart';
 import '../../../products/domain/repositories/product_repository.dart';
 import 'search_state.dart';
 import 'filter_state.dart';
@@ -109,6 +110,7 @@ class SearchManager {
       categoryId: _filterState.categoryId,
       minPrice: _getMinPriceFilter(),
       maxPrice: _getMaxPriceFilter(),
+      sortOption: _filterState.sortOption,
     );
 
     result.fold(
@@ -154,7 +156,7 @@ class SearchManager {
   }
 
   String _buildCacheKey(String query, FilterState filter) {
-    return '${query}_${filter.categoryId ?? ''}_${filter.priceRange.start}_${filter.priceRange.end}';
+    return '${query}_${filter.categoryId ?? ''}_${filter.priceRange.start}_${filter.priceRange.end}_${filter.sortOption.name}';
   }
 
   void _addToCache(String key, List<dynamic> results) {
@@ -185,6 +187,7 @@ class SearchManager {
       categoryId: _filterState.categoryId,
       minPrice: _getMinPriceFilter(),
       maxPrice: _getMaxPriceFilter(),
+      sortOption: _filterState.sortOption,
     );
 
     result.fold(
@@ -202,12 +205,14 @@ class SearchManager {
   void applyFilters({
     String? categoryId,
     RangeValues? priceRange,
+    SortOption? sortOption,
   }) {
     final currentQuery = _searchState.currentQuery;
     final hasFilters = categoryId != null ||
         (priceRange != null &&
             (priceRange.start > _filterState.minPrice ||
-                priceRange.end < _filterState.maxPrice));
+                priceRange.end < _filterState.maxPrice)) ||
+        (sortOption != null && sortOption != SortOption.newest);
 
     _filterState = FilterState(
       categoryId: categoryId,
@@ -215,6 +220,7 @@ class SearchManager {
           RangeValues(_filterState.minPrice, _filterState.maxPrice),
       minPrice: _filterState.minPrice,
       maxPrice: _filterState.maxPrice,
+      sortOption: sortOption ?? SortOption.newest,
     );
 
     // If no filters and no query, show categories
@@ -253,6 +259,7 @@ class SearchManager {
       categoryId: _filterState.categoryId,
       minPrice: _getMinPriceFilter(),
       maxPrice: _getMaxPriceFilter(),
+      sortOption: _filterState.sortOption,
     );
 
     result.fold(

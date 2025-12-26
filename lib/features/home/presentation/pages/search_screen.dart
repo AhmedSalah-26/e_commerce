@@ -85,8 +85,13 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
         initialPriceRange: filterState.priceRange,
         minPrice: filterState.minPrice,
         maxPrice: filterState.maxPrice,
-        onApply: (categoryId, priceRange) {
-          applyFilters(categoryId: categoryId, priceRange: priceRange);
+        initialSortOption: filterState.sortOption,
+        onApply: (categoryId, priceRange, sortOption) {
+          applyFilters(
+            categoryId: categoryId,
+            priceRange: priceRange,
+            sortOption: sortOption,
+          );
         },
       ),
     );

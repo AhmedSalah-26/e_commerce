@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../domain/search/search_manager.dart';
 import '../../domain/search/search_state.dart';
 import '../../domain/search/filter_state.dart';
+import '../../../products/domain/enums/sort_option.dart';
 import '../../../products/domain/repositories/product_repository.dart';
 
 /// Mixin to add search logic to home screen
@@ -67,10 +68,12 @@ mixin HomeSearchLogic<T extends StatefulWidget> on State<T> {
   void applyFilters({
     String? categoryId,
     RangeValues? priceRange,
+    SortOption? sortOption,
   }) {
     _searchManager.applyFilters(
       categoryId: categoryId,
       priceRange: priceRange,
+      sortOption: sortOption,
     );
   }
 

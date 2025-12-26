@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/errors/exceptions.dart';
+import '../../domain/enums/sort_option.dart';
 import '../models/product_model.dart';
 import 'mixins/product_query_mixin.dart';
 import 'mixins/product_mutation_mixin.dart';
@@ -25,6 +26,7 @@ abstract class ProductRemoteDataSource {
     String? categoryId,
     double? minPrice,
     double? maxPrice,
+    SortOption? sortOption,
   });
   Future<List<ProductModel>> getFeaturedProducts({String locale = 'ar'});
   Future<ProductModel> getProductById(String id, {String locale = 'ar'});

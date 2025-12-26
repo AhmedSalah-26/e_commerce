@@ -378,5 +378,11 @@
 
   "share": "Share",
   "share_product": "Share Product",
-  "link_copied": "Link copied"
+  "link_copied": "Link copied",
+
+  "sort_by": "Sort by",
+  "sort_newest": "Newest",
+  "sort_price_low_high": "Price: Low to High",
+  "sort_price_high_low": "Price: High to Low",
+  "sort_highest_rated": "Highest Rated"
 }

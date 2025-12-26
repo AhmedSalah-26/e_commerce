@@ -378,5 +378,11 @@
 
   "share": "مشاركة",
   "share_product": "شارك المنتج",
-  "link_copied": "تم نسخ الرابط"
+  "link_copied": "تم نسخ الرابط",
+
+  "sort_by": "ترتيب حسب",
+  "sort_newest": "الأحدث",
+  "sort_price_low_high": "السعر: من الأقل للأعلى",
+  "sort_price_high_low": "السعر: من الأعلى للأقل",
+  "sort_highest_rated": "الأعلى تقييماً"
 }

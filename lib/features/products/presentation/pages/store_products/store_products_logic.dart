@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/di/injection_container.dart';
+import '../../../domain/enums/sort_option.dart';
 import '../../../domain/repositories/product_repository.dart';
 import 'store_products_state.dart';
 
@@ -131,10 +132,12 @@ mixin StoreProductsLogic<T extends StatefulWidget> on State<T> {
     setState(() => storeState.searchQuery = '');
   }
 
-  void applyFilters(String? categoryId, RangeValues priceRange) {
+  void applyFilters(
+      String? categoryId, RangeValues priceRange, SortOption sortOption) {
     setState(() {
       storeState.selectedCategoryId = categoryId;
       storeState.priceRange = priceRange;
+      storeState.sortOption = sortOption;
     });
   }
 

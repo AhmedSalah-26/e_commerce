@@ -6,13 +6,15 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../categories/presentation/cubit/categories_state.dart';
+import '../../../products/domain/enums/sort_option.dart';
 
 class HomeFilterSheet extends StatefulWidget {
   final String? initialCategoryId;
   final RangeValues initialPriceRange;
   final double minPrice;
   final double maxPrice;
-  final Function(String?, RangeValues) onApply;
+  final SortOption initialSortOption;
+  final Function(String?, RangeValues, SortOption) onApply;
 
   const HomeFilterSheet({
     super.key,
@@ -20,6 +22,7 @@ class HomeFilterSheet extends StatefulWidget {
     required this.initialPriceRange,
     required this.minPrice,
     required this.maxPrice,
+    this.initialSortOption = SortOption.newest,
     required this.onApply,
   });
 
@@ -30,12 +33,14 @@ class HomeFilterSheet extends StatefulWidget {
 class _HomeFilterSheetState extends State<HomeFilterSheet> {
   late String? tempCategoryId;
   late RangeValues tempPriceRange;
+  late SortOption tempSortOption;
 
   @override
   void initState() {
     super.initState();
     tempCategoryId = widget.initialCategoryId;
     tempPriceRange = widget.initialPriceRange;
+    tempSortOption = widget.initialSortOption;
   }
 
   @override
@@ -75,6 +80,7 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
                       tempCategoryId = null;
                       tempPriceRange =
                           RangeValues(widget.minPrice, widget.maxPrice);
+                      tempSortOption = SortOption.newest;
                     });
                   },
                   child: Text('clear_all'.tr(),
@@ -83,6 +89,11 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
               ],
             ),
             const SizedBox(height: 20),
+            // Sort options
+            Text('sort_by'.tr(), style: AppTextStyle.semiBold_16_dark_brown),
+            const SizedBox(height: 12),
+            _buildSortOptions(),
+            const SizedBox(height: 24),
             // Category filter
             Text('categories'.tr(), style: AppTextStyle.semiBold_16_dark_brown),
             const SizedBox(height: 12),
@@ -146,7 +157,8 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  widget.onApply(tempCategoryId, tempPriceRange);
+                  widget.onApply(
+                      tempCategoryId, tempPriceRange, tempSortOption);
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
@@ -163,6 +175,34 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSortOptions() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: SortOption.values.map((option) {
+        final isSelected = tempSortOption == option;
+        return GestureDetector(
+          onTap: () => setState(() => tempSortOption = option),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColours.brownLight : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColours.brownLight),
+            ),
+            child: Text(
+              option.translationKey.tr(),
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppColours.brownLight,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -44,10 +45,12 @@ class ProductStoreInfo extends StatelessWidget {
                         size: 14, color: AppColours.brownMedium),
                     const SizedBox(width: 4),
                     Flexible(
-                      child: Text(
+                      child: AutoSizeText(
                         product.storeName!,
                         style: AppTextStyle.semiBold_16_dark_brown
                             .copyWith(fontSize: 12),
+                        maxLines: 1,
+                        minFontSize: 8,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),

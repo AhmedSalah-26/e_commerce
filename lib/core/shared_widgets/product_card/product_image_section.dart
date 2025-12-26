@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +11,7 @@ import '../../../features/products/domain/entities/product_entity.dart';
 import '../../theme/app_colors.dart';
 import '../toast.dart';
 
-/// Image section with discount badge and favorite button
+/// Image section with favorite button (badges handled by parent)
 class ProductImageSection extends StatelessWidget {
   final ProductEntity product;
 
@@ -24,8 +23,6 @@ class ProductImageSection extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         _buildImageContainer(),
-        if (product.hasDiscount && !product.isOutOfStock)
-          _DiscountBadge(percentage: product.discountPercentage),
         Positioned(
           bottom: 8,
           right: 8,
@@ -116,37 +113,6 @@ class _ImageLoading extends StatelessWidget {
       child: CircularProgressIndicator(
         color: AppColours.brownLight,
         strokeWidth: 2,
-      ),
-    );
-  }
-}
-
-/// Discount badge widget
-class _DiscountBadge extends StatelessWidget {
-  final int percentage;
-
-  const _DiscountBadge({required this.percentage});
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      top: 8,
-      left: 8,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: AppColours.brownLight,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          '-$percentage%',
-          textDirection: ui.TextDirection.ltr,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
       ),
     );
   }

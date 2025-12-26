@@ -174,7 +174,8 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
           if (parentOrder.createdAt != null) ...[
             const SizedBox(height: 4),
             Text(
-              DateFormat('dd/MM/yyyy - hh:mm a').format(parentOrder.createdAt!),
+              DateFormat('dd/MM/yyyy - hh:mm a', context.locale.languageCode)
+                  .format(parentOrder.createdAt!),
               style: AppTextStyle.normal_12_greyDark,
             ),
           ],

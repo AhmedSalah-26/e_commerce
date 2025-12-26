@@ -37,6 +37,7 @@ class ParentOrderItemCard extends StatelessWidget {
     final h = MediaQuery.of(context).size.height;
     final fs = w * 0.04;
     final isRtl = LocaleHelper.isArabic(context);
+    final locale = context.locale.languageCode;
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
@@ -59,7 +60,7 @@ class ParentOrderItemCard extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildHeader(w, h, fs),
+              _buildHeader(w, h, fs, locale),
               const SizedBox(height: 8),
               _buildFooter(fs),
             ],
@@ -69,12 +70,12 @@ class ParentOrderItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(double w, double h, double fs) {
+  Widget _buildHeader(double w, double h, double fs, String locale) {
     return Row(
       children: [
         _buildImage(h * 0.08),
         SizedBox(width: w * 0.03),
-        Expanded(child: _buildDetails(fs)),
+        Expanded(child: _buildDetails(fs, locale)),
         SizedBox(width: w * 0.03),
         _buildStatusBadge(fs),
       ],
@@ -108,7 +109,7 @@ class ParentOrderItemCard extends StatelessWidget {
             color: AppColours.brownMedium, size: 32),
       );
 
-  Widget _buildDetails(double fs) {
+  Widget _buildDetails(double fs, String locale) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -118,7 +119,7 @@ class ParentOrderItemCard extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          _formatDate(parentOrder.createdAt),
+          _formatDate(parentOrder.createdAt, locale),
           style: AppTextStyle.normal_16_brownLight.copyWith(fontSize: fs * 0.8),
         ),
         const SizedBox(height: 4),
@@ -205,6 +206,8 @@ class ParentOrderItemCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime? d) =>
-      d == null ? '-' : '${d.day}/${d.month}/${d.year}';
+  String _formatDate(DateTime? d, [String locale = 'ar']) {
+    if (d == null) return '-';
+    return DateFormat('dd/MM/yyyy', locale).format(d);
+  }
 }

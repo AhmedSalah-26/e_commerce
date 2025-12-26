@@ -50,113 +50,178 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
 
-    return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state) {
-        if (state is AuthUnauthenticated) {
-          AppRouter.setAuthenticated(false);
-          context.go('/login');
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, authState) {
+        // Show login button for unauthenticated users
+        if (authState is! AuthAuthenticated) {
+          return Directionality(
+            textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+            child: Scaffold(
+              backgroundColor: AppColours.white,
+              body: SafeArea(
+                child: _buildLoginRequired(context, isRtl),
+              ),
+            ),
+          );
         }
-      },
-      child: Directionality(
-        textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-        child: Scaffold(
-          backgroundColor: AppColours.white,
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
-                  Text(
-                    'settings_title'.tr(),
-                    style: AppTextStyle.semiBold_20_dark_brown.copyWith(
-                      fontSize: 24,
-                      color: AppColours.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  BlocBuilder<AuthCubit, AuthState>(
-                    builder: (context, state) {
-                      if (state is AuthAuthenticated) {
-                        return GestureDetector(
-                          onTap: () => context.push('/edit-profile'),
-                          child: UserProfileCard(user: state.user),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  SettingsSection(
-                    title: 'account'.tr(),
+
+        return BlocListener<AuthCubit, AuthState>(
+          listener: (context, state) {
+            if (state is AuthUnauthenticated) {
+              AppRouter.setAuthenticated(false);
+              context.go('/login');
+            }
+          },
+          child: Directionality(
+            textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+            child: Scaffold(
+              backgroundColor: AppColours.white,
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SettingsTile(
-                        icon: Icons.person_outline,
-                        title: 'edit_profile'.tr(),
+                      const SizedBox(height: 20),
+                      Text(
+                        'settings_title'.tr(),
+                        style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+                          fontSize: 24,
+                          color: AppColours.primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      GestureDetector(
                         onTap: () => context.push('/edit-profile'),
-                        showDivider: false,
+                        child: UserProfileCard(user: authState.user),
                       ),
-                      SettingsTile(
-                        icon: Icons.receipt_long_outlined,
-                        title: 'my_orders'.tr(),
-                        onTap: () => context.push('/orders'),
-                        showDivider: false,
+                      const SizedBox(height: 24),
+                      SettingsSection(
+                        title: 'account'.tr(),
+                        children: [
+                          SettingsTile(
+                            icon: Icons.person_outline,
+                            title: 'edit_profile'.tr(),
+                            onTap: () => context.push('/edit-profile'),
+                            showDivider: false,
+                          ),
+                          SettingsTile(
+                            icon: Icons.receipt_long_outlined,
+                            title: 'my_orders'.tr(),
+                            onTap: () => context.push('/orders'),
+                            showDivider: false,
+                          ),
+                          SettingsSwitchTile(
+                            icon: Icons.notifications_outlined,
+                            title: 'notifications'.tr(),
+                            value: _notificationsEnabled,
+                            onChanged: _toggleNotifications,
+                            showDivider: false,
+                          ),
+                        ],
                       ),
-                      SettingsSwitchTile(
-                        icon: Icons.notifications_outlined,
-                        title: 'notifications'.tr(),
-                        value: _notificationsEnabled,
-                        onChanged: _toggleNotifications,
-                        showDivider: false,
+                      const SizedBox(height: 16),
+                      SettingsSection(
+                        title: 'preferences'.tr(),
+                        children: [
+                          SettingsTile(
+                            icon: Icons.language,
+                            title: 'language'.tr(),
+                            subtitle: context.locale.languageCode == 'ar'
+                                ? 'العربية'
+                                : 'English',
+                            onTap: () => context.push('/language-settings'),
+                            showDivider: false,
+                          ),
+                          SettingsTile(
+                            icon: Icons.help_outline,
+                            title: 'help'.tr(),
+                            onTap: () => context.push('/help'),
+                            showDivider: false,
+                          ),
+                          SettingsTile(
+                            icon: Icons.info_outline,
+                            title: 'about'.tr(),
+                            onTap: () => context.push('/about'),
+                            showDivider: false,
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 16),
+                      SettingsSection(
+                        title: '',
+                        children: [
+                          SettingsTile(
+                            icon: Icons.logout,
+                            title: 'logout'.tr(),
+                            onTap: () => _handleLogout(context),
+                            iconColor: Colors.red,
+                            showDivider: false,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  SettingsSection(
-                    title: 'preferences'.tr(),
-                    children: [
-                      SettingsTile(
-                        icon: Icons.language,
-                        title: 'language'.tr(),
-                        subtitle: context.locale.languageCode == 'ar'
-                            ? 'العربية'
-                            : 'English',
-                        onTap: () => context.push('/language-settings'),
-                        showDivider: false,
-                      ),
-                      SettingsTile(
-                        icon: Icons.help_outline,
-                        title: 'help'.tr(),
-                        onTap: () => context.push('/help'),
-                        showDivider: false,
-                      ),
-                      SettingsTile(
-                        icon: Icons.info_outline,
-                        title: 'about'.tr(),
-                        onTap: () => context.push('/about'),
-                        showDivider: false,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  SettingsSection(
-                    title: '',
-                    children: [
-                      SettingsTile(
-                        icon: Icons.logout,
-                        title: 'logout'.tr(),
-                        onTap: () => _handleLogout(context),
-                        iconColor: Colors.red,
-                        showDivider: false,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                ],
+                ),
               ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLoginRequired(BuildContext context, bool isRtl) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColours.primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.settings_outlined,
+                size: 64,
+                color: AppColours.primaryColor,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'login_required'.tr(),
+              style: AppTextStyle.semiBold_20_dark_brown,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'login_to_access_settings'.tr(),
+              style: AppTextStyle.normal_14_greyDark,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () => context.go('/login'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColours.brownLight,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'login'.tr(),
+                  style: AppTextStyle.semiBold_18_white,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

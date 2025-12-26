@@ -73,10 +73,12 @@ class ProductStoreInfo extends StatelessWidget {
                           size: 14, color: AppColours.brownMedium),
                       const SizedBox(width: 4),
                       Flexible(
-                        child: Text(
+                        child: AutoSizeText(
                           product.storeAddress!,
                           style: AppTextStyle.normal_14_greyDark
                               .copyWith(fontSize: 11),
+                          maxLines: 1,
+                          minFontSize: 8,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -92,10 +94,12 @@ class ProductStoreInfo extends StatelessWidget {
                           size: 14, color: AppColours.brownMedium),
                       const SizedBox(width: 4),
                       Flexible(
-                        child: Text(
+                        child: AutoSizeText(
                           product.storePhone!,
                           style: AppTextStyle.normal_14_greyDark
                               .copyWith(fontSize: 11),
+                          maxLines: 1,
+                          minFontSize: 8,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),

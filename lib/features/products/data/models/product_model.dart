@@ -20,6 +20,7 @@ class ProductModel extends ProductEntity {
     super.storeName,
     super.storePhone,
     super.storeAddress,
+    super.storeLogo,
     super.isFlashSale,
     super.flashSaleStart,
     super.flashSaleEnd,
@@ -46,10 +47,12 @@ class ProductModel extends ProductEntity {
     String? storeName;
     String? storePhone;
     String? storeAddress;
+    String? storeLogo;
     if (json['stores'] != null && json['stores'] is Map) {
       storeName = json['stores']['name'] as String?;
       storePhone = json['stores']['phone'] as String?;
       storeAddress = json['stores']['address'] as String?;
+      storeLogo = json['stores']['logo_url'] as String?;
     } else if (json['profiles'] != null && json['profiles'] is Map) {
       // Fallback to profiles table
       storeName = json['profiles']['name'] as String?;
@@ -82,6 +85,7 @@ class ProductModel extends ProductEntity {
       storeName: storeName,
       storePhone: storePhone,
       storeAddress: storeAddress,
+      storeLogo: storeLogo,
       isFlashSale: json['is_flash_sale'] as bool? ?? false,
       flashSaleStart: json['flash_sale_start'] != null
           ? DateTime.parse(json['flash_sale_start'] as String).toLocal()
@@ -141,6 +145,7 @@ class ProductModel extends ProductEntity {
     String? storeName,
     String? storePhone,
     String? storeAddress,
+    String? storeLogo,
     bool? isFlashSale,
     DateTime? flashSaleStart,
     DateTime? flashSaleEnd,
@@ -163,6 +168,7 @@ class ProductModel extends ProductEntity {
       storeName: storeName ?? this.storeName,
       storePhone: storePhone ?? this.storePhone,
       storeAddress: storeAddress ?? this.storeAddress,
+      storeLogo: storeLogo ?? this.storeLogo,
       isFlashSale: isFlashSale ?? this.isFlashSale,
       flashSaleStart: flashSaleStart ?? this.flashSaleStart,
       flashSaleEnd: flashSaleEnd ?? this.flashSaleEnd,

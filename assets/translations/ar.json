@@ -159,6 +159,8 @@
   "no_favorites": "لا توجد منتجات في المفضلة",
   "no_favorites_desc": "لم تقم بإضافة أي منتجات للمفضلة بعد",
   "login_to_see_favorites": "سجل دخولك لرؤية المفضلة",
+  "login_to_see_cart": "سجل دخولك لرؤية سلة التسوق",
+  "login_to_access_settings": "سجل دخولك للوصول إلى الإعدادات",
   "added_to_favorites": "تمت الإضافة للمفضلة",
   "removed_from_favorites": "تم الإزالة من المفضلة",
   "all": "الكل",
@@ -196,6 +198,9 @@
   "based_on_reviews": "بناءً على {} تقييم",
   "filters": "الفلاتر",
   "apply": "تطبيق",
+  "no_results": "لا توجد نتائج",
+  "try_different_search": "جرب البحث بكلمات أخرى",
+  "clear_filters": "مسح الفلاتر",
 
   "help_title": "المساعدة والدعم",
   "help_faq": "الأسئلة الشائعة",
@@ -307,6 +312,7 @@
   "product_unavailable": "غير متوفر حالياً",
   "cart_has_inactive_products": "السلة تحتوي على منتجات غير متوفرة، يرجى إزالتها أولاً",
   "store_products": "منتجات المتجر",
+  "store": "المتجر",
 
   "coupons": "الكوبونات",
   "coupon_code": "كود الكوبون",

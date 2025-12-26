@@ -174,32 +174,64 @@ class _CartScreenState extends State<CartScreen> {
               }
 
               // Not authenticated
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.shopping_cart_outlined,
-                      size: 80,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'login_required'.tr(),
-                      style: const TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.go('/login');
-                      },
-                      child: Text('login'.tr()),
-                    ),
-                  ],
-                ),
-              );
+              return _buildLoginRequired(context);
             },
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginRequired(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColours.primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.shopping_cart_outlined,
+                size: 64,
+                color: AppColours.primaryColor,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'login_required'.tr(),
+              style: AppTextStyle.semiBold_20_dark_brown,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'login_to_see_cart'.tr(),
+              style: AppTextStyle.normal_14_greyDark,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () => context.go('/login'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColours.brownLight,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'login'.tr(),
+                  style: AppTextStyle.semiBold_18_white,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

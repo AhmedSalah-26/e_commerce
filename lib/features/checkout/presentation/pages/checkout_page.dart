@@ -113,6 +113,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final isRtl = context.locale.languageCode == 'ar';
     final locale = context.locale.languageCode;
 
+    // Check if user is authenticated
+    final authState = context.read<AuthCubit>().state;
+    if (authState is! AuthAuthenticated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.go('/login');
+      });
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return MultiBlocProvider(
       providers: [
         BlocProvider(

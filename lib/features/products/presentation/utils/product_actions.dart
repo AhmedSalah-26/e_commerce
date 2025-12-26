@@ -5,6 +5,7 @@ import '../../../../core/shared_widgets/toast.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
+import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../favorites/presentation/cubit/favorites_cubit.dart';
 
 /// Handles product actions - reduces complexity in product screen
@@ -12,7 +13,8 @@ class ProductActions {
   const ProductActions();
 
   /// Add product to cart
-  void addToCart(BuildContext context, String productId, int quantity) {
+  Future<void> addToCart(
+      BuildContext context, String productId, int quantity) async {
     final authState = context.read<AuthCubit>().state;
 
     if (authState is! AuthAuthenticated) {
@@ -20,16 +22,41 @@ class ProductActions {
       return;
     }
 
-    context.read<CartCubit>()
-      ..setUserId(authState.user.id)
-      ..addToCart(productId, quantity: quantity);
+    final cartCubit = context.read<CartCubit>();
+    cartCubit.setUserId(authState.user.id);
 
-    Tost.showCustomToast(
-      context,
-      'added_to_cart'.tr(),
-      backgroundColor: Colors.green,
-      textColor: Colors.white,
-    );
+    // Store current state to detect changes
+    final stateBefore = cartCubit.state;
+
+    await cartCubit.addToCart(productId, quantity: quantity);
+
+    // Check the result
+    if (!context.mounted) return;
+
+    final stateAfter = cartCubit.state;
+
+    if (stateAfter is CartError) {
+      Tost.showCustomToast(
+        context,
+        stateAfter.message,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    } else if (stateAfter is CartLoaded) {
+      // Check if item was actually added (cart has more items or same item quantity increased)
+      final itemsBefore =
+          stateBefore is CartLoaded ? stateBefore.items.length : 0;
+      final itemsAfter = stateAfter.items.length;
+
+      if (itemsAfter >= itemsBefore) {
+        Tost.showCustomToast(
+          context,
+          'added_to_cart'.tr(),
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+      }
+    }
   }
 
   /// Toggle product favorite status

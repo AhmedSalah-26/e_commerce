@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -209,25 +210,55 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
   Widget _buildLoginRequired() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.favorite_border,
-            size: 100,
-            color: AppColours.greyMedium,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'login_required'.tr(),
-            style: AppTextStyle.semiBold_20_dark_brown,
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'login_to_see_favorites'.tr(),
-            style: AppTextStyle.normal_16_greyDark,
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColours.primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.favorite_border,
+                size: 64,
+                color: AppColours.primaryColor,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'login_required'.tr(),
+              style: AppTextStyle.semiBold_20_dark_brown,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'login_to_see_favorites'.tr(),
+              style: AppTextStyle.normal_14_greyDark,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () => GoRouter.of(context).go('/login'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColours.brownLight,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'login'.tr(),
+                  style: AppTextStyle.semiBold_18_white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

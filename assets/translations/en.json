@@ -159,6 +159,8 @@
   "no_favorites": "No favorites yet",
   "no_favorites_desc": "You haven't added any products to favorites yet",
   "login_to_see_favorites": "Login to see your favorites",
+  "login_to_see_cart": "Login to see your cart",
+  "login_to_access_settings": "Login to access settings",
   "added_to_favorites": "Added to Favorites",
   "removed_from_favorites": "Removed from Favorites",
   "all": "All",
@@ -196,6 +198,9 @@
   "based_on_reviews": "Based on {} reviews",
   "filters": "Filters",
   "apply": "Apply",
+  "no_results": "No results found",
+  "try_different_search": "Try different search terms",
+  "clear_filters": "Clear filters",
 
   "help_title": "Help & Support",
   "help_faq": "Frequently Asked Questions",
@@ -307,6 +312,7 @@
   "product_unavailable": "Currently Unavailable",
   "cart_has_inactive_products": "Cart contains unavailable products, please remove them first",
   "store_products": "Store Products",
+  "store": "Store",
 
   "coupons": "Coupons",
   "coupon_code": "Coupon Code",

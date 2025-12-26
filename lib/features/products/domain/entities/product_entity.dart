@@ -20,6 +20,7 @@ class ProductEntity extends Equatable {
   final String? storeName;
   final String? storePhone;
   final String? storeAddress;
+  final String? storeLogo;
   // Flash sale info
   final bool isFlashSale;
   final DateTime? flashSaleStart;
@@ -43,6 +44,7 @@ class ProductEntity extends Equatable {
     this.storeName,
     this.storePhone,
     this.storeAddress,
+    this.storeLogo,
     this.isFlashSale = false,
     this.flashSaleStart,
     this.flashSaleEnd,
@@ -102,6 +104,7 @@ class ProductEntity extends Equatable {
         storeName,
         storePhone,
         storeAddress,
+        storeLogo,
         isFlashSale,
         flashSaleStart,
         flashSaleEnd,

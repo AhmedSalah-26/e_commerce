@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/shared_widgets/toast.dart';
@@ -32,6 +34,9 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
   final _storePhoneController = TextEditingController();
   bool _isLoading = false;
   bool _isLoadingData = true;
+  String? _logoUrl;
+  File? _selectedImage;
+  final _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -56,6 +61,7 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
           _storeDescController.text = response['description'] ?? '';
           _storeAddressController.text = response['address'] ?? '';
           _storePhoneController.text = response['phone'] ?? '';
+          _logoUrl = response['logo_url'];
         });
       }
     } catch (e) {
@@ -64,6 +70,58 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
       if (mounted) {
         setState(() => _isLoadingData = false);
       }
+    }
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        Tost.showCustomToast(
+          context,
+          widget.isRtl ? 'فشل في اختيار الصورة' : 'Failed to pick image',
+          backgroundColor: Colors.red,
+        );
+      }
+    }
+  }
+
+  Future<String?> _uploadLogo(String merchantId) async {
+    if (_selectedImage == null) return _logoUrl;
+
+    try {
+      final fileName =
+          'store_$merchantId\_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final bytes = await _selectedImage!.readAsBytes();
+
+      await Supabase.instance.client.storage
+          .from('stores')
+          .uploadBinary(fileName, bytes,
+              fileOptions: const FileOptions(
+                contentType: 'image/jpeg',
+                upsert: true,
+              ));
+
+      final publicUrl = Supabase.instance.client.storage
+          .from('stores')
+          .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (e) {
+      debugPrint('Error uploading logo: $e');
+      return _logoUrl;
     }
   }
 
@@ -83,12 +141,16 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
     setState(() => _isLoading = true);
 
     try {
+      // Upload logo if selected
+      final logoUrl = await _uploadLogo(authState.user.id);
+
       final storeData = {
         'merchant_id': authState.user.id,
         'name': _storeNameController.text.trim(),
         'description': _storeDescController.text.trim(),
         'address': _storeAddressController.text.trim(),
         'phone': _storePhoneController.text.trim(),
+        'logo_url': logoUrl,
       };
 
       // Upsert - insert or update if exists
@@ -143,16 +205,66 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColours.brownLight.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
+                  // Store Logo
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: AppColours.brownLight.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColours.brownLight,
+                              width: 2,
+                            ),
+                            image: _selectedImage != null
+                                ? DecorationImage(
+                                    image: FileImage(_selectedImage!),
+                                    fit: BoxFit.cover,
+                                  )
+                                : _logoUrl != null
+                                    ? DecorationImage(
+                                        image: NetworkImage(_logoUrl!),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null,
+                          ),
+                          child: _selectedImage == null && _logoUrl == null
+                              ? const Icon(
+                                  Icons.store,
+                                  size: 48,
+                                  color: AppColours.brownMedium,
+                                )
+                              : null,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(
+                              color: AppColours.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: const Icon(
-                      Icons.store,
-                      size: 48,
-                      color: AppColours.brownMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.isRtl ? 'اضغط لتغيير الصورة' : 'Tap to change logo',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
                     ),
                   ),
                   const SizedBox(height: 16),

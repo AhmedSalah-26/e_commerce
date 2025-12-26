@@ -49,7 +49,7 @@ dependencies:
   # Cached Network Image for optimized image loading
   cached_network_image: ^3.4.1
   # Deep Links
-  app_links: ^6.3.3
+  chottu_link: 1.0.19
   # Share
   share_plus: ^10.1.4
 

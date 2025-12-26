@@ -3,11 +3,9 @@ import '../routing/app_router.dart';
 
 /// Service to handle deep links
 /// Supports links like:
-/// - tamorzahra://product/123
-/// - tamorzahra://store/456
-/// - tamorzahra://category/789
-/// - tamorzahra://cart
-/// - tamorzahra://orders
+/// - https://zaharadates.chottu.link/product/123
+/// - https://zaharadates.chottu.link/store/456
+/// - tamorzahra://product/123 (legacy)
 class DeepLinkService {
   static final DeepLinkService _instance = DeepLinkService._internal();
   factory DeepLinkService() => _instance;
@@ -35,46 +33,55 @@ class DeepLinkService {
 
   /// Convert URI to app path
   String? _uriToPath(Uri uri) {
-    // Handle tamorzahra://product/123
-    if (uri.scheme == 'tamorzahra') {
-      final segments = uri.pathSegments;
-      if (segments.isEmpty) return '/home';
+    List<String> segments = [];
 
-      switch (segments.first) {
-        case 'product':
-          if (segments.length > 1) {
-            return '/product/${segments[1]}';
-          }
-          return '/home';
-
-        case 'store':
-          if (segments.length > 1) {
-            final name = uri.queryParameters['name'];
-            return '/store/${segments[1]}${name != null ? '?name=$name' : ''}';
-          }
-          return '/home';
-
-        case 'category':
-          if (segments.length > 1) {
-            return '/home'; // TODO: Add category route
-          }
-          return '/home';
-
-        case 'cart':
-          return '/cart';
-
-        case 'orders':
-          return '/orders';
-
-        case 'favorites':
-          return '/favorites';
-
-        default:
-          return '/home';
-      }
+    // Handle ChottuLink URLs: https://zaharadates.chottu.link/product/123
+    if (uri.host.contains('chottu.link') || uri.host.contains('zaharadates')) {
+      segments = uri.pathSegments;
+    }
+    // Handle legacy custom scheme: tamorzahra://product/123
+    else if (uri.scheme == 'tamorzahra') {
+      segments = uri.pathSegments;
+    }
+    // Handle website URLs: https://ahmedmohamedsalah.com/product/123
+    else if (uri.scheme == 'https' || uri.scheme == 'http') {
+      segments = uri.pathSegments;
     }
 
-    return null;
+    if (segments.isEmpty) return '/home';
+
+    switch (segments.first) {
+      case 'product':
+        if (segments.length > 1) {
+          return '/product/${segments[1]}';
+        }
+        return '/home';
+
+      case 'store':
+        if (segments.length > 1) {
+          final name = uri.queryParameters['name'];
+          return '/store/${segments[1]}${name != null ? '?name=$name' : ''}';
+        }
+        return '/home';
+
+      case 'category':
+        if (segments.length > 1) {
+          return '/home'; // TODO: Add category route
+        }
+        return '/home';
+
+      case 'cart':
+        return '/cart';
+
+      case 'orders':
+        return '/orders';
+
+      case 'favorites':
+        return '/favorites';
+
+      default:
+        return '/home';
+    }
   }
 
   /// Navigate to path

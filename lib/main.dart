@@ -1,4 +1,4 @@
-import 'package:app_links/app_links.dart';
+import 'package:chottu_link/chottu_link.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,6 +21,9 @@ import 'features/notifications/data/services/order_status_listener.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+
+  // Initialize ChottuLink SDK
+  await ChottuLink.init(apiKey: "c_app_aj45jOSPqhk4Ea4M2v9cY6k6a1CeSMgt");
 
   // Initialize dependencies (Supabase, etc.)
   await di.initializeDependencies();
@@ -85,8 +88,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late AppLinks _appLinks;
-
   @override
   void initState() {
     super.initState();
@@ -96,23 +97,11 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  /// Initialize deep links listener
-  Future<void> _initDeepLinks() async {
-    _appLinks = AppLinks();
-
-    // Handle initial link (app opened from link)
-    try {
-      final initialUri = await _appLinks.getInitialLink();
-      if (initialUri != null) {
-        DeepLinkService().handleDeepLink(initialUri);
-      }
-    } catch (e) {
-      debugPrint('Error getting initial deep link: $e');
-    }
-
-    // Listen for links while app is running
-    _appLinks.uriLinkStream.listen((uri) {
-      DeepLinkService().handleDeepLink(uri);
+  /// Initialize deep links listener using ChottuLink
+  void _initDeepLinks() {
+    ChottuLink.onLinkReceived.listen((String link) {
+      debugPrint('ChottuLink received: $link');
+      DeepLinkService().handleDeepLink(Uri.parse(link));
     });
   }
 

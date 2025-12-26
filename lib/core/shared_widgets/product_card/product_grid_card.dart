@@ -32,26 +32,21 @@ class ProductGridCard extends StatelessWidget {
               ],
             ),
           ),
-          // Flash Sale Badge - top right
+          // Flash Sale Badge - top right (priority over discount)
           if (product.isFlashSaleActive)
             Positioned(
               top: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  'flash_sale_badge'.tr(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              right: isArabic ? null : 8,
+              left: isArabic ? 8 : null,
+              child: _FlashSaleBadge(),
+            )
+          // Discount Badge - top right (if no flash sale but has discount)
+          else if (product.hasDiscount)
+            Positioned(
+              top: 8,
+              right: isArabic ? null : 8,
+              left: isArabic ? 8 : null,
+              child: _DiscountBadge(percentage: product.discountPercentage),
             ),
         ],
       ),
@@ -75,4 +70,59 @@ class ProductGridCard extends StatelessWidget {
       ),
     ],
   );
+}
+
+/// Flash Sale Badge Widget
+class _FlashSaleBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.red,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.flash_on, color: Colors.white, size: 10),
+          const SizedBox(width: 2),
+          Text(
+            'flash_sale_badge'.tr(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Discount Badge Widget
+class _DiscountBadge extends StatelessWidget {
+  final int percentage;
+
+  const _DiscountBadge({required this.percentage});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColours.brownLight,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        '-$percentage%',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
 }

@@ -58,9 +58,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
             child: Scaffold(
               backgroundColor: AppColours.white,
-              body: SafeArea(
-                child: _buildLoginRequired(context, isRtl),
+              appBar: AppBar(
+                backgroundColor: Colors.white,
+                title: Text(
+                  'settings_title'.tr(),
+                  style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+                    fontSize: 24,
+                    color: AppColours.brownMedium,
+                  ),
+                ),
+                centerTitle: true,
               ),
+              body: _buildLoginRequired(context, isRtl),
             ),
           );
         }

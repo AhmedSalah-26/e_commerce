@@ -208,7 +208,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () => context.go('/login'),
+                onPressed: () {
+                  AppRouter.setAuthenticated(false);
+                  context.go('/login');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColours.brownLight,
                   shape: RoundedRectangleBorder(

@@ -1,4 +1,8 @@
+-- Drop existing function first (required when changing return type)
+DROP FUNCTION IF EXISTS get_discounted_products_sorted(integer, integer);
+
 -- Function to get discounted products sorted by discount percentage (highest first)
+-- Updated to include flash sale fields
 CREATE OR REPLACE FUNCTION get_discounted_products_sorted(
   p_limit INT DEFAULT 20,
   p_offset INT DEFAULT 0
@@ -20,7 +24,10 @@ RETURNS TABLE (
   is_featured BOOLEAN,
   merchant_id UUID,
   created_at TIMESTAMPTZ,
-  discount_percentage DECIMAL
+  discount_percentage DECIMAL,
+  is_flash_sale BOOLEAN,
+  flash_sale_start TIMESTAMPTZ,
+  flash_sale_end TIMESTAMPTZ
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -44,7 +51,10 @@ BEGIN
     p.is_featured,
     p.merchant_id,
     p.created_at,
-    ROUND(((p.price - p.discount_price) / p.price * 100)::DECIMAL, 2) as discount_percentage
+    ROUND(((p.price - p.discount_price) / p.price * 100)::DECIMAL, 2) as discount_percentage,
+    p.is_flash_sale,
+    p.flash_sale_start,
+    p.flash_sale_end
   FROM products p
   WHERE p.is_active = true
     AND p.discount_price IS NOT NULL

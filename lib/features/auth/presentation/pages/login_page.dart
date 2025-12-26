@@ -195,6 +195,21 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
+                    // Continue as guest button
+                    TextButton(
+                      onPressed: () {
+                        AppRouter.setAuthenticated(false);
+                        context.go('/home');
+                      },
+                      child: Text(
+                        'continue_as_guest'.tr(),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

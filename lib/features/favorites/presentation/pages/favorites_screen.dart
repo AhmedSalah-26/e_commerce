@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/routing/app_router.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
@@ -244,7 +245,10 @@ class _FavoritesScreenState extends State<FavoritesScreen>
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () => GoRouter.of(context).go('/login'),
+                onPressed: () {
+                  AppRouter.setAuthenticated(false);
+                  context.go('/login');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColours.brownLight,
                   shape: RoundedRectangleBorder(

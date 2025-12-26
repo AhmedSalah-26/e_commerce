@@ -24,6 +24,7 @@ class FavoritesScreen extends StatefulWidget {
 class _FavoritesScreenState extends State<FavoritesScreen>
     with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
+  AuthState? _previousAuthState;
 
   @override
   bool get wantKeepAlive => true;
@@ -32,6 +33,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _previousAuthState = context.read<AuthCubit>().state;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadFavoritesIfNeeded();
     });
@@ -97,81 +99,93 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           ),
           centerTitle: true,
         ),
-        body: BlocBuilder<FavoritesCubit, FavoritesState>(
-          builder: (context, state) {
+        body: BlocConsumer<AuthCubit, AuthState>(
+          listener: (context, authState) {
+            // Reset favorites when user logs out
+            if (_previousAuthState is AuthAuthenticated &&
+                authState is! AuthAuthenticated) {
+              context.read<FavoritesCubit>().reset();
+            }
+            _previousAuthState = authState;
+          },
+          builder: (context, authState) {
             // Check if user is authenticated first
-            final authState = context.read<AuthCubit>().state;
             if (authState is! AuthAuthenticated) {
               return _buildLoginRequired();
             }
 
-            if (state is FavoritesLoading) {
-              return const SingleChildScrollView(
-                padding: EdgeInsets.all(16),
-                child: ProductsGridSkeleton(itemCount: 4),
-              );
-            }
+            return BlocBuilder<FavoritesCubit, FavoritesState>(
+              builder: (context, state) {
+                if (state is FavoritesLoading) {
+                  return const SingleChildScrollView(
+                    padding: EdgeInsets.all(16),
+                    child: ProductsGridSkeleton(itemCount: 4),
+                  );
+                }
 
-            if (state is FavoritesError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      state.message,
-                      style: const TextStyle(color: Colors.red),
-                      textAlign: TextAlign.center,
+                if (state is FavoritesError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          state.message,
+                          style: const TextStyle(color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadFavorites,
+                          child: Text('retry'.tr()),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _loadFavorites,
-                      child: Text('retry'.tr()),
-                    ),
-                  ],
-                ),
-              );
-            }
+                  );
+                }
 
-            if (state is FavoritesLoaded) {
-              // Filter favorites that have valid products
-              final validFavorites =
-                  state.favorites.where((f) => f.product != null).toList();
+                if (state is FavoritesLoaded) {
+                  // Filter favorites that have valid products
+                  final validFavorites =
+                      state.favorites.where((f) => f.product != null).toList();
 
-              if (validFavorites.isEmpty) {
-                return _buildEmptyFavorites();
-              }
+                  if (validFavorites.isEmpty) {
+                    return _buildEmptyFavorites();
+                  }
 
-              return RefreshIndicator(
-                onRefresh: () async => _loadFavorites(),
-                child: GridView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.55,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemCount: validFavorites.length,
-                  addAutomaticKeepAlives: false,
-                  addRepaintBoundaries: true,
-                  cacheExtent: 500,
-                  itemBuilder: (context, index) {
-                    return RepaintBoundary(
-                      child: ProductGridCard(
-                        key: ValueKey(validFavorites[index].id),
-                        product: validFavorites[index].product!,
+                  return RefreshIndicator(
+                    onRefresh: () async => _loadFavorites(),
+                    child: GridView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.55,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
                       ),
-                    );
-                  },
-                ),
-              );
-            }
+                      itemCount: validFavorites.length,
+                      addAutomaticKeepAlives: false,
+                      addRepaintBoundaries: true,
+                      cacheExtent: 500,
+                      itemBuilder: (context, index) {
+                        return RepaintBoundary(
+                          child: ProductGridCard(
+                            key: ValueKey(validFavorites[index].id),
+                            product: validFavorites[index].product!,
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                }
 
-            // FavoritesInitial state - show shimmer loading
-            return const SingleChildScrollView(
-              padding: EdgeInsets.all(16),
-              child: ProductsGridSkeleton(itemCount: 4),
+                // FavoritesInitial state - show shimmer loading
+                return const SingleChildScrollView(
+                  padding: EdgeInsets.all(16),
+                  child: ProductsGridSkeleton(itemCount: 4),
+                );
+              },
             );
           },
         ),

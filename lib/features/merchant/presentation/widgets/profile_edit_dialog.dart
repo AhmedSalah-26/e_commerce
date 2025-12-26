@@ -109,9 +109,23 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
 
       // Save store info for merchants
       if (_isMerchant) {
+        // Get existing store name or use user name as default
+        String storeName = authState.user.name ?? 'Store';
+        try {
+          final existingStore = await Supabase.instance.client
+              .from('stores')
+              .select('name')
+              .eq('merchant_id', authState.user.id)
+              .maybeSingle();
+          if (existingStore != null && existingStore['name'] != null) {
+            storeName = existingStore['name'];
+          }
+        } catch (_) {}
+
         await Supabase.instance.client.from('stores').upsert(
           {
             'merchant_id': authState.user.id,
+            'name': storeName,
             'description': _storeDescController.text.trim(),
             'address': _storeAddressController.text.trim(),
             'phone': _storePhoneController.text.trim(),

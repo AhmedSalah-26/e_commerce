@@ -97,7 +97,6 @@ class _StoreProductsScreenState extends State<StoreProductsScreen>
       storeAddress: storeState.storeAddress,
       storePhone: storeState.storePhone,
       storeLogo: storeState.storeLogo,
-      productCount: storeState.products.length,
     );
   }
 

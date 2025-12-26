@@ -8,7 +8,6 @@ class StoreHeaderCard extends StatelessWidget {
   final String? storeAddress;
   final String? storePhone;
   final String? storeLogo;
-  final int productCount;
 
   const StoreHeaderCard({
     super.key,
@@ -16,7 +15,6 @@ class StoreHeaderCard extends StatelessWidget {
     this.storeAddress,
     this.storePhone,
     this.storeLogo,
-    this.productCount = 0,
   });
 
   @override
@@ -57,8 +55,6 @@ class StoreHeaderCard extends StatelessWidget {
               ],
             ),
           ),
-          // Products count badge
-          _buildProductsBadge(),
         ],
       ),
     );
@@ -152,31 +148,6 @@ class StoreHeaderCard extends StatelessWidget {
           ),
         ],
       ],
-    );
-  }
-
-  Widget _buildProductsBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColours.primaryColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '$productCount',
-            style: AppTextStyle.semiBold_14_dark_brown.copyWith(
-              color: AppColours.primaryColor,
-            ),
-          ),
-          Text(
-            'منتج',
-            style: AppTextStyle.normal_12_greyDark.copyWith(fontSize: 10),
-          ),
-        ],
-      ),
     );
   }
 }

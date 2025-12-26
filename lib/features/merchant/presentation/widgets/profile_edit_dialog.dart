@@ -44,6 +44,9 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
     super.initState();
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
+      debugPrint('ProfileEditDialog: User ID = ${authState.user.id}');
+      debugPrint(
+          'ProfileEditDialog: User isMerchant = ${authState.user.isMerchant}');
       _nameController = TextEditingController(text: authState.user.name ?? '');
       _phoneController =
           TextEditingController(text: authState.user.phone ?? '');
@@ -62,11 +65,14 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
 
   Future<void> _loadStoreData(String merchantId) async {
     try {
+      debugPrint('Loading store data for merchant: $merchantId');
       final response = await Supabase.instance.client
           .from('stores')
           .select()
           .eq('merchant_id', merchantId)
           .maybeSingle();
+
+      debugPrint('Store data response: $response');
 
       if (response != null && mounted) {
         setState(() {
@@ -74,9 +80,13 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
           _storeAddressController.text = response['address'] ?? '';
           _storePhoneController.text = response['phone'] ?? '';
         });
+        debugPrint(
+            'Store data loaded: desc=${_storeDescController.text}, addr=${_storeAddressController.text}, phone=${_storePhoneController.text}');
+      } else {
+        debugPrint('No store data found for merchant');
       }
     } catch (e) {
-      // Store doesn't exist yet
+      debugPrint('Error loading store data: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoadingStore = false);

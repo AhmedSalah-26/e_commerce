@@ -283,7 +283,13 @@ class _ErrorContent extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: isRetrying ? null : onRetry,
+              onPressed: isRetrying
+                  ? null
+                  : () {
+                      debugPrint(
+                          '🔘 Retry button pressed! isRetrying=$isRetrying');
+                      onRetry();
+                    },
               icon: isRetrying
                   ? const SizedBox(
                       width: 20,

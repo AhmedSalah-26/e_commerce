@@ -76,7 +76,7 @@ class _ProductImage extends StatelessWidget {
         memCacheHeight: _cacheSize,
         maxWidthDiskCache: _cacheSize * 2,
         maxHeightDiskCache: _cacheSize * 2,
-        placeholder: (_, __) => const _ImageLoading(),
+        placeholder: (_, __) => const _ImagePlaceholder(),
         errorWidget: (_, __, ___) => const _ImagePlaceholder(),
         fadeInDuration: Duration.zero,
         fadeOutDuration: Duration.zero,
@@ -107,32 +107,12 @@ class _ImagePlaceholder extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: theme.colorScheme.surface,
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       child: Center(
         child: Icon(
-          Icons.image_not_supported,
-          size: 50,
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-        ),
-      ),
-    );
-  }
-}
-
-class _ImageLoading extends StatelessWidget {
-  const _ImageLoading();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: theme.colorScheme.surface,
-      child: Center(
-        child: CircularProgressIndicator(
-          color: theme.colorScheme.primary,
-          strokeWidth: 2,
+          Icons.image_outlined,
+          size: 40,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
         ),
       ),
     );

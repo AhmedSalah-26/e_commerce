@@ -90,9 +90,7 @@ class _QuantityControlsState extends State<_QuantityControls> {
   late int _localQuantity;
   bool _isUpdating = false;
   bool _isRemoving = false;
-  late CartCubit _cartCubit;
 
-  // Always return at least 1 for display
   int get displayQuantity => _localQuantity < 1 ? 1 : _localQuantity;
 
   @override
@@ -102,15 +100,8 @@ class _QuantityControlsState extends State<_QuantityControls> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _cartCubit = context.read<CartCubit>();
-  }
-
-  @override
   void didUpdateWidget(_QuantityControls oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Only update local quantity if not currently updating
     if (!_isUpdating && !_isRemoving && widget.quantity != _localQuantity) {
       _localQuantity = widget.quantity < 1 ? 1 : widget.quantity;
     }
@@ -123,11 +114,7 @@ class _QuantityControlsState extends State<_QuantityControls> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _QuantityButton(
-          icon: Icons.remove,
-          onTap: _decrease,
-          isLoading: false,
-        ),
+        _QuantityButton(icon: Icons.remove, onTap: _decrease),
         SizedBox(
           width: 30,
           child: Center(
@@ -144,98 +131,86 @@ class _QuantityControlsState extends State<_QuantityControls> {
         _QuantityButton(
           icon: Icons.add,
           onTap: _localQuantity >= widget.maxStock ? null : _increase,
-          isLoading: false,
         ),
       ],
     );
   }
 
-  void _decrease() {
-    // Prevent multiple rapid clicks
+  void _decrease() async {
     if (_isRemoving || _isUpdating) return;
 
-    // Prevent going below 1
+    final cartCubit = context.read<CartCubit>();
+
     if (_localQuantity <= 1) {
-      // Remove from cart
       setState(() => _isRemoving = true);
-      _removeWithRetry();
+      final success = await cartCubit.removeFromCartDirect(widget.cartItemId);
+      if (mounted) setState(() => _isRemoving = false);
+
+      if (!success && mounted) {
+        NetworkErrorWidget.showForCartUpdate(
+          context,
+          cartCubit: cartCubit,
+          cartItemId: widget.cartItemId,
+          quantity: 0,
+          isRemove: true,
+        );
+      }
       return;
     }
 
     final newQuantity = _localQuantity - 1;
-
-    // Optimistic update - ensure never goes below 1
-    setState(() {
-      _localQuantity = newQuantity < 1 ? 1 : newQuantity;
-      _isUpdating = true;
-    });
-
-    _updateWithRetry(_localQuantity);
-  }
-
-  void _increase() {
-    if (_isRemoving || _localQuantity >= widget.maxStock) return;
-
-    final newQuantity = _localQuantity + 1;
-
-    // Optimistic update
     setState(() {
       _localQuantity = newQuantity;
       _isUpdating = true;
     });
 
-    _updateWithRetry(_localQuantity);
-  }
-
-  Future<bool> _updateWithRetry(int quantity) async {
-    debugPrint(
-        '🔄 _updateWithRetry: quantity=$quantity, cartItemId=${widget.cartItemId}');
     final success =
-        await _cartCubit.updateQuantityDirect(widget.cartItemId, quantity);
-    debugPrint('🔄 _updateWithRetry: success=$success');
-
-    if (mounted) {
-      setState(() => _isUpdating = false);
-    }
+        await cartCubit.updateQuantityDirect(widget.cartItemId, newQuantity);
+    if (mounted) setState(() => _isUpdating = false);
 
     if (!success && mounted) {
-      NetworkErrorWidget.showFullScreen(
+      NetworkErrorWidget.showForCartUpdate(
         context,
-        onRetry: () => _updateWithRetry(quantity),
+        cartCubit: cartCubit,
+        cartItemId: widget.cartItemId,
+        quantity: newQuantity,
+        isRemove: false,
       );
     }
-    return success;
   }
 
-  Future<bool> _removeWithRetry() async {
-    debugPrint('🔄 _removeWithRetry: cartItemId=${widget.cartItemId}');
-    final success = await _cartCubit.removeFromCartDirect(widget.cartItemId);
-    debugPrint('🔄 _removeWithRetry: success=$success');
+  void _increase() async {
+    if (_isRemoving || _localQuantity >= widget.maxStock) return;
 
-    if (mounted) {
-      setState(() => _isRemoving = false);
-    }
+    final cartCubit = context.read<CartCubit>();
+    final newQuantity = _localQuantity + 1;
+
+    setState(() {
+      _localQuantity = newQuantity;
+      _isUpdating = true;
+    });
+
+    final success =
+        await cartCubit.updateQuantityDirect(widget.cartItemId, newQuantity);
+    if (mounted) setState(() => _isUpdating = false);
 
     if (!success && mounted) {
-      NetworkErrorWidget.showFullScreen(
+      NetworkErrorWidget.showForCartUpdate(
         context,
-        onRetry: _removeWithRetry,
+        cartCubit: cartCubit,
+        cartItemId: widget.cartItemId,
+        quantity: newQuantity,
+        isRemove: false,
       );
     }
-    return success;
   }
 }
 
 class _QuantityButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
-  final bool isLoading;
 
-  const _QuantityButton({
-    required this.icon,
-    this.onTap,
-    this.isLoading = false,
-  });
+  const _QuantityButton({required this.icon, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -268,15 +243,6 @@ class _AddToCartButton extends StatefulWidget {
 
 class _AddToCartButtonState extends State<_AddToCartButton> {
   bool _isLoading = false;
-  late CartCubit _cartCubit;
-  late AuthCubit _authCubit;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _cartCubit = context.read<CartCubit>();
-    _authCubit = context.read<AuthCubit>();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -293,9 +259,7 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
               ? Colors.grey
               : theme.colorScheme.primary,
           padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           elevation: 0,
           disabledBackgroundColor:
               theme.colorScheme.primary.withValues(alpha: 0.7),
@@ -305,9 +269,7 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
+                    strokeWidth: 2, color: Colors.white),
               )
             : Text(
                 widget.product.isOutOfStock
@@ -324,17 +286,20 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
   }
 
   void _handleAddToCart() async {
-    final authState = _authCubit.state;
+    final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) {
       Tost.showCustomToast(context, 'login_required'.tr(),
           backgroundColor: Colors.orange);
       return;
     }
 
+    final cartCubit = context.read<CartCubit>();
+    cartCubit.setUserId(authState.user.id);
+
     setState(() => _isLoading = true);
 
-    _cartCubit.setUserId(authState.user.id);
-    final success = await _addToCart();
+    final success = await cartCubit.addToCart(widget.product.id,
+        quantity: 1, product: widget.product);
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -342,19 +307,18 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
         Tost.showCustomToast(context, 'added_to_cart'.tr(),
             backgroundColor: Colors.green);
       } else {
-        NetworkErrorWidget.showFullScreen(context, onRetry: _addToCart);
+        NetworkErrorWidget.showForAddToCart(
+          context,
+          cartCubit: cartCubit,
+          productId: widget.product.id,
+          onSuccess: () {
+            if (mounted) {
+              Tost.showCustomToast(context, 'added_to_cart'.tr(),
+                  backgroundColor: Colors.green);
+            }
+          },
+        );
       }
     }
-  }
-
-  Future<bool> _addToCart() async {
-    debugPrint('🔄 _addToCart: productId=${widget.product.id}');
-    final success = await _cartCubit.addToCart(
-      widget.product.id,
-      quantity: 1,
-      product: widget.product,
-    );
-    debugPrint('🔄 _addToCart: success=$success');
-    return success;
   }
 }

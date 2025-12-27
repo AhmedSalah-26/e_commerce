@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../features/cart/presentation/cubit/cart_cubit.dart';
 
 /// Widget to display when there's a network error
 class NetworkErrorWidget extends StatelessWidget {
@@ -66,10 +67,14 @@ class NetworkErrorWidget extends StatelessWidget {
     );
   }
 
-  /// Show full screen network error dialog
-  /// Dialog stays until operation succeeds
-  static void showFullScreen(BuildContext context,
-      {required Future<bool> Function() onRetry}) {
+  /// Show full screen network error dialog for cart update/remove
+  static void showForCartUpdate(
+    BuildContext context, {
+    required CartCubit cartCubit,
+    required String cartItemId,
+    required int quantity,
+    required bool isRemove,
+  }) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -78,9 +83,40 @@ class NetworkErrorWidget extends StatelessWidget {
         canPop: false,
         child: Dialog.fullscreen(
           backgroundColor: Theme.of(dialogContext).scaffoldBackgroundColor,
-          child: _NetworkErrorDialogContent(
-            onRetry: onRetry,
+          child: _CartUpdateRetryContent(
+            cartCubit: cartCubit,
+            cartItemId: cartItemId,
+            quantity: quantity,
+            isRemove: isRemove,
             onClose: () => Navigator.of(dialogContext).pop(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Show full screen network error dialog for add to cart
+  static void showForAddToCart(
+    BuildContext context, {
+    required CartCubit cartCubit,
+    required String productId,
+    VoidCallback? onSuccess,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (dialogContext) => PopScope(
+        canPop: false,
+        child: Dialog.fullscreen(
+          backgroundColor: Theme.of(dialogContext).scaffoldBackgroundColor,
+          child: _AddToCartRetryContent(
+            cartCubit: cartCubit,
+            productId: productId,
+            onClose: () {
+              Navigator.of(dialogContext).pop();
+              onSuccess?.call();
+            },
           ),
         ),
       ),
@@ -88,22 +124,27 @@ class NetworkErrorWidget extends StatelessWidget {
   }
 }
 
-class _NetworkErrorDialogContent extends StatefulWidget {
-  final Future<bool> Function() onRetry;
+class _CartUpdateRetryContent extends StatefulWidget {
+  final CartCubit cartCubit;
+  final String cartItemId;
+  final int quantity;
+  final bool isRemove;
   final VoidCallback onClose;
 
-  const _NetworkErrorDialogContent({
-    required this.onRetry,
+  const _CartUpdateRetryContent({
+    required this.cartCubit,
+    required this.cartItemId,
+    required this.quantity,
+    required this.isRemove,
     required this.onClose,
   });
 
   @override
-  State<_NetworkErrorDialogContent> createState() =>
-      _NetworkErrorDialogContentState();
+  State<_CartUpdateRetryContent> createState() =>
+      _CartUpdateRetryContentState();
 }
 
-class _NetworkErrorDialogContentState
-    extends State<_NetworkErrorDialogContent> {
+class _CartUpdateRetryContentState extends State<_CartUpdateRetryContent> {
   bool _isRetrying = false;
 
   Future<void> _handleRetry() async {
@@ -111,28 +152,84 @@ class _NetworkErrorDialogContentState
 
     setState(() => _isRetrying = true);
 
+    bool success = false;
     try {
-      debugPrint('🔄 NetworkErrorWidget: Starting retry...');
-      final success = await widget.onRetry();
-      debugPrint('🔄 NetworkErrorWidget: Retry result = $success');
-
-      if (!mounted) return;
-
-      setState(() => _isRetrying = false);
-
-      if (success) {
-        debugPrint('✅ NetworkErrorWidget: Success, closing dialog');
-        widget.onClose();
+      if (widget.isRemove) {
+        success =
+            await widget.cartCubit.removeFromCartDirect(widget.cartItemId);
       } else {
-        debugPrint('❌ NetworkErrorWidget: Failed, staying open');
+        success = await widget.cartCubit
+            .updateQuantityDirect(widget.cartItemId, widget.quantity);
       }
     } catch (e) {
-      debugPrint('❌ NetworkErrorWidget: Error during retry: $e');
-      if (mounted) {
-        setState(() => _isRetrying = false);
-      }
+      success = false;
+    }
+
+    if (!mounted) return;
+
+    setState(() => _isRetrying = false);
+
+    if (success) {
+      widget.onClose();
     }
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return _ErrorContent(isRetrying: _isRetrying, onRetry: _handleRetry);
+  }
+}
+
+class _AddToCartRetryContent extends StatefulWidget {
+  final CartCubit cartCubit;
+  final String productId;
+  final VoidCallback onClose;
+
+  const _AddToCartRetryContent({
+    required this.cartCubit,
+    required this.productId,
+    required this.onClose,
+  });
+
+  @override
+  State<_AddToCartRetryContent> createState() => _AddToCartRetryContentState();
+}
+
+class _AddToCartRetryContentState extends State<_AddToCartRetryContent> {
+  bool _isRetrying = false;
+
+  Future<void> _handleRetry() async {
+    if (_isRetrying) return;
+
+    setState(() => _isRetrying = true);
+
+    bool success = false;
+    try {
+      success = await widget.cartCubit.addToCart(widget.productId, quantity: 1);
+    } catch (e) {
+      success = false;
+    }
+
+    if (!mounted) return;
+
+    setState(() => _isRetrying = false);
+
+    if (success) {
+      widget.onClose();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _ErrorContent(isRetrying: _isRetrying, onRetry: _handleRetry);
+  }
+}
+
+class _ErrorContent extends StatelessWidget {
+  final bool isRetrying;
+  final VoidCallback onRetry;
+
+  const _ErrorContent({required this.isRetrying, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -170,8 +267,8 @@ class _NetworkErrorDialogContentState
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: _isRetrying ? null : _handleRetry,
-              icon: _isRetrying
+              onPressed: isRetrying ? null : onRetry,
+              icon: isRetrying
                   ? const SizedBox(
                       width: 20,
                       height: 20,

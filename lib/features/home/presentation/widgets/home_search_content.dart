@@ -41,11 +41,11 @@ class HomeSearchContent extends StatelessWidget {
     }
 
     if (searchResults.isEmpty) {
-      return SizedBox(
-        height: 400,
-        child: Center(
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 60),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.search_off,
                   size: 80,
@@ -110,7 +110,6 @@ class HomeSearchContent extends StatelessWidget {
                 child: Text('no_more_results'.tr(),
                     style: const TextStyle(color: Colors.grey))),
           ),
-        const SizedBox(height: 20),
       ],
     );
   }
@@ -190,7 +189,6 @@ class _CategoriesGrid extends StatelessWidget {
             return const SizedBox.shrink();
           },
         ),
-        const SizedBox(height: 20),
       ],
     );
   }

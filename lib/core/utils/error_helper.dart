@@ -1,3 +1,5 @@
+import 'package:easy_localization/easy_localization.dart';
+
 /// Helper class to convert technical errors to user-friendly messages
 class ErrorHelper {
   static String getUserFriendlyMessage(String error) {
@@ -9,7 +11,7 @@ class ErrorHelper {
         lowerError.contains('network') ||
         lowerError.contains('connection refused') ||
         lowerError.contains('no internet')) {
-      return 'خطأ في الاتصال بالإنترنت';
+      return 'error_network'.tr();
     }
 
     // Auth errors - Invalid credentials (most common)
@@ -17,7 +19,7 @@ class ErrorHelper {
         lowerError.contains('invalid_credentials') ||
         lowerError.contains('invalid credentials') ||
         lowerError.contains('البريد الإلكتروني أو كلمة المرور غير صحيحة')) {
-      return 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+      return 'error_invalid_credentials'.tr();
     }
 
     // User not found
@@ -25,13 +27,13 @@ class ErrorHelper {
         lowerError.contains('no user found') ||
         lowerError.contains('email not found') ||
         lowerError.contains('المستخدم غير موجود')) {
-      return 'هذا الحساب غير موجود';
+      return 'error_user_not_found'.tr();
     }
 
     // Email not confirmed
     if (lowerError.contains('email not confirmed') ||
         lowerError.contains('confirm your email')) {
-      return 'يرجى تأكيد البريد الإلكتروني';
+      return 'error_email_not_confirmed'.tr();
     }
 
     // User already registered
@@ -40,37 +42,37 @@ class ErrorHelper {
         lowerError.contains('already registered') ||
         lowerError.contains('email already') ||
         lowerError.contains('البريد الإلكتروني مستخدم')) {
-      return 'هذا البريد الإلكتروني مسجل مسبقاً';
+      return 'error_email_exists'.tr();
     }
 
     // Invalid email
     if (lowerError.contains('invalid email') ||
         lowerError.contains('email invalid') ||
         lowerError.contains('البريد الإلكتروني غير صالح')) {
-      return 'البريد الإلكتروني غير صالح';
+      return 'error_invalid_email'.tr();
     }
 
     // Password errors
     if (lowerError.contains('weak password') ||
         lowerError.contains('كلمة المرور ضعيفة')) {
-      return 'كلمة المرور ضعيفة جداً';
+      return 'error_weak_password'.tr();
     }
 
     if (lowerError.contains('password') &&
         !lowerError.contains('invalid login')) {
-      return 'كلمة المرور غير صحيحة';
+      return 'error_wrong_password'.tr();
     }
 
     // Timeout errors
     if (lowerError.contains('timeout') || lowerError.contains('timed out')) {
-      return 'انتهت مهلة الاتصال، حاول مرة أخرى';
+      return 'error_timeout'.tr();
     }
 
     // Server errors
     if (lowerError.contains('500') ||
         lowerError.contains('internal server') ||
         lowerError.contains('server error')) {
-      return 'خطأ في الخادم، حاول لاحقاً';
+      return 'error_server'.tr();
     }
 
     // Permission errors
@@ -78,19 +80,19 @@ class ErrorHelper {
         lowerError.contains('denied') ||
         lowerError.contains('unauthorized') ||
         lowerError.contains('forbidden')) {
-      return 'ليس لديك صلاحية لهذا الإجراء';
+      return 'error_permission'.tr();
     }
 
     // Not found errors
     if (lowerError.contains('not found') || lowerError.contains('404')) {
-      return 'البيانات غير موجودة';
+      return 'error_not_found'.tr();
     }
 
     // Rate limit
     if (lowerError.contains('rate limit') ||
         lowerError.contains('too many requests') ||
         lowerError.contains('too many')) {
-      return 'محاولات كثيرة، انتظر قليلاً';
+      return 'error_rate_limit'.tr();
     }
 
     // If error is already in Arabic, return it
@@ -99,7 +101,7 @@ class ErrorHelper {
     }
 
     // Default error
-    return 'حدث خطأ، حاول مرة أخرى';
+    return 'error_generic'.tr();
   }
 
   static bool _isArabic(String text) {

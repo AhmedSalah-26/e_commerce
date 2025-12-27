@@ -389,5 +389,20 @@
   "sort_newest": "الأحدث",
   "sort_price_low_high": "السعر: من الأقل للأعلى",
   "sort_price_high_low": "السعر: من الأعلى للأقل",
-  "sort_highest_rated": "الأعلى تقييماً"
+  "sort_highest_rated": "الأعلى تقييماً",
+
+  "error_network": "خطأ في الاتصال بالإنترنت",
+  "error_invalid_credentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+  "error_user_not_found": "هذا الحساب غير موجود",
+  "error_email_not_confirmed": "يرجى تأكيد البريد الإلكتروني",
+  "error_email_exists": "هذا البريد الإلكتروني مسجل مسبقاً",
+  "error_invalid_email": "البريد الإلكتروني غير صالح",
+  "error_weak_password": "كلمة المرور ضعيفة جداً",
+  "error_wrong_password": "كلمة المرور غير صحيحة",
+  "error_timeout": "انتهت مهلة الاتصال، حاول مرة أخرى",
+  "error_server": "خطأ في الخادم، حاول لاحقاً",
+  "error_permission": "ليس لديك صلاحية لهذا الإجراء",
+  "error_not_found": "البيانات غير موجودة",
+  "error_rate_limit": "محاولات كثيرة، انتظر قليلاً",
+  "error_generic": "حدث خطأ، حاول مرة أخرى"
 }

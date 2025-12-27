@@ -389,5 +389,20 @@
   "sort_newest": "Newest",
   "sort_price_low_high": "Price: Low to High",
   "sort_price_high_low": "Price: High to Low",
-  "sort_highest_rated": "Highest Rated"
+  "sort_highest_rated": "Highest Rated",
+
+  "error_network": "Network connection error",
+  "error_invalid_credentials": "Invalid email or password",
+  "error_user_not_found": "Account not found",
+  "error_email_not_confirmed": "Please confirm your email",
+  "error_email_exists": "Email already registered",
+  "error_invalid_email": "Invalid email address",
+  "error_weak_password": "Password is too weak",
+  "error_wrong_password": "Wrong password",
+  "error_timeout": "Connection timed out, try again",
+  "error_server": "Server error, try later",
+  "error_permission": "You don't have permission",
+  "error_not_found": "Data not found",
+  "error_rate_limit": "Too many attempts, wait a moment",
+  "error_generic": "An error occurred, try again"
 }

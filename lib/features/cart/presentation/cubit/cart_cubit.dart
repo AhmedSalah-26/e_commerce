@@ -91,6 +91,9 @@ class CartCubit extends Cubit<CartState> {
       return;
     }
 
+    // Reset optimistic flag when adding new item
+    _isOptimisticUpdate = false;
+
     final currentState = state;
 
     // Check if item already exists - just update quantity

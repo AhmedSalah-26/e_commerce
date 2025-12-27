@@ -90,6 +90,7 @@ class _QuantityControlsState extends State<_QuantityControls> {
   late int _localQuantity;
   bool _isUpdating = false;
   bool _isRemoving = false;
+  late CartCubit _cartCubit;
 
   // Always return at least 1 for display
   int get displayQuantity => _localQuantity < 1 ? 1 : _localQuantity;
@@ -98,6 +99,12 @@ class _QuantityControlsState extends State<_QuantityControls> {
   void initState() {
     super.initState();
     _localQuantity = widget.quantity < 1 ? 1 : widget.quantity;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _cartCubit = context.read<CartCubit>();
   }
 
   @override
@@ -181,34 +188,39 @@ class _QuantityControlsState extends State<_QuantityControls> {
   }
 
   Future<bool> _updateWithRetry(int quantity) async {
-    final success = await context
-        .read<CartCubit>()
-        .updateQuantityDirect(widget.cartItemId, quantity);
+    debugPrint(
+        '🔄 _updateWithRetry: quantity=$quantity, cartItemId=${widget.cartItemId}');
+    final success =
+        await _cartCubit.updateQuantityDirect(widget.cartItemId, quantity);
+    debugPrint('🔄 _updateWithRetry: success=$success');
 
     if (mounted) {
       setState(() => _isUpdating = false);
-      if (!success) {
-        NetworkErrorWidget.showFullScreen(
-          context,
-          onRetry: () => _updateWithRetry(quantity),
-        );
-      }
+    }
+
+    if (!success && mounted) {
+      NetworkErrorWidget.showFullScreen(
+        context,
+        onRetry: () => _updateWithRetry(quantity),
+      );
     }
     return success;
   }
 
   Future<bool> _removeWithRetry() async {
-    final success =
-        await context.read<CartCubit>().removeFromCartDirect(widget.cartItemId);
+    debugPrint('🔄 _removeWithRetry: cartItemId=${widget.cartItemId}');
+    final success = await _cartCubit.removeFromCartDirect(widget.cartItemId);
+    debugPrint('🔄 _removeWithRetry: success=$success');
 
     if (mounted) {
       setState(() => _isRemoving = false);
-      if (!success) {
-        NetworkErrorWidget.showFullScreen(
-          context,
-          onRetry: _removeWithRetry,
-        );
-      }
+    }
+
+    if (!success && mounted) {
+      NetworkErrorWidget.showFullScreen(
+        context,
+        onRetry: _removeWithRetry,
+      );
     }
     return success;
   }
@@ -256,6 +268,15 @@ class _AddToCartButton extends StatefulWidget {
 
 class _AddToCartButtonState extends State<_AddToCartButton> {
   bool _isLoading = false;
+  late CartCubit _cartCubit;
+  late AuthCubit _authCubit;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _cartCubit = context.read<CartCubit>();
+    _authCubit = context.read<AuthCubit>();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -266,7 +287,7 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
       height: 40,
       child: ElevatedButton(
         onPressed:
-            widget.product.isOutOfStock || _isLoading ? null : _addToCart,
+            widget.product.isOutOfStock || _isLoading ? null : _handleAddToCart,
         style: ElevatedButton.styleFrom(
           backgroundColor: widget.product.isOutOfStock
               ? Colors.grey
@@ -302,23 +323,18 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
     );
   }
 
-  Future<bool> _addToCart() async {
-    final authState = context.read<AuthCubit>().state;
+  void _handleAddToCart() async {
+    final authState = _authCubit.state;
     if (authState is! AuthAuthenticated) {
       Tost.showCustomToast(context, 'login_required'.tr(),
           backgroundColor: Colors.orange);
-      return false;
+      return;
     }
 
     setState(() => _isLoading = true);
 
-    final cubit = context.read<CartCubit>();
-    cubit.setUserId(authState.user.id);
-    final success = await cubit.addToCart(
-      widget.product.id,
-      quantity: 1,
-      product: widget.product,
-    );
+    _cartCubit.setUserId(authState.user.id);
+    final success = await _addToCart();
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -326,14 +342,19 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
         Tost.showCustomToast(context, 'added_to_cart'.tr(),
             backgroundColor: Colors.green);
       } else {
-        // Show full screen network error dialog
-        _showNetworkErrorDialog();
+        NetworkErrorWidget.showFullScreen(context, onRetry: _addToCart);
       }
     }
-    return success;
   }
 
-  void _showNetworkErrorDialog() {
-    NetworkErrorWidget.showFullScreen(context, onRetry: _addToCart);
+  Future<bool> _addToCart() async {
+    debugPrint('🔄 _addToCart: productId=${widget.product.id}');
+    final success = await _cartCubit.addToCart(
+      widget.product.id,
+      quantity: 1,
+      product: widget.product,
+    );
+    debugPrint('🔄 _addToCart: success=$success');
+    return success;
   }
 }

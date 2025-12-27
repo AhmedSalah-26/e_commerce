@@ -112,16 +112,22 @@ class _NetworkErrorDialogContentState
     setState(() => _isRetrying = true);
 
     try {
+      debugPrint('🔄 NetworkErrorWidget: Starting retry...');
       final success = await widget.onRetry();
+      debugPrint('🔄 NetworkErrorWidget: Retry result = $success');
 
       if (!mounted) return;
 
       setState(() => _isRetrying = false);
 
       if (success) {
+        debugPrint('✅ NetworkErrorWidget: Success, closing dialog');
         widget.onClose();
+      } else {
+        debugPrint('❌ NetworkErrorWidget: Failed, staying open');
       }
     } catch (e) {
+      debugPrint('❌ NetworkErrorWidget: Error during retry: $e');
       if (mounted) {
         setState(() => _isRetrying = false);
       }

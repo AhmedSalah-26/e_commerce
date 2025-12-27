@@ -299,6 +299,10 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
       if (success) {
         Tost.showCustomToast(context, 'added_to_cart'.tr(),
             backgroundColor: Colors.green);
+      } else {
+        // Show network error toast
+        Tost.showCustomToast(context, 'error_network'.tr(),
+            backgroundColor: Colors.red);
       }
     }
   }

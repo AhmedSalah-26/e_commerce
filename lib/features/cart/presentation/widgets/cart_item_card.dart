@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -8,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/cart_item_entity.dart';
 
-class CartItemCard extends StatelessWidget {
+class CartItemCard extends StatefulWidget {
   final CartItemEntity cartItem;
   final VoidCallback onIncreaseQuantity;
   final VoidCallback onDecreaseQuantity;
@@ -23,6 +24,69 @@ class CartItemCard extends StatelessWidget {
   });
 
   @override
+  State<CartItemCard> createState() => _CartItemCardState();
+}
+
+class _CartItemCardState extends State<CartItemCard> {
+  Timer? _debounceTimer;
+  late int _localQuantity;
+
+  @override
+  void initState() {
+    super.initState();
+    _localQuantity = widget.cartItem.quantity;
+  }
+
+  @override
+  void didUpdateWidget(CartItemCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update local quantity when cart state changes from server
+    if (widget.cartItem.quantity != oldWidget.cartItem.quantity &&
+        _debounceTimer == null) {
+      _localQuantity = widget.cartItem.quantity;
+    }
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  void _handleIncrease() {
+    setState(() {
+      _localQuantity++;
+    });
+
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        widget.onIncreaseQuantity();
+      }
+    });
+  }
+
+  void _handleDecrease() {
+    setState(() {
+      _localQuantity--;
+    });
+
+    _debounceTimer?.cancel();
+
+    if (_localQuantity < 1) {
+      // Remove immediately if quantity is 0
+      widget.onRemove();
+      return;
+    }
+
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        widget.onDecreaseQuantity();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     double screenWidth = MediaQuery.of(context).size.width;
@@ -31,23 +95,23 @@ class CartItemCard extends StatelessWidget {
     double fontSize = screenWidth * 0.04;
     final isRtl = context.locale.languageCode == 'ar';
 
-    final product = cartItem.product;
+    final product = widget.cartItem.product;
     final productName = product?.name ?? 'منتج';
     final productPrice = product?.effectivePrice ?? 0;
     final productImage = product?.mainImage ?? '';
-    double totalPrice = productPrice * cartItem.quantity;
+    double totalPrice = productPrice * _localQuantity;
     final hasDiscount = product?.hasDiscount ?? false;
     final isFlashSale = product?.isFlashSaleActive ?? false;
     final discountPercent = product?.discountPercentage ?? 0;
     final isInactive = product != null && !product.isActive;
 
     return Slidable(
-      key: ValueKey(cartItem.id),
+      key: ValueKey(widget.cartItem.id),
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
         children: [
           SlidableAction(
-            onPressed: (context) => onRemove(),
+            onPressed: (context) => widget.onRemove(),
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
             icon: Icons.delete,
@@ -183,10 +247,10 @@ class CartItemCard extends StatelessWidget {
                             IconButton(
                               icon: Icon(Icons.add,
                                   color: Colors.green, size: fontSize * 1.2),
-                              onPressed: onIncreaseQuantity,
+                              onPressed: _handleIncrease,
                             ),
                             Text(
-                              '${cartItem.quantity}',
+                              '$_localQuantity',
                               style: AppTextStyle.bold_18_medium_brown.copyWith(
                                 fontSize: fontSize,
                               ),
@@ -194,7 +258,7 @@ class CartItemCard extends StatelessWidget {
                             IconButton(
                               icon: Icon(Icons.remove,
                                   color: Colors.red, size: fontSize * 1.2),
-                              onPressed: onDecreaseQuantity,
+                              onPressed: _handleDecrease,
                             ),
                           ],
                         ),

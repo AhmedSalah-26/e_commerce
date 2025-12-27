@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -70,7 +72,7 @@ class _CartData {
   int get hashCode => Object.hash(isInCart, cartItemId, quantity);
 }
 
-class _QuantityControls extends StatelessWidget {
+class _QuantityControls extends StatefulWidget {
   final int quantity;
   final String cartItemId;
   final int maxStock;
@@ -80,6 +82,35 @@ class _QuantityControls extends StatelessWidget {
     required this.cartItemId,
     required this.maxStock,
   });
+
+  @override
+  State<_QuantityControls> createState() => _QuantityControlsState();
+}
+
+class _QuantityControlsState extends State<_QuantityControls> {
+  Timer? _debounceTimer;
+  late int _localQuantity;
+
+  @override
+  void initState() {
+    super.initState();
+    _localQuantity = widget.quantity;
+  }
+
+  @override
+  void didUpdateWidget(_QuantityControls oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update local quantity when cart state changes from server
+    if (widget.quantity != oldWidget.quantity && _debounceTimer == null) {
+      _localQuantity = widget.quantity;
+    }
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +124,7 @@ class _QuantityControls extends StatelessWidget {
           onTap: () => _decrease(context),
         ),
         Text(
-          '$quantity',
+          '$_localQuantity',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -102,25 +133,55 @@ class _QuantityControls extends StatelessWidget {
         ),
         _QuantityButton(
           icon: Icons.add,
-          onTap: quantity < maxStock ? () => _increase(context) : null,
+          onTap: _localQuantity < widget.maxStock
+              ? () => _increase(context)
+              : null,
         ),
       ],
     );
   }
 
   void _decrease(BuildContext context) {
-    final cubit = context.read<CartCubit>();
-    if (quantity > 1) {
-      cubit.updateQuantity(cartItemId, quantity - 1);
-    } else {
-      cubit.removeFromCart(cartItemId);
+    setState(() {
+      _localQuantity--;
+    });
+
+    _debounceTimer?.cancel();
+
+    if (_localQuantity < 1) {
+      // Remove immediately if quantity is 0
+      final cubit = context.read<CartCubit>();
+      cubit.removeFromCart(widget.cartItemId);
       Tost.showCustomToast(context, 'removed_from_cart'.tr(),
           backgroundColor: Colors.orange);
+      return;
     }
+
+    // Debounce the update
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        context
+            .read<CartCubit>()
+            .updateQuantity(widget.cartItemId, _localQuantity);
+      }
+    });
   }
 
   void _increase(BuildContext context) {
-    context.read<CartCubit>().updateQuantity(cartItemId, quantity + 1);
+    if (_localQuantity >= widget.maxStock) return;
+
+    setState(() {
+      _localQuantity++;
+    });
+
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        context
+            .read<CartCubit>()
+            .updateQuantity(widget.cartItemId, _localQuantity);
+      }
+    });
   }
 }
 

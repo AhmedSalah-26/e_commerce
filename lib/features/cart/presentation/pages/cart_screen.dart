@@ -118,25 +118,29 @@ class _CartScreenState extends State<CartScreen> {
                               return CartItemCard(
                                 key: ValueKey(cartItem.id),
                                 cartItem: cartItem,
-                                onRemove: () {
-                                  context
+                                onRemove: () async {
+                                  await context
                                       .read<CartCubit>()
                                       .removeFromCart(cartItem.id);
                                 },
-                                onIncreaseQuantity: () {
-                                  context.read<CartCubit>().updateQuantity(
+                                onIncreaseQuantity: () async {
+                                  await context
+                                      .read<CartCubit>()
+                                      .updateQuantity(
                                         cartItem.id,
                                         cartItem.quantity + 1,
                                       );
                                 },
-                                onDecreaseQuantity: () {
+                                onDecreaseQuantity: () async {
                                   if (cartItem.quantity > 1) {
-                                    context.read<CartCubit>().updateQuantity(
+                                    await context
+                                        .read<CartCubit>()
+                                        .updateQuantity(
                                           cartItem.id,
                                           cartItem.quantity - 1,
                                         );
                                   } else {
-                                    context
+                                    await context
                                         .read<CartCubit>()
                                         .removeFromCart(cartItem.id);
                                   }

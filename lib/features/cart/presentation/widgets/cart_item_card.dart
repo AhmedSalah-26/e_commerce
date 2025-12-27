@@ -10,9 +10,9 @@ import '../../domain/entities/cart_item_entity.dart';
 
 class CartItemCard extends StatefulWidget {
   final CartItemEntity cartItem;
-  final VoidCallback onIncreaseQuantity;
-  final VoidCallback onDecreaseQuantity;
-  final VoidCallback onRemove;
+  final Future<void> Function() onIncreaseQuantity;
+  final Future<void> Function() onDecreaseQuantity;
+  final Future<void> Function() onRemove;
 
   const CartItemCard({
     super.key,
@@ -36,10 +36,7 @@ class _CartItemCardState extends State<CartItemCard> {
       _isLoading = true;
     });
 
-    widget.onIncreaseQuantity();
-
-    // Wait for the operation to complete
-    await Future.delayed(const Duration(seconds: 1));
+    await widget.onIncreaseQuantity();
 
     if (mounted) {
       setState(() {
@@ -55,10 +52,7 @@ class _CartItemCardState extends State<CartItemCard> {
       _isLoading = true;
     });
 
-    widget.onDecreaseQuantity();
-
-    // Wait for the operation to complete
-    await Future.delayed(const Duration(seconds: 1));
+    await widget.onDecreaseQuantity();
 
     if (mounted) {
       setState(() {

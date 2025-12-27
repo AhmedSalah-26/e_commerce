@@ -7,6 +7,7 @@ import '../../../features/auth/presentation/cubit/auth_state.dart';
 import '../../../features/cart/presentation/cubit/cart_cubit.dart';
 import '../../../features/cart/presentation/cubit/cart_state.dart';
 import '../../../features/products/domain/entities/product_entity.dart';
+import '../network_error_widget.dart';
 import '../toast.dart';
 
 class ProductCartButton extends StatelessWidget {
@@ -300,10 +301,27 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
         Tost.showCustomToast(context, 'added_to_cart'.tr(),
             backgroundColor: Colors.green);
       } else {
-        // Show network error toast
-        Tost.showCustomToast(context, 'error_network'.tr(),
-            backgroundColor: Colors.red);
+        // Show full screen network error dialog
+        _showNetworkErrorDialog();
       }
     }
+  }
+
+  void _showNetworkErrorDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog.fullscreen(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        child: NetworkErrorWidget(
+          showBackButton: true,
+          onBack: () => Navigator.of(ctx).pop(),
+          onRetry: () {
+            Navigator.of(ctx).pop();
+            _addToCart();
+          },
+        ),
+      ),
+    );
   }
 }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -65,11 +64,9 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
         });
       }
     } catch (e) {
-      // Store doesn't exist yet, that's fine
+      debugPrint('StoreInfoDialog: Error loading store data: $e');
     } finally {
-      if (mounted) {
-        setState(() => _isLoadingData = false);
-      }
+      if (mounted) setState(() => _isLoadingData = false);
     }
   }
 
@@ -83,9 +80,7 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
       );
 
       if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-        });
+        setState(() => _selectedImage = File(pickedFile.path));
       }
     } catch (e) {
       if (mounted) {
@@ -103,22 +98,19 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
 
     try {
       final fileName =
-          'store_$merchantId\_${DateTime.now().millisecondsSinceEpoch}.jpg';
+          'store_${merchantId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final bytes = await _selectedImage!.readAsBytes();
 
-      await Supabase.instance.client.storage
-          .from('stores')
-          .uploadBinary(fileName, bytes,
-              fileOptions: const FileOptions(
-                contentType: 'image/jpeg',
-                upsert: true,
-              ));
+      await Supabase.instance.client.storage.from('stores').uploadBinary(
+            fileName,
+            bytes,
+            fileOptions:
+                const FileOptions(contentType: 'image/jpeg', upsert: true),
+          );
 
-      final publicUrl = Supabase.instance.client.storage
+      return Supabase.instance.client.storage
           .from('stores')
           .getPublicUrl(fileName);
-
-      return publicUrl;
     } catch (e) {
       debugPrint('Error uploading logo: $e');
       return _logoUrl;
@@ -141,23 +133,16 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
     setState(() => _isLoading = true);
 
     try {
-      // Upload logo if selected
       final logoUrl = await _uploadLogo(authState.user.id);
 
-      final storeData = {
+      await Supabase.instance.client.from('stores').upsert({
         'merchant_id': authState.user.id,
         'name': _storeNameController.text.trim(),
         'description': _storeDescController.text.trim(),
         'address': _storeAddressController.text.trim(),
         'phone': _storePhoneController.text.trim(),
         'logo_url': logoUrl,
-      };
-
-      // Upsert - insert or update if exists
-      await Supabase.instance.client.from('stores').upsert(
-            storeData,
-            onConflict: 'merchant_id',
-          );
+      }, onConflict: 'merchant_id');
 
       if (mounted) {
         Navigator.pop(context);
@@ -176,9 +161,7 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -193,7 +176,10 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
+      backgroundColor: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text(widget.isRtl ? 'معلومات المتجر' : 'Store Information'),
       content: _isLoadingData
@@ -205,7 +191,6 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Store Logo
                   GestureDetector(
                     onTap: _pickImage,
                     child: Stack(
@@ -214,30 +199,24 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
                           width: 100,
                           height: 100,
                           decoration: BoxDecoration(
-                            color: AppColours.brownLight.withValues(alpha: 0.1),
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppColours.brownLight,
-                              width: 2,
-                            ),
+                                color: theme.colorScheme.primary, width: 2),
                             image: _selectedImage != null
                                 ? DecorationImage(
                                     image: FileImage(_selectedImage!),
-                                    fit: BoxFit.cover,
-                                  )
+                                    fit: BoxFit.cover)
                                 : _logoUrl != null
                                     ? DecorationImage(
                                         image: NetworkImage(_logoUrl!),
-                                        fit: BoxFit.cover,
-                                      )
+                                        fit: BoxFit.cover)
                                     : null,
                           ),
                           child: _selectedImage == null && _logoUrl == null
-                              ? const Icon(
-                                  Icons.store,
-                                  size: 48,
-                                  color: AppColours.brownMedium,
-                                )
+                              ? Icon(Icons.store,
+                                  size: 48, color: theme.colorScheme.primary)
                               : null,
                         ),
                         Positioned(
@@ -245,15 +224,12 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
                           right: 0,
                           child: Container(
                             padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(
-                              color: AppColours.primary,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              size: 18,
-                              color: Colors.white,
-                            ),
+                            child: const Icon(Icons.camera_alt,
+                                size: 18, color: Colors.white),
                           ),
                         ),
                       ],
@@ -262,9 +238,8 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
                   const SizedBox(height: 8),
                   Text(
                     widget.isRtl ? 'اضغط لتغيير الصورة' : 'Tap to change logo',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -274,8 +249,7 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
                       labelText: widget.isRtl ? 'اسم المتجر *' : 'Store Name *',
                       prefixIcon: const Icon(Icons.store_outlined),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -286,8 +260,7 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
                       labelText: widget.isRtl ? 'رقم المتجر' : 'Store Phone',
                       prefixIcon: const Icon(Icons.phone_outlined),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -298,8 +271,7 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
                           widget.isRtl ? 'عنوان المتجر' : 'Store Address',
                       prefixIcon: const Icon(Icons.location_on_outlined),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -311,8 +283,7 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
                           widget.isRtl ? 'وصف المتجر' : 'Store Description',
                       prefixIcon: const Icon(Icons.description_outlined),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ],
@@ -326,21 +297,16 @@ class _StoreInfoDialogState extends State<StoreInfoDialog> {
         ElevatedButton(
           onPressed: _isLoading || _isLoadingData ? null : _saveStore,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColours.primary,
-          ),
+              backgroundColor: theme.colorScheme.primary),
           child: _isLoading
               ? const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
+                      strokeWidth: 2, color: Colors.white),
                 )
-              : Text(
-                  widget.isRtl ? 'حفظ' : 'Save',
-                  style: const TextStyle(color: Colors.white),
-                ),
+              : Text(widget.isRtl ? 'حفظ' : 'Save',
+                  style: const TextStyle(color: Colors.white)),
         ),
       ],
     );

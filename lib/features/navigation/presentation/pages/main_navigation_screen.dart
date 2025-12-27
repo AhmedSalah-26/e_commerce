@@ -3,8 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/injection_container.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
+import '../../../categories/presentation/cubit/categories_cubit.dart';
+import '../../../home/presentation/cubit/home_sliders_cubit.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -31,74 +34,84 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BackButtonListener(
-      onBackButtonPressed: () async {
-        if (context.canPop()) {
-          return false;
-        }
-        if (widget.navigationShell.currentIndex != 0) {
-          widget.navigationShell.goBranch(0, initialLocation: true);
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<CategoriesCubit>(
+          create: (_) => sl<CategoriesCubit>(),
+        ),
+        BlocProvider<HomeSlidersCubit>(
+          create: (_) => sl<HomeSlidersCubit>(),
+        ),
+      ],
+      child: BackButtonListener(
+        onBackButtonPressed: () async {
+          if (context.canPop()) {
+            return false;
+          }
+          if (widget.navigationShell.currentIndex != 0) {
+            widget.navigationShell.goBranch(0, initialLocation: true);
+            return true;
+          }
+          SystemNavigator.pop();
           return true;
-        }
-        SystemNavigator.pop();
-        return true;
-      },
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: widget.navigationShell,
-        bottomNavigationBar: BlocSelector<CartCubit, CartState, int>(
-          selector: (state) => state is CartLoaded
-              ? state.items.fold<int>(0, (sum, item) => sum + item.quantity)
-              : 0,
-          builder: (context, cartItemCount) {
-            return Container(
-              decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, -3),
+        },
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: widget.navigationShell,
+          bottomNavigationBar: BlocSelector<CartCubit, CartState, int>(
+            selector: (state) => state is CartLoaded
+                ? state.items.fold<int>(0, (sum, item) => sum + item.quantity)
+                : 0,
+            builder: (context, cartItemCount) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: theme.scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
                   ),
-                ],
-              ),
-              child: SafeArea(
-                top: false,
-                child: SizedBox(
-                  height: 65,
-                  child: Directionality(
-                    textDirection: TextDirection.ltr,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildNavItem(0, Icons.home_outlined, Icons.home),
-                        _buildNavItemWithBadge(
-                          1,
-                          Icons.shopping_cart_outlined,
-                          Icons.shopping_cart,
-                          cartItemCount,
-                        ),
-                        _buildNavItem(
-                          2,
-                          Icons.favorite_border,
-                          Icons.favorite,
-                        ),
-                        _buildNavItem(
-                          3,
-                          Icons.settings_outlined,
-                          Icons.settings,
-                        ),
-                      ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, -3),
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: SizedBox(
+                    height: 65,
+                    child: Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildNavItem(0, Icons.home_outlined, Icons.home),
+                          _buildNavItemWithBadge(
+                            1,
+                            Icons.shopping_cart_outlined,
+                            Icons.shopping_cart,
+                            cartItemCount,
+                          ),
+                          _buildNavItem(
+                            2,
+                            Icons.favorite_border,
+                            Icons.favorite,
+                          ),
+                          _buildNavItem(
+                            3,
+                            Icons.settings_outlined,
+                            Icons.settings,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

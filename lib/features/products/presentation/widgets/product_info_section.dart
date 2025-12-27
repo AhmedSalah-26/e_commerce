@@ -23,6 +23,8 @@ class ProductInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Directionality(
       textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Row(
@@ -32,8 +34,10 @@ class ProductInfoSection extends StatelessWidget {
             flex: 2,
             child: AutoSizeText(
               product.name,
-              style: AppTextStyle.semiBold_20_dark_brown
-                  .copyWith(fontSize: screenWidth * 0.04),
+              style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+                fontSize: screenWidth * 0.04,
+                color: theme.colorScheme.onSurface,
+              ),
               minFontSize: 14,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

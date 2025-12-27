@@ -24,6 +24,8 @@ class SearchResultsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     if (isSearching) {
       return const SliverToBoxAdapter(
         child: ProductsGridSkeleton(itemCount: 4),
@@ -80,7 +82,9 @@ class SearchResultsWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
               '${'search_results'.tr()} (${searchResults.length})',
-              style: AppTextStyle.semiBold_16_dark_brown,
+              style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+                color: theme.colorScheme.onSurface,
+              ),
             ),
           ),
           Padding(

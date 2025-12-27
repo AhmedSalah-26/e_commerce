@@ -6,9 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
-import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../favorites/presentation/cubit/favorites_cubit.dart';
-import '../../../home/presentation/cubit/home_sliders_cubit.dart';
 import '../../../products/presentation/cubit/products_cubit.dart';
 
 class LanguageSettingsScreen extends StatefulWidget {
@@ -191,15 +189,13 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
     if (!mounted) return;
 
     final locale = _selectedLanguage;
+
+    // Update global cubits
     context.read<ProductsCubit>().setLocale(locale);
-    context.read<CategoriesCubit>().setLocale(locale);
     context.read<CartCubit>().setLocale(locale);
     context.read<FavoritesCubit>().setLocale(locale);
-    context.read<HomeSlidersCubit>().setLocale(locale);
 
     context.read<ProductsCubit>().reset();
-    context.read<CategoriesCubit>().reset();
-    context.read<HomeSlidersCubit>().reset();
 
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
@@ -207,6 +203,8 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
       context.read<CartCubit>().reset();
     }
 
+    // Navigate to home - the scoped cubits (CategoriesCubit, HomeSlidersCubit)
+    // will reload automatically via didChangeDependencies in HomeScreen
     if (mounted) {
       context.go('/home');
     }

@@ -13,11 +13,8 @@ import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/auth/presentation/cubit/auth_state.dart';
 import 'features/products/presentation/cubit/products_cubit.dart';
 import 'features/products/data/datasources/product_remote_datasource.dart';
-import 'features/categories/presentation/cubit/categories_cubit.dart';
 import 'features/cart/presentation/cubit/cart_cubit.dart';
-import 'features/orders/presentation/cubit/orders_cubit.dart';
 import 'features/favorites/presentation/cubit/favorites_cubit.dart';
-import 'features/home/presentation/cubit/home_sliders_cubit.dart';
 import 'features/notifications/data/services/order_status_listener.dart';
 
 void main() async {
@@ -60,20 +57,11 @@ void main() async {
           BlocProvider<ProductsCubit>(
             create: (_) => di.sl<ProductsCubit>(),
           ),
-          BlocProvider<CategoriesCubit>(
-            create: (_) => di.sl<CategoriesCubit>(),
-          ),
           BlocProvider<CartCubit>(
             create: (_) => di.sl<CartCubit>(),
           ),
-          BlocProvider<OrdersCubit>(
-            create: (_) => di.sl<OrdersCubit>(),
-          ),
           BlocProvider<FavoritesCubit>(
             create: (_) => di.sl<FavoritesCubit>(),
-          ),
-          BlocProvider<HomeSlidersCubit>(
-            create: (_) => di.sl<HomeSlidersCubit>(),
           ),
         ],
         child: const MyApp(),
@@ -143,12 +131,10 @@ class _MyAppState extends State<MyApp> {
   void _initializeApp() {
     final locale = context.locale.languageCode;
 
-    // Set locale for all cubits
+    // Set locale for global cubits
     context.read<ProductsCubit>().setLocale(locale);
-    context.read<CategoriesCubit>().setLocale(locale);
     context.read<CartCubit>().setLocale(locale);
     context.read<FavoritesCubit>().setLocale(locale);
-    context.read<HomeSlidersCubit>().setLocale(locale);
 
     // Initialize user data if authenticated
     final authState = context.read<AuthCubit>().state;

@@ -22,7 +22,9 @@ class EmptyCartMessage extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             'cart_empty'.tr(),
-            style: AppTextStyle.semiBold_20_dark_brown,
+            style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+              color: theme.colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 10),
           Text(

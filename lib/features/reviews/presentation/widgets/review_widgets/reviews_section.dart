@@ -90,12 +90,15 @@ class _ReviewsSectionState extends State<ReviewsSection> {
   }
 
   Widget _buildHeader(ReviewsLoaded state) {
+    final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           'reviews_and_ratings'.tr(),
-          style: AppTextStyle.semiBold_20_dark_brown,
+          style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+            color: theme.colorScheme.onSurface,
+          ),
         ),
         if (state.totalReviews > 0)
           Text(

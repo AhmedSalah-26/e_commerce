@@ -126,8 +126,9 @@ class CartItemCard extends StatelessWidget {
                           children: [
                             Text(
                               productName,
-                              style: AppTextStyle.bold_18_medium_brown
-                                  .copyWith(fontSize: fontSize),
+                              style: AppTextStyle.bold_18_medium_brown.copyWith(
+                                fontSize: fontSize,
+                              ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -161,8 +162,11 @@ class CartItemCard extends StatelessWidget {
                               ),
                             Text(
                               '${'total_price'.tr()}: ${totalPrice.toStringAsFixed(2)} ${'egp'.tr()}',
-                              style: AppTextStyle.semiBold_16_dark_brown
-                                  .copyWith(fontSize: fontSize * 0.8),
+                              style:
+                                  AppTextStyle.semiBold_16_dark_brown.copyWith(
+                                fontSize: fontSize * 0.8,
+                                color: theme.colorScheme.onSurface,
+                              ),
                             ),
                           ],
                         ),
@@ -183,8 +187,9 @@ class CartItemCard extends StatelessWidget {
                             ),
                             Text(
                               '${cartItem.quantity}',
-                              style: AppTextStyle.bold_18_medium_brown
-                                  .copyWith(fontSize: fontSize),
+                              style: AppTextStyle.bold_18_medium_brown.copyWith(
+                                fontSize: fontSize,
+                              ),
                             ),
                             IconButton(
                               icon: Icon(Icons.remove,

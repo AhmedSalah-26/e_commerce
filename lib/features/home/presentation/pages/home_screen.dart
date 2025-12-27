@@ -42,6 +42,12 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   void _loadAllData() {
+    final locale = context.locale.languageCode;
+
+    // Set locale for scoped cubits
+    context.read<CategoriesCubit>().setLocale(locale);
+    context.read<HomeSlidersCubit>().setLocale(locale);
+
     context.read<ProductsCubit>().loadProducts();
     context.read<CategoriesCubit>().loadCategories();
     context.read<HomeSlidersCubit>().loadSliders();

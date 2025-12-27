@@ -140,11 +140,17 @@ class AppRouter {
       ),
       GoRoute(
         path: '/checkout',
-        builder: (context, state) => const CheckoutPage(),
+        builder: (context, state) => BlocProvider(
+          create: (_) => sl<OrdersCubit>(),
+          child: const CheckoutPage(),
+        ),
       ),
       GoRoute(
         path: '/orders',
-        builder: (context, state) => const OrdersPage(),
+        builder: (context, state) => BlocProvider(
+          create: (_) => sl<OrdersCubit>(),
+          child: const OrdersPage(),
+        ),
       ),
       GoRoute(
         path: '/parent-order/:id',

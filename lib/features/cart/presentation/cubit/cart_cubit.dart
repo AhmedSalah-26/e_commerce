@@ -13,6 +13,8 @@ class CartCubit extends Cubit<CartState> {
   final CartRepository _repository;
   StreamSubscription<List<CartItemEntity>>? _cartSubscription;
   String? _currentUserId;
+  bool _isOptimisticUpdate =
+      false; // Flag to ignore stream during optimistic updates
 
   CartCubit(this._repository) : super(const CartInitial());
 
@@ -62,12 +64,16 @@ class CartCubit extends Cubit<CartState> {
     _cartSubscription?.cancel();
     _cartSubscription = _repository.watchCartItems(userId).listen(
       (items) {
+        // Ignore stream updates during optimistic operations
+        if (_isOptimisticUpdate) return;
+
         emit(CartLoaded(
           items: items,
           total: _calculateTotal(items),
         ));
       },
       onError: (error) {
+        if (_isOptimisticUpdate) return;
         emit(CartError(error.toString()));
       },
     );
@@ -204,6 +210,9 @@ class CartCubit extends Cubit<CartState> {
     final currentState = state;
     if (currentState is! CartLoaded) return;
 
+    // Set flag to ignore stream updates
+    _isOptimisticUpdate = true;
+
     // Optimistic update - update UI immediately
     if (quantity <= 0) {
       // Remove item locally
@@ -237,9 +246,15 @@ class CartCubit extends Cubit<CartState> {
     // Then update on server
     final result = await _repository.updateQuantity(cartItemId, quantity);
 
+    // Re-enable stream updates after a delay to let server sync
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _isOptimisticUpdate = false;
+    });
+
     result.fold(
       (failure) {
         // Revert on failure
+        _isOptimisticUpdate = false;
         emit(CartError(failure.message));
         emit(currentState);
       },
@@ -257,6 +272,9 @@ class CartCubit extends Cubit<CartState> {
     final currentState = state;
     if (currentState is! CartLoaded) return;
 
+    // Set flag to ignore stream updates
+    _isOptimisticUpdate = true;
+
     // Optimistic update - remove from UI immediately
     final updatedItems =
         currentState.items.where((item) => item.id != cartItemId).toList();
@@ -268,9 +286,15 @@ class CartCubit extends Cubit<CartState> {
     // Then remove from server
     final result = await _repository.removeFromCart(cartItemId);
 
+    // Re-enable stream updates after a delay
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _isOptimisticUpdate = false;
+    });
+
     result.fold(
       (failure) {
         // Revert on failure
+        _isOptimisticUpdate = false;
         emit(CartError(failure.message));
         emit(currentState);
       },

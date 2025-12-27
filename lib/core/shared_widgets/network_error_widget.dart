@@ -73,13 +73,14 @@ class NetworkErrorWidget extends StatelessWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => PopScope(
+      useRootNavigator: true,
+      builder: (dialogContext) => PopScope(
         canPop: false,
         child: Dialog.fullscreen(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: Theme.of(dialogContext).scaffoldBackgroundColor,
           child: _NetworkErrorDialogContent(
             onRetry: onRetry,
-            dialogContext: ctx,
+            onClose: () => Navigator.of(dialogContext).pop(),
           ),
         ),
       ),
@@ -89,11 +90,11 @@ class NetworkErrorWidget extends StatelessWidget {
 
 class _NetworkErrorDialogContent extends StatefulWidget {
   final Future<bool> Function() onRetry;
-  final BuildContext dialogContext;
+  final VoidCallback onClose;
 
   const _NetworkErrorDialogContent({
     required this.onRetry,
-    required this.dialogContext,
+    required this.onClose,
   });
 
   @override
@@ -110,12 +111,19 @@ class _NetworkErrorDialogContentState
 
     setState(() => _isRetrying = true);
 
-    final success = await widget.onRetry();
+    try {
+      final success = await widget.onRetry();
 
-    if (mounted) {
+      if (!mounted) return;
+
       setState(() => _isRetrying = false);
+
       if (success) {
-        Navigator.of(widget.dialogContext).pop();
+        widget.onClose();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isRetrying = false);
       }
     }
   }

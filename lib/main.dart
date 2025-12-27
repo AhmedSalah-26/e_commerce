@@ -2,6 +2,7 @@ import 'package:app_links/app_links.dart';
 import 'package:chottu_link/chottu_link.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/routing/app_router.dart';
@@ -21,6 +22,13 @@ import 'features/notifications/data/services/order_status_listener.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Lock orientation to portrait only
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   await EasyLocalization.ensureInitialized();
 
   // Initialize ChottuLink SDK (for analytics only, not for deep link handling)

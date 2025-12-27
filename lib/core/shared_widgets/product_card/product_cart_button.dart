@@ -158,7 +158,7 @@ class _QuantityControlsState extends State<_QuantityControls> {
     }
 
     // Debounce the update
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+    _debounceTimer = Timer(const Duration(milliseconds: 1000), () {
       if (mounted) {
         context
             .read<CartCubit>()
@@ -175,7 +175,7 @@ class _QuantityControlsState extends State<_QuantityControls> {
     });
 
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+    _debounceTimer = Timer(const Duration(milliseconds: 1000), () {
       if (mounted) {
         context
             .read<CartCubit>()

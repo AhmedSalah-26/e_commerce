@@ -80,7 +80,8 @@ class CartCubit extends Cubit<CartState> {
   }
 
   /// Add item to cart (optimistic update - no flickering)
-  Future<void> addToCart(String productId,
+  /// Returns true if successful, false otherwise
+  Future<bool> addToCart(String productId,
       {int quantity = 1, ProductEntity? product}) async {
     logger.i(
         '🛒 Adding to cart: productId=$productId, qty=$quantity, userId=$_currentUserId');
@@ -88,7 +89,7 @@ class CartCubit extends Cubit<CartState> {
     if (_currentUserId == null) {
       logger.e('❌ Cannot add to cart: No user ID set');
       emit(const CartError('يجب تسجيل الدخول أولاً'));
-      return;
+      return false;
     }
 
     // Reset optimistic flag when adding new item
@@ -131,15 +132,18 @@ class CartCubit extends Cubit<CartState> {
           quantity,
         );
 
-        result.fold(
+        return result.fold(
           (failure) {
             logger.e('❌ Failed to add to cart: ${failure.message}');
             emit(CartError(failure.message));
             emit(currentState);
+            return false;
           },
-          (_) => logger.i('✅ Added to cart successfully'),
+          (_) {
+            logger.i('✅ Added to cart successfully');
+            return true;
+          },
         );
-        return;
       }
 
       // New item with product data - optimistic update immediately
@@ -167,19 +171,20 @@ class CartCubit extends Cubit<CartState> {
           quantity,
         );
 
-        result.fold(
+        return result.fold(
           (failure) {
             logger.e('❌ Failed to add to cart: ${failure.message}');
             emit(CartError(failure.message));
             emit(currentState);
+            return false;
           },
           (_) async {
             logger.i('✅ Added to cart, syncing...');
             // Silent reload to get real ID
             await loadCart(_currentUserId!, silent: true);
+            return true;
           },
         );
-        return;
       }
     }
 
@@ -190,18 +195,20 @@ class CartCubit extends Cubit<CartState> {
       quantity,
     );
 
-    result.fold(
+    return result.fold(
       (failure) {
         logger.e('❌ Failed to add to cart: ${failure.message}');
         emit(CartError(failure.message));
         if (currentState is CartLoaded) {
           emit(currentState);
         }
+        return false;
       },
       (_) async {
         logger.i('✅ Added to cart, reloading silently...');
         // Silent reload - won't show loading state
         await loadCart(_currentUserId!, silent: true);
+        return true;
       },
     );
   }

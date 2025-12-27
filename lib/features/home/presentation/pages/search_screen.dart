@@ -67,10 +67,28 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
   }
 
   void _handleBackPress() {
-    context.go('/home');
+    // If there are search results or active filters, clear them and show categories
+    if (searchState.searchResults.isNotEmpty ||
+        searchState.currentQuery.isNotEmpty ||
+        filterState.hasActiveFilters) {
+      searchController.clear();
+      onSearchChanged('');
+      clearFilters();
+    } else {
+      context.go('/home');
+    }
   }
 
   Future<bool> _handleSystemBack() async {
+    // If there are search results or active filters, clear them and show categories
+    if (searchState.searchResults.isNotEmpty ||
+        searchState.currentQuery.isNotEmpty ||
+        filterState.hasActiveFilters) {
+      searchController.clear();
+      onSearchChanged('');
+      clearFilters();
+      return true;
+    }
     context.go('/home');
     return true;
   }

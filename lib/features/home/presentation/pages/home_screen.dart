@@ -64,7 +64,9 @@ class HomeScreenState extends State<HomeScreen> {
 
     context.read<ProductsCubit>().loadProducts();
     context.read<CategoriesCubit>().loadCategories();
-    context.read<HomeSlidersCubit>().loadSliders();
+
+    // Use reset to force reload with new locale
+    context.read<HomeSlidersCubit>().reset();
 
     setState(() {
       selectedCategoryId = null;

@@ -242,8 +242,8 @@ class CartCubit extends Cubit<CartState> {
     // Then update on server
     final result = await _repository.updateQuantity(cartItemId, quantity);
 
-    // Re-enable stream updates after a delay to let server sync
-    Future.delayed(const Duration(milliseconds: 500), () {
+    // Re-enable stream updates after a longer delay to let server sync
+    Future.delayed(const Duration(milliseconds: 1500), () {
       _isOptimisticUpdate = false;
     });
 

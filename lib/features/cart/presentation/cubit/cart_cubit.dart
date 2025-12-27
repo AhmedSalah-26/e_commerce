@@ -210,38 +210,34 @@ class CartCubit extends Cubit<CartState> {
     final currentState = state;
     if (currentState is! CartLoaded) return;
 
+    // If quantity is 0 or less, remove the item instead
+    if (quantity <= 0) {
+      await removeFromCart(cartItemId);
+      return;
+    }
+
     // Set flag to ignore stream updates
     _isOptimisticUpdate = true;
 
     // Optimistic update - update UI immediately
-    if (quantity <= 0) {
-      // Remove item locally
-      final updatedItems =
-          currentState.items.where((item) => item.id != cartItemId).toList();
-      emit(CartLoaded(
-        items: updatedItems,
-        total: _calculateTotal(updatedItems),
-      ));
-    } else {
-      // Update quantity locally
-      final updatedItems = currentState.items.map((item) {
-        if (item.id == cartItemId) {
-          return CartItemModel(
-            id: item.id,
-            userId: item.userId,
-            productId: item.productId,
-            quantity: quantity,
-            product: item.product,
-            createdAt: item.createdAt,
-          );
-        }
-        return item;
-      }).toList();
-      emit(CartLoaded(
-        items: updatedItems,
-        total: _calculateTotal(updatedItems),
-      ));
-    }
+    final updatedItems = currentState.items.map((item) {
+      if (item.id == cartItemId) {
+        return CartItemModel(
+          id: item.id,
+          userId: item.userId,
+          productId: item.productId,
+          quantity: quantity,
+          product: item.product,
+          createdAt: item.createdAt,
+        );
+      }
+      return item;
+    }).toList();
+
+    emit(CartLoaded(
+      items: updatedItems,
+      total: _calculateTotal(updatedItems),
+    ));
 
     // Then update on server
     final result = await _repository.updateQuantity(cartItemId, quantity);

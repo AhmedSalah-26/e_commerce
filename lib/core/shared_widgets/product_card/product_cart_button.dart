@@ -134,15 +134,8 @@ class _QuantityControlsState extends State<_QuantityControls> {
     });
 
     final cubit = context.read<CartCubit>();
-    if (widget.quantity > 1) {
-      await cubit.updateQuantity(widget.cartItemId, widget.quantity - 1);
-    } else {
-      await cubit.removeFromCart(widget.cartItemId);
-      if (mounted) {
-        Tost.showCustomToast(context, 'removed_from_cart'.tr(),
-            backgroundColor: Colors.orange);
-      }
-    }
+    // Always decrease quantity, even if it's 1 (will go to 0 and show Add to Cart button)
+    await cubit.updateQuantity(widget.cartItemId, widget.quantity - 1);
 
     if (mounted) {
       setState(() {

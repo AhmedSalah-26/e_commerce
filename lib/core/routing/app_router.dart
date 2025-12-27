@@ -95,8 +95,8 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/home',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: HomeScreen()),
+                pageBuilder: (context, state) => NoTransitionPage(
+                    child: HomeScreen(key: HomeScreen.globalKey)),
                 routes: [
                   GoRoute(
                     path: 'search',

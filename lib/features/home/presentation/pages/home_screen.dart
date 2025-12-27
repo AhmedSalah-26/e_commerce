@@ -12,6 +12,9 @@ import '../widgets/home_content_builder.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  static final GlobalKey<HomeScreenState> globalKey =
+      GlobalKey<HomeScreenState>();
+
   @override
   State<HomeScreen> createState() => HomeScreenState();
 }
@@ -22,6 +25,17 @@ class HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   int _unreadNotifications = 0;
   String? _lastLocale;
+
+  /// Scroll to top of the list
+  void scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -103,17 +117,23 @@ class HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        body: RefreshIndicator(
-          onRefresh: _handleRefresh,
-          color: theme.colorScheme.primary,
-          child: CustomScrollView(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: <Widget>[
-              SliverToBoxAdapter(child: _buildSearchBar(context)),
-              ..._buildHomeContent(),
-            ],
-          ),
+        body: Column(
+          children: [
+            _buildSearchBar(context),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _handleRefresh,
+                color: theme.colorScheme.primary,
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: <Widget>[
+                    ..._buildHomeContent(),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

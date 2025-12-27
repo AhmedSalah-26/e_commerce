@@ -8,6 +8,7 @@ import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../home/presentation/cubit/home_sliders_cubit.dart';
+import '../../../home/presentation/pages/home_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -23,6 +24,11 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void _onTap(int index) {
+    // If tapping on Home tab while already on Home, scroll to top
+    if (index == 0 && widget.navigationShell.currentIndex == 0) {
+      HomeScreen.globalKey.currentState?.scrollToTop();
+      return;
+    }
     if (index == widget.navigationShell.currentIndex) return;
     widget.navigationShell.goBranch(
       index,

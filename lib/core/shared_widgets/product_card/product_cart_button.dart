@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -86,7 +88,29 @@ class _QuantityControls extends StatefulWidget {
 }
 
 class _QuantityControlsState extends State<_QuantityControls> {
-  bool _isLoading = false;
+  Timer? _debounceTimer;
+  late int _localQuantity;
+
+  @override
+  void initState() {
+    super.initState();
+    _localQuantity = widget.quantity;
+  }
+
+  @override
+  void didUpdateWidget(_QuantityControls oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update local quantity when cart state changes from server
+    if (widget.quantity != oldWidget.quantity && _debounceTimer == null) {
+      _localQuantity = widget.quantity;
+    }
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,69 +121,67 @@ class _QuantityControlsState extends State<_QuantityControls> {
       children: [
         _QuantityButton(
           icon: Icons.remove,
-          onTap: _isLoading ? null : () => _decrease(context),
+          onTap: () => _decrease(context),
         ),
-        _isLoading
-            ? SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: theme.colorScheme.primary,
-                ),
-              )
-            : Text(
-                '${widget.quantity}',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
+        Text(
+          '$_localQuantity',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
         _QuantityButton(
           icon: Icons.add,
-          onTap: _isLoading || widget.quantity >= widget.maxStock
-              ? null
-              : () => _increase(context),
+          onTap: _localQuantity < widget.maxStock
+              ? () => _increase(context)
+              : null,
         ),
       ],
     );
   }
 
-  Future<void> _decrease(BuildContext context) async {
-    if (_isLoading) return;
-
+  void _decrease(BuildContext context) {
     setState(() {
-      _isLoading = true;
+      _localQuantity--;
     });
 
-    await context
-        .read<CartCubit>()
-        .updateQuantity(widget.cartItemId, widget.quantity - 1);
+    _debounceTimer?.cancel();
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+    if (_localQuantity < 1) {
+      // Remove immediately if quantity is 0
+      final cubit = context.read<CartCubit>();
+      cubit.removeFromCart(widget.cartItemId);
+      Tost.showCustomToast(context, 'removed_from_cart'.tr(),
+          backgroundColor: Colors.orange);
+      return;
     }
+
+    // Debounce the update
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        context
+            .read<CartCubit>()
+            .updateQuantity(widget.cartItemId, _localQuantity);
+      }
+    });
   }
 
-  Future<void> _increase(BuildContext context) async {
-    if (_isLoading || widget.quantity >= widget.maxStock) return;
+  void _increase(BuildContext context) {
+    if (_localQuantity >= widget.maxStock) return;
 
     setState(() {
-      _isLoading = true;
+      _localQuantity++;
     });
 
-    await context
-        .read<CartCubit>()
-        .updateQuantity(widget.cartItemId, widget.quantity + 1);
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        context
+            .read<CartCubit>()
+            .updateQuantity(widget.cartItemId, _localQuantity);
+      }
+    });
   }
 }
 
@@ -188,17 +210,10 @@ class _QuantityButton extends StatelessWidget {
   }
 }
 
-class _AddToCartButton extends StatefulWidget {
+class _AddToCartButton extends StatelessWidget {
   final ProductEntity product;
 
   const _AddToCartButton({required this.product});
-
-  @override
-  State<_AddToCartButton> createState() => _AddToCartButtonState();
-}
-
-class _AddToCartButtonState extends State<_AddToCartButton> {
-  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -208,46 +223,29 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
       width: double.infinity,
       height: 40,
       child: ElevatedButton(
-        onPressed: widget.product.isOutOfStock || _isLoading
-            ? null
-            : () => _addToCart(context),
+        onPressed: product.isOutOfStock ? null : () => _addToCart(context),
         style: ElevatedButton.styleFrom(
-          backgroundColor: widget.product.isOutOfStock
-              ? Colors.grey
-              : theme.colorScheme.primary,
+          backgroundColor:
+              product.isOutOfStock ? Colors.grey : theme.colorScheme.primary,
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(6),
           ),
           elevation: 0,
-          disabledBackgroundColor: theme.colorScheme.primary.withOpacity(0.6),
         ),
-        child: _isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : Text(
-                widget.product.isOutOfStock
-                    ? 'out_of_stock'.tr()
-                    : 'add_to_cart'.tr(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+        child: Text(
+          product.isOutOfStock ? 'out_of_stock'.tr() : 'add_to_cart'.tr(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }
 
-  Future<void> _addToCart(BuildContext context) async {
-    if (_isLoading) return;
-
+  void _addToCart(BuildContext context) {
     final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) {
       Tost.showCustomToast(context, 'login_required'.tr(),
@@ -255,21 +253,10 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
     final cubit = context.read<CartCubit>();
     cubit.setUserId(authState.user.id);
-    await cubit.addToCart(widget.product.id,
-        quantity: 1, product: widget.product);
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      Tost.showCustomToast(context, 'added_to_cart'.tr(),
-          backgroundColor: Colors.green);
-    }
+    cubit.addToCart(product.id, quantity: 1, product: product);
+    Tost.showCustomToast(context, 'added_to_cart'.tr(),
+        backgroundColor: Colors.green);
   }
 }

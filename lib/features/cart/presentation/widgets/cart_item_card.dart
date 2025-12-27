@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -10,9 +11,9 @@ import '../../domain/entities/cart_item_entity.dart';
 
 class CartItemCard extends StatefulWidget {
   final CartItemEntity cartItem;
-  final Future<void> Function() onIncreaseQuantity;
-  final Future<void> Function() onDecreaseQuantity;
-  final Future<void> Function() onRemove;
+  final VoidCallback onIncreaseQuantity;
+  final VoidCallback onDecreaseQuantity;
+  final VoidCallback onRemove;
 
   const CartItemCard({
     super.key,
@@ -27,38 +28,62 @@ class CartItemCard extends StatefulWidget {
 }
 
 class _CartItemCardState extends State<CartItemCard> {
-  bool _isLoading = false;
+  Timer? _debounceTimer;
+  late int _localQuantity;
 
-  Future<void> _handleIncrease() async {
-    if (_isLoading) return;
+  @override
+  void initState() {
+    super.initState();
+    _localQuantity = widget.cartItem.quantity;
+  }
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    await widget.onIncreaseQuantity();
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+  @override
+  void didUpdateWidget(CartItemCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update local quantity when cart state changes from server
+    if (widget.cartItem.quantity != oldWidget.cartItem.quantity &&
+        _debounceTimer == null) {
+      _localQuantity = widget.cartItem.quantity;
     }
   }
 
-  Future<void> _handleDecrease() async {
-    if (_isLoading) return;
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
 
+  void _handleIncrease() {
     setState(() {
-      _isLoading = true;
+      _localQuantity++;
     });
 
-    await widget.onDecreaseQuantity();
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        widget.onIncreaseQuantity();
+      }
+    });
+  }
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+  void _handleDecrease() {
+    setState(() {
+      _localQuantity--;
+    });
+
+    _debounceTimer?.cancel();
+
+    if (_localQuantity < 1) {
+      // Remove immediately if quantity is 0
+      widget.onRemove();
+      return;
     }
+
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        widget.onDecreaseQuantity();
+      }
+    });
   }
 
   @override
@@ -74,7 +99,7 @@ class _CartItemCardState extends State<CartItemCard> {
     final productName = product?.name ?? 'منتج';
     final productPrice = product?.effectivePrice ?? 0;
     final productImage = product?.mainImage ?? '';
-    double totalPrice = productPrice * widget.cartItem.quantity;
+    double totalPrice = productPrice * _localQuantity;
     final hasDiscount = product?.hasDiscount ?? false;
     final isFlashSale = product?.isFlashSaleActive ?? false;
     final discountPercent = product?.discountPercentage ?? 0;
@@ -221,32 +246,19 @@ class _CartItemCardState extends State<CartItemCard> {
                           children: [
                             IconButton(
                               icon: Icon(Icons.add,
-                                  color:
-                                      _isLoading ? Colors.grey : Colors.green,
-                                  size: fontSize * 1.2),
-                              onPressed: _isLoading ? null : _handleIncrease,
+                                  color: Colors.green, size: fontSize * 1.2),
+                              onPressed: _handleIncrease,
                             ),
-                            _isLoading
-                                ? SizedBox(
-                                    width: fontSize,
-                                    height: fontSize,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                  )
-                                : Text(
-                                    '${widget.cartItem.quantity}',
-                                    style: AppTextStyle.bold_18_medium_brown
-                                        .copyWith(
-                                      fontSize: fontSize,
-                                    ),
-                                  ),
+                            Text(
+                              '$_localQuantity',
+                              style: AppTextStyle.bold_18_medium_brown.copyWith(
+                                fontSize: fontSize,
+                              ),
+                            ),
                             IconButton(
                               icon: Icon(Icons.remove,
-                                  color: _isLoading ? Colors.grey : Colors.red,
-                                  size: fontSize * 1.2),
-                              onPressed: _isLoading ? null : _handleDecrease,
+                                  color: Colors.red, size: fontSize * 1.2),
+                              onPressed: _handleDecrease,
                             ),
                           ],
                         ),

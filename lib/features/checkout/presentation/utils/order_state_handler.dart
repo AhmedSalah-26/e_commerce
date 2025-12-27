@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/network_error_handler.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
@@ -45,11 +46,37 @@ class OrderStateHandler {
   }
 
   void _handleOrderError(BuildContext context, String message) {
-    Tost.showCustomToast(
-      context,
-      ErrorHelper.getUserFriendlyMessage(message),
-      backgroundColor: Colors.red,
-      textColor: Colors.white,
+    // Check if it's a network error
+    if (NetworkErrorHandler.isNetworkError(message)) {
+      // Show full screen network error
+      _showNetworkErrorDialog(context);
+    } else {
+      Tost.showCustomToast(
+        context,
+        ErrorHelper.getUserFriendlyMessage(message),
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
+  }
+
+  void _showNetworkErrorDialog(BuildContext context) {
+    final cartCubit = context.read<CartCubit>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (dialogContext) => PopScope(
+        canPop: false,
+        child: Dialog.fullscreen(
+          backgroundColor: Theme.of(dialogContext).scaffoldBackgroundColor,
+          child: _CheckoutRetryContent(
+            cartCubit: cartCubit,
+            onClose: () => Navigator.of(dialogContext).pop(),
+          ),
+        ),
+      ),
     );
   }
 
@@ -75,5 +102,89 @@ class OrderStateHandler {
     if (authState is AuthAuthenticated) {
       context.read<CartCubit>().loadCart(authState.user.id);
     }
+  }
+}
+
+class _CheckoutRetryContent extends StatefulWidget {
+  final CartCubit cartCubit;
+  final VoidCallback onClose;
+
+  const _CheckoutRetryContent({
+    required this.cartCubit,
+    required this.onClose,
+  });
+
+  @override
+  State<_CheckoutRetryContent> createState() => _CheckoutRetryContentState();
+}
+
+class _CheckoutRetryContentState extends State<_CheckoutRetryContent> {
+  bool _isRetrying = false;
+
+  Future<void> _handleRetry() async {
+    if (_isRetrying) return;
+
+    setState(() => _isRetrying = true);
+
+    try {
+      // Just close the dialog and let user retry manually
+      widget.onClose();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isRetrying = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.wifi_off_rounded,
+              size: 80,
+              color: theme.colorScheme.error.withValues(alpha: 0.7),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'error_network'.tr(),
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'check_connection'.tr(),
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _isRetrying ? null : _handleRetry,
+              icon: const Icon(Icons.refresh),
+              label: Text('retry'.tr()),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

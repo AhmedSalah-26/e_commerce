@@ -404,5 +404,6 @@
   "error_permission": "ليس لديك صلاحية لهذا الإجراء",
   "error_not_found": "البيانات غير موجودة",
   "error_rate_limit": "محاولات كثيرة، انتظر قليلاً",
-  "error_generic": "حدث خطأ، حاول مرة أخرى"
+  "error_generic": "حدث خطأ، حاول مرة أخرى",
+  "error_favorite_failed": "فشل في تحديث المفضلة، حاول مرة أخرى"
 }

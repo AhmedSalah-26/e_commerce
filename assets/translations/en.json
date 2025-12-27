@@ -404,5 +404,6 @@
   "error_permission": "You don't have permission",
   "error_not_found": "Data not found",
   "error_rate_limit": "Too many attempts, wait a moment",
-  "error_generic": "An error occurred, try again"
+  "error_generic": "An error occurred, try again",
+  "error_favorite_failed": "Failed to update favorites, try again"
 }

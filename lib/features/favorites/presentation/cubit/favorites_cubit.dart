@@ -95,10 +95,10 @@ class FavoritesCubit extends Cubit<FavoritesState> {
     );
   }
 
-  Future<void> toggleFavorite(String productId) async {
+  Future<bool> toggleFavorite(String productId) async {
     if (_userId == null) {
       _logger.w('⚠️ No user ID set for favorites');
-      return;
+      return false;
     }
 
     final currentState = state;
@@ -106,14 +106,15 @@ class FavoritesCubit extends Cubit<FavoritesState> {
       final isFav = currentState.isFavorite(productId);
 
       if (isFav) {
-        await _removeFromFavorites(productId, currentState);
+        return await _removeFromFavorites(productId, currentState);
       } else {
-        await _addToFavorites(productId, currentState);
+        return await _addToFavorites(productId, currentState);
       }
     }
+    return false;
   }
 
-  Future<void> _addToFavorites(
+  Future<bool> _addToFavorites(
       String productId, FavoritesLoaded currentState) async {
     // Optimistic update - just update the product IDs for now
     final newProductIds = {...currentState.favoriteProductIds, productId};
@@ -124,21 +125,23 @@ class FavoritesCubit extends Cubit<FavoritesState> {
 
     final result = await _repository.addToFavorites(_userId!, productId);
 
-    result.fold(
+    return result.fold(
       (failure) {
         _logger.e('❌ Failed to add to favorites: ${failure.message}');
         // Revert on failure
         emit(currentState);
+        return false;
       },
       (_) {
         _logger.d('✅ Added to favorites: $productId');
         // Reload to get the full favorite with product data (without showing loading)
         loadFavorites(_userId!, showLoading: false);
+        return true;
       },
     );
   }
 
-  Future<void> _removeFromFavorites(
+  Future<bool> _removeFromFavorites(
       String productId, FavoritesLoaded currentState) async {
     // Optimistic update
     final newFavorites =
@@ -155,10 +158,12 @@ class FavoritesCubit extends Cubit<FavoritesState> {
     try {
       await _dataSource.removeByProductId(_userId!, productId);
       _logger.d('✅ Removed from favorites: $productId');
+      return true;
     } catch (e) {
       _logger.e('❌ Failed to remove from favorites: $e');
       // Revert on failure
       emit(currentState);
+      return false;
     }
   }
 

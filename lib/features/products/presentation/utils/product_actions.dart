@@ -60,7 +60,7 @@ class ProductActions {
   }
 
   /// Toggle product favorite status
-  void toggleFavorite(BuildContext context, String productId) {
+  Future<void> toggleFavorite(BuildContext context, String productId) async {
     final authState = context.read<AuthCubit>().state;
 
     if (authState is! AuthAuthenticated) {
@@ -72,9 +72,20 @@ class ProductActions {
     favoritesCubit.setUserId(authState.user.id);
 
     final wasFavorite = favoritesCubit.isFavorite(productId);
-    favoritesCubit.toggleFavorite(productId);
 
+    // Show optimistic toast - wasFavorite = true means it WILL BE removed
     _showFavoriteToast(context, wasFavorite);
+
+    // Await the result and show error if failed
+    final success = await favoritesCubit.toggleFavorite(productId);
+    if (!success && context.mounted) {
+      Tost.showCustomToast(
+        context,
+        'error_favorite_failed'.tr(),
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
   }
 
   void _showLoginRequired(BuildContext context) {
@@ -86,11 +97,11 @@ class ProductActions {
     );
   }
 
-  void _showFavoriteToast(BuildContext context, bool wasRemoved) {
+  void _showFavoriteToast(BuildContext context, bool willBeRemoved) {
     Tost.showCustomToast(
       context,
-      wasRemoved ? 'removed_from_favorites'.tr() : 'added_to_favorites'.tr(),
-      backgroundColor: wasRemoved ? Colors.grey : Colors.red,
+      willBeRemoved ? 'removed_from_favorites'.tr() : 'added_to_favorites'.tr(),
+      backgroundColor: willBeRemoved ? Colors.grey : Colors.red,
       textColor: Colors.white,
     );
   }

@@ -157,7 +157,7 @@ class _FavoriteButton extends StatelessWidget {
     );
   }
 
-  void _toggleFavorite(BuildContext context, bool isFavorite) {
+  Future<void> _toggleFavorite(BuildContext context, bool isFavorite) async {
     final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) {
       Tost.showCustomToast(context, 'login_required'.tr(),
@@ -167,12 +167,23 @@ class _FavoriteButton extends StatelessWidget {
 
     final cubit = context.read<FavoritesCubit>();
     cubit.setUserId(authState.user.id);
-    cubit.toggleFavorite(productId);
 
+    // Show optimistic toast for the NEW state (opposite of current)
+    final willBeRemoved = isFavorite;
     Tost.showCustomToast(
       context,
-      isFavorite ? 'removed_from_favorites'.tr() : 'added_to_favorites'.tr(),
-      backgroundColor: isFavorite ? Colors.grey : Colors.red,
+      willBeRemoved ? 'removed_from_favorites'.tr() : 'added_to_favorites'.tr(),
+      backgroundColor: willBeRemoved ? Colors.grey : Colors.red,
     );
+
+    // Await the result and show error if failed
+    final success = await cubit.toggleFavorite(productId);
+    if (!success && context.mounted) {
+      Tost.showCustomToast(
+        context,
+        'error_favorite_failed'.tr(),
+        backgroundColor: Colors.red,
+      );
+    }
   }
 }

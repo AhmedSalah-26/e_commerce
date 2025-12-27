@@ -95,23 +95,26 @@ class _AboutScreenState extends State<AboutScreen> {
                       const SizedBox(height: 16),
                       Text(
                         isRtl ? 'متجري' : 'My Store',
-                        style: AppTextStyle.semiBold_26_white.copyWith(
-                          color: theme.colorScheme.onPrimary,
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          fontFamily: 'Changa',
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         '${isRtl ? 'الإصدار' : 'Version'}: $appVersion',
-                        style: TextStyle(
-                          color: theme.colorScheme.onPrimary,
+                        style: const TextStyle(
+                          color: Colors.white,
                           fontSize: 14,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Build: $buildNumber',
-                        style: TextStyle(
-                          color: theme.colorScheme.onPrimary,
+                        style: const TextStyle(
+                          color: Colors.white,
                           fontSize: 12,
                         ),
                       ),

@@ -94,8 +94,11 @@ class HelpScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       Text(
                         isRtl ? 'كيف يمكننا مساعدتك؟' : 'How can we help you?',
-                        style: AppTextStyle.semiBold_22_white.copyWith(
-                          color: theme.colorScheme.onPrimary,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          fontFamily: 'Changa',
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -104,8 +107,8 @@ class HelpScreen extends StatelessWidget {
                         isRtl
                             ? 'نحن هنا لمساعدتك في أي وقت'
                             : 'We are here to help you anytime',
-                        style: TextStyle(
-                          color: theme.colorScheme.onPrimary,
+                        style: const TextStyle(
+                          color: Colors.white,
                           fontSize: 14,
                         ),
                         textAlign: TextAlign.center,

@@ -194,7 +194,7 @@ class _AddToCartButton extends StatelessWidget {
 
     final cubit = context.read<CartCubit>();
     cubit.setUserId(authState.user.id);
-    cubit.addToCart(product.id, quantity: 1);
+    cubit.addToCart(product.id, quantity: 1, product: product);
     Tost.showCustomToast(context, 'added_to_cart'.tr(),
         backgroundColor: Colors.green);
   }

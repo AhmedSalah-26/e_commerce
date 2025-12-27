@@ -132,9 +132,49 @@ class CartCubit extends Cubit<CartState> {
         );
         return;
       }
+
+      // New item with product data - optimistic update immediately
+      if (product != null) {
+        final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+        final newItem = CartItemModel(
+          id: tempId,
+          userId: _currentUserId!,
+          productId: productId,
+          quantity: quantity,
+          product: product,
+          createdAt: DateTime.now(),
+        );
+
+        final updatedItems = [newItem, ...currentState.items];
+        emit(CartLoaded(
+          items: updatedItems,
+          total: _calculateTotal(updatedItems),
+        ));
+
+        // Add on server then sync
+        final result = await _repository.addToCart(
+          _currentUserId!,
+          productId,
+          quantity,
+        );
+
+        result.fold(
+          (failure) {
+            logger.e('❌ Failed to add to cart: ${failure.message}');
+            emit(CartError(failure.message));
+            emit(currentState);
+          },
+          (_) async {
+            logger.i('✅ Added to cart, syncing...');
+            // Silent reload to get real ID
+            await loadCart(_currentUserId!, silent: true);
+          },
+        );
+        return;
+      }
     }
 
-    // New item - add to server first then silent reload
+    // Fallback: No product data - add to server first then silent reload
     final result = await _repository.addToCart(
       _currentUserId!,
       productId,

@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/logger_service.dart';
 import '../../../../core/services/network_error_handler.dart';
+import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../products/domain/entities/product_entity.dart';
 import '../../data/repositories/cart_repository_impl.dart';
 import '../../domain/entities/cart_item_entity.dart';
@@ -88,14 +90,101 @@ class CartCubit extends Cubit<CartState> {
     return result.fold(
       (failure) {
         logger.e('❌ Failed to add to cart: ${failure.message}');
-        // Check for network error and show toast
-        NetworkErrorHandler.handleError(failure.message);
         return false;
       },
       (_) async {
         logger.i('✅ Added to cart successfully');
         // Reload cart to get updated data
         await loadCart(_currentUserId!, silent: true);
+        return true;
+      },
+    );
+  }
+
+  /// Update item quantity with full screen error on failure
+  /// Returns true if successful
+  Future<bool> updateQuantityWithRetry(
+      String cartItemId, int quantity, BuildContext context) async {
+    if (_currentUserId == null) return false;
+
+    final currentState = state;
+    if (currentState is! CartLoaded) return false;
+
+    if (quantity <= 0) {
+      return removeFromCartWithRetry(cartItemId, context);
+    }
+
+    // Optimistic update
+    final updatedItems = currentState.items.map((item) {
+      if (item.id == cartItemId) {
+        return item.copyWith(quantity: quantity);
+      }
+      return item;
+    }).toList();
+
+    emit(CartLoaded(
+      items: updatedItems,
+      total: _calculateTotal(updatedItems),
+    ));
+
+    final result = await _repository.updateQuantity(cartItemId, quantity);
+
+    return result.fold(
+      (failure) {
+        logger.e('❌ Failed to update quantity: ${failure.message}');
+        if (NetworkErrorHandler.isNetworkError(failure.message)) {
+          // Show full screen error
+          NetworkErrorWidget.showFullScreen(
+            context,
+            onRetry: () =>
+                updateQuantityWithRetry(cartItemId, quantity, context),
+          );
+        }
+        loadCart(_currentUserId!, silent: true);
+        return false;
+      },
+      (_) {
+        logger.i('✅ Quantity updated successfully');
+        return true;
+      },
+    );
+  }
+
+  /// Remove item from cart with full screen error on failure
+  /// Returns true if successful
+  Future<bool> removeFromCartWithRetry(
+      String cartItemId, BuildContext context) async {
+    if (_currentUserId == null) return false;
+
+    final currentState = state;
+    if (currentState is! CartLoaded) return false;
+
+    // Optimistic update
+    final updatedItems =
+        currentState.items.where((item) => item.id != cartItemId).toList();
+
+    emit(CartLoaded(
+      items: updatedItems,
+      total: _calculateTotal(updatedItems),
+    ));
+
+    final result = await _repository.removeFromCart(cartItemId);
+
+    return result.fold(
+      (failure) {
+        logger.e('❌ Failed to remove from cart: ${failure.message}');
+        if (NetworkErrorHandler.isNetworkError(failure.message)) {
+          // Show full screen error
+          NetworkErrorWidget.showFullScreen(
+            context,
+            onRetry: () => removeFromCartWithRetry(cartItemId, context),
+          );
+        }
+        loadCart(_currentUserId!, silent: true);
+        return false;
+      },
+      (_) {
+        logger.i('✅ Removed from cart successfully');
         return true;
       },
     );

@@ -151,20 +151,27 @@ class _QuantityControlsState extends State<_QuantityControls> {
     if (_localQuantity <= 1) {
       // Remove from cart
       setState(() => _isRemoving = true);
-      context.read<CartCubit>().removeFromCart(widget.cartItemId);
+      context
+          .read<CartCubit>()
+          .removeFromCartWithRetry(widget.cartItemId, context)
+          .then((_) {
+        if (mounted) setState(() => _isRemoving = false);
+      });
       return;
     }
 
+    final newQuantity = _localQuantity - 1;
+
     // Optimistic update - ensure never goes below 1
     setState(() {
-      _localQuantity = (_localQuantity - 1) < 1 ? 1 : _localQuantity - 1;
+      _localQuantity = newQuantity < 1 ? 1 : newQuantity;
       _isUpdating = true;
     });
 
-    // Update in background
+    // Update with retry on error
     context
         .read<CartCubit>()
-        .updateQuantity(widget.cartItemId, _localQuantity)
+        .updateQuantityWithRetry(widget.cartItemId, _localQuantity, context)
         .then((_) {
       if (mounted) setState(() => _isUpdating = false);
     });
@@ -173,16 +180,18 @@ class _QuantityControlsState extends State<_QuantityControls> {
   void _increase() {
     if (_isRemoving || _localQuantity >= widget.maxStock) return;
 
+    final newQuantity = _localQuantity + 1;
+
     // Optimistic update
     setState(() {
-      _localQuantity++;
+      _localQuantity = newQuantity;
       _isUpdating = true;
     });
 
-    // Update in background
+    // Update with retry on error
     context
         .read<CartCubit>()
-        .updateQuantity(widget.cartItemId, _localQuantity)
+        .updateQuantityWithRetry(widget.cartItemId, _localQuantity, context)
         .then((_) {
       if (mounted) setState(() => _isUpdating = false);
     });
@@ -277,12 +286,12 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
     );
   }
 
-  Future<void> _addToCart() async {
+  Future<bool> _addToCart() async {
     final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) {
       Tost.showCustomToast(context, 'login_required'.tr(),
           backgroundColor: Colors.orange);
-      return;
+      return false;
     }
 
     setState(() => _isLoading = true);
@@ -305,23 +314,10 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
         _showNetworkErrorDialog();
       }
     }
+    return success;
   }
 
   void _showNetworkErrorDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => Dialog.fullscreen(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        child: NetworkErrorWidget(
-          showBackButton: true,
-          onBack: () => Navigator.of(ctx).pop(),
-          onRetry: () {
-            Navigator.of(ctx).pop();
-            _addToCart();
-          },
-        ),
-      ),
-    );
+    NetworkErrorWidget.showFullScreen(context, onRetry: _addToCart);
   }
 }

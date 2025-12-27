@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/logger_service.dart';
+import '../../../products/domain/entities/product_entity.dart';
 import '../../data/models/cart_item_model.dart';
 import '../../data/repositories/cart_repository_impl.dart';
 import '../../domain/entities/cart_item_entity.dart';
@@ -28,11 +29,15 @@ class CartCubit extends Cubit<CartState> {
     }
   }
 
-  /// Load cart items for a user
-  Future<void> loadCart(String userId) async {
-    logger.i('🛒 Loading cart for user: $userId');
+  /// Load cart items for a user (silent reload if data exists)
+  Future<void> loadCart(String userId, {bool silent = false}) async {
+    logger.i('🛒 Loading cart for user: $userId (silent: $silent)');
     _currentUserId = userId;
-    emit(const CartLoading());
+
+    // Only show loading if no data exists and not silent
+    if (!silent && state is! CartLoaded) {
+      emit(const CartLoading());
+    }
 
     final result = await _repository.getCartItems(userId);
 
@@ -68,8 +73,9 @@ class CartCubit extends Cubit<CartState> {
     );
   }
 
-  /// Add item to cart
-  Future<void> addToCart(String productId, {int quantity = 1}) async {
+  /// Add item to cart (optimistic update - no flickering)
+  Future<void> addToCart(String productId,
+      {int quantity = 1, ProductEntity? product}) async {
     logger.i(
         '🛒 Adding to cart: productId=$productId, qty=$quantity, userId=$_currentUserId');
 
@@ -81,6 +87,54 @@ class CartCubit extends Cubit<CartState> {
 
     final currentState = state;
 
+    // Check if item already exists - just update quantity
+    if (currentState is CartLoaded) {
+      final existingItem = currentState.items
+          .where((item) => item.productId == productId)
+          .firstOrNull;
+
+      if (existingItem != null) {
+        // Item exists - update quantity optimistically
+        final newQuantity = existingItem.quantity + quantity;
+        final updatedItems = currentState.items.map((item) {
+          if (item.productId == productId) {
+            return CartItemModel(
+              id: item.id,
+              userId: item.userId,
+              productId: item.productId,
+              quantity: newQuantity,
+              product: item.product,
+              createdAt: item.createdAt,
+            );
+          }
+          return item;
+        }).toList();
+
+        emit(CartLoaded(
+          items: updatedItems,
+          total: _calculateTotal(updatedItems),
+        ));
+
+        // Update on server
+        final result = await _repository.addToCart(
+          _currentUserId!,
+          productId,
+          quantity,
+        );
+
+        result.fold(
+          (failure) {
+            logger.e('❌ Failed to add to cart: ${failure.message}');
+            emit(CartError(failure.message));
+            emit(currentState);
+          },
+          (_) => logger.i('✅ Added to cart successfully'),
+        );
+        return;
+      }
+    }
+
+    // New item - add to server first then silent reload
     final result = await _repository.addToCart(
       _currentUserId!,
       productId,
@@ -96,9 +150,9 @@ class CartCubit extends Cubit<CartState> {
         }
       },
       (_) async {
-        logger.i('✅ Added to cart, reloading...');
-        // Reload cart to get updated items with product details
-        await loadCart(_currentUserId!);
+        logger.i('✅ Added to cart, reloading silently...');
+        // Silent reload - won't show loading state
+        await loadCart(_currentUserId!, silent: true);
       },
     );
   }

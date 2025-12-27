@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
+import '../../../../core/services/network_error_handler.dart';
 import '../../domain/repositories/favorites_repository.dart';
 import '../../../favorites/data/datasources/favorites_remote_datasource.dart';
 import 'favorites_state.dart';
@@ -47,6 +48,7 @@ class FavoritesCubit extends Cubit<FavoritesState> {
     result.fold(
       (failure) {
         _logger.e('❌ Failed to load favorites: ${failure.message}');
+        NetworkErrorHandler.handleError(failure.message);
         emit(FavoritesError(failure.message));
       },
       (favorites) {
@@ -128,6 +130,7 @@ class FavoritesCubit extends Cubit<FavoritesState> {
     return result.fold(
       (failure) {
         _logger.e('❌ Failed to add to favorites: ${failure.message}');
+        NetworkErrorHandler.handleError(failure.message);
         // Revert on failure
         emit(currentState);
         return false;
@@ -161,6 +164,7 @@ class FavoritesCubit extends Cubit<FavoritesState> {
       return true;
     } catch (e) {
       _logger.e('❌ Failed to remove from favorites: $e');
+      NetworkErrorHandler.handleError(e);
       // Revert on failure
       emit(currentState);
       return false;

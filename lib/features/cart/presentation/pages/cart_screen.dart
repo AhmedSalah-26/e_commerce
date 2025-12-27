@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
+import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
@@ -63,50 +64,30 @@ class _CartScreenState extends State<CartScreen> {
               return _buildLoginRequired(context);
             }
 
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: BlocBuilder<CartCubit, CartState>(
-                builder: (context, state) {
-                  if (state is CartLoading) {
-                    return const CartListSkeleton(itemCount: 3);
+            return BlocBuilder<CartCubit, CartState>(
+              builder: (context, state) {
+                if (state is CartLoading) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CartListSkeleton(itemCount: 3),
+                  );
+                }
+
+                if (state is CartError) {
+                  return NetworkErrorWidget(
+                    message: ErrorHelper.getUserFriendlyMessage(state.message),
+                    onRetry: _loadCart,
+                  );
+                }
+
+                if (state is CartLoaded) {
+                  if (state.isEmpty) {
+                    return const EmptyCartMessage();
                   }
 
-                  if (state is CartError) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.wifi_off_rounded,
-                            size: 64,
-                            color:
-                                theme.colorScheme.error.withValues(alpha: 0.7),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            ErrorHelper.getUserFriendlyMessage(state.message),
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurface,
-                              fontSize: 16,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _loadCart,
-                            child: Text('retry'.tr()),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  if (state is CartLoaded) {
-                    if (state.isEmpty) {
-                      return const EmptyCartMessage();
-                    }
-
-                    return Column(
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
                       children: [
                         Expanded(
                           child: ListView.builder(
@@ -171,12 +152,15 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                       ],
-                    );
-                  }
+                    ),
+                  );
+                }
 
-                  return const CartListSkeleton(itemCount: 3);
-                },
-              ),
+                return const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: CartListSkeleton(itemCount: 3),
+                );
+              },
             );
           },
         ),

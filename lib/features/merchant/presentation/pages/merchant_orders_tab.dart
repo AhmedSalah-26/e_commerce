@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -320,27 +321,9 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
   }
 
   Widget _buildErrorState(String message, bool isRtl, String status) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.wifi_off_rounded,
-              size: 48, color: theme.colorScheme.error.withValues(alpha: 0.7)),
-          const SizedBox(height: 16),
-          Text(ErrorHelper.getUserFriendlyMessage(message),
-              style: TextStyle(
-                fontSize: 16,
-                color: theme.colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => _loadOrdersForStatus(status),
-            child: Text('retry'.tr()),
-          ),
-        ],
-      ),
+    return NetworkErrorWidget(
+      message: ErrorHelper.getUserFriendlyMessage(message),
+      onRetry: () => _loadOrdersForStatus(status),
     );
   }
 }

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
+import '../../../../core/utils/error_helper.dart';
 import '../cubit/notifications_cubit.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../widgets/notification_card.dart';
@@ -100,21 +102,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             }
 
             if (state is NotificationsError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(state.message,
-                        style: const TextStyle(color: Colors.red)),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => context
-                          .read<NotificationsCubit>()
-                          .loadNotifications(),
-                      child: Text('retry'.tr()),
-                    ),
-                  ],
-                ),
+              return NetworkErrorWidget(
+                message: ErrorHelper.getUserFriendlyMessage(state.message),
+                onRetry: () =>
+                    context.read<NotificationsCubit>().loadNotifications(),
               );
             }
 

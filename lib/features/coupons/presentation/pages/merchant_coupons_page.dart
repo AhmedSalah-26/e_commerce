@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/shared_widgets/network_error_widget.dart';
+import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../categories/domain/entities/category_entity.dart';
@@ -326,22 +328,10 @@ class _CouponsPageContentState extends State<_CouponsPageContent>
   }
 
   Widget _buildErrorView(String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
-          Text(message),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => context
-                .read<MerchantCouponsCubit>()
-                .loadCoupons(widget.storeId),
-            child: Text('retry'.tr()),
-          ),
-        ],
-      ),
+    return NetworkErrorWidget(
+      message: ErrorHelper.getUserFriendlyMessage(message),
+      onRetry: () =>
+          context.read<MerchantCouponsCubit>().loadCoupons(widget.storeId),
     );
   }
 

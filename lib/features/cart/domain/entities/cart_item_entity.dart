@@ -19,6 +19,25 @@ class CartItemEntity extends Equatable {
     this.createdAt,
   });
 
+  /// Create a copy with updated fields
+  CartItemEntity copyWith({
+    String? id,
+    String? userId,
+    String? productId,
+    int? quantity,
+    ProductEntity? product,
+    DateTime? createdAt,
+  }) {
+    return CartItemEntity(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      productId: productId ?? this.productId,
+      quantity: quantity ?? this.quantity,
+      product: product ?? this.product,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   /// Calculate item total
   double get itemTotal {
     if (product == null) return 0;

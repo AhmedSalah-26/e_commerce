@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
@@ -73,25 +74,9 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
             }
 
             if (state is OrdersError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.wifi_off_rounded,
-                      size: 64,
-                      color: theme.colorScheme.error.withValues(alpha: 0.7),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(ErrorHelper.getUserFriendlyMessage(state.message),
-                        style: TextStyle(color: theme.colorScheme.onSurface)),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _loadDetails,
-                      child: Text('retry'.tr()),
-                    ),
-                  ],
-                ),
+              return NetworkErrorWidget(
+                message: ErrorHelper.getUserFriendlyMessage(state.message),
+                onRetry: _loadDetails,
               );
             }
 

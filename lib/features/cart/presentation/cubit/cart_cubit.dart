@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/logger_service.dart';
+import '../../../../core/services/network_error_handler.dart';
 import '../../../products/domain/entities/product_entity.dart';
 import '../../data/repositories/cart_repository_impl.dart';
 import '../../domain/entities/cart_item_entity.dart';
@@ -41,6 +42,10 @@ class CartCubit extends Cubit<CartState> {
     result.fold(
       (failure) {
         logger.e('❌ Failed to load cart: ${failure.message}');
+        // Show network error toast if applicable
+        if (!silent) {
+          NetworkErrorHandler.handleError(failure.message);
+        }
         emit(CartError(failure.message));
       },
       (items) {
@@ -83,6 +88,8 @@ class CartCubit extends Cubit<CartState> {
     return result.fold(
       (failure) {
         logger.e('❌ Failed to add to cart: ${failure.message}');
+        // Check for network error and show toast
+        NetworkErrorHandler.handleError(failure.message);
         return false;
       },
       (_) async {
@@ -107,40 +114,71 @@ class CartCubit extends Cubit<CartState> {
       return;
     }
 
-    // Update on server
-    final result = await _repository.updateQuantity(cartItemId, quantity);
+    // Optimistic update - update local state immediately
+    final updatedItems = currentState.items.map((item) {
+      if (item.id == cartItemId) {
+        return item.copyWith(quantity: quantity);
+      }
+      return item;
+    }).toList();
 
-    result.fold(
-      (failure) {
-        logger.e('❌ Failed to update quantity: ${failure.message}');
-      },
-      (_) {
-        logger.i('✅ Quantity updated successfully');
-      },
-    );
+    emit(CartLoaded(
+      items: updatedItems,
+      total: _calculateTotal(updatedItems),
+    ));
 
-    // Reload cart to get updated data
-    await loadCart(_currentUserId!, silent: true);
+    // Update on server in background (no await, no reload)
+    _repository.updateQuantity(cartItemId, quantity).then((result) {
+      result.fold(
+        (failure) {
+          logger.e('❌ Failed to update quantity: ${failure.message}');
+          // Check for network error
+          if (NetworkErrorHandler.isNetworkError(failure.message)) {
+            NetworkErrorHandler.showNetworkError();
+          }
+          // Reload on error to sync with server
+          loadCart(_currentUserId!, silent: true);
+        },
+        (_) {
+          logger.i('✅ Quantity updated successfully');
+        },
+      );
+    });
   }
 
   /// Remove item from cart
   Future<void> removeFromCart(String cartItemId) async {
     if (_currentUserId == null) return;
 
-    // Remove from server
-    final result = await _repository.removeFromCart(cartItemId);
+    final currentState = state;
+    if (currentState is! CartLoaded) return;
 
-    result.fold(
-      (failure) {
-        logger.e('❌ Failed to remove from cart: ${failure.message}');
-      },
-      (_) {
-        logger.i('✅ Removed from cart successfully');
-      },
-    );
+    // Optimistic update - remove from local state immediately
+    final updatedItems =
+        currentState.items.where((item) => item.id != cartItemId).toList();
 
-    // Reload cart to get updated data
-    await loadCart(_currentUserId!, silent: true);
+    emit(CartLoaded(
+      items: updatedItems,
+      total: _calculateTotal(updatedItems),
+    ));
+
+    // Remove from server in background (no await, no reload)
+    _repository.removeFromCart(cartItemId).then((result) {
+      result.fold(
+        (failure) {
+          logger.e('❌ Failed to remove from cart: ${failure.message}');
+          // Check for network error
+          if (NetworkErrorHandler.isNetworkError(failure.message)) {
+            NetworkErrorHandler.showNetworkError();
+          }
+          // Reload on error to sync with server
+          loadCart(_currentUserId!, silent: true);
+        },
+        (_) {
+          logger.i('✅ Removed from cart successfully');
+        },
+      );
+    });
   }
 
   /// Clear cart

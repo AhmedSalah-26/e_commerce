@@ -3,6 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/shared_widgets/network_error_widget.dart';
+import '../../../../core/utils/error_helper.dart';
 import '../../data/datasources/coupon_remote_datasource.dart';
 import '../../domain/entities/coupon_entity.dart';
 import '../cubit/coupon_cubit.dart';
@@ -194,23 +196,9 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
   }
 
   Widget _buildErrorView(String message, ThemeData theme) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline,
-              size: 64,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-          const SizedBox(height: 16),
-          Text(message),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () =>
-                context.read<GlobalCouponsCubit>().loadGlobalCoupons(),
-            child: Text('retry'.tr()),
-          ),
-        ],
-      ),
+    return NetworkErrorWidget(
+      message: ErrorHelper.getUserFriendlyMessage(message),
+      onRetry: () => context.read<GlobalCouponsCubit>().loadGlobalCoupons(),
     );
   }
 

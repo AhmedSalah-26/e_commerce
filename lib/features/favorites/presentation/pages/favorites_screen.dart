@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/shared_widgets/product_card/product_grid_card.dart';
 import '../../../../core/utils/error_helper.dart';
@@ -121,31 +122,13 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                   );
                 }
 
+                // Full screen error - no cached data shown
                 if (state is FavoritesError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.wifi_off_rounded,
-                          size: 64,
-                          color: theme.colorScheme.error.withValues(alpha: 0.7),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
+                  return SizedBox.expand(
+                    child: NetworkErrorWidget(
+                      message:
                           ErrorHelper.getUserFriendlyMessage(state.message),
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: _loadFavorites,
-                          child: Text('retry'.tr()),
-                        ),
-                      ],
+                      onRetry: _loadFavorites,
                     ),
                   );
                 }

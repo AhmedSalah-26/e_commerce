@@ -413,6 +413,7 @@
   "sort_highest_rated": "الأعلى تقييماً",
 
   "error_network": "خطأ في الاتصال بالإنترنت",
+  "check_connection": "يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى",
   "error_invalid_credentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
   "error_user_not_found": "هذا الحساب غير موجود",
   "error_email_not_confirmed": "يرجى تأكيد البريد الإلكتروني",

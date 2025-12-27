@@ -240,7 +240,8 @@ class _CartItemCardState extends State<CartItemCard> {
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
-                          color: theme.colorScheme.surface,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.1),
                         ),
                         child: Column(
                           children: [

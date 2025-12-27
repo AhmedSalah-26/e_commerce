@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:toastification/toastification.dart';
 
 import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
@@ -177,21 +178,23 @@ class _MyAppState extends State<MyApp> {
       },
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) {
-          return MaterialApp.router(
-            theme: themeState.themeData,
-            debugShowCheckedModeBanner: false,
-            routerConfig: AppRouter.router,
-            locale: context.locale,
-            supportedLocales: context.supportedLocales,
-            localizationsDelegates: context.localizationDelegates,
-            builder: (context, child) {
-              return MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  viewInsets: EdgeInsets.zero,
-                ),
-                child: child ?? const SizedBox.shrink(),
-              );
-            },
+          return ToastificationWrapper(
+            child: MaterialApp.router(
+              theme: themeState.themeData,
+              debugShowCheckedModeBanner: false,
+              routerConfig: AppRouter.router,
+              locale: context.locale,
+              supportedLocales: context.supportedLocales,
+              localizationsDelegates: context.localizationDelegates,
+              builder: (context, child) {
+                return MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    viewInsets: EdgeInsets.zero,
+                  ),
+                  child: child ?? const SizedBox.shrink(),
+                );
+              },
+            ),
           );
         },
       ),

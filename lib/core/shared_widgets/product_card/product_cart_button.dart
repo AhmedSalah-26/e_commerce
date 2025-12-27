@@ -151,12 +151,7 @@ class _QuantityControlsState extends State<_QuantityControls> {
     if (_localQuantity <= 1) {
       // Remove from cart
       setState(() => _isRemoving = true);
-      context
-          .read<CartCubit>()
-          .removeFromCartWithRetry(widget.cartItemId, context)
-          .then((_) {
-        if (mounted) setState(() => _isRemoving = false);
-      });
+      _removeWithRetry();
       return;
     }
 
@@ -168,13 +163,7 @@ class _QuantityControlsState extends State<_QuantityControls> {
       _isUpdating = true;
     });
 
-    // Update with retry on error
-    context
-        .read<CartCubit>()
-        .updateQuantityWithRetry(widget.cartItemId, _localQuantity, context)
-        .then((_) {
-      if (mounted) setState(() => _isUpdating = false);
-    });
+    _updateWithRetry(_localQuantity);
   }
 
   void _increase() {
@@ -188,13 +177,40 @@ class _QuantityControlsState extends State<_QuantityControls> {
       _isUpdating = true;
     });
 
-    // Update with retry on error
-    context
+    _updateWithRetry(_localQuantity);
+  }
+
+  Future<bool> _updateWithRetry(int quantity) async {
+    final success = await context
         .read<CartCubit>()
-        .updateQuantityWithRetry(widget.cartItemId, _localQuantity, context)
-        .then((_) {
-      if (mounted) setState(() => _isUpdating = false);
-    });
+        .updateQuantityDirect(widget.cartItemId, quantity);
+
+    if (mounted) {
+      setState(() => _isUpdating = false);
+      if (!success) {
+        NetworkErrorWidget.showFullScreen(
+          context,
+          onRetry: () => _updateWithRetry(quantity),
+        );
+      }
+    }
+    return success;
+  }
+
+  Future<bool> _removeWithRetry() async {
+    final success =
+        await context.read<CartCubit>().removeFromCartDirect(widget.cartItemId);
+
+    if (mounted) {
+      setState(() => _isRemoving = false);
+      if (!success) {
+        NetworkErrorWidget.showFullScreen(
+          context,
+          onRetry: _removeWithRetry,
+        );
+      }
+    }
+    return success;
   }
 }
 

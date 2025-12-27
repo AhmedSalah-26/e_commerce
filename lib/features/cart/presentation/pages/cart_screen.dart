@@ -57,15 +57,15 @@ class _CartScreenState extends State<CartScreen> {
           ),
           centerTitle: true,
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: BlocBuilder<AuthCubit, AuthState>(
-            builder: (context, authState) {
-              if (authState is! AuthAuthenticated) {
-                return _buildLoginRequired(context);
-              }
+        body: BlocBuilder<AuthCubit, AuthState>(
+          builder: (context, authState) {
+            if (authState is! AuthAuthenticated) {
+              return _buildLoginRequired(context);
+            }
 
-              return BlocBuilder<CartCubit, CartState>(
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: BlocBuilder<CartCubit, CartState>(
                 builder: (context, state) {
                   if (state is CartLoading) {
                     return const CartListSkeleton(itemCount: 3);
@@ -176,9 +176,9 @@ class _CartScreenState extends State<CartScreen> {
 
                   return const CartListSkeleton(itemCount: 3);
                 },
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

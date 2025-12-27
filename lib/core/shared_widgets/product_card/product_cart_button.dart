@@ -7,6 +7,7 @@ import '../../../features/auth/presentation/cubit/auth_state.dart';
 import '../../../features/cart/presentation/cubit/cart_cubit.dart';
 import '../../../features/cart/presentation/cubit/cart_state.dart';
 import '../../../features/products/domain/entities/product_entity.dart';
+import '../../../features/products/presentation/cubit/products_cubit.dart';
 import '../network_error_widget.dart';
 import '../toast.dart';
 
@@ -140,6 +141,7 @@ class _QuantityControlsState extends State<_QuantityControls> {
     if (_isRemoving || _isUpdating) return;
 
     final cartCubit = context.read<CartCubit>();
+    final productsCubit = context.read<ProductsCubit>();
 
     if (_localQuantity <= 1) {
       setState(() => _isRemoving = true);
@@ -147,12 +149,9 @@ class _QuantityControlsState extends State<_QuantityControls> {
       if (mounted) setState(() => _isRemoving = false);
 
       if (!success && mounted) {
-        NetworkErrorWidget.showForCartUpdate(
+        NetworkErrorWidget.showForAddToCart(
           context,
-          cartCubit: cartCubit,
-          cartItemId: widget.cartItemId,
-          quantity: 0,
-          isRemove: true,
+          productsCubit: productsCubit,
         );
       }
       return;
@@ -169,12 +168,9 @@ class _QuantityControlsState extends State<_QuantityControls> {
     if (mounted) setState(() => _isUpdating = false);
 
     if (!success && mounted) {
-      NetworkErrorWidget.showForCartUpdate(
+      NetworkErrorWidget.showForAddToCart(
         context,
-        cartCubit: cartCubit,
-        cartItemId: widget.cartItemId,
-        quantity: newQuantity,
-        isRemove: false,
+        productsCubit: productsCubit,
       );
     }
   }
@@ -183,6 +179,7 @@ class _QuantityControlsState extends State<_QuantityControls> {
     if (_isRemoving || _localQuantity >= widget.maxStock) return;
 
     final cartCubit = context.read<CartCubit>();
+    final productsCubit = context.read<ProductsCubit>();
     final newQuantity = _localQuantity + 1;
 
     setState(() {
@@ -195,12 +192,9 @@ class _QuantityControlsState extends State<_QuantityControls> {
     if (mounted) setState(() => _isUpdating = false);
 
     if (!success && mounted) {
-      NetworkErrorWidget.showForCartUpdate(
+      NetworkErrorWidget.showForAddToCart(
         context,
-        cartCubit: cartCubit,
-        cartItemId: widget.cartItemId,
-        quantity: newQuantity,
-        isRemove: false,
+        productsCubit: productsCubit,
       );
     }
   }
@@ -293,9 +287,8 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
       return;
     }
 
-    final userId = authState.user.id;
     final cartCubit = context.read<CartCubit>();
-    cartCubit.setUserId(userId);
+    cartCubit.setUserId(authState.user.id);
 
     setState(() => _isLoading = true);
 
@@ -308,17 +301,10 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
         Tost.showCustomToast(context, 'added_to_cart'.tr(),
             backgroundColor: Colors.green);
       } else {
+        // Show error dialog that reloads home page
         NetworkErrorWidget.showForAddToCart(
           context,
-          cartCubit: cartCubit,
-          productId: widget.product.id,
-          userId: userId,
-          onSuccess: () {
-            if (mounted) {
-              Tost.showCustomToast(context, 'added_to_cart'.tr(),
-                  backgroundColor: Colors.green);
-            }
-          },
+          productsCubit: context.read<ProductsCubit>(),
         );
       }
     }

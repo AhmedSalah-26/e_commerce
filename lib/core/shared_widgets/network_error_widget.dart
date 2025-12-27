@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../features/cart/presentation/cubit/cart_cubit.dart';
+import '../../features/products/presentation/cubit/products_cubit.dart';
+import '../../features/products/presentation/cubit/products_state.dart';
 
 /// Widget to display when there's a network error
 class NetworkErrorWidget extends StatelessWidget {
@@ -95,13 +97,10 @@ class NetworkErrorWidget extends StatelessWidget {
     );
   }
 
-  /// Show full screen network error dialog for add to cart
+  /// Show full screen network error dialog - closes and reloads home on retry
   static void showForAddToCart(
     BuildContext context, {
-    required CartCubit cartCubit,
-    required String productId,
-    required String userId,
-    VoidCallback? onSuccess,
+    required ProductsCubit productsCubit,
   }) {
     showDialog(
       context: context,
@@ -111,14 +110,9 @@ class NetworkErrorWidget extends StatelessWidget {
         canPop: false,
         child: Dialog.fullscreen(
           backgroundColor: Theme.of(dialogContext).scaffoldBackgroundColor,
-          child: _AddToCartRetryContent(
-            cartCubit: cartCubit,
-            productId: productId,
-            userId: userId,
-            onClose: () {
-              Navigator.of(dialogContext).pop();
-              onSuccess?.call();
-            },
+          child: _ReloadHomeRetryContent(
+            productsCubit: productsCubit,
+            onClose: () => Navigator.of(dialogContext).pop(),
           ),
         ),
       ),
@@ -182,56 +176,44 @@ class _CartUpdateRetryContentState extends State<_CartUpdateRetryContent> {
   }
 }
 
-class _AddToCartRetryContent extends StatefulWidget {
-  final CartCubit cartCubit;
-  final String productId;
-  final String userId;
+class _ReloadHomeRetryContent extends StatefulWidget {
+  final ProductsCubit productsCubit;
   final VoidCallback onClose;
 
-  const _AddToCartRetryContent({
-    required this.cartCubit,
-    required this.productId,
-    required this.userId,
+  const _ReloadHomeRetryContent({
+    required this.productsCubit,
     required this.onClose,
   });
 
   @override
-  State<_AddToCartRetryContent> createState() => _AddToCartRetryContentState();
+  State<_ReloadHomeRetryContent> createState() =>
+      _ReloadHomeRetryContentState();
 }
 
-class _AddToCartRetryContentState extends State<_AddToCartRetryContent> {
+class _ReloadHomeRetryContentState extends State<_ReloadHomeRetryContent> {
   bool _isRetrying = false;
 
   Future<void> _handleRetry() async {
     if (_isRetrying) return;
 
     setState(() => _isRetrying = true);
-    debugPrint(
-        '🔄 AddToCart Retry: Starting... productId=${widget.productId}, userId=${widget.userId}');
 
-    bool success = false;
     try {
-      // Make sure userId is set
-      widget.cartCubit.setUserId(widget.userId);
-      success = await widget.cartCubit.addToCart(widget.productId, quantity: 1);
-      debugPrint('🔄 AddToCart Retry: Result = $success');
+      await widget.productsCubit.loadProducts(forceReload: true);
+
+      if (!mounted) return;
+
+      // Check if products loaded successfully
+      final state = widget.productsCubit.state;
+      if (state is ProductsLoaded) {
+        widget.onClose();
+      } else {
+        setState(() => _isRetrying = false);
+      }
     } catch (e) {
-      debugPrint('❌ AddToCart Retry: Error = $e');
-      success = false;
-    }
-
-    if (!mounted) {
-      debugPrint('⚠️ AddToCart Retry: Widget not mounted');
-      return;
-    }
-
-    setState(() => _isRetrying = false);
-
-    if (success) {
-      debugPrint('✅ AddToCart Retry: Success, closing dialog');
-      widget.onClose();
-    } else {
-      debugPrint('❌ AddToCart Retry: Failed, staying open');
+      if (mounted) {
+        setState(() => _isRetrying = false);
+      }
     }
   }
 

@@ -71,9 +71,9 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
     if (searchState.searchResults.isNotEmpty ||
         searchState.currentQuery.isNotEmpty ||
         filterState.hasActiveFilters) {
-      searchController.clear();
-      onSearchChanged('');
+      // Clear filters first to avoid triggering filtered search
       clearFilters();
+      searchController.clear();
     } else {
       context.go('/home');
     }
@@ -84,9 +84,9 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
     if (searchState.searchResults.isNotEmpty ||
         searchState.currentQuery.isNotEmpty ||
         filterState.hasActiveFilters) {
-      searchController.clear();
-      onSearchChanged('');
+      // Clear filters first to avoid triggering filtered search
       clearFilters();
+      searchController.clear();
       return true;
     }
     context.go('/home');

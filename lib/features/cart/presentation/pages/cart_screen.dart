@@ -24,6 +24,8 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  bool _isCheckingOut = false;
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +37,46 @@ class _CartScreenState extends State<CartScreen> {
     if (authState is AuthAuthenticated) {
       context.read<CartCubit>().loadCart(authState.user.id);
     }
+  }
+
+  Future<void> _handleCheckout() async {
+    if (_isCheckingOut) return;
+
+    final authState = context.read<AuthCubit>().state;
+    if (authState is! AuthAuthenticated) return;
+
+    setState(() => _isCheckingOut = true);
+
+    final cartCubit = context.read<CartCubit>();
+
+    // Try to reload cart to check network connectivity
+    await cartCubit.loadCart(authState.user.id);
+
+    if (!mounted) return;
+
+    setState(() => _isCheckingOut = false);
+
+    final state = cartCubit.state;
+    if (state is CartLoaded && state.items.isNotEmpty) {
+      // Network is working, go to checkout
+      context.push('/checkout');
+    } else if (state is CartError) {
+      // Network error - show full screen error
+      _showNetworkErrorDialog();
+    }
+  }
+
+  void _showNetworkErrorDialog() {
+    final cartCubit = context.read<CartCubit>();
+    final authState = context.read<AuthCubit>().state;
+    final userId = authState is AuthAuthenticated ? authState.user.id : null;
+
+    NetworkErrorWidget.showForCheckout(
+      context,
+      cartCubit: cartCubit,
+      userId: userId,
+      onSuccess: () => context.push('/checkout'),
+    );
   }
 
   @override
@@ -141,9 +183,9 @@ class _CartScreenState extends State<CartScreen> {
                               SizedBox(
                                 width: double.infinity,
                                 child: CustomButton(
-                                  onPressed: () {
-                                    context.push('/checkout');
-                                  },
+                                  onPressed:
+                                      _isCheckingOut ? null : _handleCheckout,
+                                  isLoading: _isCheckingOut,
                                   label: 'checkout'.tr(),
                                   color: theme.colorScheme.primary,
                                 ),

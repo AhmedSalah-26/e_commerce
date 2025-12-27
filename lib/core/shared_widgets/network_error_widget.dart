@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../features/cart/presentation/cubit/cart_cubit.dart';
+import '../../features/cart/presentation/cubit/cart_state.dart';
 import '../../features/products/presentation/cubit/products_cubit.dart';
 import '../../features/products/presentation/cubit/products_state.dart';
 
@@ -118,6 +119,35 @@ class NetworkErrorWidget extends StatelessWidget {
       ),
     );
   }
+
+  /// Show full screen network error dialog for checkout - reloads cart and navigates on success
+  static void showForCheckout(
+    BuildContext context, {
+    required CartCubit cartCubit,
+    required String? userId,
+    required VoidCallback onSuccess,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (dialogContext) => PopScope(
+        canPop: false,
+        child: Dialog.fullscreen(
+          backgroundColor: Theme.of(dialogContext).scaffoldBackgroundColor,
+          child: _CheckoutRetryContent(
+            cartCubit: cartCubit,
+            userId: userId,
+            onClose: () => Navigator.of(dialogContext).pop(),
+            onSuccess: () {
+              Navigator.of(dialogContext).pop();
+              onSuccess();
+            },
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _CartUpdateRetryContent extends StatefulWidget {
@@ -207,6 +237,55 @@ class _ReloadHomeRetryContentState extends State<_ReloadHomeRetryContent> {
       final state = widget.productsCubit.state;
       if (state is ProductsLoaded) {
         widget.onClose();
+      } else {
+        setState(() => _isRetrying = false);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isRetrying = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _ErrorContent(isRetrying: _isRetrying, onRetry: _handleRetry);
+  }
+}
+
+class _CheckoutRetryContent extends StatefulWidget {
+  final CartCubit cartCubit;
+  final String? userId;
+  final VoidCallback onClose;
+  final VoidCallback onSuccess;
+
+  const _CheckoutRetryContent({
+    required this.cartCubit,
+    required this.userId,
+    required this.onClose,
+    required this.onSuccess,
+  });
+
+  @override
+  State<_CheckoutRetryContent> createState() => _CheckoutRetryContentState();
+}
+
+class _CheckoutRetryContentState extends State<_CheckoutRetryContent> {
+  bool _isRetrying = false;
+
+  Future<void> _handleRetry() async {
+    if (_isRetrying || widget.userId == null) return;
+
+    setState(() => _isRetrying = true);
+
+    try {
+      await widget.cartCubit.loadCart(widget.userId!);
+
+      if (!mounted) return;
+
+      final state = widget.cartCubit.state;
+      if (state is CartLoaded && state.items.isNotEmpty) {
+        widget.onSuccess();
       } else {
         setState(() => _isRetrying = false);
       }

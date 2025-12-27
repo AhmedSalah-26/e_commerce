@@ -9,6 +9,7 @@ import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
+import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../notifications/data/services/local_notification_service.dart';
 import '../../../orders/presentation/cubit/orders_state.dart';
 
@@ -62,6 +63,8 @@ class OrderStateHandler {
 
   void _showNetworkErrorDialog(BuildContext context) {
     final cartCubit = context.read<CartCubit>();
+    final authState = context.read<AuthCubit>().state;
+    final userId = authState is AuthAuthenticated ? authState.user.id : null;
 
     showDialog(
       context: context,
@@ -73,6 +76,7 @@ class OrderStateHandler {
           backgroundColor: Theme.of(dialogContext).scaffoldBackgroundColor,
           child: _CheckoutRetryContent(
             cartCubit: cartCubit,
+            userId: userId,
             onClose: () => Navigator.of(dialogContext).pop(),
           ),
         ),
@@ -107,10 +111,12 @@ class OrderStateHandler {
 
 class _CheckoutRetryContent extends StatefulWidget {
   final CartCubit cartCubit;
+  final String? userId;
   final VoidCallback onClose;
 
   const _CheckoutRetryContent({
     required this.cartCubit,
+    required this.userId,
     required this.onClose,
   });
 
@@ -122,13 +128,23 @@ class _CheckoutRetryContentState extends State<_CheckoutRetryContent> {
   bool _isRetrying = false;
 
   Future<void> _handleRetry() async {
-    if (_isRetrying) return;
+    if (_isRetrying || widget.userId == null) return;
 
     setState(() => _isRetrying = true);
 
     try {
-      // Just close the dialog and let user retry manually
-      widget.onClose();
+      // Reload cart
+      await widget.cartCubit.loadCart(widget.userId!);
+
+      if (!mounted) return;
+
+      // Check if cart loaded successfully
+      final state = widget.cartCubit.state;
+      if (state is CartLoaded) {
+        widget.onClose();
+      } else {
+        setState(() => _isRetrying = false);
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isRetrying = false);
@@ -173,7 +189,16 @@ class _CheckoutRetryContentState extends State<_CheckoutRetryContent> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _isRetrying ? null : _handleRetry,
-              icon: const Icon(Icons.refresh),
+              icon: _isRetrying
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.refresh),
               label: Text('retry'.tr()),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(

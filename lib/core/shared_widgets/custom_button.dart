@@ -6,8 +6,9 @@ class CustomButton extends StatelessWidget {
   final Color? color;
   final double width;
   final double height;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final double labelSize;
+  final bool isLoading;
 
   const CustomButton({
     super.key,
@@ -17,6 +18,7 @@ class CustomButton extends StatelessWidget {
     this.height = 50,
     required this.onPressed,
     this.labelSize = 20,
+    this.isLoading = false,
   });
 
   @override
@@ -33,16 +35,27 @@ class CustomButton extends StatelessWidget {
       width: buttonWidth,
       height: buttonHeight,
       decoration: BoxDecoration(
-        color: color ?? theme.colorScheme.primary,
+        color: isLoading
+            ? (color ?? theme.colorScheme.primary).withValues(alpha: 0.7)
+            : (color ?? theme.colorScheme.primary),
         borderRadius: BorderRadius.circular(10),
       ),
       child: MaterialButton(
-        onPressed: onPressed,
-        child: Text(
-          label,
-          style: AppTextStyle.semiBold_18_white
-              .copyWith(fontSize: responsiveLabelSize),
-        ),
+        onPressed: isLoading ? null : onPressed,
+        child: isLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.white,
+                ),
+              )
+            : Text(
+                label,
+                style: AppTextStyle.semiBold_18_white
+                    .copyWith(fontSize: responsiveLabelSize),
+              ),
       ),
     );
   }

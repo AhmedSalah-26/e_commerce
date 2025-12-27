@@ -23,39 +23,67 @@ class CartItemCard extends StatefulWidget {
 }
 
 class _CartItemCardState extends State<CartItemCard> {
-  bool _isLoading = false;
+  late int _localQuantity;
+  bool _isUpdating = false;
 
-  Future<void> _handleIncrease() async {
-    if (_isLoading) return;
-    setState(() => _isLoading = true);
-
-    await context.read<CartCubit>().updateQuantity(
-          widget.cartItem.id,
-          widget.cartItem.quantity + 1,
-        );
-
-    if (mounted) setState(() => _isLoading = false);
+  @override
+  void initState() {
+    super.initState();
+    _localQuantity = widget.cartItem.quantity;
   }
 
-  Future<void> _handleDecrease() async {
-    if (_isLoading) return;
-    setState(() => _isLoading = true);
+  @override
+  void didUpdateWidget(CartItemCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_isUpdating && widget.cartItem.quantity != _localQuantity) {
+      _localQuantity = widget.cartItem.quantity;
+    }
+  }
 
-    final cubit = context.read<CartCubit>();
-    if (widget.cartItem.quantity > 1) {
-      await cubit.updateQuantity(
-        widget.cartItem.id,
-        widget.cartItem.quantity - 1,
-      );
-    } else {
-      await cubit.removeFromCart(widget.cartItem.id);
+  void _handleIncrease() {
+    // Optimistic update
+    setState(() {
+      _localQuantity++;
+      _isUpdating = true;
+    });
+
+    context
+        .read<CartCubit>()
+        .updateQuantity(
+          widget.cartItem.id,
+          _localQuantity,
+        )
+        .then((_) {
+      if (mounted) setState(() => _isUpdating = false);
+    });
+  }
+
+  void _handleDecrease() {
+    if (_localQuantity <= 1) {
+      // Remove from cart
+      context.read<CartCubit>().removeFromCart(widget.cartItem.id);
+      return;
     }
 
-    if (mounted) setState(() => _isLoading = false);
+    // Optimistic update
+    setState(() {
+      _localQuantity--;
+      _isUpdating = true;
+    });
+
+    context
+        .read<CartCubit>()
+        .updateQuantity(
+          widget.cartItem.id,
+          _localQuantity,
+        )
+        .then((_) {
+      if (mounted) setState(() => _isUpdating = false);
+    });
   }
 
-  Future<void> _handleRemove() async {
-    await context.read<CartCubit>().removeFromCart(widget.cartItem.id);
+  void _handleRemove() {
+    context.read<CartCubit>().removeFromCart(widget.cartItem.id);
   }
 
   @override
@@ -71,7 +99,7 @@ class _CartItemCardState extends State<CartItemCard> {
     final productName = product?.name ?? 'منتج';
     final productPrice = product?.effectivePrice ?? 0;
     final productImage = product?.mainImage ?? '';
-    double totalPrice = productPrice * widget.cartItem.quantity;
+    double totalPrice = productPrice * _localQuantity;
     final hasDiscount = product?.hasDiscount ?? false;
     final isFlashSale = product?.isFlashSaleActive ?? false;
     final discountPercent = product?.discountPercentage ?? 0;
@@ -219,38 +247,29 @@ class _CartItemCardState extends State<CartItemCard> {
                             IconButton(
                               icon: Icon(
                                 Icons.add,
-                                color: _isLoading ? Colors.grey : Colors.green,
+                                color: Colors.green,
                                 size: fontSize * 1.2,
                               ),
-                              onPressed: _isLoading ? null : _handleIncrease,
+                              onPressed: _handleIncrease,
                             ),
                             SizedBox(
                               width: 30,
                               height: 24,
                               child: Center(
-                                child: _isLoading
-                                    ? SizedBox(
-                                        width: 14,
-                                        height: 14,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                      )
-                                    : Text(
-                                        '${widget.cartItem.quantity}',
-                                        style: AppTextStyle.bold_18_medium_brown
-                                            .copyWith(fontSize: fontSize),
-                                      ),
+                                child: Text(
+                                  '$_localQuantity',
+                                  style: AppTextStyle.bold_18_medium_brown
+                                      .copyWith(fontSize: fontSize),
+                                ),
                               ),
                             ),
                             IconButton(
                               icon: Icon(
                                 Icons.remove,
-                                color: _isLoading ? Colors.grey : Colors.red,
+                                color: Colors.red,
                                 size: fontSize * 1.2,
                               ),
-                              onPressed: _isLoading ? null : _handleDecrease,
+                              onPressed: _handleDecrease,
                             ),
                           ],
                         ),

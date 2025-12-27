@@ -254,7 +254,7 @@ class HomeScreenState extends State<HomeScreen> {
     } else if (selectedCategoryId != null) {
       context.read<ProductsCubit>().loadProductsByCategory(selectedCategoryId!);
     } else {
-      context.read<ProductsCubit>().loadProducts();
+      context.read<ProductsCubit>().loadProducts(forceReload: true);
     }
   }
 

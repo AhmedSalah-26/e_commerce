@@ -39,7 +39,7 @@ class _CartItemCardState extends State<CartItemCard> {
     widget.onIncreaseQuantity();
 
     // Wait for the operation to complete
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 800));
 
     if (mounted) {
       setState(() {
@@ -58,7 +58,7 @@ class _CartItemCardState extends State<CartItemCard> {
     widget.onDecreaseQuantity();
 
     // Wait for the operation to complete
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 800));
 
     if (mounted) {
       setState(() {

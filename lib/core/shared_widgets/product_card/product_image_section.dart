@@ -42,12 +42,15 @@ class ProductImageSection extends StatelessWidget {
         ),
         color: theme.colorScheme.surface,
       ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(8),
-          topRight: Radius.circular(8),
+      child: AspectRatio(
+        aspectRatio: 1.0,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(8),
+            topRight: Radius.circular(8),
+          ),
+          child: _ProductImage(imageUrl: product.mainImage),
         ),
-        child: _ProductImage(imageUrl: product.mainImage),
       ),
     );
   }
@@ -78,6 +81,8 @@ class _ProductImage extends StatelessWidget {
         fadeInDuration: Duration.zero,
         fadeOutDuration: Duration.zero,
         fit: BoxFit.contain,
+        // Prevent layout issues with broken images
+        errorListener: (_) {},
       );
     }
 
@@ -99,11 +104,16 @@ class _ImagePlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Center(
-      child: Icon(
-        Icons.image_not_supported,
-        size: 50,
-        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: theme.colorScheme.surface,
+      child: Center(
+        child: Icon(
+          Icons.image_not_supported,
+          size: 50,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+        ),
       ),
     );
   }
@@ -115,10 +125,15 @@ class _ImageLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Center(
-      child: CircularProgressIndicator(
-        color: theme.colorScheme.primary,
-        strokeWidth: 2,
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: theme.colorScheme.surface,
+      child: Center(
+        child: CircularProgressIndicator(
+          color: theme.colorScheme.primary,
+          strokeWidth: 2,
+        ),
       ),
     );
   }

@@ -39,7 +39,7 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
     }
 
     return Container(
-      color: theme.colorScheme.surface,
+      color: theme.scaffoldBackgroundColor,
       child: Column(
         children: [
           // Main Image Area with curved corners - 16:9 aspect ratio
@@ -48,7 +48,7 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
+                color: theme.scaffoldBackgroundColor,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ClipRRect(
@@ -156,7 +156,7 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
   Widget _buildPlaceholder(ThemeData theme) {
     return Container(
       height: widget.screenWidth * 0.7,
-      color: theme.colorScheme.surface,
+      color: theme.scaffoldBackgroundColor,
       child: Center(
         child: Icon(Icons.image_not_supported,
             size: 80,

@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
@@ -324,18 +325,19 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 48, color: theme.colorScheme.outline),
+          Icon(Icons.wifi_off_rounded,
+              size: 48, color: theme.colorScheme.error.withValues(alpha: 0.7)),
           const SizedBox(height: 16),
-          Text(message,
+          Text(ErrorHelper.getUserFriendlyMessage(message),
               style: TextStyle(
                 fontSize: 16,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                color: theme.colorScheme.onSurface,
               ),
               textAlign: TextAlign.center),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => _loadOrdersForStatus(status),
-            child: Text(isRtl ? 'إعادة المحاولة' : 'Retry'),
+            child: Text('retry'.tr()),
           ),
         ],
       ),

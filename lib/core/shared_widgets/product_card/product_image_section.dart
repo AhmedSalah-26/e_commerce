@@ -155,8 +155,8 @@ class _FavoriteButton extends StatelessWidget {
         return GestureDetector(
           onTap: () => _toggleFavorite(context, isFavorite),
           child: Container(
-            width: 28,
-            height: 28,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
               shape: BoxShape.circle,
@@ -164,7 +164,7 @@ class _FavoriteButton extends StatelessWidget {
             child: Icon(
               isFavorite ? Icons.favorite : Icons.favorite_border,
               color: theme.colorScheme.primary,
-              size: 14,
+              size: 18,
             ),
           ),
         );

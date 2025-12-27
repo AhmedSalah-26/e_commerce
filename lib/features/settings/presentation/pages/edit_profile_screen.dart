@@ -88,12 +88,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         appBar: AppBar(
           backgroundColor: theme.scaffoldBackgroundColor,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
             onPressed: () => context.pop(),
           ),
           title: Text(
             'edit_profile_title'.tr(),
-            style: AppTextStyle.semiBold_20_dark_brown,
+            style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+              color: theme.colorScheme.primary,
+            ),
           ),
           centerTitle: true,
         ),

@@ -42,11 +42,11 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
+            color: theme.colorScheme.primary,
           ),
         ),
         backgroundColor: theme.scaffoldBackgroundColor,
-        foregroundColor: theme.colorScheme.onSurface,
+        foregroundColor: theme.colorScheme.primary,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),

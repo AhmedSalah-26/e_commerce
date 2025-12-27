@@ -257,7 +257,7 @@ class _CartItemCardState extends State<CartItemCard> {
                               height: 24,
                               child: Center(
                                 child: Text(
-                                  '$_localQuantity',
+                                  '${_localQuantity < 1 ? 1 : _localQuantity}',
                                   style: AppTextStyle.bold_18_medium_brown
                                       .copyWith(fontSize: fontSize),
                                 ),

@@ -77,20 +77,13 @@ class _StoreProductsScreenState extends State<StoreProductsScreen>
 
   PreferredSizeWidget _buildAppBar(ThemeData theme) {
     return AppBar(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: theme.scaffoldBackgroundColor,
       elevation: 0,
       leading: IconButton(
         icon: Icon(Icons.arrow_back_ios,
             color: theme.colorScheme.primary, size: 20),
         onPressed: () => context.pop(),
       ),
-      title: Text(
-        storeState.storeName ?? 'store_products'.tr(),
-        style: AppTextStyle.semiBold_16_dark_brown.copyWith(
-          color: theme.colorScheme.onSurface,
-        ),
-      ),
-      centerTitle: true,
     );
   }
 

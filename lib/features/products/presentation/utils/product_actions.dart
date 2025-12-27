@@ -73,12 +73,15 @@ class ProductActions {
 
     final wasFavorite = favoritesCubit.isFavorite(productId);
 
-    // Show optimistic toast - wasFavorite = true means it WILL BE removed
-    _showFavoriteToast(context, wasFavorite);
-
-    // Await the result and show error if failed
+    // Await the result first
     final success = await favoritesCubit.toggleFavorite(productId);
-    if (!success && context.mounted) {
+
+    if (!context.mounted) return;
+
+    // Show appropriate toast based on result
+    if (success) {
+      _showFavoriteToast(context, wasFavorite);
+    } else {
       Tost.showCustomToast(
         context,
         'error_favorite_failed'.tr(),

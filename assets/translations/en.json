@@ -414,6 +414,7 @@
 
   "error_network": "Network connection error",
   "check_connection": "Please check your internet connection and try again",
+  "retrying": "Retrying...",
   "error_invalid_credentials": "Invalid email or password",
   "error_user_not_found": "Account not found",
   "error_email_not_confirmed": "Please confirm your email",

@@ -53,6 +53,7 @@ dependencies:
   app_links: ^6.3.3
   # Share
   share_plus: ^10.1.4
+  connectivity_plus: ^7.0.0
 
 dev_dependencies:
   flutter_test:

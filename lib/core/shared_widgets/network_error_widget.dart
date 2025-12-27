@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../features/cart/presentation/cubit/cart_cubit.dart';
 import '../../features/cart/presentation/cubit/cart_state.dart';
 import '../../features/products/presentation/cubit/products_cubit.dart';
 import '../../features/products/presentation/cubit/products_state.dart';
+import '../services/connectivity_service.dart';
 
 /// Widget to display when there's a network error
 class NetworkErrorWidget extends StatelessWidget {
@@ -120,7 +122,7 @@ class NetworkErrorWidget extends StatelessWidget {
     );
   }
 
-  /// Show full screen network error dialog for checkout - reloads cart and navigates on success
+  /// Show full screen network error dialog for checkout
   static void showForCheckout(
     BuildContext context, {
     required CartCubit cartCubit,
@@ -150,6 +152,30 @@ class NetworkErrorWidget extends StatelessWidget {
   }
 }
 
+/// Mixin for auto-retry on connectivity restore
+mixin _AutoRetryMixin<T extends StatefulWidget> on State<T> {
+  StreamSubscription<bool>? _connectivitySubscription;
+  bool _isRetrying = false;
+
+  void startListeningToConnectivity(Future<void> Function() onRetry) {
+    _connectivitySubscription =
+        ConnectivityService().onConnectivityChanged.listen((isConnected) async {
+      if (isConnected && !_isRetrying && mounted) {
+        debugPrint('🌐 Auto-retry: Internet restored, retrying...');
+        await onRetry();
+      }
+    });
+  }
+
+  void stopListeningToConnectivity() {
+    _connectivitySubscription?.cancel();
+    _connectivitySubscription = null;
+  }
+
+  bool get isRetrying => _isRetrying;
+  set isRetrying(bool value) => _isRetrying = value;
+}
+
 class _CartUpdateRetryContent extends StatefulWidget {
   final CartCubit cartCubit;
   final String cartItemId;
@@ -170,13 +196,24 @@ class _CartUpdateRetryContent extends StatefulWidget {
       _CartUpdateRetryContentState();
 }
 
-class _CartUpdateRetryContentState extends State<_CartUpdateRetryContent> {
-  bool _isRetrying = false;
+class _CartUpdateRetryContentState extends State<_CartUpdateRetryContent>
+    with _AutoRetryMixin {
+  @override
+  void initState() {
+    super.initState();
+    startListeningToConnectivity(_handleRetry);
+  }
+
+  @override
+  void dispose() {
+    stopListeningToConnectivity();
+    super.dispose();
+  }
 
   Future<void> _handleRetry() async {
-    if (_isRetrying) return;
+    if (isRetrying) return;
 
-    setState(() => _isRetrying = true);
+    setState(() => isRetrying = true);
 
     bool success = false;
     try {
@@ -193,7 +230,7 @@ class _CartUpdateRetryContentState extends State<_CartUpdateRetryContent> {
 
     if (!mounted) return;
 
-    setState(() => _isRetrying = false);
+    setState(() => isRetrying = false);
 
     if (success) {
       widget.onClose();
@@ -202,7 +239,7 @@ class _CartUpdateRetryContentState extends State<_CartUpdateRetryContent> {
 
   @override
   Widget build(BuildContext context) {
-    return _ErrorContent(isRetrying: _isRetrying, onRetry: _handleRetry);
+    return _ErrorContent(isRetrying: isRetrying, onRetry: _handleRetry);
   }
 }
 
@@ -220,36 +257,46 @@ class _ReloadHomeRetryContent extends StatefulWidget {
       _ReloadHomeRetryContentState();
 }
 
-class _ReloadHomeRetryContentState extends State<_ReloadHomeRetryContent> {
-  bool _isRetrying = false;
+class _ReloadHomeRetryContentState extends State<_ReloadHomeRetryContent>
+    with _AutoRetryMixin {
+  @override
+  void initState() {
+    super.initState();
+    startListeningToConnectivity(_handleRetry);
+  }
+
+  @override
+  void dispose() {
+    stopListeningToConnectivity();
+    super.dispose();
+  }
 
   Future<void> _handleRetry() async {
-    if (_isRetrying) return;
+    if (isRetrying) return;
 
-    setState(() => _isRetrying = true);
+    setState(() => isRetrying = true);
 
     try {
       await widget.productsCubit.loadProducts(forceReload: true);
 
       if (!mounted) return;
 
-      // Check if products loaded successfully
       final state = widget.productsCubit.state;
       if (state is ProductsLoaded) {
         widget.onClose();
       } else {
-        setState(() => _isRetrying = false);
+        setState(() => isRetrying = false);
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isRetrying = false);
+        setState(() => isRetrying = false);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return _ErrorContent(isRetrying: _isRetrying, onRetry: _handleRetry);
+    return _ErrorContent(isRetrying: isRetrying, onRetry: _handleRetry);
   }
 }
 
@@ -270,13 +317,24 @@ class _CheckoutRetryContent extends StatefulWidget {
   State<_CheckoutRetryContent> createState() => _CheckoutRetryContentState();
 }
 
-class _CheckoutRetryContentState extends State<_CheckoutRetryContent> {
-  bool _isRetrying = false;
+class _CheckoutRetryContentState extends State<_CheckoutRetryContent>
+    with _AutoRetryMixin {
+  @override
+  void initState() {
+    super.initState();
+    startListeningToConnectivity(_handleRetry);
+  }
+
+  @override
+  void dispose() {
+    stopListeningToConnectivity();
+    super.dispose();
+  }
 
   Future<void> _handleRetry() async {
-    if (_isRetrying || widget.userId == null) return;
+    if (isRetrying || widget.userId == null) return;
 
-    setState(() => _isRetrying = true);
+    setState(() => isRetrying = true);
 
     try {
       await widget.cartCubit.loadCart(widget.userId!);
@@ -287,18 +345,18 @@ class _CheckoutRetryContentState extends State<_CheckoutRetryContent> {
       if (state is CartLoaded && state.items.isNotEmpty) {
         widget.onSuccess();
       } else {
-        setState(() => _isRetrying = false);
+        setState(() => isRetrying = false);
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isRetrying = false);
+        setState(() => isRetrying = false);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return _ErrorContent(isRetrying: _isRetrying, onRetry: _handleRetry);
+    return _ErrorContent(isRetrying: isRetrying, onRetry: _handleRetry);
   }
 }
 
@@ -335,7 +393,7 @@ class _ErrorContent extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'check_connection'.tr(),
+              isRetrying ? 'retrying'.tr() : 'check_connection'.tr(),
               style: TextStyle(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 fontSize: 14,
@@ -344,13 +402,7 @@ class _ErrorContent extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: isRetrying
-                  ? null
-                  : () {
-                      debugPrint(
-                          '🔘 Retry button pressed! isRetrying=$isRetrying');
-                      onRetry();
-                    },
+              onPressed: isRetrying ? null : onRetry,
               icon: isRetrying
                   ? const SizedBox(
                       width: 20,

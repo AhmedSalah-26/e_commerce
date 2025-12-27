@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -88,28 +86,26 @@ class _QuantityControls extends StatefulWidget {
 }
 
 class _QuantityControlsState extends State<_QuantityControls> {
-  Timer? _debounceTimer;
   late int _localQuantity;
+  bool _isUpdating = false;
+  bool _isRemoving = false;
+
+  // Always return at least 1 for display
+  int get displayQuantity => _localQuantity < 1 ? 1 : _localQuantity;
 
   @override
   void initState() {
     super.initState();
-    _localQuantity = widget.quantity;
+    _localQuantity = widget.quantity < 1 ? 1 : widget.quantity;
   }
 
   @override
   void didUpdateWidget(_QuantityControls oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update local quantity when cart state changes from server
-    if (widget.quantity != oldWidget.quantity && _debounceTimer == null) {
-      _localQuantity = widget.quantity;
+    // Only update local quantity if not currently updating
+    if (!_isUpdating && !_isRemoving && widget.quantity != _localQuantity) {
+      _localQuantity = widget.quantity < 1 ? 1 : widget.quantity;
     }
-  }
-
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
   }
 
   @override
@@ -121,66 +117,73 @@ class _QuantityControlsState extends State<_QuantityControls> {
       children: [
         _QuantityButton(
           icon: Icons.remove,
-          onTap: () => _decrease(context),
+          onTap: _decrease,
+          isLoading: false,
         ),
-        Text(
-          '$_localQuantity',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface,
+        SizedBox(
+          width: 30,
+          child: Center(
+            child: Text(
+              '$displayQuantity',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
           ),
         ),
         _QuantityButton(
           icon: Icons.add,
-          onTap: _localQuantity < widget.maxStock
-              ? () => _increase(context)
-              : null,
+          onTap: _localQuantity >= widget.maxStock ? null : _increase,
+          isLoading: false,
         ),
       ],
     );
   }
 
-  void _decrease(BuildContext context) {
-    setState(() {
-      _localQuantity--;
-    });
+  void _decrease() {
+    // Prevent multiple rapid clicks
+    if (_isRemoving || _isUpdating) return;
 
-    _debounceTimer?.cancel();
-
-    if (_localQuantity < 1) {
-      // Remove immediately if quantity is 0
-      final cubit = context.read<CartCubit>();
-      cubit.removeFromCart(widget.cartItemId);
-      Tost.showCustomToast(context, 'removed_from_cart'.tr(),
-          backgroundColor: Colors.orange);
+    // Prevent going below 1
+    if (_localQuantity <= 1) {
+      // Remove from cart
+      setState(() => _isRemoving = true);
+      context.read<CartCubit>().removeFromCart(widget.cartItemId);
       return;
     }
 
-    // Debounce the update
-    _debounceTimer = Timer(const Duration(milliseconds: 1000), () {
-      if (mounted) {
-        context
-            .read<CartCubit>()
-            .updateQuantity(widget.cartItemId, _localQuantity);
-      }
+    // Optimistic update - ensure never goes below 1
+    setState(() {
+      _localQuantity = (_localQuantity - 1) < 1 ? 1 : _localQuantity - 1;
+      _isUpdating = true;
+    });
+
+    // Update in background
+    context
+        .read<CartCubit>()
+        .updateQuantity(widget.cartItemId, _localQuantity)
+        .then((_) {
+      if (mounted) setState(() => _isUpdating = false);
     });
   }
 
-  void _increase(BuildContext context) {
-    if (_localQuantity >= widget.maxStock) return;
+  void _increase() {
+    if (_isRemoving || _localQuantity >= widget.maxStock) return;
 
+    // Optimistic update
     setState(() {
       _localQuantity++;
+      _isUpdating = true;
     });
 
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 1000), () {
-      if (mounted) {
-        context
-            .read<CartCubit>()
-            .updateQuantity(widget.cartItemId, _localQuantity);
-      }
+    // Update in background
+    context
+        .read<CartCubit>()
+        .updateQuantity(widget.cartItemId, _localQuantity)
+        .then((_) {
+      if (mounted) setState(() => _isUpdating = false);
     });
   }
 }
@@ -188,12 +191,18 @@ class _QuantityControlsState extends State<_QuantityControls> {
 class _QuantityButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
+  final bool isLoading;
 
-  const _QuantityButton({required this.icon, this.onTap});
+  const _QuantityButton({
+    required this.icon,
+    this.onTap,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDisabled = onTap == null;
 
     return GestureDetector(
       onTap: onTap,
@@ -201,7 +210,7 @@ class _QuantityButton extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: onTap != null ? theme.colorScheme.primary : Colors.grey,
+          color: isDisabled ? Colors.grey.shade400 : theme.colorScheme.primary,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: Colors.white, size: 20),
@@ -210,10 +219,17 @@ class _QuantityButton extends StatelessWidget {
   }
 }
 
-class _AddToCartButton extends StatelessWidget {
+class _AddToCartButton extends StatefulWidget {
   final ProductEntity product;
 
   const _AddToCartButton({required this.product});
+
+  @override
+  State<_AddToCartButton> createState() => _AddToCartButtonState();
+}
+
+class _AddToCartButtonState extends State<_AddToCartButton> {
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -223,29 +239,44 @@ class _AddToCartButton extends StatelessWidget {
       width: double.infinity,
       height: 40,
       child: ElevatedButton(
-        onPressed: product.isOutOfStock ? null : () => _addToCart(context),
+        onPressed:
+            widget.product.isOutOfStock || _isLoading ? null : _addToCart,
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              product.isOutOfStock ? Colors.grey : theme.colorScheme.primary,
+          backgroundColor: widget.product.isOutOfStock
+              ? Colors.grey
+              : theme.colorScheme.primary,
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(6),
           ),
           elevation: 0,
+          disabledBackgroundColor:
+              theme.colorScheme.primary.withValues(alpha: 0.7),
         ),
-        child: Text(
-          product.isOutOfStock ? 'out_of_stock'.tr() : 'add_to_cart'.tr(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: _isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Text(
+                widget.product.isOutOfStock
+                    ? 'out_of_stock'.tr()
+                    : 'add_to_cart'.tr(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
   }
 
-  void _addToCart(BuildContext context) {
+  Future<void> _addToCart() async {
     final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) {
       Tost.showCustomToast(context, 'login_required'.tr(),
@@ -253,10 +284,22 @@ class _AddToCartButton extends StatelessWidget {
       return;
     }
 
+    setState(() => _isLoading = true);
+
     final cubit = context.read<CartCubit>();
     cubit.setUserId(authState.user.id);
-    cubit.addToCart(product.id, quantity: 1, product: product);
-    Tost.showCustomToast(context, 'added_to_cart'.tr(),
-        backgroundColor: Colors.green);
+    final success = await cubit.addToCart(
+      widget.product.id,
+      quantity: 1,
+      product: widget.product,
+    );
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (success) {
+        Tost.showCustomToast(context, 'added_to_cart'.tr(),
+            backgroundColor: Colors.green);
+      }
+    }
   }
 }

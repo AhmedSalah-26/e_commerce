@@ -1,26 +1,21 @@
-import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/cart_item_entity.dart';
+import '../cubit/cart_cubit.dart';
 
 class CartItemCard extends StatefulWidget {
   final CartItemEntity cartItem;
-  final VoidCallback onIncreaseQuantity;
-  final VoidCallback onDecreaseQuantity;
-  final VoidCallback onRemove;
 
   const CartItemCard({
     super.key,
     required this.cartItem,
-    required this.onIncreaseQuantity,
-    required this.onDecreaseQuantity,
-    required this.onRemove,
   });
 
   @override
@@ -28,62 +23,39 @@ class CartItemCard extends StatefulWidget {
 }
 
 class _CartItemCardState extends State<CartItemCard> {
-  Timer? _debounceTimer;
-  late int _localQuantity;
+  bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _localQuantity = widget.cartItem.quantity;
+  Future<void> _handleIncrease() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    await context.read<CartCubit>().updateQuantity(
+          widget.cartItem.id,
+          widget.cartItem.quantity + 1,
+        );
+
+    if (mounted) setState(() => _isLoading = false);
   }
 
-  @override
-  void didUpdateWidget(CartItemCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Update local quantity when cart state changes from server
-    if (widget.cartItem.quantity != oldWidget.cartItem.quantity &&
-        _debounceTimer == null) {
-      _localQuantity = widget.cartItem.quantity;
-    }
-  }
+  Future<void> _handleDecrease() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
 
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
-
-  void _handleIncrease() {
-    setState(() {
-      _localQuantity++;
-    });
-
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        widget.onIncreaseQuantity();
-      }
-    });
-  }
-
-  void _handleDecrease() {
-    setState(() {
-      _localQuantity--;
-    });
-
-    _debounceTimer?.cancel();
-
-    if (_localQuantity < 1) {
-      // Remove immediately if quantity is 0
-      widget.onRemove();
-      return;
+    final cubit = context.read<CartCubit>();
+    if (widget.cartItem.quantity > 1) {
+      await cubit.updateQuantity(
+        widget.cartItem.id,
+        widget.cartItem.quantity - 1,
+      );
+    } else {
+      await cubit.removeFromCart(widget.cartItem.id);
     }
 
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        widget.onDecreaseQuantity();
-      }
-    });
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _handleRemove() async {
+    await context.read<CartCubit>().removeFromCart(widget.cartItem.id);
   }
 
   @override
@@ -99,7 +71,7 @@ class _CartItemCardState extends State<CartItemCard> {
     final productName = product?.name ?? 'منتج';
     final productPrice = product?.effectivePrice ?? 0;
     final productImage = product?.mainImage ?? '';
-    double totalPrice = productPrice * _localQuantity;
+    double totalPrice = productPrice * widget.cartItem.quantity;
     final hasDiscount = product?.hasDiscount ?? false;
     final isFlashSale = product?.isFlashSaleActive ?? false;
     final discountPercent = product?.discountPercentage ?? 0;
@@ -111,7 +83,7 @@ class _CartItemCardState extends State<CartItemCard> {
         motion: const ScrollMotion(),
         children: [
           SlidableAction(
-            onPressed: (context) => widget.onRemove(),
+            onPressed: (context) => _handleRemove(),
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
             icon: Icons.delete,
@@ -245,20 +217,40 @@ class _CartItemCardState extends State<CartItemCard> {
                         child: Column(
                           children: [
                             IconButton(
-                              icon: Icon(Icons.add,
-                                  color: Colors.green, size: fontSize * 1.2),
-                              onPressed: _handleIncrease,
+                              icon: Icon(
+                                Icons.add,
+                                color: _isLoading ? Colors.grey : Colors.green,
+                                size: fontSize * 1.2,
+                              ),
+                              onPressed: _isLoading ? null : _handleIncrease,
                             ),
-                            Text(
-                              '$_localQuantity',
-                              style: AppTextStyle.bold_18_medium_brown.copyWith(
-                                fontSize: fontSize,
+                            SizedBox(
+                              width: 30,
+                              height: 24,
+                              child: Center(
+                                child: _isLoading
+                                    ? SizedBox(
+                                        width: 14,
+                                        height: 14,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                      )
+                                    : Text(
+                                        '${widget.cartItem.quantity}',
+                                        style: AppTextStyle.bold_18_medium_brown
+                                            .copyWith(fontSize: fontSize),
+                                      ),
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.remove,
-                                  color: Colors.red, size: fontSize * 1.2),
-                              onPressed: _handleDecrease,
+                              icon: Icon(
+                                Icons.remove,
+                                color: _isLoading ? Colors.grey : Colors.red,
+                                size: fontSize * 1.2,
+                              ),
+                              onPressed: _isLoading ? null : _handleDecrease,
                             ),
                           ],
                         ),

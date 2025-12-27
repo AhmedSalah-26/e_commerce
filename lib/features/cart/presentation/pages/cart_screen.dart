@@ -118,29 +118,6 @@ class _CartScreenState extends State<CartScreen> {
                               return CartItemCard(
                                 key: ValueKey(cartItem.id),
                                 cartItem: cartItem,
-                                onRemove: () {
-                                  context
-                                      .read<CartCubit>()
-                                      .removeFromCart(cartItem.id);
-                                },
-                                onIncreaseQuantity: () {
-                                  context.read<CartCubit>().updateQuantity(
-                                        cartItem.id,
-                                        cartItem.quantity + 1,
-                                      );
-                                },
-                                onDecreaseQuantity: () {
-                                  if (cartItem.quantity > 1) {
-                                    context.read<CartCubit>().updateQuantity(
-                                          cartItem.id,
-                                          cartItem.quantity - 1,
-                                        );
-                                  } else {
-                                    context
-                                        .read<CartCubit>()
-                                        .removeFromCart(cartItem.id);
-                                  }
-                                },
                               );
                             },
                           ),

@@ -1,8 +1,6 @@
-import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/logger_service.dart';
 import '../../../products/domain/entities/product_entity.dart';
-import '../../data/models/cart_item_model.dart';
 import '../../data/repositories/cart_repository_impl.dart';
 import '../../domain/entities/cart_item_entity.dart';
 import '../../domain/repositories/cart_repository.dart';
@@ -11,10 +9,7 @@ import 'cart_state.dart';
 /// Cubit for managing cart state
 class CartCubit extends Cubit<CartState> {
   final CartRepository _repository;
-  StreamSubscription<List<CartItemEntity>>? _cartSubscription;
   String? _currentUserId;
-  bool _isOptimisticUpdate =
-      false; // Flag to ignore stream during optimistic updates
 
   CartCubit(this._repository) : super(const CartInitial());
 
@@ -58,28 +53,14 @@ class CartCubit extends Cubit<CartState> {
     );
   }
 
-  /// Subscribe to cart changes
+  /// Subscribe to cart changes (kept for compatibility but simplified)
   void watchCart(String userId) {
     _currentUserId = userId;
-    _cartSubscription?.cancel();
-    _cartSubscription = _repository.watchCartItems(userId).listen(
-      (items) {
-        // Ignore stream updates during optimistic operations
-        if (_isOptimisticUpdate) return;
-
-        emit(CartLoaded(
-          items: items,
-          total: _calculateTotal(items),
-        ));
-      },
-      onError: (error) {
-        if (_isOptimisticUpdate) return;
-        emit(CartError(error.toString()));
-      },
-    );
+    // Just load cart instead of watching
+    loadCart(userId);
   }
 
-  /// Add item to cart (optimistic update - no flickering)
+  /// Add item to cart
   /// Returns true if successful, false otherwise
   Future<bool> addToCart(String productId,
       {int quantity = 1, ProductEntity? product}) async {
@@ -92,103 +73,7 @@ class CartCubit extends Cubit<CartState> {
       return false;
     }
 
-    // Reset optimistic flag when adding new item
-    _isOptimisticUpdate = false;
-
-    final currentState = state;
-
-    // Check if item already exists - just update quantity
-    if (currentState is CartLoaded) {
-      final existingItem = currentState.items
-          .where((item) => item.productId == productId)
-          .firstOrNull;
-
-      if (existingItem != null) {
-        // Item exists - update quantity optimistically
-        final newQuantity = existingItem.quantity + quantity;
-        final updatedItems = currentState.items.map((item) {
-          if (item.productId == productId) {
-            return CartItemModel(
-              id: item.id,
-              userId: item.userId,
-              productId: item.productId,
-              quantity: newQuantity,
-              product: item.product,
-              createdAt: item.createdAt,
-            );
-          }
-          return item;
-        }).toList();
-
-        emit(CartLoaded(
-          items: updatedItems,
-          total: _calculateTotal(updatedItems),
-        ));
-
-        // Update on server
-        final result = await _repository.addToCart(
-          _currentUserId!,
-          productId,
-          quantity,
-        );
-
-        return result.fold(
-          (failure) {
-            logger.e('❌ Failed to add to cart: ${failure.message}');
-            emit(CartError(failure.message));
-            emit(currentState);
-            return false;
-          },
-          (_) {
-            logger.i('✅ Added to cart successfully');
-            return true;
-          },
-        );
-      }
-
-      // New item with product data - optimistic update immediately
-      if (product != null) {
-        final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
-        final newItem = CartItemModel(
-          id: tempId,
-          userId: _currentUserId!,
-          productId: productId,
-          quantity: quantity,
-          product: product,
-          createdAt: DateTime.now(),
-        );
-
-        final updatedItems = [newItem, ...currentState.items];
-        emit(CartLoaded(
-          items: updatedItems,
-          total: _calculateTotal(updatedItems),
-        ));
-
-        // Add on server then sync
-        final result = await _repository.addToCart(
-          _currentUserId!,
-          productId,
-          quantity,
-        );
-
-        return result.fold(
-          (failure) {
-            logger.e('❌ Failed to add to cart: ${failure.message}');
-            emit(CartError(failure.message));
-            emit(currentState);
-            return false;
-          },
-          (_) async {
-            logger.i('✅ Added to cart, syncing...');
-            // Silent reload to get real ID
-            await loadCart(_currentUserId!, silent: true);
-            return true;
-          },
-        );
-      }
-    }
-
-    // Fallback: No product data - add to server first then silent reload
+    // Add to server
     final result = await _repository.addToCart(
       _currentUserId!,
       productId,
@@ -198,15 +83,11 @@ class CartCubit extends Cubit<CartState> {
     return result.fold(
       (failure) {
         logger.e('❌ Failed to add to cart: ${failure.message}');
-        emit(CartError(failure.message));
-        if (currentState is CartLoaded) {
-          emit(currentState);
-        }
         return false;
       },
       (_) async {
-        logger.i('✅ Added to cart, reloading silently...');
-        // Silent reload - won't show loading state
+        logger.i('✅ Added to cart successfully');
+        // Reload cart to get updated data
         await loadCart(_currentUserId!, silent: true);
         return true;
       },
@@ -226,108 +107,55 @@ class CartCubit extends Cubit<CartState> {
       return;
     }
 
-    // Set flag to ignore stream updates
-    _isOptimisticUpdate = true;
-
-    // Optimistic update - update UI immediately
-    final updatedItems = currentState.items.map((item) {
-      if (item.id == cartItemId) {
-        return CartItemModel(
-          id: item.id,
-          userId: item.userId,
-          productId: item.productId,
-          quantity: quantity,
-          product: item.product,
-          createdAt: item.createdAt,
-        );
-      }
-      return item;
-    }).toList();
-
-    emit(CartLoaded(
-      items: updatedItems,
-      total: _calculateTotal(updatedItems),
-    ));
-
-    // Then update on server
+    // Update on server
     final result = await _repository.updateQuantity(cartItemId, quantity);
-
-    // Re-enable stream updates after server sync completes
-    Future.delayed(const Duration(seconds: 3), () {
-      _isOptimisticUpdate = false;
-    });
 
     result.fold(
       (failure) {
-        // Revert on failure
-        _isOptimisticUpdate = false;
-        emit(CartError(failure.message));
-        emit(currentState);
+        logger.e('❌ Failed to update quantity: ${failure.message}');
       },
       (_) {
-        // Success - state already updated
         logger.i('✅ Quantity updated successfully');
       },
     );
+
+    // Reload cart to get updated data
+    await loadCart(_currentUserId!, silent: true);
   }
 
-  /// Remove item from cart (optimistic update - no flickering)
+  /// Remove item from cart
   Future<void> removeFromCart(String cartItemId) async {
     if (_currentUserId == null) return;
 
-    final currentState = state;
-    if (currentState is! CartLoaded) return;
-
-    // Set flag to ignore stream updates
-    _isOptimisticUpdate = true;
-
-    // Optimistic update - remove from UI immediately
-    final updatedItems =
-        currentState.items.where((item) => item.id != cartItemId).toList();
-    emit(CartLoaded(
-      items: updatedItems,
-      total: _calculateTotal(updatedItems),
-    ));
-
-    // Then remove from server
+    // Remove from server
     final result = await _repository.removeFromCart(cartItemId);
-
-    // Re-enable stream updates after a delay
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _isOptimisticUpdate = false;
-    });
 
     result.fold(
       (failure) {
-        // Revert on failure
-        _isOptimisticUpdate = false;
-        emit(CartError(failure.message));
-        emit(currentState);
+        logger.e('❌ Failed to remove from cart: ${failure.message}');
       },
       (_) {
-        // Success - state already updated
-        logger.i('✅ Item removed successfully');
+        logger.i('✅ Removed from cart successfully');
       },
     );
+
+    // Reload cart to get updated data
+    await loadCart(_currentUserId!, silent: true);
   }
 
   /// Clear cart
   Future<void> clearCart() async {
     if (_currentUserId == null) return;
 
-    final currentState = state;
-
-    // Optimistic update
     emit(const CartLoaded(items: [], total: 0));
 
     final result = await _repository.clearCart(_currentUserId!);
 
     result.fold(
       (failure) {
-        emit(CartError(failure.message));
-        if (currentState is CartLoaded) {
-          emit(currentState);
-        }
+        logger.e('❌ Failed to clear cart: ${failure.message}');
+        // Reload to get actual state
+        loadCart(_currentUserId!, silent: true);
       },
       (_) {
         logger.i('✅ Cart cleared successfully');
@@ -364,11 +192,5 @@ class CartCubit extends Cubit<CartState> {
     if (_currentUserId != null) {
       await loadCart(_currentUserId!);
     }
-  }
-
-  @override
-  Future<void> close() {
-    _cartSubscription?.cancel();
-    return super.close();
   }
 }

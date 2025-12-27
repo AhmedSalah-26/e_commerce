@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/di/injection_container.dart';
 import '../../../../../core/shared_widgets/toast.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../../auth/presentation/cubit/auth_state.dart';
 import '../../../../shipping/domain/entities/governorate_entity.dart';
@@ -36,19 +35,20 @@ class ShippingPricesDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = context.locale.languageCode;
+    final theme = Theme.of(context);
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Container(
         height: MediaQuery.of(context).size.height * 0.85,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           children: [
-            _buildHandle(),
-            _buildHeader(context),
+            _buildHandle(theme),
+            _buildHeader(context, theme),
             const Divider(height: 1),
             Expanded(child: _buildContent(context, locale)),
           ],
@@ -57,19 +57,19 @@ class ShippingPricesDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildHandle() {
+  Widget _buildHandle(ThemeData theme) {
     return Container(
       margin: const EdgeInsets.only(top: 12),
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: theme.colorScheme.outline.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(2),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -81,10 +81,10 @@ class ShippingPricesDialog extends StatelessWidget {
           Expanded(
             child: Text(
               'shipping_prices'.tr(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColours.brownDark,
+                color: theme.colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),

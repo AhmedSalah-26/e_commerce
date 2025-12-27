@@ -5,8 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/toast.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
@@ -112,8 +110,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
     final locale = context.locale.languageCode;
+    final theme = Theme.of(context);
 
-    // Check if user is authenticated
     final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -136,20 +134,22 @@ class _CheckoutPageState extends State<CheckoutPage> {
           listener: (context, state) =>
               _stateHandler.handleState(context, state),
           child: Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: theme.scaffoldBackgroundColor,
             appBar: AppBar(
-              backgroundColor: Colors.white,
+              backgroundColor: theme.scaffoldBackgroundColor,
               leading: IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.arrow_back,
-                  color: AppColours.brownMedium,
+                  color: theme.colorScheme.primary,
                 ),
                 onPressed: () => context.pop(),
               ),
               title: Text(
                 'checkout_title'.tr(),
-                style: AppTextStyle.semiBold_20_dark_brown.copyWith(
-                  color: AppColours.brownMedium,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.primary,
                 ),
               ),
               centerTitle: true,

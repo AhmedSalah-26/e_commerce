@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_text_style.dart';
 
 class CustomSearchBar extends StatelessWidget {
@@ -10,6 +9,7 @@ class CustomSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     double searchBarWidth = screenWidth > 600 ? 400 : screenWidth * 0.7;
 
@@ -21,14 +21,19 @@ class CustomSearchBar extends StatelessWidget {
         height: 45,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: AppColours.greyLighter,
+          color: theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           children: [
-            const Icon(Icons.search, color: AppColours.primaryColor),
+            Icon(Icons.search, color: theme.colorScheme.primary),
             const SizedBox(width: 8),
-            Text('search'.tr(), style: AppTextStyle.normal_12_greyDark),
+            Text(
+              'search'.tr(),
+              style: AppTextStyle.normal_12_greyDark.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
           ],
         ),
       ),

@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../products/domain/entities/product_entity.dart';
 
 class ProductSelectionDialog extends StatefulWidget {
@@ -38,7 +37,10 @@ class _ProductSelectionDialogState extends State<ProductSelectionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Dialog(
+      backgroundColor: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: MediaQuery.of(context).size.width * 0.9,
@@ -46,22 +48,22 @@ class _ProductSelectionDialogState extends State<ProductSelectionDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildHeader(),
-            _buildSearchField(),
-            Flexible(child: _buildProductsList()),
-            _buildActions(),
+            _buildHeader(theme),
+            _buildSearchField(theme),
+            Flexible(child: _buildProductsList(theme)),
+            _buildActions(theme),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: AppColours.brownLight,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Row(
         children: [
@@ -82,7 +84,7 @@ class _ProductSelectionDialogState extends State<ProductSelectionDialog> {
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: TextField(
@@ -97,11 +99,12 @@ class _ProductSelectionDialogState extends State<ProductSelectionDialog> {
     );
   }
 
-  Widget _buildProductsList() {
+  Widget _buildProductsList(ThemeData theme) {
     if (_filteredProducts.isEmpty) {
       return Center(
         child: Text('no_products'.tr(),
-            style: TextStyle(color: Colors.grey.shade600)),
+            style: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
       );
     }
 
@@ -121,20 +124,22 @@ class _ProductSelectionDialogState extends State<ProductSelectionDialog> {
               }
             });
           },
-          secondary: _buildProductImage(product),
+          secondary: _buildProductImage(product, theme),
           title:
               Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis),
           subtitle: Text(
             '${product.price} ${'egp'.tr()}',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            style: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                fontSize: 12),
           ),
-          activeColor: AppColours.brownMedium,
+          activeColor: theme.colorScheme.primary,
         );
       },
     );
   }
 
-  Widget _buildProductImage(ProductEntity product) {
+  Widget _buildProductImage(ProductEntity product, ThemeData theme) {
     if (product.images.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(4),
@@ -143,36 +148,39 @@ class _ProductSelectionDialogState extends State<ProductSelectionDialog> {
           width: 40,
           height: 40,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildPlaceholder(),
+          errorBuilder: (_, __, ___) => _buildPlaceholder(theme),
         ),
       );
     }
-    return _buildPlaceholder();
+    return _buildPlaceholder(theme);
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(ThemeData theme) {
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: theme.colorScheme.outline.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(4),
       ),
       child: const Icon(Icons.inventory_2, size: 20),
     );
   }
 
-  Widget _buildActions() {
+  Widget _buildActions(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        border: Border(
+            top: BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.3))),
       ),
       child: Row(
         children: [
           Text(
             '${_tempSelectedIds.length} ${'selected'.tr()}',
-            style: TextStyle(color: Colors.grey.shade600),
+            style: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
           ),
           const Spacer(),
           TextButton(
@@ -185,7 +193,7 @@ class _ProductSelectionDialogState extends State<ProductSelectionDialog> {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColours.brownMedium,
+              backgroundColor: theme.colorScheme.primary,
               foregroundColor: Colors.white,
             ),
             child: Text('confirm'.tr()),

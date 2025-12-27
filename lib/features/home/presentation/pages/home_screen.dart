@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../notifications/data/services/local_notification_service.dart';
 import '../../../products/presentation/cubit/products_cubit.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
@@ -36,7 +35,6 @@ class HomeScreenState extends State<HomeScreen> {
     super.didChangeDependencies();
     final currentLocale = context.locale.languageCode;
 
-    // Load data on first time or when locale changes
     if (_lastLocale == null || _lastLocale != currentLocale) {
       _lastLocale = currentLocale;
       _loadAllData();
@@ -48,7 +46,6 @@ class HomeScreenState extends State<HomeScreen> {
     context.read<CategoriesCubit>().loadCategories();
     context.read<HomeSlidersCubit>().loadSliders();
 
-    // Reset filters
     setState(() {
       selectedCategoryId = null;
       isOffersSelected = false;
@@ -95,12 +92,14 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return SafeArea(
       child: Scaffold(
-        backgroundColor: AppColours.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: RefreshIndicator(
           onRefresh: _handleRefresh,
-          color: AppColours.brownLight,
+          color: theme.colorScheme.primary,
           child: CustomScrollView(
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
@@ -115,6 +114,7 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSearchBar(BuildContext context) {
+    final theme = Theme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -123,7 +123,6 @@ class HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Notification icon
           GestureDetector(
             onTap: () {
               context.push('/notifications');
@@ -134,7 +133,10 @@ class HomeScreenState extends State<HomeScreen> {
               height: screenHeight * 0.055,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: AppColours.greyLighter,
+                color: theme.colorScheme.surface,
+                border: Border.all(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                ),
               ),
               child: Stack(
                 children: [
@@ -142,7 +144,7 @@ class HomeScreenState extends State<HomeScreen> {
                     child: Icon(
                       Icons.notifications,
                       size: screenWidth * 0.055,
-                      color: AppColours.brownLight,
+                      color: theme.colorScheme.primary,
                     ),
                   ),
                   if (_unreadNotifications > 0)
@@ -176,7 +178,6 @@ class HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // Search bar - opens search page
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -186,19 +187,25 @@ class HomeScreenState extends State<HomeScreen> {
                   height: 45,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: AppColours.greyLighter,
+                    color: theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
                         'search'.tr(),
-                        style: const TextStyle(
-                            fontSize: 12, color: AppColours.greyDark),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
+                        ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(Icons.search, color: AppColours.primaryColor),
+                      Icon(Icons.search, color: theme.colorScheme.primary),
                     ],
                   ),
                 ),

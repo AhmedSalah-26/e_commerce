@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/services/image_upload_service.dart';
 
 class CategoryImagePicker extends StatelessWidget {
@@ -21,25 +20,27 @@ class CategoryImagePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return GestureDetector(
       onTap: onImagePicked,
       child: Container(
         width: 120,
         height: 120,
         decoration: BoxDecoration(
-          color: AppColours.greyLighter,
+          color: theme.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColours.primary,
+            color: theme.colorScheme.primary,
             width: 2,
           ),
         ),
-        child: _buildImageContent(),
+        child: _buildImageContent(theme),
       ),
     );
   }
 
-  Widget _buildImageContent() {
+  Widget _buildImageContent(ThemeData theme) {
     if (selectedImage != null) {
       return Stack(
         children: [
@@ -69,7 +70,7 @@ class CategoryImagePicker extends StatelessWidget {
               placeholder: (_, __) => Container(
                 width: 120,
                 height: 120,
-                color: AppColours.greyLight,
+                color: theme.colorScheme.outline.withValues(alpha: 0.2),
                 child: const Center(
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
@@ -77,7 +78,7 @@ class CategoryImagePicker extends StatelessWidget {
               errorWidget: (_, __, ___) => Container(
                 width: 120,
                 height: 120,
-                color: AppColours.greyLight,
+                color: theme.colorScheme.outline.withValues(alpha: 0.2),
                 child: const Icon(Icons.error),
               ),
             ),
@@ -89,16 +90,16 @@ class CategoryImagePicker extends StatelessWidget {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.add_photo_alternate,
-            color: AppColours.primary,
+            color: theme.colorScheme.primary,
             size: 40,
           ),
           const SizedBox(height: 4),
           Text(
             isRtl ? 'إضافة صورة' : 'Add Image',
-            style: const TextStyle(
-              color: AppColours.primary,
+            style: TextStyle(
+              color: theme.colorScheme.primary,
               fontSize: 12,
             ),
           ),

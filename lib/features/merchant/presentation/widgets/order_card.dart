@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../Core/Theme/app_text_style.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 
 class OrderCard extends StatelessWidget {
@@ -16,14 +14,19 @@ class OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isRtl = context.locale.languageCode == 'ar';
     final statusText = _getStatusText(order.status, isRtl);
     final statusColor = _getStatusColor(order.status);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      color: theme.colorScheme.surface,
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.colorScheme.outline),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -37,7 +40,8 @@ class OrderCard extends StatelessWidget {
                 children: [
                   Text(
                     '${isRtl ? 'طلب رقم' : 'Order'} #${order.id.substring(0, 8)}',
-                    style: AppTextStyle.semiBold_16_dark_brown,
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                   Container(
                     padding:
@@ -59,43 +63,58 @@ class OrderCard extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Icon(Icons.person_outline,
-                      size: 16, color: AppColours.greyDark),
+                  Icon(Icons.person_outline,
+                      size: 16,
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                   const SizedBox(width: 8),
                   Text(
                     order.customerName ??
                         (isRtl ? 'غير محدد' : 'Not specified'),
-                    style: AppTextStyle.normal_14_greyDark,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.shopping_bag_outlined,
-                      size: 16, color: AppColours.greyDark),
+                  Icon(Icons.shopping_bag_outlined,
+                      size: 16,
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                   const SizedBox(width: 8),
                   Text(
                     '${order.items.length} ${isRtl ? 'منتج' : 'items'}',
-                    style: AppTextStyle.normal_14_greyDark,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                   ),
                   const Spacer(),
                   Text(
                     '${order.total.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
-                    style: AppTextStyle.semiBold_16_dark_brown
-                        .copyWith(color: AppColours.primary),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.access_time, size: 16, color: AppColours.greyDark),
+                  Icon(Icons.access_time,
+                      size: 16,
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                   const SizedBox(width: 8),
                   Text(
                     DateFormat('dd/MM/yyyy HH:mm')
                         .format(order.createdAt ?? DateTime.now()),
-                    style: AppTextStyle.normal_12_greyDark,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                   ),
                 ],
               ),

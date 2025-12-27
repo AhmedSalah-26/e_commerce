@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../products/data/repositories/product_repository_impl.dart';
 import '../../../products/domain/repositories/product_repository.dart';
 import '../widgets/home_filter_sheet.dart';
@@ -74,7 +72,7 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
 
   Future<bool> _handleSystemBack() async {
     context.go('/home');
-    return true; // Handled
+    return true;
   }
 
   void _showFilterSheet() {
@@ -99,21 +97,21 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BackButtonListener(
       onBackButtonPressed: _handleSystemBack,
       child: SafeArea(
         child: Scaffold(
-          backgroundColor: AppColours.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: RefreshIndicator(
             onRefresh: refreshSearch,
-            color: AppColours.brownLight,
+            color: theme.colorScheme.primary,
             child: CustomScrollView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                // Search bar
                 SliverToBoxAdapter(child: _buildSearchBar()),
-                // Search content
                 SliverToBoxAdapter(
                   child: HomeSearchContent(
                     isSearching: searchState.isSearching,
@@ -136,25 +134,27 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
   }
 
   Widget _buildSearchBar() {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [
-          // Back button
           IconButton(
-            icon:
-                const Icon(Icons.arrow_forward, color: AppColours.brownMedium),
+            icon: Icon(Icons.arrow_forward, color: theme.colorScheme.primary),
             onPressed: _handleBackPress,
           ),
-          // Search bar
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Container(
                 height: 45,
                 decoration: BoxDecoration(
-                  color: AppColours.greyLighter,
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: TextField(
                   controller: searchController,
@@ -163,22 +163,32 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
                   textAlign: TextAlign.right,
                   textDirection: ui.TextDirection.rtl,
                   textInputAction: TextInputAction.search,
-                  style: AppTextStyle.normal_12_black,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurface,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'search'.tr(),
-                    hintStyle: AppTextStyle.normal_12_greyDark,
+                    hintStyle: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                     suffixIcon: searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear,
-                                color: AppColours.greyMedium, size: 20),
+                            icon: Icon(
+                              Icons.clear,
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.5),
+                              size: 20,
+                            ),
                             onPressed: () {
                               searchController.clear();
                               onSearchChanged('');
                             },
                           )
                         : null,
-                    prefixIcon: const Icon(Icons.search,
-                        color: AppColours.primaryColor),
+                    prefixIcon:
+                        Icon(Icons.search, color: theme.colorScheme.primary),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
@@ -187,22 +197,22 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
               ),
             ),
           ),
-          // Filter button
           GestureDetector(
             onTap: _showFilterSheet,
             child: Container(
               height: 45,
               width: 45,
               decoration: BoxDecoration(
-                color: AppColours.primaryColor.withValues(alpha: 0.1),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColours.primaryColor, width: 1.5),
+                border:
+                    Border.all(color: theme.colorScheme.primary, width: 1.5),
               ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  const Icon(Icons.filter_list,
-                      color: AppColours.primaryColor, size: 24),
+                  Icon(Icons.filter_list,
+                      color: theme.colorScheme.primary, size: 24),
                   if (filterState.hasActiveFilters)
                     Positioned(
                       right: 4,

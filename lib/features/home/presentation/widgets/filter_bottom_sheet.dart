@@ -2,8 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../categories/presentation/cubit/categories_state.dart';
 
@@ -40,12 +38,14 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -53,15 +53,15 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHandle(),
+            _buildHandle(theme),
             const SizedBox(height: 20),
-            _buildHeader(),
+            _buildHeader(theme),
             const SizedBox(height: 20),
-            _buildCategoryFilter(),
+            _buildCategoryFilter(theme),
             const SizedBox(height: 24),
-            _buildPriceFilter(),
+            _buildPriceFilter(theme),
             const SizedBox(height: 24),
-            _buildApplyButton(),
+            _buildApplyButton(theme),
             const SizedBox(height: 10),
           ],
         ),
@@ -69,24 +69,29 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     );
   }
 
-  Widget _buildHandle() {
+  Widget _buildHandle(ThemeData theme) {
     return Center(
       child: Container(
         width: 40,
         height: 4,
         decoration: BoxDecoration(
-          color: Colors.grey[300],
+          color: theme.colorScheme.outline.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(2),
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ThemeData theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('filters'.tr(), style: AppTextStyle.semiBold_20_dark_brown),
+        Text('filters'.tr(),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            )),
         TextButton(
           onPressed: () {
             setState(() {
@@ -101,11 +106,16 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     );
   }
 
-  Widget _buildCategoryFilter() {
+  Widget _buildCategoryFilter(ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('categories'.tr(), style: AppTextStyle.semiBold_16_dark_brown),
+        Text('categories'.tr(),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            )),
         const SizedBox(height: 12),
         BlocBuilder<CategoriesCubit, CategoriesState>(
           builder: (context, state) {
@@ -121,6 +131,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                         'all'.tr(),
                         _selectedCategoryId == null,
                         () => setState(() => _selectedCategoryId = null),
+                        theme,
                       );
                     }
                     final category = state.categories[index - 1];
@@ -128,6 +139,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                       category.name,
                       _selectedCategoryId == category.id,
                       () => setState(() => _selectedCategoryId = category.id),
+                      theme,
                     );
                   },
                 ),
@@ -140,21 +152,24 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     );
   }
 
-  Widget _buildCategoryChip(String label, bool isSelected, VoidCallback onTap) {
+  Widget _buildCategoryChip(
+      String label, bool isSelected, VoidCallback onTap, ThemeData theme) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(left: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColours.brownLight : Colors.white,
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColours.brownLight),
+          border: Border.all(color: theme.colorScheme.primary),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : AppColours.brownLight,
+            color: isSelected ? Colors.white : theme.colorScheme.primary,
             fontSize: 14,
           ),
         ),
@@ -162,11 +177,16 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     );
   }
 
-  Widget _buildPriceFilter() {
+  Widget _buildPriceFilter(ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('price'.tr(), style: AppTextStyle.semiBold_16_dark_brown),
+        Text('price'.tr(),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            )),
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -180,8 +200,8 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           min: widget.minPrice,
           max: widget.maxPrice,
           divisions: 100,
-          activeColor: AppColours.brownLight,
-          inactiveColor: AppColours.greyLight,
+          activeColor: theme.colorScheme.primary,
+          inactiveColor: theme.colorScheme.outline.withValues(alpha: 0.3),
           onChanged: (values) {
             setState(() => _priceRange = values);
           },
@@ -190,7 +210,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     );
   }
 
-  Widget _buildApplyButton() {
+  Widget _buildApplyButton(ThemeData theme) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -199,7 +219,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           Navigator.pop(context);
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColours.brownLight,
+          backgroundColor: theme.colorScheme.primary,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

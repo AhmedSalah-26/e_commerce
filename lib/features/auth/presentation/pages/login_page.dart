@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/shared_widgets/language_toggle_button.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -40,8 +39,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
@@ -83,18 +84,20 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 40),
                     Text(
                       'login_title'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'welcome_back'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -103,9 +106,13 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       textDirection: TextDirection.ltr,
+                      style: TextStyle(color: theme.colorScheme.onSurface),
                       decoration: InputDecoration(
                         labelText: 'email'.tr(),
-                        prefixIcon: const Icon(Icons.email_outlined),
+                        prefixIcon: Icon(
+                          Icons.email_outlined,
+                          color: theme.colorScheme.primary,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -125,14 +132,20 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       textDirection: TextDirection.ltr,
+                      style: TextStyle(color: theme.colorScheme.onSurface),
                       decoration: InputDecoration(
                         labelText: 'password'.tr(),
-                        prefixIcon: const Icon(Icons.lock_outlined),
+                        prefixIcon: Icon(
+                          Icons.lock_outlined,
+                          color: theme.colorScheme.primary,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
                                 ? Icons.visibility_outlined
                                 : Icons.visibility_off_outlined,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6),
                           ),
                           onPressed: () {
                             setState(() {
@@ -160,7 +173,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: ElevatedButton(
                         onPressed: state is AuthLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColours.primary,
+                          backgroundColor: theme.colorScheme.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -182,13 +195,18 @@ class _LoginPageState extends State<LoginPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('dont_have_account'.tr()),
+                        Text(
+                          'dont_have_account'.tr(),
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
                         TextButton(
                           onPressed: () => context.push('/register'),
                           child: Text(
                             'register'.tr(),
-                            style: const TextStyle(
-                              color: AppColours.primary,
+                            style: TextStyle(
+                              color: theme.colorScheme.primary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -196,7 +214,6 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    // Continue as guest button
                     TextButton(
                       onPressed: () {
                         AppRouter.setAuthenticated(false);
@@ -205,7 +222,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         'continue_as_guest'.tr(),
                         style: TextStyle(
-                          color: Colors.grey[600],
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
                           fontSize: 14,
                         ),
                       ),

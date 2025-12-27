@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../shipping/domain/entities/governorate_entity.dart';
 import '../../../shipping/presentation/cubit/shipping_cubit.dart';
@@ -22,6 +21,8 @@ class GovernorateDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     // Get all unique merchant IDs from cart
     final merchantIds = <String>{};
     for (final item in cartState.items) {
@@ -36,18 +37,18 @@ class GovernorateDropdown extends StatelessWidget {
       children: [
         Text(
           'governorate'.tr(),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppColours.brownMedium,
+            color: theme.colorScheme.primary,
           ),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: AppColours.brownLight, width: 1.5),
+            color: theme.colorScheme.surface,
+            border: Border.all(color: theme.colorScheme.primary, width: 1.5),
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonHideUnderline(
@@ -55,20 +56,20 @@ class GovernorateDropdown extends StatelessWidget {
               value: selected,
               hint: Text(
                 'select_governorate'.tr(),
-                style: const TextStyle(color: AppColours.brownMedium),
+                style: TextStyle(color: theme.colorScheme.primary),
               ),
               isExpanded: true,
-              icon: const Icon(
+              icon: Icon(
                 Icons.keyboard_arrow_down,
-                color: AppColours.brownMedium,
+                color: theme.colorScheme.primary,
               ),
-              dropdownColor: Colors.white,
+              dropdownColor: theme.colorScheme.surface,
               items: governorates.map((gov) {
                 return DropdownMenuItem<GovernorateEntity>(
                   value: gov,
                   child: Text(
                     gov.getName(locale),
-                    style: const TextStyle(color: AppColours.brownMedium),
+                    style: TextStyle(color: theme.colorScheme.primary),
                   ),
                 );
               }).toList(),

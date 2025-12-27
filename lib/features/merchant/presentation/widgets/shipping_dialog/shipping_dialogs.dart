@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../shipping/domain/entities/governorate_entity.dart';
 
 class ShippingDialogs {
@@ -10,9 +9,12 @@ class ShippingDialogs {
     String locale,
     Function(GovernorateEntity) onGovernorateSelected,
   ) {
+    final theme = Theme.of(context);
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
         title: Text('add_shipping_zone'.tr()),
         content: SizedBox(
           width: double.maxFinite,
@@ -23,9 +25,9 @@ class ShippingDialogs {
             itemBuilder: (context, index) {
               final gov = availableGovernorates[index];
               return ListTile(
-                leading: const Icon(
+                leading: Icon(
                   Icons.location_city,
-                  color: AppColours.brownMedium,
+                  color: theme.colorScheme.primary,
                 ),
                 title: Text(gov.getName(locale)),
                 trailing: const Icon(Icons.add, color: Colors.green),
@@ -55,12 +57,14 @@ class ShippingDialogs {
     required Function(double) onSave,
     required VoidCallback? onDelete,
   }) {
+    final theme = Theme.of(context);
     final controller =
         TextEditingController(text: currentPrice?.toStringAsFixed(0) ?? '');
 
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
         title: Text(governorate.getName(locale)),
         content: TextField(
           controller: controller,
@@ -96,7 +100,7 @@ class ShippingDialogs {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColours.brownLight,
+              backgroundColor: theme.colorScheme.primary,
             ),
             child: Text('save'.tr()),
           ),

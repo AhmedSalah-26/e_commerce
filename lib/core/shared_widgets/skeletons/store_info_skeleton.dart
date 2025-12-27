@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../theme/app_colors.dart';
-
 /// Skeleton for store info section
 class StoreInfoSkeleton extends StatelessWidget {
   const StoreInfoSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final skeletonColor = theme.colorScheme.surfaceContainerHighest;
+    final highlightColor = theme.colorScheme.surface;
+
     return Shimmer.fromColors(
-      baseColor: AppColours.greyLighter,
-      highlightColor: Colors.white,
+      baseColor: skeletonColor,
+      highlightColor: highlightColor,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColours.greyLighter,
+          color: skeletonColor,
           borderRadius: BorderRadius.circular(6),
         ),
         child: Row(
@@ -29,8 +31,8 @@ class StoreInfoSkeleton extends StatelessWidget {
                   Container(
                     width: 14,
                     height: 14,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: highlightColor,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -39,7 +41,7 @@ class StoreInfoSkeleton extends StatelessWidget {
                     height: 12,
                     width: 60,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: highlightColor,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -54,8 +56,8 @@ class StoreInfoSkeleton extends StatelessWidget {
                   Container(
                     width: 14,
                     height: 14,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: highlightColor,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -64,7 +66,7 @@ class StoreInfoSkeleton extends StatelessWidget {
                     height: 12,
                     width: 50,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: highlightColor,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -79,8 +81,8 @@ class StoreInfoSkeleton extends StatelessWidget {
                   Container(
                     width: 14,
                     height: 14,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: highlightColor,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -89,7 +91,7 @@ class StoreInfoSkeleton extends StatelessWidget {
                     height: 12,
                     width: 55,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: highlightColor,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),

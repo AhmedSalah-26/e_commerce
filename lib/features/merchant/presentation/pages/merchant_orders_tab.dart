@@ -2,8 +2,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
@@ -127,6 +125,7 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
   @override
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
 
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, authState) {
@@ -139,7 +138,7 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
       child: Directionality(
         textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
         child: Scaffold(
-          backgroundColor: AppColours.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: Column(
               children: [
@@ -148,8 +147,8 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
                   totalPending: _todayPending,
                   todayDelivered: _todayDelivered,
                 ),
-                _buildTabBar(isRtl),
-                Expanded(child: _buildTabContent(isRtl)),
+                _buildTabBar(isRtl, theme),
+                Expanded(child: _buildTabContent(isRtl, theme)),
               ],
             ),
           ),
@@ -158,16 +157,17 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
     );
   }
 
-  Widget _buildTabBar(bool isRtl) {
+  Widget _buildTabBar(bool isRtl, ThemeData theme) {
     return Container(
-      color: AppColours.greyLighter,
+      color: theme.scaffoldBackgroundColor,
       child: TabBar(
         controller: _tabController,
         isScrollable: true,
         tabAlignment: TabAlignment.center,
-        labelColor: AppColours.primary,
-        unselectedLabelColor: AppColours.greyDark,
-        indicatorColor: AppColours.primary,
+        labelColor: theme.colorScheme.primary,
+        unselectedLabelColor:
+            theme.colorScheme.onSurface.withValues(alpha: 0.6),
+        indicatorColor: theme.colorScheme.primary,
         indicatorWeight: 3,
         labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
         unselectedLabelStyle:
@@ -186,11 +186,12 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
     );
   }
 
-  Widget _buildTabContent(bool isRtl) {
+  Widget _buildTabContent(bool isRtl, ThemeData theme) {
     return TabBarView(
       controller: _tabController,
       children: [
-        ..._statuses.map((status) => _buildOrdersListForStatus(status, isRtl)),
+        ..._statuses
+            .map((status) => _buildOrdersListForStatus(status, isRtl, theme)),
         _merchantId != null
             ? OrdersStatisticsTab(merchantId: _merchantId!)
             : const Center(child: CircularProgressIndicator()),
@@ -198,7 +199,7 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
     );
   }
 
-  Widget _buildOrdersListForStatus(String status, bool isRtl) {
+  Widget _buildOrdersListForStatus(String status, bool isRtl, ThemeData theme) {
     final showFilters = status == 'delivered' || status == 'cancelled';
     final selectedPeriod =
         status == 'delivered' ? _deliveredPeriod : _cancelledPeriod;
@@ -218,12 +219,13 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
             },
             onPeriodChanged: (period) => _setFilterPeriod(status, period),
           ),
-        Expanded(child: _buildOrdersList(status, isRtl, showFilters)),
+        Expanded(child: _buildOrdersList(status, isRtl, showFilters, theme)),
       ],
     );
   }
 
-  Widget _buildOrdersList(String status, bool isRtl, bool showFilters) {
+  Widget _buildOrdersList(
+      String status, bool isRtl, bool showFilters, ThemeData theme) {
     return BlocConsumer<OrdersCubit, OrdersState>(
       listenWhen: (previous, current) {
         // Only listen when the status matches
@@ -317,15 +319,18 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
   }
 
   Widget _buildErrorState(String message, bool isRtl, String status) {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline,
-              size: 48, color: AppColours.greyLight),
+          Icon(Icons.error_outline, size: 48, color: theme.colorScheme.outline),
           const SizedBox(height: 16),
           Text(message,
-              style: AppTextStyle.normal_16_greyDark,
+              style: TextStyle(
+                fontSize: 16,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
               textAlign: TextAlign.center),
           const SizedBox(height: 16),
           ElevatedButton(

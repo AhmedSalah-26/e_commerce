@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../Core/Theme/app_text_style.dart';
 
 class CategoriesHeader extends StatelessWidget {
   final String title;
@@ -14,13 +12,15 @@ class CategoriesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColours.primary,
-            AppColours.brownLight,
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withValues(alpha: 0.7),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -31,7 +31,11 @@ class CategoriesHeader extends StatelessWidget {
         children: [
           Text(
             title,
-            style: AppTextStyle.semiBold_22_white,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
           ),
           IconButton(
             onPressed: onAdd,

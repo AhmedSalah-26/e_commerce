@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 
 class InventoryHeader extends StatelessWidget {
   final bool isRtl;
@@ -18,11 +16,16 @@ class InventoryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColours.primary, AppColours.brownLight],
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withValues(alpha: 0.7)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -34,15 +37,15 @@ class InventoryHeader extends StatelessWidget {
             children: [
               Text(
                 isRtl ? 'إدارة المخزون' : 'Manage Inventory',
-                style: AppTextStyle.semiBold_22_white,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
               IconButton(
                 onPressed: onAddProduct,
-                icon: const Icon(
-                  Icons.add_circle_outline,
-                  color: Colors.white,
-                  size: 28,
-                ),
+                icon: const Icon(Icons.add_circle_outline,
+                    color: Colors.white, size: 28),
               ),
             ],
           ),
@@ -50,20 +53,12 @@ class InventoryHeader extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _buildStatCard(
-                  isRtl ? 'المنتجات' : 'Products',
-                  totalProducts.toString(),
-                  Icons.inventory_2,
-                ),
-              ),
+                  child: _buildStatCard(isRtl ? 'المنتجات' : 'Products',
+                      totalProducts.toString(), Icons.inventory_2)),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildStatCard(
-                  isRtl ? 'المنتجات النشطة' : 'Active',
-                  activeProducts.toString(),
-                  Icons.check_circle,
-                ),
-              ),
+                  child: _buildStatCard(isRtl ? 'المنتجات النشطة' : 'Active',
+                      activeProducts.toString(), Icons.check_circle)),
             ],
           ),
         ],
@@ -86,18 +81,13 @@ class InventoryHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  label,
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                ),
+                Text(value,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold)),
+                Text(label,
+                    style: const TextStyle(color: Colors.white, fontSize: 12)),
               ],
             ),
           ),

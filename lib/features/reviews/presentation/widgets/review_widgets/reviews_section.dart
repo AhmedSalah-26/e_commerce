@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../Core/Theme/app_colors.dart';
 import '../../../../../core/theme/app_text_style.dart';
 import '../../../../../core/shared_widgets/toast.dart';
 import '../../../../../core/shared_widgets/skeleton_widgets.dart';
@@ -168,19 +167,24 @@ class _ReviewsSectionState extends State<ReviewsSection> {
   void _showDeleteConfirmation(ReviewEntity review) {
     final reviewsCubit = context.read<ReviewsCubit>();
     final authCubit = context.read<AuthCubit>();
+    final theme = Theme.of(context);
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('delete_review'.tr()),
-        content: const Text('هل أنت متأكد من حذف تقييمك؟'),
+        title: Text('delete_review'.tr(),
+            style: TextStyle(color: theme.colorScheme.onSurface)),
+        content: Text('هل أنت متأكد من حذف تقييمك؟',
+            style: TextStyle(color: theme.colorScheme.onSurface)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'cancel'.tr(),
-              style: const TextStyle(color: AppColours.greyDark),
+              style: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
             ),
           ),
           TextButton(

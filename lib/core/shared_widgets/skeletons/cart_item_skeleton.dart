@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../theme/app_colors.dart';
-
 /// Skeleton for cart item
 class CartItemSkeleton extends StatelessWidget {
   const CartItemSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final skeletonColor = theme.colorScheme.surfaceContainerHighest;
+    final highlightColor = theme.colorScheme.surface;
+
     return Shimmer.fromColors(
-      baseColor: AppColours.greyLighter,
-      highlightColor: Colors.white,
+      baseColor: skeletonColor,
+      highlightColor: highlightColor,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -26,7 +28,7 @@ class CartItemSkeleton extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColours.greyLighter,
+                color: skeletonColor,
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
@@ -40,7 +42,7 @@ class CartItemSkeleton extends StatelessWidget {
                     height: 16,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: AppColours.greyLighter,
+                      color: skeletonColor,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -49,7 +51,7 @@ class CartItemSkeleton extends StatelessWidget {
                     height: 14,
                     width: 80,
                     decoration: BoxDecoration(
-                      color: AppColours.greyLighter,
+                      color: skeletonColor,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -58,7 +60,7 @@ class CartItemSkeleton extends StatelessWidget {
                     height: 14,
                     width: 60,
                     decoration: BoxDecoration(
-                      color: AppColours.greyLighter,
+                      color: skeletonColor,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import '../../../../core/theme/app_colors.dart';
 
 class OnboardingPageIndicator extends StatelessWidget {
   final PageController pageController;
@@ -14,17 +13,18 @@ class OnboardingPageIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Expanded(
       child: Align(
         alignment: Alignment.topCenter,
         child: SmoothPageIndicator(
           controller: pageController,
           count: pageCount,
-          effect: const ExpandingDotsEffect(
+          effect: ExpandingDotsEffect(
             dotHeight: 10,
             dotWidth: 10,
-            dotColor: AppColours.greyLight,
-            activeDotColor: AppColours.brownMedium,
+            dotColor: theme.colorScheme.outline,
+            activeDotColor: theme.colorScheme.primary,
           ),
         ),
       ),

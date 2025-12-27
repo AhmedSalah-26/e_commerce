@@ -8,7 +8,6 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
 import '../../../../core/shared_widgets/flash_sale_banner.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/share_utils.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../data/datasources/product_remote_datasource.dart';
@@ -70,22 +69,18 @@ class _ProductScreenState extends State<ProductScreen> {
     }
   }
 
-  /// Called when flash sale timer expires
   Future<void> _onFlashSaleExpired() async {
-    // Cleanup this specific product's flash sale in database
     try {
       final datasource = sl<ProductRemoteDataSource>();
       await datasource.cleanupExpiredFlashSaleForProduct(_product.id);
-    } catch (_) {
-      // Silently fail
-    }
+    } catch (_) {}
 
-    // Reload product to get updated data (without discount)
     await _loadFullProduct();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     double totalPrice = _quantity * _product.effectivePrice;
     double screenWidth = MediaQuery.of(context).size.width;
     final isArabic = context.locale.languageCode == 'ar';
@@ -97,7 +92,7 @@ class _ProductScreenState extends State<ProductScreen> {
         BlocProvider(create: (context) => sl<ProductsCubit>()),
       ],
       child: Scaffold(
-        backgroundColor: AppColours.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: _buildAppBar(context),
         body: _isLoading
             ? const ProductScreenSkeleton()
@@ -107,7 +102,6 @@ class _ProductScreenState extends State<ProductScreen> {
                     padding: EdgeInsets.all(screenWidth * 0.04),
                     child: ListView(
                       children: [
-                        // Flash Sale Banner (only if active)
                         if (!isInactive &&
                             _product.isFlashSaleActive &&
                             _product.flashSaleEnd != null)
@@ -120,7 +114,6 @@ class _ProductScreenState extends State<ProductScreen> {
                           screenWidth: screenWidth,
                         ),
                         SizedBox(height: screenWidth * 0.05),
-                        // Show unavailable badge if inactive
                         if (isInactive) ...[
                           _buildUnavailableBadge(screenWidth),
                           SizedBox(height: screenWidth * 0.03),
@@ -253,19 +246,19 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   AppBar _buildAppBar(BuildContext context) {
+    final theme = Theme.of(context);
     final locale = context.locale.languageCode;
 
     return AppBar(
-      backgroundColor: AppColours.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios, color: AppColours.brownMedium),
+        icon: Icon(Icons.arrow_back_ios, color: theme.colorScheme.primary),
         onPressed: () => _handleBack(context),
       ),
       actions: [
-        // Share button
         IconButton(
           onPressed: () => _shareProduct(locale),
-          icon: const Icon(Icons.share_outlined, color: AppColours.brownMedium),
+          icon: Icon(Icons.share_outlined, color: theme.colorScheme.primary),
         ),
         BlocSelector<CartCubit, CartState, int>(
           selector: (state) => state is CartLoaded
@@ -279,8 +272,8 @@ class _ProductScreenState extends State<ProductScreen> {
                 icon: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    const Icon(Icons.shopping_cart_outlined,
-                        color: AppColours.brownMedium),
+                    Icon(Icons.shopping_cart_outlined,
+                        color: theme.colorScheme.primary),
                     if (cartItemCount > 0)
                       Positioned(
                         right: -8,
@@ -311,13 +304,13 @@ class _ProductScreenState extends State<ProductScreen> {
     );
   }
 
-  /// Share product link
   void _shareProduct(String locale) {
     final shareText = ShareUtils.getProductShareText(_product, locale);
     Share.share(shareText);
   }
 
   Widget _buildAddToCartButton(BuildContext context, bool isInactive) {
+    final theme = Theme.of(context);
     final isOutOfStock = _product.isOutOfStock || isInactive;
     final buttonLabel = isInactive
         ? 'product_unavailable'.tr()
@@ -328,7 +321,7 @@ class _ProductScreenState extends State<ProductScreen> {
       left: 16,
       right: 16,
       child: CustomButton(
-        color: isOutOfStock ? Colors.grey : AppColours.brownLight,
+        color: isOutOfStock ? Colors.grey : theme.colorScheme.primary,
         onPressed: isOutOfStock
             ? () => _actions.showOutOfStock(context)
             : () => _actions.addToCart(context, _product.id, _quantity),

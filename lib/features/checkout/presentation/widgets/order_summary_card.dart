@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../coupons/presentation/cubit/coupon_cubit.dart';
 import '../../../coupons/presentation/cubit/coupon_state.dart';
@@ -23,6 +22,7 @@ class OrderSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final groupedData = _groupItemsByMerchant();
     final totalShipping = _calculateTotalShipping(groupedData.merchantIds);
 
@@ -38,17 +38,17 @@ class OrderSummaryCard extends StatelessWidget {
           children: [
             Text(
               'order_summary'.tr(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColours.brownMedium,
+                color: theme.colorScheme.primary,
               ),
             ),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: theme.scaffoldBackgroundColor,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(

@@ -7,8 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../cubit/orders_cubit.dart';
@@ -24,7 +22,6 @@ class OrdersPage extends StatefulWidget {
 }
 
 class _OrdersPageState extends State<OrdersPage> {
-  // Cache the last loaded parent orders to avoid white screen
   List<ParentOrderEntity>? _cachedParentOrders;
   StreamSubscription? _authSubscription;
 
@@ -41,17 +38,14 @@ class _OrdersPageState extends State<OrdersPage> {
     super.dispose();
   }
 
-  /// Listen to auth state changes for token refresh
   void _setupAuthListener() {
     _authSubscription =
         Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
       if (event == AuthChangeEvent.tokenRefreshed) {
-        // Token refreshed - reload orders silently
         _safeLoadOrders();
       }
       if (event == AuthChangeEvent.signedOut) {
-        // User signed out - navigate to login
         if (mounted) {
           context.go('/login');
         }
@@ -59,18 +53,15 @@ class _OrdersPageState extends State<OrdersPage> {
     });
   }
 
-  /// Safe load orders with JWT error handling
   Future<void> _safeLoadOrders() async {
     try {
       _loadOrders();
     } catch (e) {
       if (e.toString().contains('JWT') || e.toString().contains('token')) {
-        // Try to refresh session and reload
         try {
           await Supabase.instance.client.auth.refreshSession();
           _loadOrders();
         } catch (_) {
-          // If refresh fails, redirect to login
           if (mounted) {
             context.go('/login');
           }
@@ -81,7 +72,6 @@ class _OrdersPageState extends State<OrdersPage> {
 
   void _loadOrdersIfNeeded() {
     final currentState = context.read<OrdersCubit>().state;
-    // Only reload if not already showing parent orders list
     if (currentState is! ParentOrdersLoaded) {
       _watchOrders();
     }
@@ -90,7 +80,6 @@ class _OrdersPageState extends State<OrdersPage> {
   void _watchOrders() {
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
-      // Use real-time watching for parent orders (multi-vendor)
       context.read<OrdersCubit>().watchUserParentOrders(authState.user.id);
     }
   }
@@ -105,42 +94,41 @@ class _OrdersPageState extends State<OrdersPage> {
   @override
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColours.brownMedium),
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
             onPressed: () => context.go('/home'),
           ),
           title: Text(
             'my_orders'.tr(),
-            style: AppTextStyle.semiBold_20_dark_brown.copyWith(
-              color: AppColours.brownMedium,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.primary,
             ),
           ),
           centerTitle: true,
         ),
         body: BlocBuilder<OrdersCubit, OrdersState>(
           buildWhen: (previous, current) {
-            // Don't rebuild for ParentOrderLoaded (single order details)
-            // We want to keep showing the list
             if (current is ParentOrderLoaded) {
               return false;
             }
             return true;
           },
           builder: (context, state) {
-            // If we have cached orders and state is ParentOrderLoaded, use cache
             if (state is ParentOrderLoaded && _cachedParentOrders != null) {
               return _buildOrdersList(_cachedParentOrders!);
             }
 
             if (state is OrdersLoading) {
-              // If we have cached data, show it instead of skeleton
               if (_cachedParentOrders != null &&
                   _cachedParentOrders!.isNotEmpty) {
                 return _buildOrdersList(_cachedParentOrders!);
@@ -175,7 +163,6 @@ class _OrdersPageState extends State<OrdersPage> {
                 return _buildEmptyOrders();
               }
 
-              // Convert to parent orders for display
               final parentOrders = state.orders
                   .map((order) => ParentOrderEntity(
                         id: order.id,
@@ -206,12 +193,10 @@ class _OrdersPageState extends State<OrdersPage> {
               return _buildOrdersList(state.parentOrders);
             }
 
-            // For any other state, reload orders
             WidgetsBinding.instance.addPostFrameCallback((_) {
               _watchOrders();
             });
 
-            // Show cached data if available
             if (_cachedParentOrders != null &&
                 _cachedParentOrders!.isNotEmpty) {
               return _buildOrdersList(_cachedParentOrders!);
@@ -227,25 +212,30 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 
   Widget _buildEmptyOrders() {
+    final theme = Theme.of(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.receipt_long_outlined,
             size: 80,
-            color: Colors.grey,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
           ),
           const SizedBox(height: 16),
           Text(
             'no_orders'.tr(),
-            style: const TextStyle(fontSize: 18, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 18,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => context.go('/home'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColours.brownLight,
+              backgroundColor: theme.colorScheme.primary,
             ),
             child: Text(
               'start_shopping'.tr(),

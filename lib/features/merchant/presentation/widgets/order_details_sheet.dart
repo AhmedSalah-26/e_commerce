@@ -3,8 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../Core/Theme/app_text_style.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
 
@@ -22,6 +20,7 @@ class OrderDetailsSheet extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -31,6 +30,8 @@ class OrderDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.5,
@@ -38,26 +39,30 @@ class OrderDetailsSheet extends StatelessWidget {
       expand: false,
       builder: (context, scrollController) => Column(
         children: [
-          _buildHeader(context),
-          Expanded(child: _buildContent(context, scrollController)),
+          _buildHeader(context, theme),
+          Expanded(child: _buildContent(context, scrollController, theme)),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: AppColours.primary,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             '${isRtl ? 'تفاصيل الطلب' : 'Order Details'} #${order.id.substring(0, 8)}',
-            style: AppTextStyle.semiBold_18_white,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.white),
@@ -68,64 +73,78 @@ class OrderDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(
-      BuildContext context, ScrollController scrollController) {
+  Widget _buildContent(BuildContext context, ScrollController scrollController,
+      ThemeData theme) {
     return ListView(
       controller: scrollController,
       padding: const EdgeInsets.all(16),
       children: [
         _buildDetailRow(
-            isRtl ? 'الحالة' : 'Status', _getStatusText(order.status)),
+            isRtl ? 'الحالة' : 'Status', _getStatusText(order.status), theme),
         _buildDetailRow(isRtl ? 'اسم العميل' : 'Customer Name',
-            order.customerName ?? (isRtl ? 'غير محدد' : 'N/A')),
+            order.customerName ?? (isRtl ? 'غير محدد' : 'N/A'), theme),
         _buildDetailRow(isRtl ? 'رقم الهاتف' : 'Phone',
-            order.customerPhone ?? (isRtl ? 'غير محدد' : 'N/A')),
+            order.customerPhone ?? (isRtl ? 'غير محدد' : 'N/A'), theme),
         _buildDetailRow(isRtl ? 'عنوان التوصيل' : 'Delivery Address',
-            order.deliveryAddress ?? (isRtl ? 'غير محدد' : 'N/A')),
+            order.deliveryAddress ?? (isRtl ? 'غير محدد' : 'N/A'), theme),
         // Payment Method
         _buildDetailRow(
           'payment_method'.tr(),
           _getPaymentMethodText(order.paymentMethod),
+          theme,
         ),
         // Coupon info if exists
         if (order.hasCoupon) ...[
           _buildDetailRow(
             'coupon_code'.tr(),
             order.couponCode!,
+            theme,
           ),
         ],
         const Divider(height: 32),
         Text(isRtl ? 'المنتجات' : 'Products',
-            style: AppTextStyle.semiBold_16_dark_brown),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            )),
         const SizedBox(height: 12),
         ...order.items
             .map((item) => _ExpandableOrderItem(item: item, isRtl: isRtl)),
         const Divider(height: 32),
-        _buildDetailRow(isRtl ? 'المجموع الفرعي' : 'Subtotal',
-            '${order.subtotal.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}'),
+        _buildDetailRow(
+            isRtl ? 'المجموع الفرعي' : 'Subtotal',
+            '${order.subtotal.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
+            theme),
         // Show coupon discount if exists
         if (order.couponDiscount > 0)
           _buildDetailRow(
             'coupon_discount'.tr(),
             '-${order.couponDiscount.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
+            theme,
             valueColor: Colors.green,
           ),
         // Show regular discount only if > 0
         if (order.discount > 0)
-          _buildDetailRow(isRtl ? 'الخصم' : 'Discount',
-              '-${order.discount.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}'),
-        _buildDetailRow(isRtl ? 'الشحن' : 'Shipping',
-            '${order.shippingCost.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}'),
+          _buildDetailRow(
+              isRtl ? 'الخصم' : 'Discount',
+              '-${order.discount.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
+              theme),
+        _buildDetailRow(
+            isRtl ? 'الشحن' : 'Shipping',
+            '${order.shippingCost.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
+            theme),
         const Divider(height: 24),
         _buildDetailRow(
           isRtl ? 'الإجمالي' : 'Total',
           '${_calculateTotal().toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
+          theme,
           isBold: true,
         ),
         const SizedBox(height: 24),
         if (order.status != OrderStatus.delivered &&
             order.status != OrderStatus.cancelled)
-          _buildUpdateButton(context),
+          _buildUpdateButton(context, theme),
       ],
     );
   }
@@ -152,7 +171,7 @@ class OrderDetailsSheet extends StatelessWidget {
     }
   }
 
-  Widget _buildUpdateButton(BuildContext context) {
+  Widget _buildUpdateButton(BuildContext context, ThemeData theme) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
@@ -163,7 +182,7 @@ class OrderDetailsSheet extends StatelessWidget {
         icon: const Icon(Icons.update),
         label: Text(isRtl ? 'تحديث الحالة' : 'Update Status'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColours.primary,
+          backgroundColor: theme.colorScheme.primary,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape:
@@ -245,7 +264,7 @@ class OrderDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value,
+  Widget _buildDetailRow(String label, String value, ThemeData theme,
       {bool isBold = false, Color? valueColor}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -254,16 +273,28 @@ class OrderDetailsSheet extends StatelessWidget {
         children: [
           Text(label,
               style: isBold
-                  ? AppTextStyle.semiBold_16_dark_brown
-                  : AppTextStyle.normal_14_greyDark),
+                  ? TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface,
+                    )
+                  : TextStyle(
+                      fontSize: 14,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    )),
           Text(
             value,
             style: isBold
-                ? AppTextStyle.semiBold_16_dark_brown
-                : valueColor != null
-                    ? AppTextStyle.normal_14_greyDark
-                        .copyWith(color: valueColor)
-                    : AppTextStyle.normal_14_greyDark,
+                ? TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
+                  )
+                : TextStyle(
+                    fontSize: 14,
+                    color: valueColor ??
+                        theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
           ),
         ],
       ),
@@ -304,6 +335,7 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final localizedName = widget.item.getLocalizedName(_locale);
     final localizedDescription = widget.item.getLocalizedDescription(_locale);
     final hasDescription =
@@ -312,9 +344,10 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
+        border:
+            Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -334,10 +367,11 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
                             width: 50,
                             height: 50,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) => _buildPlaceholder(),
-                            errorWidget: (_, __, ___) => _buildPlaceholder(),
+                            placeholder: (_, __) => _buildPlaceholder(theme),
+                            errorWidget: (_, __, ___) =>
+                                _buildPlaceholder(theme),
                           )
-                        : _buildPlaceholder(),
+                        : _buildPlaceholder(theme),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -347,8 +381,11 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
                         // Product Name
                         Text(
                           localizedName,
-                          style: AppTextStyle.semiBold_12_dark_brown
-                              .copyWith(fontSize: 14),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -358,16 +395,28 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
                           children: [
                             Text(
                               widget.isRtl ? 'الكمية: ' : 'Qty: ',
-                              style: AppTextStyle.normal_12_greyDark,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
                             ),
                             Text(
                               '${widget.item.quantity}',
-                              style: AppTextStyle.semiBold_12_dark_brown,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.onSurface,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             Text(
                               '× ${widget.item.price.toStringAsFixed(2)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
-                              style: AppTextStyle.normal_12_greyDark,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
                             ),
                           ],
                         ),
@@ -376,8 +425,11 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
                           const SizedBox(height: 4),
                           Text(
                             localizedDescription,
-                            style: AppTextStyle.normal_12_greyDark
-                                .copyWith(fontSize: 11),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -390,14 +442,18 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
                     children: [
                       Text(
                         '${widget.item.itemTotal.toStringAsFixed(2)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
-                        style: AppTextStyle.semiBold_12_dark_brown,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Icon(
                         _isExpanded
                             ? Icons.keyboard_arrow_up
                             : Icons.keyboard_arrow_down,
-                        color: AppColours.brownMedium,
+                        color: theme.colorScheme.primary,
                         size: 20,
                       ),
                     ],
@@ -406,13 +462,13 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
               ),
             ),
           ),
-          if (_isExpanded) _buildExpandedDetails(),
+          if (_isExpanded) _buildExpandedDetails(theme),
         ],
       ),
     );
   }
 
-  Widget _buildExpandedDetails() {
+  Widget _buildExpandedDetails(ThemeData theme) {
     final localizedDescription = widget.item.getLocalizedDescription(_locale);
     final productId = widget.item.productId ?? '';
 
@@ -420,21 +476,26 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        border: Border(
+            top: BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.3))),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'product_name'.tr(),
-            style: AppTextStyle.normal_12_greyDark
-                .copyWith(fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ),
           const SizedBox(height: 4),
           Text(widget.item.getLocalizedName(_locale),
-              style: AppTextStyle.bodyMedium),
+              style: theme.textTheme.bodyMedium),
           const SizedBox(height: 12),
           if (productId.isNotEmpty) ...[
             Row(
@@ -442,7 +503,10 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
                 Expanded(
                   child: Text(
                     '${'product_id'.tr()}: $productId',
-                    style: AppTextStyle.normal_12_greyDark,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                   ),
                 ),
                 InkWell(
@@ -455,10 +519,10 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
                       ),
                     );
                   },
-                  child: const Icon(
+                  child: Icon(
                     Icons.copy,
                     size: 16,
-                    color: AppColours.brownMedium,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
               ],
@@ -469,13 +533,19 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
               localizedDescription.isNotEmpty) ...[
             Text(
               'product_description'.tr(),
-              style: AppTextStyle.normal_12_greyDark
-                  .copyWith(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               localizedDescription,
-              style: AppTextStyle.normal_12_greyDark,
+              style: TextStyle(
+                fontSize: 12,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
           ],
         ],
@@ -483,12 +553,12 @@ class _ExpandableOrderItemState extends State<_ExpandableOrderItem> {
     );
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(ThemeData theme) {
     return Container(
       width: 50,
       height: 50,
-      color: Colors.grey.shade200,
-      child: const Icon(Icons.image_outlined, color: Colors.grey),
+      color: theme.colorScheme.outline.withValues(alpha: 0.2),
+      child: Icon(Icons.image_outlined, color: theme.colorScheme.outline),
     );
   }
 }

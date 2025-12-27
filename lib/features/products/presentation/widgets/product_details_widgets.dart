@@ -3,7 +3,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/product_entity.dart';
 
@@ -71,6 +70,7 @@ class _ProductDescriptionState extends State<ProductDescription> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Directionality(
       textDirection:
           widget.isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
@@ -79,8 +79,10 @@ class _ProductDescriptionState extends State<ProductDescription> {
         children: [
           Text(
             widget.product.description,
-            style: AppTextStyle.normal_12_black
-                .copyWith(fontSize: widget.screenWidth * 0.04),
+            style: AppTextStyle.normal_12_black.copyWith(
+              fontSize: widget.screenWidth * 0.04,
+              color: theme.colorScheme.onSurface,
+            ),
             maxLines: _isExpanded ? null : 6,
             overflow:
                 _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
@@ -103,7 +105,7 @@ class _ProductDescriptionState extends State<ProductDescription> {
                   Text(
                     _isExpanded ? 'show_less'.tr() : 'show_more'.tr(),
                     style: TextStyle(
-                      color: AppColours.brownLight,
+                      color: theme.colorScheme.primary,
                       fontSize: widget.screenWidth * 0.035,
                       fontWeight: FontWeight.bold,
                     ),
@@ -112,7 +114,7 @@ class _ProductDescriptionState extends State<ProductDescription> {
                     _isExpanded
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
-                    color: AppColours.brownLight,
+                    color: theme.colorScheme.primary,
                     size: 20,
                   ),
                 ],
@@ -142,14 +144,17 @@ class ProductQuantitySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Directionality(
       textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Row(
         children: [
           AutoSizeText(
             '${'quantity'.tr()}:',
-            style: AppTextStyle.normal_16_brownLight
-                .copyWith(fontSize: screenWidth * 0.05),
+            style: AppTextStyle.normal_16_brownLight.copyWith(
+              fontSize: screenWidth * 0.05,
+              color: theme.colorScheme.primary,
+            ),
             minFontSize: 12,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -158,26 +163,28 @@ class ProductQuantitySelector extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColours.brownLight),
+              border: Border.all(color: theme.colorScheme.primary),
             ),
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.remove),
+                  icon: Icon(Icons.remove, color: theme.colorScheme.onSurface),
                   onPressed: () {
                     if (quantity > 1) onQuantityChanged(quantity - 1);
                   },
                 ),
                 AutoSizeText(
                   '$quantity',
-                  style: AppTextStyle.normal_16_brownLight
-                      .copyWith(fontSize: screenWidth * 0.05),
+                  style: AppTextStyle.normal_16_brownLight.copyWith(
+                    fontSize: screenWidth * 0.05,
+                    color: theme.colorScheme.onSurface,
+                  ),
                   minFontSize: 12,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.add),
+                  icon: Icon(Icons.add, color: theme.colorScheme.onSurface),
                   onPressed: () {
                     if (quantity < maxStock) onQuantityChanged(quantity + 1);
                   },
@@ -205,6 +212,7 @@ class ProductTotalPrice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Directionality(
       textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Row(
@@ -212,16 +220,20 @@ class ProductTotalPrice extends StatelessWidget {
         children: [
           AutoSizeText(
             '${'total'.tr()}:',
-            style: AppTextStyle.bold_18_medium_brown
-                .copyWith(fontSize: screenWidth * 0.04),
+            style: AppTextStyle.bold_18_medium_brown.copyWith(
+              fontSize: screenWidth * 0.04,
+              color: theme.colorScheme.onSurface,
+            ),
             minFontSize: 14,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           AutoSizeText(
             "${totalPrice.toStringAsFixed(2)} ${'egp'.tr()}",
-            style: AppTextStyle.bold_18_medium_brown
-                .copyWith(fontSize: screenWidth * 0.04),
+            style: AppTextStyle.bold_18_medium_brown.copyWith(
+              fontSize: screenWidth * 0.04,
+              color: theme.colorScheme.primary,
+            ),
             minFontSize: 14,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

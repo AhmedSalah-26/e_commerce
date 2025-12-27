@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../Core/Theme/app_text_style.dart';
 import '../widgets/about_widgets.dart';
 
@@ -38,21 +37,22 @@ class _AboutScreenState extends State<AboutScreen> {
   @override
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColours.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColours.brownMedium),
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
             isRtl ? 'عن التطبيق' : 'About the App',
             style: AppTextStyle.semiBold_20_dark_brown.copyWith(
-              color: AppColours.brownMedium,
+              color: theme.colorScheme.primary,
             ),
           ),
           centerTitle: true,
@@ -68,10 +68,10 @@ class _AboutScreenState extends State<AboutScreen> {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [
-                        AppColours.primary,
-                        AppColours.brownLight,
+                        theme.colorScheme.primary,
+                        theme.colorScheme.primary.withValues(alpha: 0.7),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -79,7 +79,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColours.primary.withValues(alpha: 0.3),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -87,29 +87,31 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   child: Column(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.store,
                         size: 80,
-                        color: Colors.white,
+                        color: theme.colorScheme.onPrimary,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         isRtl ? 'متجري' : 'My Store',
-                        style: AppTextStyle.semiBold_26_white,
+                        style: AppTextStyle.semiBold_26_white.copyWith(
+                          color: theme.colorScheme.onPrimary,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         '${isRtl ? 'الإصدار' : 'Version'}: $appVersion',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimary,
                           fontSize: 14,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Build: $buildNumber',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimary,
                           fontSize: 12,
                         ),
                       ),
@@ -125,7 +127,9 @@ class _AboutScreenState extends State<AboutScreen> {
                     isRtl
                         ? 'متجري هو منصة تسوق إلكترونية مصرية متكاملة تربط بين العملاء والتجار. نوفر تجربة تسوق سلسة وآمنة مع مجموعة واسعة من المنتجات عالية الجودة بأسعار تنافسية. نسعى لتوفير أفضل خدمة عملاء وتجربة مستخدم مميزة.'
                         : 'My Store is an integrated Egyptian e-commerce platform connecting customers with merchants. We provide a seamless and secure shopping experience with a wide range of high-quality products at competitive prices. We strive to provide the best customer service and exceptional user experience.',
-                    style: AppTextStyle.normal_14_greyDark,
+                    style: AppTextStyle.normal_14_greyDark.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
                     textAlign: TextAlign.justify,
                   ),
                 ),
@@ -212,13 +216,17 @@ class _AboutScreenState extends State<AboutScreen> {
                 // Footer
                 Text(
                   '© 2024 ${isRtl ? 'متجري' : 'My Store'}',
-                  style: AppTextStyle.normal_12_greyDark,
+                  style: AppTextStyle.normal_12_greyDark.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   isRtl ? 'جميع الحقوق محفوظة' : 'All rights reserved',
-                  style: AppTextStyle.normal_12_greyDark,
+                  style: AppTextStyle.normal_12_greyDark.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),

@@ -8,7 +8,6 @@ import '../../../features/auth/presentation/cubit/auth_state.dart';
 import '../../../features/favorites/presentation/cubit/favorites_cubit.dart';
 import '../../../features/favorites/presentation/cubit/favorites_state.dart';
 import '../../../features/products/domain/entities/product_entity.dart';
-import '../../theme/app_colors.dart';
 import '../toast.dart';
 
 /// Image section with favorite button (badges handled by parent)
@@ -22,7 +21,7 @@ class ProductImageSection extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        _buildImageContainer(),
+        _buildImageContainer(context),
         Positioned(
           bottom: 8,
           right: 8,
@@ -32,15 +31,16 @@ class ProductImageSection extends StatelessWidget {
     );
   }
 
-  Widget _buildImageContainer() {
+  Widget _buildImageContainer(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(8),
           topRight: Radius.circular(8),
         ),
-        color: Colors.white,
+        color: theme.colorScheme.surface,
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
@@ -98,8 +98,13 @@ class _ImagePlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+    final theme = Theme.of(context);
+    return Center(
+      child: Icon(
+        Icons.image_not_supported,
+        size: 50,
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+      ),
     );
   }
 }
@@ -109,9 +114,10 @@ class _ImageLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    final theme = Theme.of(context);
+    return Center(
       child: CircularProgressIndicator(
-        color: AppColours.brownLight,
+        color: theme.colorScheme.primary,
         strokeWidth: 2,
       ),
     );
@@ -126,6 +132,7 @@ class _FavoriteButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocSelector<FavoritesCubit, FavoritesState, bool>(
       selector: (state) =>
           state is FavoritesLoaded && state.isFavorite(productId),
@@ -135,13 +142,13 @@ class _FavoriteButton extends StatelessWidget {
           child: Container(
             width: 28,
             height: 28,
-            decoration: const BoxDecoration(
-              color: AppColours.jumiaDark,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
               shape: BoxShape.circle,
             ),
             child: Icon(
               isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: AppColours.brownLight,
+              color: theme.colorScheme.primary,
               size: 14,
             ),
           ),

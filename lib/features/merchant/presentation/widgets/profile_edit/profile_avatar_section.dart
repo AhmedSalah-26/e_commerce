@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 
 class ProfileAvatarSection extends StatelessWidget {
   final String? userName;
@@ -11,11 +10,12 @@ class ProfileAvatarSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final displayName = userName ?? 'M';
 
     return CircleAvatar(
       radius: 40,
-      backgroundColor: AppColours.brownLight,
+      backgroundColor: theme.colorScheme.primary,
       child: Text(
         displayName[0].toUpperCase(),
         style: const TextStyle(

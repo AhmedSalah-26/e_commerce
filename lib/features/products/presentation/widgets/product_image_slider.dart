@@ -1,8 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-
 class ProductImageSlider extends StatefulWidget {
   final List<String> images;
   final double screenWidth;
@@ -35,12 +33,13 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     if (widget.images.isEmpty) {
-      return _buildPlaceholder();
+      return _buildPlaceholder(theme);
     }
 
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: Column(
         children: [
           // Main Image Area with curved corners - 16:9 aspect ratio
@@ -49,7 +48,7 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ClipRRect(
@@ -65,7 +64,7 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
                       itemBuilder: (context, index) {
                         return GestureDetector(
                           onTap: () => _showFullScreenImage(context, index),
-                          child: _buildImage(widget.images[index]),
+                          child: _buildImage(widget.images[index], theme),
                         );
                       },
                     ),
@@ -120,8 +119,8 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _currentPage == index
-                            ? AppColours.jumiaOrange
-                            : Colors.grey[300],
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.outline,
                       ),
                     ),
                   ),
@@ -133,33 +132,35 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
     );
   }
 
-  Widget _buildImage(String imageUrl) {
+  Widget _buildImage(String imageUrl, ThemeData theme) {
     if (imageUrl.startsWith('http')) {
       return CachedNetworkImage(
         imageUrl: imageUrl,
         fit: BoxFit.cover,
-        placeholder: (_, __) => const Center(
+        placeholder: (_, __) => Center(
           child: CircularProgressIndicator(
-            color: AppColours.brownLight,
+            color: theme.colorScheme.primary,
             strokeWidth: 2,
           ),
         ),
-        errorWidget: (_, __, ___) => const Icon(
+        errorWidget: (_, __, ___) => Icon(
           Icons.image_not_supported,
           size: 60,
-          color: Colors.grey,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
         ),
       );
     }
     return Image.asset(imageUrl, fit: BoxFit.cover);
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(ThemeData theme) {
     return Container(
       height: widget.screenWidth * 0.7,
-      color: Colors.grey[100],
-      child: const Center(
-        child: Icon(Icons.image_not_supported, size: 80, color: Colors.grey),
+      color: theme.colorScheme.surface,
+      child: Center(
+        child: Icon(Icons.image_not_supported,
+            size: 80,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
       ),
     );
   }
@@ -214,6 +215,7 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -264,7 +266,7 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _currentIndex == index
-                          ? AppColours.jumiaOrange
+                          ? theme.colorScheme.primary
                           : Colors.white38,
                     ),
                   ),

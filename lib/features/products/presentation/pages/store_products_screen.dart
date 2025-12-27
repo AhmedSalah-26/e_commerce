@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../home/presentation/widgets/home_filter_sheet.dart';
@@ -62,9 +61,10 @@ class _StoreProductsScreenState extends State<StoreProductsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColours.greyLighter,
-      appBar: _buildAppBar(),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: _buildAppBar(theme),
       body: Column(
         children: [
           _buildHeader(),
@@ -75,18 +75,20 @@ class _StoreProductsScreenState extends State<StoreProductsScreen>
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(ThemeData theme) {
     return AppBar(
-      backgroundColor: AppColours.white,
+      backgroundColor: theme.colorScheme.surface,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios,
-            color: AppColours.brownMedium, size: 20),
+        icon: Icon(Icons.arrow_back_ios,
+            color: theme.colorScheme.primary, size: 20),
         onPressed: () => context.pop(),
       ),
       title: Text(
         storeState.storeName ?? 'store_products'.tr(),
-        style: AppTextStyle.semiBold_16_dark_brown,
+        style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+          color: theme.colorScheme.onSurface,
+        ),
       ),
       centerTitle: true,
     );

@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../theme/app_colors.dart';
-
 /// Skeleton for review card
 class ReviewCardSkeleton extends StatelessWidget {
   const ReviewCardSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final skeletonColor = theme.colorScheme.surfaceContainerHighest;
+    final highlightColor = theme.colorScheme.surface;
+
     return Shimmer.fromColors(
-      baseColor: AppColours.greyLighter,
-      highlightColor: Colors.white,
+      baseColor: skeletonColor,
+      highlightColor: highlightColor,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -28,8 +30,8 @@ class ReviewCardSkeleton extends StatelessWidget {
                 Container(
                   width: 40,
                   height: 40,
-                  decoration: const BoxDecoration(
-                    color: AppColours.greyLighter,
+                  decoration: BoxDecoration(
+                    color: skeletonColor,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -43,7 +45,7 @@ class ReviewCardSkeleton extends StatelessWidget {
                         height: 14,
                         width: 100,
                         decoration: BoxDecoration(
-                          color: AppColours.greyLighter,
+                          color: skeletonColor,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -52,7 +54,7 @@ class ReviewCardSkeleton extends StatelessWidget {
                         height: 12,
                         width: 60,
                         decoration: BoxDecoration(
-                          color: AppColours.greyLighter,
+                          color: skeletonColor,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -64,7 +66,7 @@ class ReviewCardSkeleton extends StatelessWidget {
                   height: 16,
                   width: 80,
                   decoration: BoxDecoration(
-                    color: AppColours.greyLighter,
+                    color: skeletonColor,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -76,7 +78,7 @@ class ReviewCardSkeleton extends StatelessWidget {
               height: 12,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: AppColours.greyLighter,
+                color: skeletonColor,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -85,7 +87,7 @@ class ReviewCardSkeleton extends StatelessWidget {
               height: 12,
               width: MediaQuery.of(context).size.width * 0.7,
               decoration: BoxDecoration(
-                color: AppColours.greyLighter,
+                color: skeletonColor,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -102,9 +104,13 @@ class ReviewsSectionSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final skeletonColor = theme.colorScheme.surfaceContainerHighest;
+    final highlightColor = theme.colorScheme.surface;
+
     return Shimmer.fromColors(
-      baseColor: AppColours.greyLighter,
-      highlightColor: Colors.white,
+      baseColor: skeletonColor,
+      highlightColor: highlightColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -113,7 +119,7 @@ class ReviewsSectionSkeleton extends StatelessWidget {
             height: 24,
             width: 150,
             decoration: BoxDecoration(
-              color: AppColours.greyLighter,
+              color: skeletonColor,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -122,7 +128,7 @@ class ReviewsSectionSkeleton extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColours.greyLighter,
+              color: skeletonColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -133,7 +139,7 @@ class ReviewsSectionSkeleton extends StatelessWidget {
                       height: 36,
                       width: 50,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: highlightColor,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -142,7 +148,7 @@ class ReviewsSectionSkeleton extends StatelessWidget {
                       height: 16,
                       width: 80,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: highlightColor,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -153,7 +159,7 @@ class ReviewsSectionSkeleton extends StatelessWidget {
                   child: Container(
                     height: 12,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: highlightColor,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -167,7 +173,7 @@ class ReviewsSectionSkeleton extends StatelessWidget {
             height: 48,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColours.greyLighter,
+              color: skeletonColor,
               borderRadius: BorderRadius.circular(12),
             ),
           ),

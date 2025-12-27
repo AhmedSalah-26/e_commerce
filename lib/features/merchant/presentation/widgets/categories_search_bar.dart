@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 
 class CategoriesSearchBar extends StatelessWidget {
   final TextEditingController controller;
@@ -19,34 +18,38 @@ class CategoriesSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: TextField(
         controller: controller,
         onChanged: onChanged,
         decoration: InputDecoration(
           hintText: hintText,
-          prefixIcon: const Icon(Icons.search, color: AppColours.primary),
+          prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
           suffixIcon: showClearButton
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: AppColours.greyDark),
+                  icon: Icon(Icons.clear,
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                   onPressed: onClear,
                 )
               : null,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: theme.colorScheme.surface,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColours.primary),
+            borderSide: BorderSide(color: theme.colorScheme.primary),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColours.primary),
+            borderSide: BorderSide(color: theme.colorScheme.primary),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColours.primary, width: 2),
+            borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,

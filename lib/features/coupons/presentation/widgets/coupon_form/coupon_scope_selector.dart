@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 
 class CouponScopeSelector extends StatelessWidget {
   final String selectedScope;
@@ -64,6 +63,8 @@ class _ScopeOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -71,26 +72,33 @@ class _ScopeOption extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColours.brownLight.withValues(alpha: 0.2)
-              : Colors.grey.shade100,
+              ? theme.colorScheme.primary.withValues(alpha: 0.2)
+              : theme.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? AppColours.brownMedium : Colors.grey.shade300,
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.outline,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon,
-                size: 16,
-                color: isSelected ? AppColours.brownMedium : Colors.grey),
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
                 fontSize: 13,
-                color:
-                    isSelected ? AppColours.brownMedium : Colors.grey.shade700,
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

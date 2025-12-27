@@ -1,8 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_text_style.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 
 class HorizontalCategoriesView extends StatelessWidget {
@@ -33,7 +31,7 @@ class HorizontalCategoriesView extends StatelessWidget {
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         addAutomaticKeepAlives: false,
-        itemCount: categories.length + 2, // +2 for "All" and "Offers"
+        itemCount: categories.length + 2,
         itemBuilder: (context, index) {
           if (index == 0) {
             return Padding(
@@ -88,18 +86,20 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
-    final textStyle = screenWidth > 600
-        ? AppTextStyle.normal_18_brownLight
-        : AppTextStyle.normal_16_brownLight;
+    final fontSize = screenWidth > 600 ? 18.0 : 16.0;
 
     return Container(
       padding: const EdgeInsets.all(5.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25.0),
         color: isOffer && isSelected
-            ? AppColours.brownLight.withValues(alpha: 0.2)
-            : AppColours.greyLighter,
+            ? theme.colorScheme.primary.withValues(alpha: 0.2)
+            : theme.colorScheme.surface,
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.2),
+        ),
       ),
       child: TextButton(
         style: ButtonStyle(
@@ -113,13 +113,20 @@ class CategoryCard extends StatelessWidget {
               Icon(
                 Icons.local_offer,
                 size: 16,
-                color: isSelected ? AppColours.brownLight : AppColours.greyDark,
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               const SizedBox(width: 4),
             ],
             Text(
               title,
-              style: isSelected ? textStyle : AppTextStyle.normal_16_greyDark,
+              style: TextStyle(
+                fontSize: fontSize,
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
           ],
         ),

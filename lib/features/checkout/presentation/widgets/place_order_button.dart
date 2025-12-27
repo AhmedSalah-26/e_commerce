@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../coupons/presentation/cubit/coupon_cubit.dart';
 import '../../../coupons/presentation/cubit/coupon_state.dart';
@@ -43,6 +42,7 @@ class PlaceOrderButton extends StatelessWidget {
         return BlocSelector<OrdersCubit, OrdersState, bool>(
           selector: (state) => state is OrderCreating,
           builder: (context, isLoading) {
+            final theme = Theme.of(context);
             final orderShippingCost =
                 totalShippingPrice > 0 ? totalShippingPrice : shippingPrice;
             return SizedBox(
@@ -60,7 +60,7 @@ class PlaceOrderButton extends StatelessWidget {
                           couponCode: appliedCoupon?.code,
                         ),
                 label: isLoading ? 'loading'.tr() : 'place_order'.tr(),
-                color: AppColours.brownLight,
+                color: theme.colorScheme.primary,
               ),
             );
           },

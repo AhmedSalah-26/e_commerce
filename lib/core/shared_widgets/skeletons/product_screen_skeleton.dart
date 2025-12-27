@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../theme/app_colors.dart';
-
 /// Full page skeleton for product details screen
 class ProductScreenSkeleton extends StatelessWidget {
   const ProductScreenSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final skeletonColor = theme.colorScheme.surfaceContainerHighest;
+    final highlightColor = theme.colorScheme.surface;
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Shimmer.fromColors(
-      baseColor: AppColours.greyLighter,
-      highlightColor: Colors.white,
+      baseColor: skeletonColor,
+      highlightColor: highlightColor,
       child: SingleChildScrollView(
         padding: EdgeInsets.all(screenWidth * 0.04),
         child: Column(
@@ -23,7 +24,7 @@ class ProductScreenSkeleton extends StatelessWidget {
             Container(
               height: screenWidth * 0.7,
               decoration: BoxDecoration(
-                color: AppColours.greyLighter,
+                color: skeletonColor,
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
@@ -42,7 +43,7 @@ class ProductScreenSkeleton extends StatelessWidget {
                         height: 20,
                         width: screenWidth * 0.5,
                         decoration: BoxDecoration(
-                          color: AppColours.greyLighter,
+                          color: skeletonColor,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -51,7 +52,7 @@ class ProductScreenSkeleton extends StatelessWidget {
                         height: 16,
                         width: screenWidth * 0.3,
                         decoration: BoxDecoration(
-                          color: AppColours.greyLighter,
+                          color: skeletonColor,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -62,7 +63,7 @@ class ProductScreenSkeleton extends StatelessWidget {
                   height: 24,
                   width: screenWidth * 0.2,
                   decoration: BoxDecoration(
-                    color: AppColours.greyLighter,
+                    color: skeletonColor,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -83,7 +84,7 @@ class ProductScreenSkeleton extends StatelessWidget {
                         height: 20,
                         width: 20,
                         decoration: BoxDecoration(
-                          color: AppColours.greyLighter,
+                          color: skeletonColor,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -94,7 +95,7 @@ class ProductScreenSkeleton extends StatelessWidget {
                   height: 30,
                   width: 30,
                   decoration: BoxDecoration(
-                    color: AppColours.greyLighter,
+                    color: skeletonColor,
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
@@ -106,7 +107,7 @@ class ProductScreenSkeleton extends StatelessWidget {
             Container(
               height: 40,
               decoration: BoxDecoration(
-                color: AppColours.greyLighter,
+                color: skeletonColor,
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
@@ -117,7 +118,7 @@ class ProductScreenSkeleton extends StatelessWidget {
               height: 20,
               width: screenWidth * 0.3,
               decoration: BoxDecoration(
-                color: AppColours.greyLighter,
+                color: skeletonColor,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -128,7 +129,7 @@ class ProductScreenSkeleton extends StatelessWidget {
               height: 16,
               width: screenWidth * 0.25,
               decoration: BoxDecoration(
-                color: AppColours.greyLighter,
+                color: skeletonColor,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -141,7 +142,7 @@ class ProductScreenSkeleton extends StatelessWidget {
                   height: 14,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: AppColours.greyLighter,
+                    color: skeletonColor,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -157,7 +158,7 @@ class ProductScreenSkeleton extends StatelessWidget {
                   height: 40,
                   width: 40,
                   decoration: BoxDecoration(
-                    color: AppColours.greyLighter,
+                    color: skeletonColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
@@ -166,7 +167,7 @@ class ProductScreenSkeleton extends StatelessWidget {
                   height: 30,
                   width: 40,
                   decoration: BoxDecoration(
-                    color: AppColours.greyLighter,
+                    color: skeletonColor,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -175,7 +176,7 @@ class ProductScreenSkeleton extends StatelessWidget {
                   height: 40,
                   width: 40,
                   decoration: BoxDecoration(
-                    color: AppColours.greyLighter,
+                    color: skeletonColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
@@ -191,7 +192,7 @@ class ProductScreenSkeleton extends StatelessWidget {
                   height: 20,
                   width: screenWidth * 0.2,
                   decoration: BoxDecoration(
-                    color: AppColours.greyLighter,
+                    color: skeletonColor,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -199,7 +200,7 @@ class ProductScreenSkeleton extends StatelessWidget {
                   height: 24,
                   width: screenWidth * 0.25,
                   decoration: BoxDecoration(
-                    color: AppColours.greyLighter,
+                    color: skeletonColor,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),

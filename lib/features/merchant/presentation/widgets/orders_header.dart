@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 
 class OrdersHeader extends StatelessWidget {
   final bool isRtl;
@@ -16,11 +14,16 @@ class OrdersHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColours.primary, AppColours.brownLight],
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withValues(alpha: 0.7)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -32,7 +35,10 @@ class OrdersHeader extends StatelessWidget {
             children: [
               Text(
                 isRtl ? 'إدارة الطلبات' : 'Manage Orders',
-                style: AppTextStyle.semiBold_22_white,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
               Container(
                 padding:
@@ -41,10 +47,8 @@ class OrdersHeader extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(
-                  isRtl ? 'اليوم' : 'Today',
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                ),
+                child: Text(isRtl ? 'اليوم' : 'Today',
+                    style: const TextStyle(color: Colors.white, fontSize: 12)),
               ),
             ],
           ),
@@ -52,20 +56,14 @@ class OrdersHeader extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _buildStatCard(
-                  isRtl ? 'قيد الانتظار' : 'Pending',
-                  totalPending.toString(),
-                  Icons.pending_actions,
-                ),
-              ),
+                  child: _buildStatCard(isRtl ? 'قيد الانتظار' : 'Pending',
+                      totalPending.toString(), Icons.pending_actions)),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildStatCard(
-                  isRtl ? 'تم التوصيل اليوم' : 'Delivered Today',
-                  todayDelivered.toString(),
-                  Icons.check_circle,
-                ),
-              ),
+                  child: _buildStatCard(
+                      isRtl ? 'تم التوصيل اليوم' : 'Delivered Today',
+                      todayDelivered.toString(),
+                      Icons.check_circle)),
             ],
           ),
         ],
@@ -84,20 +82,15 @@ class OrdersHeader extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.white, size: 24),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text(value,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
-            textAlign: TextAlign.center,
-          ),
+          Text(label,
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+              textAlign: TextAlign.center),
         ],
       ),
     );

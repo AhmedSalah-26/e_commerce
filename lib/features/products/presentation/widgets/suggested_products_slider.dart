@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/product_entity.dart';
 import '../cubit/products_cubit.dart';
@@ -49,6 +48,7 @@ class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocBuilder<ProductsCubit, ProductsState>(
       builder: (context, state) {
         if (state is ProductsLoading) {
@@ -79,8 +79,10 @@ class _SuggestedProductsSliderState extends State<SuggestedProductsSlider> {
                 padding: EdgeInsets.symmetric(vertical: screenWidth * 0.02),
                 child: Text(
                   'you_may_like'.tr(),
-                  style: AppTextStyle.semiBold_20_dark_brown
-                      .copyWith(fontSize: screenWidth * 0.045),
+                  style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+                    fontSize: screenWidth * 0.045,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
               ),
               SizedBox(
@@ -115,12 +117,14 @@ class _SuggestedProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: () => context.pushReplacement('/product/${product.id}'),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColours.white,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.colorScheme.outline),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
@@ -143,10 +147,10 @@ class _SuggestedProductCard extends StatelessWidget {
                         width: double.infinity,
                         fit: BoxFit.cover,
                         memCacheWidth: 200,
-                        placeholder: (_, __) => _buildPlaceholder(),
-                        errorWidget: (_, __, ___) => _buildPlaceholder(),
+                        placeholder: (_, __) => _buildPlaceholder(theme),
+                        errorWidget: (_, __, ___) => _buildPlaceholder(theme),
                       )
-                    : _buildPlaceholder(),
+                    : _buildPlaceholder(theme),
               ),
             ),
             Expanded(
@@ -159,7 +163,9 @@ class _SuggestedProductCard extends StatelessWidget {
                   children: [
                     Text(
                       product.name,
-                      style: AppTextStyle.semiBold_12_dark_brown,
+                      style: AppTextStyle.semiBold_12_dark_brown.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -168,16 +174,19 @@ class _SuggestedProductCard extends StatelessWidget {
                         if (product.hasDiscount)
                           Text(
                             '${product.price.toStringAsFixed(0)} ',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: Colors.grey,
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.5),
                               decoration: TextDecoration.lineThrough,
                             ),
                           ),
                         Flexible(
                           child: Text(
                             '${product.effectivePrice.toStringAsFixed(0)} ${'egp'.tr()}',
-                            style: AppTextStyle.bold_14_medium_brown,
+                            style: AppTextStyle.bold_14_medium_brown.copyWith(
+                              color: theme.colorScheme.primary,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -193,12 +202,11 @@ class _SuggestedProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(ThemeData theme) {
     return Container(
-      color: AppColours.greyLight,
-      child: const Center(
-        child: Icon(Icons.image_not_supported, color: Colors.grey),
-      ),
+      color: theme.colorScheme.surface,
+      child: Icon(Icons.image_not_supported,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
     );
   }
 }

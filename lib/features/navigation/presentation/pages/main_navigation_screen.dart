@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 
@@ -21,7 +20,6 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void _onTap(int index) {
-    // Skip if already on this tab
     if (index == widget.navigationShell.currentIndex) return;
     widget.navigationShell.goBranch(
       index,
@@ -31,20 +29,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BackButtonListener(
       onBackButtonPressed: () async {
-        // Let the router handle back if there are pages to pop
         if (context.canPop()) {
-          return false; // Don't handle, let router pop
+          return false;
         }
-        // If not on home tab, go to home
         if (widget.navigationShell.currentIndex != 0) {
           widget.navigationShell.goBranch(0, initialLocation: true);
-          return true; // Handled
+          return true;
         }
-        // On home tab, exit app
         SystemNavigator.pop();
-        return true; // Handled
+        return true;
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -56,7 +53,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           builder: (context, cartItemCount) {
             return Container(
               decoration: BoxDecoration(
-                color: AppColours.white,
+                color: theme.scaffoldBackgroundColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30),
                   topRight: Radius.circular(30),
@@ -108,12 +105,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _buildNavItem(int index, IconData icon, IconData activeIcon) {
+    final theme = Theme.of(context);
     final isSelected = widget.navigationShell.currentIndex == index;
     return IconButton(
       onPressed: () => _onTap(index),
       icon: Icon(
         isSelected ? activeIcon : icon,
-        color: isSelected ? AppColours.primary : AppColours.greyMedium,
+        color: isSelected
+            ? theme.colorScheme.primary
+            : theme.colorScheme.onSurface.withValues(alpha: 0.5),
         size: 26,
       ),
     );
@@ -125,6 +125,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     IconData activeIcon,
     int badgeCount,
   ) {
+    final theme = Theme.of(context);
     final isSelected = widget.navigationShell.currentIndex == index;
     return IconButton(
       onPressed: () => _onTap(index),
@@ -133,7 +134,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         children: [
           Icon(
             isSelected ? activeIcon : icon,
-            color: isSelected ? AppColours.primary : AppColours.greyMedium,
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurface.withValues(alpha: 0.5),
             size: 26,
           ),
           if (badgeCount > 0)

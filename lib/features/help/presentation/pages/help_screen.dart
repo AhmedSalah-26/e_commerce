@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../Core/Theme/app_text_style.dart';
 
 class HelpScreen extends StatelessWidget {
@@ -36,21 +35,22 @@ class HelpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColours.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColours.brownMedium),
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
             isRtl ? 'المساعدة والدعم' : 'Help & Support',
             style: AppTextStyle.semiBold_20_dark_brown.copyWith(
-              color: AppColours.brownMedium,
+              color: theme.colorScheme.primary,
             ),
           ),
           centerTitle: true,
@@ -67,10 +67,10 @@ class HelpScreen extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [
-                        AppColours.primary,
-                        AppColours.brownLight,
+                        theme.colorScheme.primary,
+                        theme.colorScheme.primary.withValues(alpha: 0.7),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -78,7 +78,7 @@ class HelpScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColours.primary.withValues(alpha: 0.3),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -86,15 +86,17 @@ class HelpScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.support_agent,
                         size: 64,
-                        color: Colors.white,
+                        color: theme.colorScheme.onPrimary,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         isRtl ? 'كيف يمكننا مساعدتك؟' : 'How can we help you?',
-                        style: AppTextStyle.semiBold_22_white,
+                        style: AppTextStyle.semiBold_22_white.copyWith(
+                          color: theme.colorScheme.onPrimary,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
@@ -102,8 +104,8 @@ class HelpScreen extends StatelessWidget {
                         isRtl
                             ? 'نحن هنا لمساعدتك في أي وقت'
                             : 'We are here to help you anytime',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimary,
                           fontSize: 14,
                         ),
                         textAlign: TextAlign.center,
@@ -115,10 +117,13 @@ class HelpScreen extends StatelessWidget {
                 // Contact Section
                 Text(
                   isRtl ? 'اتصل بنا' : 'Contact Us',
-                  style: AppTextStyle.semiBold_20_dark_brown,
+                  style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 _buildContactCard(
+                  context,
                   icon: Icons.email_outlined,
                   title: isRtl ? 'البريد الإلكتروني' : 'Email',
                   subtitle: 'support@mystore-eg.com',
@@ -126,6 +131,7 @@ class HelpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 _buildContactCard(
+                  context,
                   icon: Icons.phone_outlined,
                   title: isRtl ? 'الهاتف' : 'Phone',
                   subtitle: '+20 123 456 7890',
@@ -133,6 +139,7 @@ class HelpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 _buildContactCard(
+                  context,
                   icon: Icons.chat_outlined,
                   title: isRtl ? 'واتساب' : 'WhatsApp',
                   subtitle: isRtl
@@ -146,10 +153,10 @@ class HelpScreen extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppColours.greyLighter,
+                    color: theme.colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppColours.greyLight,
+                      color: theme.colorScheme.outline,
                       width: 1,
                     ),
                   ),
@@ -158,27 +165,29 @@ class HelpScreen extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.access_time,
-                            color: AppColours.primary,
+                            color: theme.colorScheme.primary,
                             size: 24,
                           ),
                           const SizedBox(width: 12),
                           Text(
                             isRtl ? 'ساعات العمل' : 'Working Hours',
                             style: AppTextStyle.semiBold_18_white.copyWith(
-                              color: AppColours.primary,
+                              color: theme.colorScheme.primary,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
                       _buildWorkingHourRow(
+                        context,
                         isRtl ? 'السبت - الخميس' : 'Saturday - Thursday',
                         isRtl ? '9:00 ص - 6:00 م' : '9:00 AM - 6:00 PM',
                       ),
                       const SizedBox(height: 8),
                       _buildWorkingHourRow(
+                        context,
                         isRtl ? 'الجمعة' : 'Friday',
                         isRtl ? 'مغلق' : 'Closed',
                       ),
@@ -194,23 +203,25 @@ class HelpScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactCard({
+  Widget _buildContactCard(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColours.greyLight,
+          color: theme.colorScheme.outline,
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
+            color: theme.shadowColor.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -228,12 +239,12 @@ class HelpScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColours.primary.withValues(alpha: 0.1),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     icon,
-                    color: AppColours.primary,
+                    color: theme.colorScheme.primary,
                     size: 28,
                   ),
                 ),
@@ -244,19 +255,24 @@ class HelpScreen extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: AppTextStyle.semiBold_16_dark_brown,
+                        style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: AppTextStyle.normal_14_greyDark,
+                        style: AppTextStyle.normal_14_greyDark.copyWith(
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.7),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios,
-                  color: AppColours.greyMedium,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   size: 18,
                 ),
               ],
@@ -267,17 +283,22 @@ class HelpScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWorkingHourRow(String day, String hours) {
+  Widget _buildWorkingHourRow(BuildContext context, String day, String hours) {
+    final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           day,
-          style: AppTextStyle.normal_14_greyDark,
+          style: AppTextStyle.normal_14_greyDark.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+          ),
         ),
         Text(
           hours,
-          style: AppTextStyle.semiBold_16_dark_brown,
+          style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+            color: theme.colorScheme.onSurface,
+          ),
         ),
       ],
     );

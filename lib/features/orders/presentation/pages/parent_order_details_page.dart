@@ -5,8 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../domain/entities/parent_order_entity.dart';
@@ -45,22 +43,24 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isRtl = context.locale.languageCode == 'ar';
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColours.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.surface,
           leading: IconButton(
-            icon:
-                const Icon(Icons.arrow_back_ios, color: AppColours.brownMedium),
+            icon: Icon(Icons.arrow_back_ios, color: theme.colorScheme.primary),
             onPressed: _goBackToOrders,
           ),
           title: Text(
             'order_details'.tr(),
-            style: AppTextStyle.semiBold_20_dark_brown,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           centerTitle: true,
         ),
@@ -88,7 +88,7 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
             }
 
             if (state is ParentOrderLoaded) {
-              return _buildContent(context, state.parentOrder, isRtl);
+              return _buildContent(context, state.parentOrder, isRtl, theme);
             }
 
             // If not the right state, reload
@@ -106,21 +106,24 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
     BuildContext context,
     ParentOrderEntity parentOrder,
     bool isRtl,
+    ThemeData theme,
   ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildOrderSummaryCard(parentOrder, isRtl),
+          _buildOrderSummaryCard(parentOrder, isRtl, theme),
           const SizedBox(height: 16),
-          _buildCustomerInfoCard(parentOrder, isRtl),
+          _buildCustomerInfoCard(parentOrder, isRtl, theme),
           const SizedBox(height: 16),
-          _buildPaymentMethodCard(parentOrder, isRtl),
+          _buildPaymentMethodCard(parentOrder, isRtl, theme),
           const SizedBox(height: 16),
           Text(
             'merchant_orders'.tr(),
-            style: AppTextStyle.semiBold_16_dark_brown,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 12),
           ...parentOrder.subOrders.map((order) => Padding(
@@ -128,10 +131,10 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
                 child: MerchantOrderCard(order: order, isRtl: isRtl),
               )),
           const SizedBox(height: 16),
-          _buildTotalSummaryCard(parentOrder, isRtl),
+          _buildTotalSummaryCard(parentOrder, isRtl, theme),
           if (parentOrder.notes != null && parentOrder.notes!.isNotEmpty) ...[
             const SizedBox(height: 16),
-            _buildNotesCard(parentOrder.notes!, isRtl),
+            _buildNotesCard(parentOrder.notes!, isRtl, theme),
           ],
           const SizedBox(height: 32),
         ],
@@ -139,12 +142,14 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
     );
   }
 
-  Widget _buildOrderSummaryCard(ParentOrderEntity parentOrder, bool isRtl) {
+  Widget _buildOrderSummaryCard(
+      ParentOrderEntity parentOrder, bool isRtl, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outline),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -161,7 +166,9 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
             children: [
               Text(
                 '${'order_number'.tr()}: #${parentOrder.id.substring(0, 8)}',
-                style: AppTextStyle.semiBold_12_dark_brown,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               _buildOverallStatusBadge(parentOrder.overallStatus),
             ],
@@ -169,14 +176,18 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
           const SizedBox(height: 8),
           Text(
             '${'merchants_count'.tr()}: ${parentOrder.merchantCount}',
-            style: AppTextStyle.normal_14_greyDark,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ),
           if (parentOrder.createdAt != null) ...[
             const SizedBox(height: 4),
             Text(
               DateFormat('dd/MM/yyyy - hh:mm a', context.locale.languageCode)
                   .format(parentOrder.createdAt!),
-              style: AppTextStyle.normal_12_greyDark,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
           ],
         ],
@@ -233,12 +244,14 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
     );
   }
 
-  Widget _buildCustomerInfoCard(ParentOrderEntity parentOrder, bool isRtl) {
+  Widget _buildCustomerInfoCard(
+      ParentOrderEntity parentOrder, bool isRtl, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outline),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -252,35 +265,47 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
         children: [
           Text(
             'delivery_info'.tr(),
-            style: AppTextStyle.semiBold_12_dark_brown,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 12),
           if (parentOrder.customerName != null)
-            _buildInfoRow(Icons.person_outline, parentOrder.customerName!),
-          if (parentOrder.customerPhone != null)
-            _buildInfoRow(Icons.phone_outlined, parentOrder.customerPhone!),
-          if (parentOrder.deliveryAddress != null)
             _buildInfoRow(
-                Icons.location_on_outlined, parentOrder.deliveryAddress!),
+                Icons.person_outline, parentOrder.customerName!, theme),
+          if (parentOrder.customerPhone != null)
+            _buildInfoRow(
+                Icons.phone_outlined, parentOrder.customerPhone!, theme),
+          if (parentOrder.deliveryAddress != null)
+            _buildInfoRow(Icons.location_on_outlined,
+                parentOrder.deliveryAddress!, theme),
         ],
       ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String text) {
+  Widget _buildInfoRow(IconData icon, String text, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: AppColours.brownMedium),
+          Icon(icon, size: 18, color: theme.colorScheme.primary),
           const SizedBox(width: 8),
-          Expanded(child: Text(text, style: AppTextStyle.normal_14_greyDark)),
+          Expanded(
+            child: Text(
+              text,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPaymentMethodCard(ParentOrderEntity parentOrder, bool isRtl) {
+  Widget _buildPaymentMethodCard(
+      ParentOrderEntity parentOrder, bool isRtl, ThemeData theme) {
     final paymentMethod = parentOrder.paymentMethod ?? 'cash_on_delivery';
 
     IconData paymentIcon;
@@ -307,8 +332,9 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outline),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -322,7 +348,9 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
         children: [
           Text(
             'payment_method'.tr(),
-            style: AppTextStyle.semiBold_12_dark_brown,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -336,7 +364,12 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
                 child: Icon(paymentIcon, size: 24, color: iconColor),
               ),
               const SizedBox(width: 12),
-              Text(paymentLabel, style: AppTextStyle.semiBold_16_dark_brown),
+              Text(
+                paymentLabel,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ],
@@ -344,12 +377,14 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
     );
   }
 
-  Widget _buildTotalSummaryCard(ParentOrderEntity parentOrder, bool isRtl) {
+  Widget _buildTotalSummaryCard(
+      ParentOrderEntity parentOrder, bool isRtl, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outline),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -360,15 +395,17 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
       ),
       child: Column(
         children: [
-          _buildPriceRow('subtotal'.tr(), parentOrder.subtotal),
+          _buildPriceRow('subtotal'.tr(), parentOrder.subtotal, theme: theme),
           const SizedBox(height: 8),
-          _buildPriceRow('shipping'.tr(), parentOrder.shippingCost),
+          _buildPriceRow('shipping'.tr(), parentOrder.shippingCost,
+              theme: theme),
           if (parentOrder.hasCoupon) ...[
             const SizedBox(height: 8),
             _buildCouponRow(parentOrder),
           ],
           const Divider(height: 24),
-          _buildPriceRow('total'.tr(), parentOrder.total, isTotal: true),
+          _buildPriceRow('total'.tr(), parentOrder.total,
+              isTotal: true, theme: theme),
         ],
       ),
     );
@@ -403,29 +440,36 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
     );
   }
 
-  Widget _buildPriceRow(String label, double amount, {bool isTotal = false}) {
+  Widget _buildPriceRow(String label, double amount,
+      {bool isTotal = false, ThemeData? theme}) {
+    final t = theme ?? Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
           style: isTotal
-              ? AppTextStyle.semiBold_16_dark_brown
-              : AppTextStyle.normal_14_greyDark,
+              ? t.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)
+              : t.textTheme.bodyMedium?.copyWith(
+                  color: t.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
         ),
         Text(
           '${amount.toStringAsFixed(2)} ${'egp'.tr()}',
           style: isTotal
-              ? AppTextStyle.semiBold_16_dark_brown.copyWith(
-                  color: AppColours.brownMedium,
+              ? t.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: t.colorScheme.primary,
                 )
-              : AppTextStyle.normal_14_greyDark,
+              : t.textTheme.bodyMedium?.copyWith(
+                  color: t.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
         ),
       ],
     );
   }
 
-  Widget _buildNotesCard(String notes, bool isRtl) {
+  Widget _buildNotesCard(String notes, bool isRtl, ThemeData theme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -451,7 +495,12 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(notes, style: AppTextStyle.normal_14_greyDark),
+          Text(
+            notes,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
         ],
       ),
     );

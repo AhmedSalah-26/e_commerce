@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 
 class StoreSearchBar extends StatelessWidget {
@@ -27,38 +26,45 @@ class StoreSearchBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          Expanded(child: _buildSearchField()),
+          Expanded(child: _buildSearchField(context)),
           const SizedBox(width: 8),
-          _buildFilterButton(),
+          _buildFilterButton(context),
         ],
       ),
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       height: 40,
       decoration: BoxDecoration(
-        color: AppColours.greyLighter,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: theme.colorScheme.outline),
       ),
       child: TextField(
         controller: controller,
         onChanged: onSearchChanged,
         textInputAction: TextInputAction.search,
-        style: AppTextStyle.normal_12_black,
+        style: AppTextStyle.normal_12_black.copyWith(
+          color: theme.colorScheme.onSurface,
+        ),
         decoration: InputDecoration(
           hintText: 'search'.tr(),
-          hintStyle: AppTextStyle.normal_12_greyDark,
+          hintStyle: AppTextStyle.normal_12_greyDark.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
           suffixIcon: searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear,
-                      color: AppColours.greyMedium, size: 18),
+                  icon: Icon(Icons.clear,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      size: 18),
                   onPressed: onClearSearch,
                 )
               : null,
-          prefixIcon: const Icon(Icons.search,
-              color: AppColours.primaryColor, size: 18),
+          prefixIcon:
+              Icon(Icons.search, color: theme.colorScheme.primary, size: 18),
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -67,22 +73,22 @@ class StoreSearchBar extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterButton() {
+  Widget _buildFilterButton(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onFilterTap,
       child: Container(
         height: 40,
         width: 40,
         decoration: BoxDecoration(
-          color: AppColours.primaryColor.withValues(alpha: 0.1),
+          color: theme.colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColours.primaryColor, width: 1.5),
+          border: Border.all(color: theme.colorScheme.primary, width: 1.5),
         ),
         child: Stack(
           alignment: Alignment.center,
           children: [
-            const Icon(Icons.filter_list,
-                color: AppColours.primaryColor, size: 20),
+            Icon(Icons.filter_list, color: theme.colorScheme.primary, size: 20),
             if (hasActiveFilters)
               Positioned(
                 right: 4,

@@ -2,8 +2,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
@@ -79,17 +77,18 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
   @override
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColours.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: SafeArea(
           child: Column(
             children: [
               _buildHeader(isRtl),
               _buildFilters(isRtl),
-              Expanded(child: _buildProductsList(isRtl)),
+              Expanded(child: _buildProductsList(isRtl, theme)),
             ],
           ),
         ),
@@ -141,7 +140,7 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
     );
   }
 
-  Widget _buildProductsList(bool isRtl) {
+  Widget _buildProductsList(bool isRtl, ThemeData theme) {
     return BlocBuilder<MerchantProductsCubit, MerchantProductsState>(
       builder: (context, state) {
         if (state is MerchantProductsLoading) {
@@ -150,7 +149,11 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
 
         if (state is MerchantProductsError) {
           return Center(
-            child: Text(state.message, style: AppTextStyle.normal_16_greyDark),
+            child: Text(state.message,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                )),
           );
         }
 
@@ -170,7 +173,7 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
           }
 
           if (filteredProducts.isEmpty) {
-            return _buildNoResultsState(isRtl);
+            return _buildNoResultsState(isRtl, theme);
           }
 
           return RefreshIndicator(
@@ -203,21 +206,28 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
     );
   }
 
-  Widget _buildNoResultsState(bool isRtl) {
+  Widget _buildNoResultsState(bool isRtl, ThemeData theme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.search_off, size: 64, color: AppColours.greyLight),
+          Icon(Icons.search_off, size: 64, color: theme.colorScheme.outline),
           const SizedBox(height: 16),
           Text(
             isRtl ? 'لا توجد نتائج' : 'No results found',
-            style: AppTextStyle.semiBold_16_dark_brown,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             isRtl ? 'جرب البحث بكلمات أخرى' : 'Try different search terms',
-            style: AppTextStyle.normal_14_greyDark,
+            style: TextStyle(
+              fontSize: 14,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ),
         ],
       ),

@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_style.dart';
 import '../../../../../core/shared_widgets/toast.dart';
 import '../../../domain/entities/review_entity.dart';
@@ -41,13 +40,14 @@ class _ReviewFormDialogState extends State<ReviewFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -60,7 +60,7 @@ class _ReviewFormDialogState extends State<ReviewFormDialog> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: theme.colorScheme.outline,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -70,12 +70,16 @@ class _ReviewFormDialogState extends State<ReviewFormDialog> {
               widget.existingReview != null
                   ? 'edit_review'.tr()
                   : 'add_review'.tr(),
-              style: AppTextStyle.semiBold_20_dark_brown,
+              style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+                color: theme.colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
               'your_rating'.tr(),
-              style: AppTextStyle.normal_16_brownLight,
+              style: AppTextStyle.normal_16_brownLight.copyWith(
+                color: theme.colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 8),
             Center(
@@ -100,17 +104,24 @@ class _ReviewFormDialogState extends State<ReviewFormDialog> {
             TextField(
               controller: _commentController,
               maxLines: 3,
+              style: TextStyle(color: theme.colorScheme.onSurface),
               decoration: InputDecoration(
                 hintText: 'write_comment'.tr(),
+                hintStyle: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: AppColours.brownLight,
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary,
                     width: 2,
                   ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: theme.colorScheme.outline),
                 ),
               ),
             ),
@@ -120,7 +131,7 @@ class _ReviewFormDialogState extends State<ReviewFormDialog> {
               child: ElevatedButton(
                 onPressed: _handleSubmit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColours.brownMedium,
+                  backgroundColor: theme.colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

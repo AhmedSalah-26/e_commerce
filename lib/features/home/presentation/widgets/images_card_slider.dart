@@ -2,8 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import '../../../../core/theme/app_colors.dart';
-
 class ImagesCard extends StatelessWidget {
   final List<String> images;
 
@@ -57,6 +55,8 @@ class _ImagesCardBodyState extends State<_ImagesCardBody> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Column(
       children: [
         SizedBox(
@@ -64,11 +64,7 @@ class _ImagesCardBodyState extends State<_ImagesCardBody> {
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.images.length,
-            onPageChanged: (int index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
+            onPageChanged: (int index) => setState(() => _currentPage = index),
             itemBuilder: (BuildContext context, int index) {
               return Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -90,10 +86,10 @@ class _ImagesCardBodyState extends State<_ImagesCardBody> {
         SmoothPageIndicator(
           controller: _pageController,
           count: widget.images.length,
-          effect: const ExpandingDotsEffect(
+          effect: ExpandingDotsEffect(
             dotHeight: 8,
             dotWidth: 8,
-            activeDotColor: AppColours.brownLight,
+            activeDotColor: theme.colorScheme.primary,
           ),
         ),
       ],

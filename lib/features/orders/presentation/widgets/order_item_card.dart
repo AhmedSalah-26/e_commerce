@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/utils/locale_helper.dart';
 import '../../domain/entities/order_entity.dart';
@@ -21,6 +20,7 @@ class OrderItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     double imageSize = screenHeight * 0.08;
@@ -55,8 +55,8 @@ class OrderItemCard extends StatelessWidget {
               ),
             ],
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColours.greyLighter),
-            color: Colors.white,
+            border: Border.all(color: theme.colorScheme.outline),
+            color: theme.colorScheme.surface,
           ),
           child: Padding(
             padding: EdgeInsets.all(screenWidth * 0.03),
@@ -71,7 +71,7 @@ class OrderItemCard extends StatelessWidget {
                       height: imageSize,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: _buildProductImage(productImage),
+                        child: _buildProductImage(productImage, theme),
                       ),
                     ),
                     SizedBox(width: screenWidth * 0.03),
@@ -82,27 +82,38 @@ class OrderItemCard extends StatelessWidget {
                         children: [
                           Text(
                             '${'order_id'.tr()}: #${order.id.substring(0, 8)}',
-                            style: AppTextStyle.bold_18_medium_brown
-                                .copyWith(fontSize: fontSize),
+                            style: AppTextStyle.bold_18_medium_brown.copyWith(
+                              fontSize: fontSize,
+                              color: theme.colorScheme.primary,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             _formatDate(order.createdAt),
-                            style: AppTextStyle.normal_16_brownLight
-                                .copyWith(fontSize: fontSize * 0.8),
+                            style: AppTextStyle.normal_16_brownLight.copyWith(
+                              fontSize: fontSize * 0.8,
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
                           ),
                           if (order.deliveryAddress != null) ...[
                             const SizedBox(height: 4),
                             Row(
                               children: [
                                 Icon(Icons.location_on,
-                                    size: fontSize * 0.9, color: Colors.grey),
+                                    size: fontSize * 0.9,
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.5)),
                                 const SizedBox(width: 4),
                                 Flexible(
                                   child: Text(
                                     order.deliveryAddress!,
                                     style: AppTextStyle.normal_16_brownLight
-                                        .copyWith(fontSize: fontSize * 0.75),
+                                        .copyWith(
+                                      fontSize: fontSize * 0.75,
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.6),
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -122,9 +133,9 @@ class OrderItemCard extends StatelessWidget {
                 // Items count and total
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     border: Border(
-                      top: BorderSide(color: AppColours.greyLighter),
+                      top: BorderSide(color: theme.colorScheme.outline),
                     ),
                   ),
                   child: Row(
@@ -132,13 +143,18 @@ class OrderItemCard extends StatelessWidget {
                     children: [
                       Text(
                         '${order.items.length} ${'items'.tr()}',
-                        style: AppTextStyle.normal_16_brownLight
-                            .copyWith(fontSize: fontSize * 0.85),
+                        style: AppTextStyle.normal_16_brownLight.copyWith(
+                          fontSize: fontSize * 0.85,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
+                        ),
                       ),
                       Text(
                         '${order.total.toStringAsFixed(2)} ${'egp'.tr()}',
-                        style: AppTextStyle.semiBold_16_dark_brown
-                            .copyWith(fontSize: fontSize),
+                        style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+                          fontSize: fontSize,
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
                     ],
                   ),
@@ -216,9 +232,9 @@ class OrderItemCard extends StatelessWidget {
     }
   }
 
-  Widget _buildProductImage(String imageUrl) {
+  Widget _buildProductImage(String imageUrl, ThemeData theme) {
     if (imageUrl.isEmpty) {
-      return _buildPlaceholder();
+      return _buildPlaceholder(theme);
     }
 
     if (imageUrl.startsWith('http')) {
@@ -226,22 +242,23 @@ class OrderItemCard extends StatelessWidget {
         imageUrl: imageUrl,
         fit: BoxFit.cover,
         memCacheWidth: 120,
-        placeholder: (_, __) => _buildPlaceholder(),
-        errorWidget: (_, __, ___) => _buildPlaceholder(),
+        placeholder: (_, __) => _buildPlaceholder(theme),
+        errorWidget: (_, __, ___) => _buildPlaceholder(theme),
       );
     }
 
     return Image.asset(
       imageUrl,
       fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+      errorBuilder: (context, error, stackTrace) => _buildPlaceholder(theme),
     );
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(ThemeData theme) {
     return Container(
-      color: AppColours.greyLight,
-      child: const Icon(Icons.shopping_bag, color: Colors.grey),
+      color: theme.colorScheme.surface,
+      child: Icon(Icons.shopping_bag,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
     );
   }
 

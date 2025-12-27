@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/cart_item_entity.dart';
 
@@ -25,6 +24,7 @@ class CartItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     double imageSize = screenHeight * 0.08;
@@ -77,8 +77,9 @@ class CartItemCard extends StatelessWidget {
                   ),
                 ],
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColours.greyLighter),
-                color: Colors.white,
+                border: Border.all(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.3)),
+                color: theme.scaffoldBackgroundColor,
               ),
               child: Directionality(
                 textDirection:
@@ -101,19 +102,19 @@ class CartItemCard extends StatelessWidget {
                                       fit: BoxFit.cover,
                                       memCacheWidth: 160,
                                       placeholder: (_, __) =>
-                                          _buildPlaceholder(),
+                                          _buildPlaceholder(theme),
                                       errorWidget: (_, __, ___) =>
-                                          _buildPlaceholder(),
+                                          _buildPlaceholder(theme),
                                     )
                                   : Image.asset(
                                       productImage,
                                       fit: BoxFit.cover,
                                       errorBuilder:
                                           (context, error, stackTrace) {
-                                        return _buildPlaceholder();
+                                        return _buildPlaceholder(theme);
                                       },
                                     ))
-                              : _buildPlaceholder(),
+                              : _buildPlaceholder(theme),
                         ),
                       ),
                       SizedBox(width: screenWidth * 0.03),
@@ -148,7 +149,7 @@ class CartItemCard extends StatelessWidget {
                                     style: AppTextStyle.normal_16_brownLight
                                         .copyWith(
                                             fontSize: fontSize * 0.8,
-                                            color: AppColours.brownLight),
+                                            color: theme.colorScheme.primary),
                                   ),
                                 ],
                               )
@@ -171,7 +172,7 @@ class CartItemCard extends StatelessWidget {
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
-                          color: AppColours.greyLight,
+                          color: theme.colorScheme.surface,
                         ),
                         child: Column(
                           children: [
@@ -275,7 +276,7 @@ class CartItemCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppColours.brownLight,
+                    color: theme.colorScheme.primary,
                     borderRadius: BorderRadius.only(
                       topLeft: isRtl ? Radius.zero : const Radius.circular(10),
                       topRight: isRtl ? const Radius.circular(10) : Radius.zero,
@@ -302,9 +303,9 @@ class CartItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(ThemeData theme) {
     return Container(
-      color: AppColours.greyLight,
+      color: theme.colorScheme.surface,
       child: const Icon(Icons.image_not_supported, color: Colors.grey),
     );
   }

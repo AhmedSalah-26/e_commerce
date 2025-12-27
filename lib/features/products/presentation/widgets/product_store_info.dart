@@ -3,7 +3,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/product_entity.dart';
 
@@ -23,6 +22,7 @@ class ProductStoreInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!product.hasStoreInfo) return const SizedBox.shrink();
 
+    final theme = Theme.of(context);
     return Directionality(
       textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: InkWell(
@@ -31,7 +31,7 @@ class ProductStoreInfo extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColours.primary.withValues(alpha: 0.08),
+            color: theme.colorScheme.primary.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
@@ -41,14 +41,16 @@ class ProductStoreInfo extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.store,
-                        size: 14, color: AppColours.brownMedium),
+                    Icon(Icons.store,
+                        size: 14, color: theme.colorScheme.primary),
                     const SizedBox(width: 4),
                     Flexible(
                       child: AutoSizeText(
                         product.storeName!,
-                        style: AppTextStyle.semiBold_16_dark_brown
-                            .copyWith(fontSize: 12),
+                        style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurface,
+                        ),
                         maxLines: 1,
                         minFontSize: 8,
                         overflow: TextOverflow.ellipsis,
@@ -58,7 +60,7 @@ class ProductStoreInfo extends StatelessWidget {
                     Icon(
                       Icons.arrow_forward_ios,
                       size: 10,
-                      color: AppColours.brownMedium.withValues(alpha: 0.6),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.6),
                     ),
                   ],
                 ),
@@ -69,14 +71,17 @@ class ProductStoreInfo extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.location_on,
-                          size: 14, color: AppColours.brownMedium),
+                      Icon(Icons.location_on,
+                          size: 14, color: theme.colorScheme.primary),
                       const SizedBox(width: 4),
                       Flexible(
                         child: AutoSizeText(
                           product.storeAddress!,
-                          style: AppTextStyle.normal_14_greyDark
-                              .copyWith(fontSize: 11),
+                          style: AppTextStyle.normal_14_greyDark.copyWith(
+                            fontSize: 11,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6),
+                          ),
                           maxLines: 1,
                           minFontSize: 8,
                           overflow: TextOverflow.ellipsis,
@@ -90,14 +95,17 @@ class ProductStoreInfo extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.phone,
-                          size: 14, color: AppColours.brownMedium),
+                      Icon(Icons.phone,
+                          size: 14, color: theme.colorScheme.primary),
                       const SizedBox(width: 4),
                       Flexible(
                         child: AutoSizeText(
                           product.storePhone!,
-                          style: AppTextStyle.normal_14_greyDark
-                              .copyWith(fontSize: 11),
+                          style: AppTextStyle.normal_14_greyDark.copyWith(
+                            fontSize: 11,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6),
+                          ),
                           maxLines: 1,
                           minFontSize: 8,
                           overflow: TextOverflow.ellipsis,

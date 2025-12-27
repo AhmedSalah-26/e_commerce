@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../cubit/coupon_cubit.dart';
 import '../../cubit/coupon_state.dart';
 
@@ -12,11 +11,15 @@ class CouponFormActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        color: theme.colorScheme.surface,
+        border: Border(
+            top: BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.3))),
       ),
       child: BlocBuilder<MerchantCouponsCubit, CouponState>(
         builder: (context, state) {
@@ -34,7 +37,7 @@ class CouponFormActions extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: isLoading ? null : onSave,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColours.brownMedium,
+                    backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
                   ),
                   child: isLoading

@@ -1,6 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 
 class StoreHeaderCard extends StatelessWidget {
@@ -21,6 +20,7 @@ class StoreHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final displayName = storeName ?? '';
     final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'S';
 
@@ -28,8 +28,9 @@ class StoreHeaderCard extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColours.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outline),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -41,7 +42,7 @@ class StoreHeaderCard extends StatelessWidget {
       child: Row(
         children: [
           // Store Logo/Avatar
-          _buildStoreLogo(initial),
+          _buildStoreLogo(initial, theme),
           const SizedBox(width: 12),
           // Store Info
           Expanded(
@@ -49,13 +50,15 @@ class StoreHeaderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildStoreName(displayName),
+                _buildStoreName(displayName, theme),
                 if (storeDescription != null &&
                     storeDescription!.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   AutoSizeText(
                     storeDescription!,
-                    style: AppTextStyle.normal_12_greyDark,
+                    style: AppTextStyle.normal_12_greyDark.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                     maxLines: 2,
                     minFontSize: 10,
                     overflow: TextOverflow.ellipsis,
@@ -63,7 +66,7 @@ class StoreHeaderCard extends StatelessWidget {
                 ],
                 if (_hasContactInfo) ...[
                   const SizedBox(height: 4),
-                  _buildContactInfo(),
+                  _buildContactInfo(theme),
                 ],
               ],
             ),
@@ -77,14 +80,17 @@ class StoreHeaderCard extends StatelessWidget {
       (storeAddress != null && storeAddress!.isNotEmpty) ||
       (storePhone != null && storePhone!.isNotEmpty);
 
-  Widget _buildStoreLogo(String initial) {
+  Widget _buildStoreLogo(String initial, ThemeData theme) {
     return Container(
       width: 50,
       height: 50,
       decoration: BoxDecoration(
         gradient: storeLogo == null
-            ? const LinearGradient(
-                colors: [AppColours.brownLight, AppColours.primaryColor],
+            ? LinearGradient(
+                colors: [
+                  theme.colorScheme.primary.withValues(alpha: 0.7),
+                  theme.colorScheme.primary
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
@@ -112,13 +118,15 @@ class StoreHeaderCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStoreName(String displayName) {
+  Widget _buildStoreName(String displayName, ThemeData theme) {
     return Row(
       children: [
         Flexible(
           child: AutoSizeText(
             displayName,
-            style: AppTextStyle.semiBold_16_dark_brown,
+            style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+              color: theme.colorScheme.onSurface,
+            ),
             maxLines: 1,
             minFontSize: 10,
             overflow: TextOverflow.ellipsis,
@@ -130,17 +138,20 @@ class StoreHeaderCard extends StatelessWidget {
     );
   }
 
-  Widget _buildContactInfo() {
+  Widget _buildContactInfo(ThemeData theme) {
     return Row(
       children: [
         if (storeAddress != null && storeAddress!.isNotEmpty) ...[
-          const Icon(Icons.location_on_outlined,
-              size: 12, color: AppColours.greyDark),
+          Icon(Icons.location_on_outlined,
+              size: 12,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
           const SizedBox(width: 2),
           Flexible(
             child: AutoSizeText(
               storeAddress!,
-              style: AppTextStyle.normal_12_greyDark,
+              style: AppTextStyle.normal_12_greyDark.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
               maxLines: 1,
               minFontSize: 8,
               overflow: TextOverflow.ellipsis,
@@ -149,13 +160,18 @@ class StoreHeaderCard extends StatelessWidget {
         ],
         if (storePhone != null && storePhone!.isNotEmpty) ...[
           if (storeAddress != null && storeAddress!.isNotEmpty)
-            const Text(' • ', style: TextStyle(color: AppColours.greyDark)),
-          const Icon(Icons.phone_outlined,
-              size: 12, color: AppColours.greyDark),
+            Text(' • ',
+                style: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+          Icon(Icons.phone_outlined,
+              size: 12,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
           const SizedBox(width: 2),
           AutoSizeText(
             storePhone!,
-            style: AppTextStyle.normal_12_greyDark,
+            style: AppTextStyle.normal_12_greyDark.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
             maxLines: 1,
             minFontSize: 8,
           ),

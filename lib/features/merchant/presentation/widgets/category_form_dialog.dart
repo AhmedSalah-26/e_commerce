@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../Core/Theme/app_text_style.dart';
 import '../../../../core/services/image_upload_service.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../categories/domain/entities/category_entity.dart';
@@ -43,15 +41,12 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
     _nameEnController = TextEditingController();
     _descriptionController = TextEditingController();
 
-    if (widget.category != null) {
-      _loadCategoryData();
-    }
+    if (widget.category != null) _loadCategoryData();
   }
 
   Future<void> _loadCategoryData() async {
     setState(() => _isLoadingData = true);
 
-    // Try to get raw data from server for bilingual fields
     final cubit = context.read<CategoriesCubit>();
     final rawData = await cubit.getCategoryRawData(widget.category!.id);
 
@@ -62,7 +57,6 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
       _existingImageUrl = rawData['image_url'];
       _isActive = rawData['is_active'] ?? true;
     } else {
-      // Fallback to category entity data
       _nameArController.text = widget.category!.name;
       _nameEnController.text = widget.category!.name;
       _descriptionController.text = widget.category!.description ?? '';
@@ -99,18 +93,21 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Dialog(
+      backgroundColor: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: const BoxConstraints(maxHeight: 600, maxWidth: 500),
         child: Column(
           children: [
-            // Header
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: AppColours.primary,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -121,7 +118,10 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                             ? 'إضافة تصنيف جديد'
                             : 'Add New Category')
                         : (widget.isRtl ? 'تعديل التصنيف' : 'Edit Category'),
-                    style: AppTextStyle.semiBold_18_white,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, color: Colors.white),
@@ -130,7 +130,6 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                 ],
               ),
             ),
-            // Form
             Expanded(
               child: _isLoadingData
                   ? const Center(child: CircularProgressIndicator())
@@ -143,7 +142,9 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                           children: [
                             Text(
                               widget.isRtl ? 'صورة التصنيف' : 'Category Image',
-                              style: AppTextStyle.semiBold_16_dark_brown,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Center(
@@ -167,18 +168,14 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                               descriptionController: _descriptionController,
                               isActive: _isActive,
                               isRtl: widget.isRtl,
-                              onActiveChanged: (value) {
-                                setState(() {
-                                  _isActive = value;
-                                });
-                              },
+                              onActiveChanged: (value) =>
+                                  setState(() => _isActive = value),
                             ),
                           ],
                         ),
                       ),
                     ),
             ),
-            // Actions
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -194,7 +191,7 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                     child: ElevatedButton(
                       onPressed: _isSaving ? null : _saveCategory,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColours.primary,
+                        backgroundColor: theme.colorScheme.primary,
                         foregroundColor: Colors.white,
                       ),
                       child: _isSaving
@@ -202,9 +199,7 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
+                                  strokeWidth: 2, color: Colors.white),
                             )
                           : Text(widget.isRtl ? 'حفظ' : 'Save'),
                     ),
@@ -220,9 +215,7 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
 
   Future<void> _saveCategory() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isSaving = true;
-      });
+      setState(() => _isSaving = true);
 
       final categoryData = {
         'name_ar': _nameArController.text,
@@ -238,13 +231,8 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
       final success = await widget.onSave(categoryData);
 
       if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
-
-        if (success) {
-          Navigator.pop(context);
-        }
+        setState(() => _isSaving = false);
+        if (success) Navigator.pop(context);
       }
     }
   }

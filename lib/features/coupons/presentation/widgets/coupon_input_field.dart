@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../data/models/coupon_validation_result.dart';
 import '../cubit/coupon_cubit.dart';
 import '../cubit/coupon_state.dart';
@@ -57,6 +56,7 @@ class _CouponInputFieldState extends State<CouponInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final locale = context.locale.languageCode;
 
     return BlocConsumer<CouponCubit, CouponState>(
@@ -75,19 +75,18 @@ class _CouponInputFieldState extends State<CouponInputField> {
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isApplied
                   ? Colors.green.shade300
                   : hasError
                       ? Colors.red.shade300
-                      : AppColours.greyLight,
+                      : theme.colorScheme.outline,
             ),
           ),
           child: Column(
             children: [
-              // Header
               InkWell(
                 onTap: isApplied
                     ? null
@@ -101,8 +100,9 @@ class _CouponInputFieldState extends State<CouponInputField> {
                         isApplied
                             ? Icons.check_circle
                             : Icons.local_offer_outlined,
-                        color:
-                            isApplied ? Colors.green : AppColours.brownMedium,
+                        color: isApplied
+                            ? Colors.green
+                            : theme.colorScheme.primary,
                         size: 24,
                       ),
                       const SizedBox(width: 12),
@@ -123,7 +123,7 @@ class _CouponInputFieldState extends State<CouponInputField> {
                                   fontWeight: FontWeight.w600,
                                   color: isApplied
                                       ? Colors.green.shade700
-                                      : AppColours.brownDark,
+                                      : theme.colorScheme.onSurface,
                                 ),
                               );
                             }),
@@ -132,9 +132,7 @@ class _CouponInputFieldState extends State<CouponInputField> {
                               Text(
                                 '${'discount'.tr()}: ${state.result.discountAmount?.toStringAsFixed(2)} ${'egp'.tr()}',
                                 style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.green.shade600,
-                                ),
+                                    fontSize: 13, color: Colors.green.shade600),
                               ),
                             ],
                           ],
@@ -151,14 +149,13 @@ class _CouponInputFieldState extends State<CouponInputField> {
                           _isExpanded
                               ? Icons.keyboard_arrow_up
                               : Icons.keyboard_arrow_down,
-                          color: AppColours.greyMedium,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
                         ),
                     ],
                   ),
                 ),
               ),
-
-              // Input Field
               if (_isExpanded && !isApplied)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -172,24 +169,25 @@ class _CouponInputFieldState extends State<CouponInputField> {
                               textCapitalization: TextCapitalization.characters,
                               decoration: InputDecoration(
                                 hintText: 'enter_coupon_code'.tr(),
-                                hintStyle: const TextStyle(
-                                    color: AppColours.greyMedium),
+                                hintStyle: TextStyle(
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.5)),
                                 contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 12),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                      color: AppColours.greyLight),
+                                  borderSide: BorderSide(
+                                      color: theme.colorScheme.outline),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                      color: AppColours.greyLight),
+                                  borderSide: BorderSide(
+                                      color: theme.colorScheme.outline),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                      color: AppColours.brownMedium),
+                                  borderSide: BorderSide(
+                                      color: theme.colorScheme.primary),
                                 ),
                               ),
                             ),
@@ -200,20 +198,17 @@ class _CouponInputFieldState extends State<CouponInputField> {
                             child: ElevatedButton(
                               onPressed: isLoading ? null : _applyCoupon,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColours.brownMedium,
+                                backgroundColor: theme.colorScheme.primary,
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
+                                    borderRadius: BorderRadius.circular(8)),
                               ),
                               child: isLoading
                                   ? const SizedBox(
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
+                                          strokeWidth: 2, color: Colors.white),
                                     )
                                   : Text('apply'.tr()),
                             ),
@@ -225,9 +220,7 @@ class _CouponInputFieldState extends State<CouponInputField> {
                         Text(
                           state.getMessage(locale),
                           style: TextStyle(
-                            color: Colors.red.shade600,
-                            fontSize: 13,
-                          ),
+                              color: Colors.red.shade600, fontSize: 13),
                         ),
                       ],
                     ],

@@ -1,8 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../products/domain/entities/product_entity.dart';
 
 class MerchantProductCard extends StatelessWidget {
@@ -19,14 +17,15 @@ class MerchantProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isRtl = context.locale.languageCode == 'ar';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColours.greyLight),
+        border: Border.all(color: theme.colorScheme.outline),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withValues(alpha: 0.1),
@@ -37,7 +36,6 @@ class MerchantProductCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Active/Inactive badge at top
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 6),
@@ -60,12 +58,10 @@ class MerchantProductCard extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
-          // Product content
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                // Product image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: product.images.isNotEmpty
@@ -75,28 +71,30 @@ class MerchantProductCard extends StatelessWidget {
                           height: 80,
                           fit: BoxFit.cover,
                           memCacheWidth: 160,
-                          placeholder: (_, __) => _buildPlaceholder(),
-                          errorWidget: (_, __, ___) => _buildPlaceholder(),
+                          placeholder: (_, __) => _buildPlaceholder(theme),
+                          errorWidget: (_, __, ___) => _buildPlaceholder(theme),
                         )
-                      : _buildPlaceholder(),
+                      : _buildPlaceholder(theme),
                 ),
                 const SizedBox(width: 12),
-                // Product info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         product.name,
-                        style: AppTextStyle.semiBold_16_dark_brown,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '${product.price.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
-                        style: AppTextStyle.semiBold_16_dark_brown.copyWith(
-                          color: AppColours.primary,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -111,7 +109,7 @@ class MerchantProductCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             '${isRtl ? 'المخزون' : 'Stock'}: ${product.stock}',
-                            style: AppTextStyle.normal_14_greyDark.copyWith(
+                            style: theme.textTheme.bodyMedium?.copyWith(
                               color:
                                   product.stock > 0 ? Colors.green : Colors.red,
                             ),
@@ -121,15 +119,12 @@ class MerchantProductCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Actions
                 Column(
                   children: [
                     IconButton(
                       onPressed: onEdit,
-                      icon: const Icon(
-                        Icons.edit_outlined,
-                        color: AppColours.brownMedium,
-                      ),
+                      icon: Icon(Icons.edit_outlined,
+                          color: theme.colorScheme.primary),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       tooltip: isRtl ? 'تعديل' : 'Edit',
@@ -159,14 +154,14 @@ class MerchantProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(ThemeData theme) {
     return Container(
       width: 80,
       height: 80,
-      color: AppColours.greyLighter,
-      child: const Icon(
+      color: theme.scaffoldBackgroundColor,
+      child: Icon(
         Icons.image_outlined,
-        color: AppColours.greyMedium,
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         size: 32,
       ),
     );

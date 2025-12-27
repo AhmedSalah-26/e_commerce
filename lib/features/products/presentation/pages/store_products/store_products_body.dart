@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/shared_widgets/product_card/product_grid_card.dart';
 import '../../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_style.dart';
 import '../../../domain/entities/product_entity.dart';
 
@@ -34,23 +33,29 @@ class StoreProductsBody extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isLoading) return const ProductsGridSkeleton();
 
-    if (error != null) return _buildError();
+    if (error != null) return _buildError(context);
 
-    if (products.isEmpty) return _buildEmpty();
+    if (products.isEmpty) return _buildEmpty(context);
 
-    if (filteredProducts.isEmpty) return _buildNoResults();
+    if (filteredProducts.isEmpty) return _buildNoResults(context);
 
     return _buildGrid();
   }
 
-  Widget _buildError() {
+  Widget _buildError(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+          Icon(Icons.error_outline,
+              size: 48,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
           const SizedBox(height: 12),
-          Text(error!, style: AppTextStyle.normal_14_greyDark),
+          Text(error!,
+              style: AppTextStyle.normal_14_greyDark.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              )),
           const SizedBox(height: 12),
           ElevatedButton(onPressed: onRetry, child: Text('retry'.tr())),
         ],
@@ -58,36 +63,50 @@ class StoreProductsBody extends StatelessWidget {
     );
   }
 
-  Widget _buildEmpty() {
+  Widget _buildEmpty(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.inventory_2_outlined, size: 48, color: Colors.grey),
+          Icon(Icons.inventory_2_outlined,
+              size: 48,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
           const SizedBox(height: 12),
-          Text('no_products'.tr(), style: AppTextStyle.normal_14_greyDark),
+          Text('no_products'.tr(),
+              style: AppTextStyle.normal_14_greyDark.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              )),
         ],
       ),
     );
   }
 
-  Widget _buildNoResults() {
+  Widget _buildNoResults(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.search_off, size: 48, color: AppColours.greyLight),
+          Icon(Icons.search_off,
+              size: 48,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
           const SizedBox(height: 12),
-          Text('no_results'.tr(), style: AppTextStyle.semiBold_14_dark_brown),
+          Text('no_results'.tr(),
+              style: AppTextStyle.semiBold_14_dark_brown.copyWith(
+                color: theme.colorScheme.onSurface,
+              )),
           const SizedBox(height: 4),
           Text('try_different_search'.tr(),
-              style: AppTextStyle.normal_12_greyDark),
+              style: AppTextStyle.normal_12_greyDark.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              )),
           if (hasActiveFilters) ...[
             const SizedBox(height: 12),
             TextButton(
               onPressed: onClearFilters,
               child: Text('clear_filters'.tr(),
-                  style: const TextStyle(color: AppColours.primaryColor)),
+                  style: TextStyle(color: theme.colorScheme.primary)),
             ),
           ],
         ],

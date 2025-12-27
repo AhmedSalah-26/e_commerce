@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/order_entity.dart';
 import '../widgets/order_status_card.dart';
@@ -17,23 +16,25 @@ class OrderDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isRtl = context.locale.languageCode == 'ar';
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColours.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.surface,
           leading: IconButton(
-            icon:
-                const Icon(Icons.arrow_back_ios, color: AppColours.brownMedium),
+            icon: Icon(Icons.arrow_back_ios, color: theme.colorScheme.primary),
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
             'order_details'.tr(),
-            style: AppTextStyle.semiBold_20_dark_brown,
+            style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+              color: theme.colorScheme.onSurface,
+            ),
           ),
           centerTitle: true,
         ),

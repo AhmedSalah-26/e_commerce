@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -82,22 +81,20 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final authState = context.read<AuthCubit>().state;
-    if (authState is! AuthAuthenticated) {
-      return const SizedBox.shrink();
-    }
+    if (authState is! AuthAuthenticated) return const SizedBox.shrink();
 
     final user = authState.user;
 
     return AlertDialog(
+      backgroundColor: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text('profile'.tr()),
       content: SingleChildScrollView(
@@ -123,21 +120,15 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
         ElevatedButton(
           onPressed: _isLoading ? null : _saveProfile,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColours.primary,
-          ),
+              backgroundColor: theme.colorScheme.primary),
           child: _isLoading
               ? const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
+                      strokeWidth: 2, color: Colors.white),
                 )
-              : Text(
-                  'save'.tr(),
-                  style: const TextStyle(color: Colors.white),
-                ),
+              : Text('save'.tr(), style: const TextStyle(color: Colors.white)),
         ),
       ],
     );

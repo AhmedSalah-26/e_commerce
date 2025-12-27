@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -79,16 +78,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isRtl = context.locale.languageCode == 'ar';
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColours.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: AppColours.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColours.brownDark),
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
             onPressed: () => context.pop(),
           ),
           title: Text(
@@ -114,7 +114,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     Center(
                       child: CircleAvatar(
                         radius: 50,
-                        backgroundColor: AppColours.brownLight,
+                        backgroundColor: theme.colorScheme.primary,
                         child: Text(
                           (state.user.name ?? state.user.email)[0]
                               .toUpperCase(),
@@ -131,10 +131,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     // Email (read-only)
                     Text(
                       'current_email'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColours.greyDark,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -142,14 +143,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColours.greyLighter,
+                        color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         state.user.email,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          color: AppColours.greyDark,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
                         ),
                       ),
                     ),
@@ -158,10 +160,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     // Name field
                     Text(
                       'full_name'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColours.greyDark,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -169,24 +172,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       controller: _nameController,
                       decoration: InputDecoration(
                         hintText: 'full_name'.tr(),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.person_outline,
-                          color: AppColours.brownMedium,
+                          color: theme.colorScheme.primary,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColours.greyLight),
+                          borderSide: BorderSide(
+                              color: theme.colorScheme.outline
+                                  .withValues(alpha: 0.3)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColours.greyLight),
+                          borderSide: BorderSide(
+                              color: theme.colorScheme.outline
+                                  .withValues(alpha: 0.3)),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide:
-                              const BorderSide(color: AppColours.brownMedium),
+                              BorderSide(color: theme.colorScheme.primary),
                         ),
                       ),
                       validator: (value) {
@@ -204,10 +209,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     // Phone field
                     Text(
                       '${'phone'.tr()} (${'optional'.tr()})',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColours.greyDark,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -216,24 +222,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
                         hintText: 'phone'.tr(),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.phone_outlined,
-                          color: AppColours.brownMedium,
+                          color: theme.colorScheme.primary,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColours.greyLight),
+                          borderSide: BorderSide(
+                              color: theme.colorScheme.outline
+                                  .withValues(alpha: 0.3)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColours.greyLight),
+                          borderSide: BorderSide(
+                              color: theme.colorScheme.outline
+                                  .withValues(alpha: 0.3)),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide:
-                              const BorderSide(color: AppColours.brownMedium),
+                              BorderSide(color: theme.colorScheme.primary),
                         ),
                       ),
                     ),
@@ -246,7 +254,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _saveProfile,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColours.brownMedium,
+                          backgroundColor: theme.colorScheme.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

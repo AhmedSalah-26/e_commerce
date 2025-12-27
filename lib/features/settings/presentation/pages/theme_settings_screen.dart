@@ -3,42 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../auth/presentation/cubit/auth_cubit.dart';
-import '../../../auth/presentation/cubit/auth_state.dart';
-import '../../../cart/presentation/cubit/cart_cubit.dart';
-import '../../../categories/presentation/cubit/categories_cubit.dart';
-import '../../../favorites/presentation/cubit/favorites_cubit.dart';
-import '../../../home/presentation/cubit/home_sliders_cubit.dart';
-import '../../../products/presentation/cubit/products_cubit.dart';
+import '../../../../core/theme/theme_cubit.dart';
 
-class LanguageSettingsScreen extends StatefulWidget {
-  const LanguageSettingsScreen({super.key});
+class ThemeSettingsScreen extends StatefulWidget {
+  const ThemeSettingsScreen({super.key});
 
   @override
-  State<LanguageSettingsScreen> createState() => _LanguageSettingsScreenState();
+  State<ThemeSettingsScreen> createState() => _ThemeSettingsScreenState();
 }
 
-class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
-  late String _selectedLanguage;
+class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
+  late AppThemeMode _selectedTheme;
   bool _isApplying = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _selectedLanguage = context.locale.languageCode;
+    _selectedTheme = context.read<ThemeCubit>().state.themeMode;
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final currentLocale = context.locale.languageCode;
-    final hasChanges = _selectedLanguage != currentLocale;
+    final currentTheme = context.watch<ThemeCubit>().state.themeMode;
+    final hasChanges = _selectedTheme != currentTheme;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'language_settings'.tr(),
+          'theme_settings'.tr(),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -58,20 +52,20 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _buildLanguageOption(
+                _buildThemeOption(
                   context: context,
-                  title: 'العربية',
-                  subtitle: 'Arabic',
-                  languageCode: 'ar',
-                  flag: '🇪🇬',
+                  title: 'light_mode'.tr(),
+                  subtitle: 'light_mode_desc'.tr(),
+                  themeMode: AppThemeMode.light,
+                  icon: Icons.light_mode,
                 ),
                 const SizedBox(height: 12),
-                _buildLanguageOption(
+                _buildThemeOption(
                   context: context,
-                  title: 'English',
-                  subtitle: 'الإنجليزية',
-                  languageCode: 'en',
-                  flag: '🇺🇸',
+                  title: 'dark_mode'.tr(),
+                  subtitle: 'dark_mode_desc'.tr(),
+                  themeMode: AppThemeMode.dark,
+                  icon: Icons.dark_mode,
                 ),
               ],
             ),
@@ -82,7 +76,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: hasChanges && !_isApplying ? _applyLanguage : null,
+                onPressed: hasChanges && !_isApplying ? _applyTheme : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
                   foregroundColor: Colors.white,
@@ -115,18 +109,18 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
     );
   }
 
-  Widget _buildLanguageOption({
+  Widget _buildThemeOption({
     required BuildContext context,
     required String title,
     required String subtitle,
-    required String languageCode,
-    required String flag,
+    required AppThemeMode themeMode,
+    required IconData icon,
   }) {
     final theme = Theme.of(context);
-    final isSelected = _selectedLanguage == languageCode;
+    final isSelected = _selectedTheme == themeMode;
 
     return InkWell(
-      onTap: () => setState(() => _selectedLanguage = languageCode),
+      onTap: () => setState(() => _selectedTheme = themeMode),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -144,7 +138,22 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
         ),
         child: Row(
           children: [
-            Text(flag, style: const TextStyle(fontSize: 32)),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? theme.colorScheme.primary.withValues(alpha: 0.2)
+                    : theme.colorScheme.outline.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                size: 28,
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface,
+              ),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -182,33 +191,14 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
     );
   }
 
-  Future<void> _applyLanguage() async {
+  Future<void> _applyTheme() async {
     setState(() => _isApplying = true);
 
-    final newLocale = Locale(_selectedLanguage);
-    await context.setLocale(newLocale);
-
-    if (!mounted) return;
-
-    final locale = _selectedLanguage;
-    context.read<ProductsCubit>().setLocale(locale);
-    context.read<CategoriesCubit>().setLocale(locale);
-    context.read<CartCubit>().setLocale(locale);
-    context.read<FavoritesCubit>().setLocale(locale);
-    context.read<HomeSlidersCubit>().setLocale(locale);
-
-    context.read<ProductsCubit>().reset();
-    context.read<CategoriesCubit>().reset();
-    context.read<HomeSlidersCubit>().reset();
-
-    final authState = context.read<AuthCubit>().state;
-    if (authState is AuthAuthenticated) {
-      context.read<FavoritesCubit>().reset();
-      context.read<CartCubit>().reset();
-    }
+    await context.read<ThemeCubit>().setTheme(_selectedTheme);
 
     if (mounted) {
-      context.go('/home');
+      setState(() => _isApplying = false);
+      context.pop();
     }
   }
 }

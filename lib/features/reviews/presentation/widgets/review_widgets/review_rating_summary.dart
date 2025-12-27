@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_text_style.dart';
 
 class ReviewRatingSummary extends StatelessWidget {
@@ -16,11 +15,13 @@ class ReviewRatingSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColours.greyLighter,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outline),
       ),
       child: Row(
         children: [
@@ -28,10 +29,10 @@ class ReviewRatingSummary extends StatelessWidget {
             children: [
               Text(
                 averageRating.toStringAsFixed(1),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  color: AppColours.brownMedium,
+                  color: theme.colorScheme.primary,
                 ),
               ),
               RatingBarIndicator(
@@ -53,7 +54,9 @@ class ReviewRatingSummary extends StatelessWidget {
                   .tr()
                   .replaceAll('{}', totalReviews.toString())
                   .replaceAll('{count}', totalReviews.toString()),
-              style: AppTextStyle.normal_12_black,
+              style: AppTextStyle.normal_12_black.copyWith(
+                color: theme.colorScheme.onSurface,
+              ),
             ),
           ),
         ],

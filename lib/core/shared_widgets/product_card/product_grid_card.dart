@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../features/products/domain/entities/product_entity.dart';
-import '../../theme/app_colors.dart';
 import 'product_image_section.dart';
 import 'product_info_section.dart';
 
-/// Main ProductGridCard - delegates to smaller widgets
 class ProductGridCard extends StatelessWidget {
   final ProductEntity product;
 
@@ -16,6 +14,7 @@ class ProductGridCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isArabic = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
 
     return GestureDetector(
       onTap: () => _navigateToProduct(context),
@@ -23,7 +22,21 @@ class ProductGridCard extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Container(
-            decoration: _cardDecoration,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: theme.colorScheme.surface,
+              border: Border.all(
+                color: theme.colorScheme.outline.withValues(alpha: 0.3),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  spreadRadius: 0,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -32,7 +45,6 @@ class ProductGridCard extends StatelessWidget {
               ],
             ),
           ),
-          // Flash Sale Badge - top right (priority over discount)
           if (product.isFlashSaleActive)
             Positioned(
               top: 8,
@@ -40,7 +52,6 @@ class ProductGridCard extends StatelessWidget {
               left: isArabic ? 8 : null,
               child: _FlashSaleBadge(),
             )
-          // Discount Badge - top right (if no flash sale but has discount)
           else if (product.hasDiscount)
             Positioned(
               top: 8,
@@ -56,23 +67,8 @@ class ProductGridCard extends StatelessWidget {
   void _navigateToProduct(BuildContext context) {
     context.push('/product/${product.id}');
   }
-
-  static final _cardDecoration = BoxDecoration(
-    borderRadius: BorderRadius.circular(8),
-    color: Colors.white,
-    border: Border.all(color: AppColours.greyLight.withValues(alpha: 0.3)),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withValues(alpha: 0.05),
-        spreadRadius: 0,
-        blurRadius: 4,
-        offset: const Offset(0, 2),
-      ),
-    ],
-  );
 }
 
-/// Flash Sale Badge Widget
 class _FlashSaleBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -101,7 +97,6 @@ class _FlashSaleBadge extends StatelessWidget {
   }
 }
 
-/// Discount Badge Widget
 class _DiscountBadge extends StatelessWidget {
   final int percentage;
 
@@ -109,10 +104,12 @@ class _DiscountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColours.brownLight,
+        color: theme.colorScheme.primary,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(

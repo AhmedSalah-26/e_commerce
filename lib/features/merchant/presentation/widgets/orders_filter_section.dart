@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 
 class OrdersFilterSection extends StatelessWidget {
   final bool isRtl;
@@ -23,34 +22,37 @@ class OrdersFilterSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(12),
-      color: AppColours.greyLighter,
+      color: theme.scaffoldBackgroundColor,
       child: Column(
         children: [
-          _buildSearchField(),
+          _buildSearchField(theme),
           const SizedBox(height: 12),
-          _buildPeriodChips(),
+          _buildPeriodChips(theme),
         ],
       ),
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(ThemeData theme) {
     return TextField(
       controller: searchController,
       onChanged: onSearchChanged,
       decoration: InputDecoration(
         hintText: isRtl ? 'بحث برقم الطلب...' : 'Search by order ID...',
-        prefixIcon: const Icon(Icons.search, color: AppColours.primary),
+        prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
         suffixIcon: searchQuery.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear, color: AppColours.greyDark),
+                icon: Icon(Icons.clear,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                 onPressed: onClearSearch,
               )
             : null,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: theme.colorScheme.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -61,40 +63,40 @@ class OrdersFilterSection extends StatelessWidget {
     );
   }
 
-  Widget _buildPeriodChips() {
+  Widget _buildPeriodChips(ThemeData theme) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildPeriodChip(isRtl ? 'يوم' : 'Day', 'day'),
+          _buildPeriodChip(isRtl ? 'يوم' : 'Day', 'day', theme),
           const SizedBox(width: 8),
-          _buildPeriodChip(isRtl ? 'أسبوع' : 'Week', 'week'),
+          _buildPeriodChip(isRtl ? 'أسبوع' : 'Week', 'week', theme),
           const SizedBox(width: 8),
-          _buildPeriodChip(isRtl ? 'شهر' : 'Month', 'month'),
+          _buildPeriodChip(isRtl ? 'شهر' : 'Month', 'month', theme),
           const SizedBox(width: 8),
-          _buildPeriodChip(isRtl ? '3 شهور' : '3 Months', '3months'),
+          _buildPeriodChip(isRtl ? '3 شهور' : '3 Months', '3months', theme),
         ],
       ),
     );
   }
 
-  Widget _buildPeriodChip(String label, String period) {
+  Widget _buildPeriodChip(String label, String period, ThemeData theme) {
     final isSelected = selectedPeriod == period;
 
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
       onSelected: (_) => onPeriodChanged(period),
-      selectedColor: AppColours.primary,
+      selectedColor: theme.colorScheme.primary,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppColours.greyDark,
+        color: isSelected
+            ? Colors.white
+            : theme.colorScheme.onSurface.withValues(alpha: 0.6),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surface,
       side: BorderSide(
-        color: AppColours.primary,
-        width: isSelected ? 2 : 1,
-      ),
+          color: theme.colorScheme.primary, width: isSelected ? 2 : 1),
     );
   }
 }

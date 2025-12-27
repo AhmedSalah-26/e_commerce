@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_router.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 
@@ -37,7 +36,6 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Navigate after animation
     Future.delayed(const Duration(milliseconds: 2500), () {
       if (mounted) {
         _navigateToNextScreen();
@@ -46,27 +44,21 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _navigateToNextScreen() {
-    // Check if onboarding is completed
     if (!AppRouter.isOnboardingCompleted) {
-      // First time user - go to onboarding
       context.go('/onboarding');
       return;
     }
 
-    // Onboarding completed - check auth status
     final authState = context.read<AuthCubit>().state;
 
     if (authState is AuthAuthenticated) {
-      // User is logged in - set authenticated flag
       AppRouter.setAuthenticated(true);
-      // Check if merchant or customer
       if (authState.user.isMerchant) {
         context.pushReplacement('/merchant-dashboard');
       } else {
         context.pushReplacement('/home');
       }
     } else {
-      // User not logged in - go to login
       AppRouter.setAuthenticated(false);
       context.pushReplacement('/login');
     }
@@ -80,8 +72,10 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColours.primary,
+      backgroundColor: theme.colorScheme.primary,
       body: Center(
         child: AnimatedBuilder(
           animation: _controller,

@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 
 class DiscountTypeSelector extends StatelessWidget {
   final String selectedType;
@@ -61,6 +60,8 @@ class _DiscountTypeOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -68,25 +69,32 @@ class _DiscountTypeOption extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColours.brownLight.withValues(alpha: 0.2)
-              : Colors.grey.shade100,
+              ? theme.colorScheme.primary.withValues(alpha: 0.2)
+              : theme.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? AppColours.brownMedium : Colors.grey.shade300,
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.outline,
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon,
-                size: 18,
-                color: isSelected ? AppColours.brownMedium : Colors.grey),
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color:
-                    isSelected ? AppColours.brownMedium : Colors.grey.shade700,
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../Core/Theme/app_text_style.dart';
 
 class AboutFeatureItem extends StatelessWidget {
@@ -14,6 +13,7 @@ class AboutFeatureItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -21,12 +21,12 @@ class AboutFeatureItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColours.primary.withValues(alpha: 0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: AppColours.primary,
+              color: theme.colorScheme.primary,
               size: 20,
             ),
           ),
@@ -34,7 +34,9 @@ class AboutFeatureItem extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: AppTextStyle.normal_14_greyDark,
+              style: AppTextStyle.normal_14_greyDark.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
             ),
           ),
         ],
@@ -57,18 +59,19 @@ class AboutInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColours.primary.withValues(alpha: 0.1),
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             icon,
-            color: AppColours.primary,
+            color: theme.colorScheme.primary,
             size: 20,
           ),
         ),
@@ -79,12 +82,16 @@ class AboutInfoRow extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: AppTextStyle.normal_12_greyDark,
+                style: AppTextStyle.normal_12_greyDark.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: AppTextStyle.semiBold_16_dark_brown,
+                style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
             ],
           ),
@@ -108,14 +115,15 @@ class AboutSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColours.greyLighter,
+        color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColours.greyLight,
+          color: theme.colorScheme.outline,
           width: 1,
         ),
       ),
@@ -126,14 +134,14 @@ class AboutSectionCard extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: AppColours.primary,
+                color: theme.colorScheme.primary,
                 size: 24,
               ),
               const SizedBox(width: 12),
               Text(
                 title,
                 style: AppTextStyle.semiBold_18_white.copyWith(
-                  color: AppColours.primary,
+                  color: theme.colorScheme.primary,
                 ),
               ),
             ],

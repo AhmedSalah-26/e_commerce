@@ -7,8 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../cubit/cart_cubit.dart';
@@ -40,17 +38,20 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           title: Text(
             'shopping_cart'.tr(),
-            style: AppTextStyle.semiBold_20_dark_brown.copyWith(
-              color: AppColours.brownMedium,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.primary,
             ),
           ),
           centerTitle: true,
@@ -59,7 +60,6 @@ class _CartScreenState extends State<CartScreen> {
           padding: const EdgeInsets.all(16.0),
           child: BlocBuilder<AuthCubit, AuthState>(
             builder: (context, authState) {
-              // Check if user is authenticated first
               if (authState is! AuthAuthenticated) {
                 return _buildLoginRequired(context);
               }
@@ -134,12 +134,15 @@ class _CartScreenState extends State<CartScreen> {
                             },
                           ),
                         ),
-                        // Cart Summary
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
+                            color: theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: theme.colorScheme.outline
+                                  .withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Column(
                             children: [
@@ -149,17 +152,18 @@ class _CartScreenState extends State<CartScreen> {
                                 children: [
                                   Text(
                                     '${'total'.tr()}:',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.onSurface,
                                     ),
                                   ),
                                   Text(
                                     '${state.total.toStringAsFixed(2)} ${'egp'.tr()}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: AppColours.brownMedium,
+                                      color: theme.colorScheme.primary,
                                     ),
                                   ),
                                 ],
@@ -172,7 +176,7 @@ class _CartScreenState extends State<CartScreen> {
                                     context.push('/checkout');
                                   },
                                   label: 'checkout'.tr(),
-                                  color: AppColours.brownLight,
+                                  color: theme.colorScheme.primary,
                                 ),
                               ),
                             ],
@@ -182,7 +186,6 @@ class _CartScreenState extends State<CartScreen> {
                     );
                   }
 
-                  // Initial state - show loading
                   return const CartListSkeleton(itemCount: 3);
                 },
               );
@@ -194,6 +197,8 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildLoginRequired(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -203,25 +208,32 @@ class _CartScreenState extends State<CartScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColours.primaryColor.withValues(alpha: 0.1),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.shopping_cart_outlined,
                 size: 64,
-                color: AppColours.primaryColor,
+                color: theme.colorScheme.primary,
               ),
             ),
             const SizedBox(height: 24),
             Text(
               'login_required'.tr(),
-              style: AppTextStyle.semiBold_20_dark_brown,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               'login_to_see_cart'.tr(),
-              style: AppTextStyle.normal_14_greyDark,
+              style: TextStyle(
+                fontSize: 14,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -234,15 +246,19 @@ class _CartScreenState extends State<CartScreen> {
                   context.go('/login');
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColours.brownLight,
+                  backgroundColor: theme.colorScheme.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  'login'.tr(),
-                  style: AppTextStyle.semiBold_18_white,
-                ),
+                child: const Text(
+                  'login',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ).tr(),
               ),
             ),
           ],

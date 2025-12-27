@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 import '../../../products/domain/entities/product_entity.dart';
 import '../../data/models/coupon_model.dart';
@@ -105,30 +104,30 @@ class _CouponFormPageState extends State<CouponFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlocConsumer<MerchantCouponsCubit, CouponState>(
       listenWhen: (previous, current) => current is CouponSaved,
       listener: (context, state) {
-        if (state is CouponSaved && context.mounted) {
-          Navigator.pop(context);
-        }
+        if (state is CouponSaved && context.mounted) Navigator.pop(context);
       },
       builder: (context, state) {
         final isLoading = state is CouponSaving;
         return Scaffold(
-          appBar: _buildAppBar(),
+          appBar: _buildAppBar(theme),
           body: _buildBody(),
-          bottomNavigationBar: _buildFormActions(isLoading),
+          bottomNavigationBar: _buildFormActions(isLoading, theme),
         );
       },
     );
   }
 
-  Widget _buildFormActions(bool isLoading) {
+  Widget _buildFormActions(bool isLoading, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        color: theme.colorScheme.surface,
+        border: Border(top: BorderSide(color: theme.colorScheme.outline)),
       ),
       child: Row(
         children: [
@@ -143,7 +142,7 @@ class _CouponFormPageState extends State<CouponFormPage> {
             child: ElevatedButton(
               onPressed: isLoading ? null : _save,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColours.brownMedium,
+                backgroundColor: theme.colorScheme.primary,
                 foregroundColor: Colors.white,
               ),
               child: isLoading
@@ -151,8 +150,7 @@ class _CouponFormPageState extends State<CouponFormPage> {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
+                          strokeWidth: 2, color: Colors.white))
                   : Text('save'.tr()),
             ),
           ),
@@ -161,9 +159,9 @@ class _CouponFormPageState extends State<CouponFormPage> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(ThemeData theme) {
     return AppBar(
-      backgroundColor: AppColours.brownLight,
+      backgroundColor: theme.colorScheme.primary,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),
@@ -188,14 +186,12 @@ class _CouponFormPageState extends State<CouponFormPage> {
             CouponCodeField(controller: _codeController, isEditing: isEditing),
             const SizedBox(height: 16),
             CouponNamesFields(
-              nameArController: _nameArController,
-              nameEnController: _nameEnController,
-            ),
+                nameArController: _nameArController,
+                nameEnController: _nameEnController),
             const SizedBox(height: 16),
             DiscountTypeSelector(
-              selectedType: _discountType,
-              onChanged: (type) => setState(() => _discountType = type),
-            ),
+                selectedType: _discountType,
+                onChanged: (type) => setState(() => _discountType = type)),
             const SizedBox(height: 16),
             DiscountValueFields(
               discountValueController: _discountValueController,
@@ -204,9 +200,8 @@ class _CouponFormPageState extends State<CouponFormPage> {
             ),
             const SizedBox(height: 16),
             CouponLimitsFields(
-              minOrderController: _minOrderController,
-              usageLimitController: _usageLimitController,
-            ),
+                minOrderController: _minOrderController,
+                usageLimitController: _usageLimitController),
             const SizedBox(height: 16),
             CouponDatesFields(
               startDate: _startDate,
@@ -216,9 +211,8 @@ class _CouponFormPageState extends State<CouponFormPage> {
             ),
             const SizedBox(height: 16),
             CouponScopeSelector(
-              selectedScope: _scope,
-              onChanged: (scope) => setState(() => _scope = scope),
-            ),
+                selectedScope: _scope,
+                onChanged: (scope) => setState(() => _scope = scope)),
             if (_scope == 'products') ...[
               const SizedBox(height: 16),
               ProductSelectionSection(
@@ -241,9 +235,8 @@ class _CouponFormPageState extends State<CouponFormPage> {
             ],
             const SizedBox(height: 16),
             CouponActiveSwitch(
-              isActive: _isActive,
-              onChanged: (v) => setState(() => _isActive = v),
-            ),
+                isActive: _isActive,
+                onChanged: (v) => setState(() => _isActive = v)),
           ],
         ),
       ),
@@ -254,16 +247,14 @@ class _CouponFormPageState extends State<CouponFormPage> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_scope == 'products' && _selectedProductIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('no_products_selected'.tr())),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('no_products_selected'.tr())));
       return;
     }
 
     if (_scope == 'categories' && _selectedCategoryIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('no_categories_selected'.tr())),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('no_categories_selected'.tr())));
       return;
     }
 

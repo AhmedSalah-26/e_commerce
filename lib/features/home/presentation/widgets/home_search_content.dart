@@ -5,8 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/shared_widgets/product_card/product_grid_card.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../categories/presentation/cubit/categories_state.dart';
@@ -34,11 +32,10 @@ class HomeSearchContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isSearching) {
-      return const ProductsGridSkeleton(itemCount: 4);
-    }
+    final theme = Theme.of(context);
 
-    // Show categories only if no query AND no results AND no active filters
+    if (isSearching) return const ProductsGridSkeleton(itemCount: 4);
+
     if (currentQuery.isEmpty && searchResults.isEmpty && !hasActiveFilters) {
       return _CategoriesGrid(onCategoryTap: onCategoryTap);
     }
@@ -50,13 +47,17 @@ class HomeSearchContent extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.search_off, size: 80, color: Colors.grey[300]),
+              Icon(Icons.search_off,
+                  size: 80,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
               const SizedBox(height: 16),
               Text(
                 currentQuery.isNotEmpty
                     ? '${'no_results_for'.tr()} "$currentQuery"'
                     : 'no_products'.tr(),
-                style: TextStyle(fontSize: 18, color: Colors.grey[500]),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
               ),
             ],
           ),
@@ -71,7 +72,8 @@ class HomeSearchContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
             '${'search_results'.tr()} (${searchResults.length})',
-            style: AppTextStyle.semiBold_16_dark_brown,
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w600),
           ),
         ),
         Padding(
@@ -91,27 +93,22 @@ class HomeSearchContent extends StatelessWidget {
             itemBuilder: (context, index) {
               return RepaintBoundary(
                 child: ProductGridCard(
-                  key: ValueKey(searchResults[index].id),
-                  product: searchResults[index],
-                ),
+                    key: ValueKey(searchResults[index].id),
+                    product: searchResults[index]),
               );
             },
           ),
         ),
         if (isLoadingMore)
           const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          ),
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator())),
         if (!hasMore && searchResults.isNotEmpty)
           Padding(
             padding: const EdgeInsets.all(16),
             child: Center(
-              child: Text(
-                'no_more_results'.tr(),
-                style: const TextStyle(color: Colors.grey),
-              ),
-            ),
+                child: Text('no_more_results'.tr(),
+                    style: const TextStyle(color: Colors.grey))),
           ),
         const SizedBox(height: 20),
       ],
@@ -119,7 +116,6 @@ class HomeSearchContent extends StatelessWidget {
   }
 }
 
-/// Categories grid shown when search is empty
 class _CategoriesGrid extends StatelessWidget {
   final void Function(String categoryId, String categoryName)? onCategoryTap;
 
@@ -127,6 +123,8 @@ class _CategoriesGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -134,7 +132,8 @@ class _CategoriesGrid extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
             'categories'.tr(),
-            style: AppTextStyle.semiBold_16_dark_brown,
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w600),
           ),
         ),
         BlocBuilder<CategoriesCubit, CategoriesState>(
@@ -156,10 +155,8 @@ class _CategoriesGrid extends StatelessWidget {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(32),
-                    child: Text(
-                      'no_categories'.tr(),
-                      style: TextStyle(color: Colors.grey[500]),
-                    ),
+                    child: Text('no_categories'.tr(),
+                        style: TextStyle(color: Colors.grey[500])),
                   ),
                 );
               }
@@ -199,7 +196,6 @@ class _CategoriesGrid extends StatelessWidget {
   }
 }
 
-/// Single category card
 class _CategoryCard extends StatelessWidget {
   final CategoryEntity category;
   final VoidCallback? onTap;
@@ -208,20 +204,21 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border:
-              Border.all(color: AppColours.greyLight.withValues(alpha: 0.3)),
+          border: Border.all(
+              color: theme.colorScheme.outline.withValues(alpha: 0.3)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2)),
           ],
         ),
         child: Column(
@@ -239,18 +236,18 @@ class _CategoryCard extends StatelessWidget {
                         memCacheWidth: 150,
                         memCacheHeight: 150,
                         placeholder: (_, __) => Container(
-                          color: AppColours.greyLight.withValues(alpha: 0.3),
+                          color: theme.scaffoldBackgroundColor,
                           child: const Icon(Icons.category,
                               size: 40, color: Colors.grey),
                         ),
                         errorWidget: (_, __, ___) => Container(
-                          color: AppColours.greyLight.withValues(alpha: 0.3),
+                          color: theme.scaffoldBackgroundColor,
                           child: const Icon(Icons.category,
                               size: 40, color: Colors.grey),
                         ),
                       )
                     : Container(
-                        color: AppColours.greyLight.withValues(alpha: 0.3),
+                        color: theme.scaffoldBackgroundColor,
                         child: const Icon(Icons.category,
                             size: 40, color: Colors.grey),
                       ),
@@ -260,11 +257,8 @@ class _CategoryCard extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               child: Text(
                 category.name,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColours.jumiaDark,
-                ),
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
                 maxLines: 2,
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,

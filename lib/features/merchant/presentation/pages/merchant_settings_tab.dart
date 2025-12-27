@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_router.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../Core/Theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -18,6 +17,7 @@ class MerchantSettingsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isRtl = context.locale.languageCode == 'ar';
 
     return BlocListener<AuthCubit, AuthState>(
@@ -30,7 +30,7 @@ class MerchantSettingsTab extends StatelessWidget {
       child: Directionality(
         textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
         child: Scaffold(
-          backgroundColor: AppColours.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -42,7 +42,7 @@ class MerchantSettingsTab extends StatelessWidget {
                     isRtl ? 'الإعدادات' : 'Settings',
                     style: AppTextStyle.semiBold_20_dark_brown.copyWith(
                       fontSize: 24,
-                      color: AppColours.primary,
+                      color: theme.colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -96,6 +96,11 @@ class MerchantSettingsTab extends StatelessWidget {
                         title: isRtl ? 'اللغة' : 'Language',
                         icon: Icons.language,
                         onTap: () => context.push('/language-settings'),
+                      ),
+                      _SettingsItem(
+                        title: isRtl ? 'المظهر' : 'Theme',
+                        icon: Icons.palette_outlined,
+                        onTap: () => context.push('/theme-settings'),
                       ),
                       _SettingsItem(
                         title: isRtl ? 'الإشعارات' : 'Notifications',
@@ -154,6 +159,7 @@ class _SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -162,10 +168,10 @@ class _SettingsSection extends StatelessWidget {
             padding: const EdgeInsets.only(right: 4, left: 4),
             child: Text(
               title!,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColours.greyDark,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -173,19 +179,19 @@ class _SettingsSection extends StatelessWidget {
         ],
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColours.greyLight, width: 1),
+            border: Border.all(color: theme.colorScheme.outline, width: 1),
           ),
           child: Column(
             children: [
               for (int i = 0; i < items.length; i++) ...[
                 items[i],
                 if (i < items.length - 1)
-                  const Divider(
+                  Divider(
                     height: 1,
                     thickness: 1,
-                    color: AppColours.greyLighter,
+                    color: theme.colorScheme.outline,
                     indent: 56,
                   ),
               ],
@@ -212,18 +218,19 @@ class _SettingsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isDestructive
               ? Colors.red.withValues(alpha: 0.1)
-              : AppColours.brownLight.withValues(alpha: 0.1),
+              : theme.colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
           icon,
-          color: isDestructive ? Colors.red : AppColours.brownMedium,
+          color: isDestructive ? Colors.red : theme.colorScheme.primary,
           size: 22,
         ),
       ),
@@ -231,12 +238,12 @@ class _SettingsItem extends StatelessWidget {
         title,
         style: TextStyle(
           fontSize: 16,
-          color: isDestructive ? Colors.red : AppColours.brownDark,
+          color: isDestructive ? Colors.red : theme.colorScheme.onSurface,
         ),
       ),
-      trailing: const Icon(
+      trailing: Icon(
         Icons.arrow_forward_ios,
-        color: AppColours.greyMedium,
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
         size: 16,
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),

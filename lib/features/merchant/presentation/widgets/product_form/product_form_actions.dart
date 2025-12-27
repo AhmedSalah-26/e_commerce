@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 
 class ProductFormActions extends StatelessWidget {
   final bool isRtl;
@@ -17,6 +16,8 @@ class ProductFormActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -32,7 +33,7 @@ class ProductFormActions extends StatelessWidget {
             child: ElevatedButton(
               onPressed: isSaving ? null : onSave,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColours.primary,
+                backgroundColor: theme.colorScheme.primary,
                 foregroundColor: Colors.white,
               ),
               child: isSaving

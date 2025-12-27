@@ -2,8 +2,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../Core/Theme/app_text_style.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../categories/presentation/cubit/categories_state.dart';
 import '../../../categories/domain/entities/category_entity.dart';
@@ -39,11 +37,12 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
   @override
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColours.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: SafeArea(
           child: Column(
             children: [
@@ -77,7 +76,11 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
                       return Center(
                         child: Text(
                           state.message,
-                          style: AppTextStyle.normal_16_greyDark,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6),
+                          ),
                         ),
                       );
                     } else if (state is CategoriesLoaded) {
@@ -109,22 +112,30 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.search_off,
                                 size: 64,
-                                color: AppColours.greyLight,
+                                color: theme.colorScheme.outline,
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 isRtl ? 'لا توجد نتائج' : 'No results found',
-                                style: AppTextStyle.semiBold_16_dark_brown,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 isRtl
                                     ? 'جرب البحث بكلمات أخرى'
                                     : 'Try different search terms',
-                                style: AppTextStyle.normal_14_greyDark,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.6),
+                                ),
                               ),
                             ],
                           ),

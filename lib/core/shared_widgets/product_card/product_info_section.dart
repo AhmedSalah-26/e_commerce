@@ -5,10 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 import '../../../features/products/domain/entities/product_entity.dart';
-import '../../theme/app_colors.dart';
 import 'product_cart_button.dart';
 
-/// Product info section with name, price, rating, and cart button
 class ProductInfoSection extends StatelessWidget {
   final ProductEntity product;
   final bool isArabic;
@@ -53,13 +51,15 @@ class _ProductName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return SizedBox(
-      height: 36, // Fixed height for 2 lines
+      height: 36,
       child: AutoSizeText(
         name,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
-          color: AppColours.jumiaDark,
+          color: theme.colorScheme.onSurface,
           height: 1.3,
         ),
         maxLines: 2,
@@ -77,16 +77,18 @@ class _PriceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         AutoSizeText(
           "${product.effectivePrice.toStringAsFixed(2)} ${'egp'.tr()}",
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: AppColours.jumiaDark,
+            color: theme.colorScheme.onSurface,
           ),
           maxLines: 1,
           minFontSize: 12,
@@ -94,9 +96,9 @@ class _PriceSection extends StatelessWidget {
         if (product.hasDiscount)
           AutoSizeText(
             "${product.price.toStringAsFixed(2)} ${'egp'.tr()}",
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: AppColours.jumiaGrey,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               decoration: TextDecoration.lineThrough,
             ),
             maxLines: 1,
@@ -115,6 +117,8 @@ class _RatingStars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Row(
       children: [
         RatingBarIndicator(
@@ -130,9 +134,9 @@ class _RatingStars extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           '($ratingCount)',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
-            color: AppColours.jumiaGrey,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
           ),
         ),
       ],

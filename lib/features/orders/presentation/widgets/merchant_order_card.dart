@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/order_entity.dart';
 
@@ -21,30 +20,31 @@ class MerchantOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: theme.colorScheme.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildMerchantHeader(),
-          const Divider(height: 1),
-          _buildOrderItems(context),
-          const Divider(height: 1),
-          _buildOrderSummary(),
+          _buildMerchantHeader(theme),
+          Divider(height: 1, color: theme.colorScheme.outline),
+          _buildOrderItems(context, theme),
+          Divider(height: 1, color: theme.colorScheme.outline),
+          _buildOrderSummary(theme),
         ],
       ),
     );
   }
 
-  Widget _buildMerchantHeader() {
+  Widget _buildMerchantHeader(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColours.brownLight.withValues(alpha: 0.1),
+        color: theme.colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       ),
       child: Row(
@@ -52,12 +52,12 @@ class MerchantOrderCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColours.brownMedium.withValues(alpha: 0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.store_outlined,
-              color: AppColours.brownMedium,
+              color: theme.colorScheme.primary,
               size: 20,
             ),
           ),
@@ -68,7 +68,9 @@ class MerchantOrderCard extends StatelessWidget {
               children: [
                 Text(
                   order.merchantName ?? 'unknown_merchant'.tr(),
-                  style: AppTextStyle.semiBold_12_dark_brown,
+                  style: AppTextStyle.semiBold_12_dark_brown.copyWith(
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
                 if (order.merchantPhone != null)
                   Padding(
@@ -76,11 +78,16 @@ class MerchantOrderCard extends StatelessWidget {
                     child: Row(
                       children: [
                         Icon(Icons.phone_outlined,
-                            size: 12, color: Colors.grey.shade600),
+                            size: 12,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6)),
                         const SizedBox(width: 4),
                         Text(
                           order.merchantPhone!,
-                          style: AppTextStyle.normal_12_greyDark,
+                          style: AppTextStyle.normal_12_greyDark.copyWith(
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6),
+                          ),
                         ),
                       ],
                     ),
@@ -92,12 +99,17 @@ class MerchantOrderCard extends StatelessWidget {
                     child: Row(
                       children: [
                         Icon(Icons.location_on_outlined,
-                            size: 12, color: Colors.grey.shade600),
+                            size: 12,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6)),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             order.merchantAddress!,
-                            style: AppTextStyle.normal_12_greyDark,
+                            style: AppTextStyle.normal_12_greyDark.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -157,24 +169,27 @@ class MerchantOrderCard extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderItems(BuildContext context) {
+  Widget _buildOrderItems(BuildContext context, ThemeData theme) {
     final locale = context.locale.languageCode;
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('order_products'.tr(), style: AppTextStyle.normal_12_greyDark),
+          Text('order_products'.tr(),
+              style: AppTextStyle.normal_12_greyDark.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              )),
           const SizedBox(height: 8),
           ...order.items
-              .map((item) => _buildOrderItemRow(context, item, locale)),
+              .map((item) => _buildOrderItemRow(context, item, locale, theme)),
         ],
       ),
     );
   }
 
-  Widget _buildOrderItemRow(
-      BuildContext context, OrderItemEntity item, String locale) {
+  Widget _buildOrderItemRow(BuildContext context, OrderItemEntity item,
+      String locale, ThemeData theme) {
     return InkWell(
       onTap: item.productId != null
           ? () => context.push('/product/${item.productId}')
@@ -184,9 +199,9 @@ class MerchantOrderCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: theme.colorScheme.outline),
         ),
         child: Row(
           children: [
@@ -198,10 +213,11 @@ class MerchantOrderCard extends StatelessWidget {
                       width: 50,
                       height: 50,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => _buildPlaceholderImage(),
-                      errorWidget: (_, __, ___) => _buildPlaceholderImage(),
+                      placeholder: (_, __) => _buildPlaceholderImage(theme),
+                      errorWidget: (_, __, ___) =>
+                          _buildPlaceholderImage(theme),
                     )
-                  : _buildPlaceholderImage(),
+                  : _buildPlaceholderImage(theme),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -210,14 +226,18 @@ class MerchantOrderCard extends StatelessWidget {
                 children: [
                   Text(
                     item.getLocalizedName(locale),
-                    style: AppTextStyle.bodyMedium,
+                    style: AppTextStyle.bodyMedium.copyWith(
+                      color: theme.colorScheme.onSurface,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${item.quantity} × ${item.price.toStringAsFixed(2)} ${'egp'.tr()}',
-                    style: AppTextStyle.normal_12_greyDark,
+                    style: AppTextStyle.normal_12_greyDark.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                     textDirection: ui.TextDirection.ltr,
                   ),
                 ],
@@ -228,13 +248,15 @@ class MerchantOrderCard extends StatelessWidget {
               children: [
                 Text(
                   '${item.itemTotal.toStringAsFixed(2)} ${'egp'.tr()}',
-                  style: AppTextStyle.semiBold_12_dark_brown,
+                  style: AppTextStyle.semiBold_12_dark_brown.copyWith(
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
                 if (item.productId != null) ...[
                   const SizedBox(height: 4),
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_ios,
-                    color: AppColours.brownMedium,
+                    color: theme.colorScheme.primary,
                     size: 14,
                   ),
                 ],
@@ -246,47 +268,56 @@ class MerchantOrderCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholderImage() {
+  Widget _buildPlaceholderImage(ThemeData theme) {
     return Container(
       width: 50,
       height: 50,
-      color: Colors.grey.shade200,
-      child: const Icon(Icons.image_outlined, color: Colors.grey),
+      color: theme.colorScheme.surface,
+      child: Icon(Icons.image_outlined,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
     );
   }
 
-  Widget _buildOrderSummary() {
+  Widget _buildOrderSummary(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
         children: [
-          _buildSummaryRow('subtotal'.tr(), order.subtotal),
+          _buildSummaryRow('subtotal'.tr(), order.subtotal, theme),
           const SizedBox(height: 4),
-          _buildSummaryRow('shipping'.tr(), order.shippingCost),
-          const Divider(height: 16),
-          _buildSummaryRow('merchant_total'.tr(), order.total, isTotal: true),
+          _buildSummaryRow('shipping'.tr(), order.shippingCost, theme),
+          Divider(height: 16, color: theme.colorScheme.outline),
+          _buildSummaryRow('merchant_total'.tr(), order.total, theme,
+              isTotal: true),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryRow(String label, double amount, {bool isTotal = false}) {
+  Widget _buildSummaryRow(String label, double amount, ThemeData theme,
+      {bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
           style: isTotal
-              ? AppTextStyle.semiBold_12_dark_brown
-              : AppTextStyle.normal_12_greyDark,
+              ? AppTextStyle.semiBold_12_dark_brown.copyWith(
+                  color: theme.colorScheme.onSurface,
+                )
+              : AppTextStyle.normal_12_greyDark.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
         ),
         Text(
           '${amount.toStringAsFixed(2)} ${'egp'.tr()}',
           style: isTotal
               ? AppTextStyle.semiBold_12_dark_brown.copyWith(
-                  color: AppColours.brownMedium,
+                  color: theme.colorScheme.primary,
                 )
-              : AppTextStyle.normal_12_greyDark,
+              : AppTextStyle.normal_12_greyDark.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
         ),
       ],
     );

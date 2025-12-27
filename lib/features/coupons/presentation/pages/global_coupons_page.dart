@@ -3,8 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../data/datasources/coupon_remote_datasource.dart';
 import '../../domain/entities/coupon_entity.dart';
 import '../cubit/coupon_cubit.dart';
@@ -56,6 +54,7 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isRtl = context.locale.languageCode == 'ar';
 
     return BlocConsumer<GlobalCouponsCubit, CouponState>(
@@ -67,15 +66,15 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
         final inactiveCoupons = coupons.where((c) => !c.isActive).toList();
 
         return Scaffold(
-          backgroundColor: AppColours.white,
-          appBar: _buildAppBar(isRtl),
-          floatingActionButton: _buildFab(),
+          backgroundColor: theme.scaffoldBackgroundColor,
+          appBar: _buildAppBar(isRtl, theme),
+          floatingActionButton: _buildFab(theme),
           body: Column(
             children: [
-              _buildTabBar(activeCoupons.length, inactiveCoupons.length),
+              _buildTabBar(activeCoupons.length, inactiveCoupons.length, theme),
               Expanded(
-                child: _buildTabContent(state, activeCoupons, inactiveCoupons),
-              ),
+                  child: _buildTabContent(
+                      state, activeCoupons, inactiveCoupons, theme)),
             ],
           ),
         );
@@ -83,39 +82,40 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
     );
   }
 
-  PreferredSizeWidget _buildAppBar(bool isRtl) {
+  PreferredSizeWidget _buildAppBar(bool isRtl, ThemeData theme) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surface,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: AppColours.brownMedium),
+        icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
         isRtl ? 'الكوبونات العامة' : 'Global Coupons',
-        style: AppTextStyle.semiBold_20_dark_brown
-            .copyWith(color: AppColours.brownMedium),
+        style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600, color: theme.colorScheme.primary),
       ),
       centerTitle: true,
     );
   }
 
-  Widget _buildFab() {
+  Widget _buildFab(ThemeData theme) {
     return FloatingActionButton(
       onPressed: () => _navigateToCouponForm(null),
-      backgroundColor: AppColours.brownMedium,
+      backgroundColor: theme.colorScheme.primary,
       child: const Icon(Icons.add, color: Colors.white),
     );
   }
 
-  Widget _buildTabBar(int activeCount, int inactiveCount) {
+  Widget _buildTabBar(int activeCount, int inactiveCount, ThemeData theme) {
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: TabBar(
         controller: _tabController,
-        labelColor: AppColours.brownMedium,
-        unselectedLabelColor: AppColours.greyMedium,
-        indicatorColor: AppColours.brownMedium,
+        labelColor: theme.colorScheme.primary,
+        unselectedLabelColor:
+            theme.colorScheme.onSurface.withValues(alpha: 0.6),
+        indicatorColor: theme.colorScheme.primary,
         tabs: [
           Tab(text: '${'active_coupons'.tr()} ($activeCount)'),
           Tab(text: '${'inactive_coupons'.tr()} ($inactiveCount)'),
@@ -125,14 +125,12 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
   }
 
   Widget _buildTabContent(CouponState state, List<CouponEntity> activeCoupons,
-      List<CouponEntity> inactiveCoupons) {
-    if (state is MerchantCouponsLoading) {
+      List<CouponEntity> inactiveCoupons, ThemeData theme) {
+    if (state is MerchantCouponsLoading)
       return const Center(child: CircularProgressIndicator());
-    }
 
-    if (state is MerchantCouponsError) {
-      return _buildErrorView(state.message);
-    }
+    if (state is MerchantCouponsError)
+      return _buildErrorView(state.message, theme);
 
     if (state is MerchantCouponsLoaded && state.coupons.isEmpty) {
       return CouponsEmptyState(onAdd: () => _navigateToCouponForm(null));
@@ -141,14 +139,14 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
     return TabBarView(
       controller: _tabController,
       children: [
-        _buildCouponsList(activeCoupons, isActive: true),
-        _buildCouponsList(inactiveCoupons, isActive: false),
+        _buildCouponsList(activeCoupons, isActive: true, theme: theme),
+        _buildCouponsList(inactiveCoupons, isActive: false, theme: theme),
       ],
     );
   }
 
   Widget _buildCouponsList(List<CouponEntity> coupons,
-      {required bool isActive}) {
+      {required bool isActive, required ThemeData theme}) {
     if (coupons.isEmpty) {
       return Center(
         child: Column(
@@ -157,12 +155,13 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
             Icon(
               isActive ? Icons.local_offer_outlined : Icons.block,
               size: 64,
-              color: Colors.grey.shade300,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(
               isActive ? 'no_active_coupons'.tr() : 'no_inactive_coupons'.tr(),
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
             ),
           ],
         ),
@@ -171,7 +170,7 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
 
     return CouponsListView(
       coupons: coupons,
-      storeId: '', // Global coupons have no store
+      storeId: '',
       isGlobal: true,
       onEdit: (coupon) => _navigateToCouponForm(coupon),
       onToggle: (coupon, value) => _toggleCouponStatus(coupon, value),
@@ -181,27 +180,27 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
 
   void _handleStateChanges(BuildContext context, CouponState state) {
     if (state is CouponSaved) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('coupon_saved'.tr())),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('coupon_saved'.tr())));
     } else if (state is MerchantCouponsError &&
         state.message == 'DUPLICATE_CODE') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('duplicate_coupon_code'.tr()),
-          backgroundColor: Colors.red,
-        ),
+            content: Text('duplicate_coupon_code'.tr()),
+            backgroundColor: Colors.red),
       );
       context.read<GlobalCouponsCubit>().loadGlobalCoupons();
     }
   }
 
-  Widget _buildErrorView(String message) {
+  Widget _buildErrorView(String message, ThemeData theme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+          Icon(Icons.error_outline,
+              size: 64,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
           const SizedBox(height: 16),
           Text(message),
           const SizedBox(height: 16),

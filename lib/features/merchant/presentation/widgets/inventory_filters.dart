@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 
 class InventoryFilters extends StatelessWidget {
@@ -30,61 +29,63 @@ class InventoryFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
-      color: AppColours.greyLighter,
+      color: theme.scaffoldBackgroundColor,
       child: Column(
         children: [
-          _buildSearchBar(),
+          _buildSearchBar(theme),
           const SizedBox(height: 12),
-          _buildActivityChips(),
+          _buildActivityChips(theme),
           const SizedBox(height: 12),
-          _buildCategorySelector(),
+          _buildCategorySelector(theme),
         ],
       ),
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(ThemeData theme) {
     return TextField(
       controller: searchController,
       onChanged: onSearchChanged,
       decoration: InputDecoration(
         hintText: isRtl ? 'البحث عن منتج...' : 'Search products...',
-        prefixIcon: const Icon(Icons.search, color: AppColours.greyDark),
+        prefixIcon: Icon(Icons.search,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
         suffixIcon: searchQuery.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear, color: AppColours.greyDark),
+                icon: Icon(Icons.clear,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                 onPressed: onClearSearch,
               )
             : null,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: theme.colorScheme.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );
   }
 
-  Widget _buildActivityChips() {
+  Widget _buildActivityChips(ThemeData theme) {
     return Row(
       children: [
-        _buildActivityChip(isRtl ? 'الكل' : 'All', 'all'),
+        _buildActivityChip(isRtl ? 'الكل' : 'All', 'all', theme),
         const SizedBox(width: 8),
-        _buildActivityChip(isRtl ? 'نشط' : 'Active', 'active'),
+        _buildActivityChip(isRtl ? 'نشط' : 'Active', 'active', theme),
         const SizedBox(width: 8),
-        _buildActivityChip(isRtl ? 'غير نشط' : 'Inactive', 'inactive'),
+        _buildActivityChip(isRtl ? 'غير نشط' : 'Inactive', 'inactive', theme),
       ],
     );
   }
 
-  Widget _buildActivityChip(String label, String value) {
+  Widget _buildActivityChip(String label, String value, ThemeData theme) {
     final isSelected = activityFilter == value;
     Color chipColor;
     if (value == 'active') {
@@ -92,7 +93,7 @@ class InventoryFilters extends StatelessWidget {
     } else if (value == 'inactive') {
       chipColor = Colors.grey;
     } else {
-      chipColor = AppColours.primary;
+      chipColor = theme.colorScheme.primary;
     }
 
     return ChoiceChip(
@@ -101,15 +102,17 @@ class InventoryFilters extends StatelessWidget {
       onSelected: (_) => onActivityFilterChanged(value),
       selectedColor: chipColor,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppColours.greyDark,
+        color: isSelected
+            ? Colors.white
+            : theme.colorScheme.onSurface.withValues(alpha: 0.6),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
-      backgroundColor: Colors.white,
-      side: const BorderSide(color: AppColours.primary, width: 1),
+      backgroundColor: theme.colorScheme.surface,
+      side: BorderSide(color: theme.colorScheme.primary, width: 1),
     );
   }
 
-  Widget _buildCategorySelector() {
+  Widget _buildCategorySelector(ThemeData theme) {
     final selectedCategory = selectedCategoryId != null
         ? categories.where((c) => c.id == selectedCategoryId).firstOrNull
         : null;
@@ -119,23 +122,25 @@ class InventoryFilters extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColours.primary),
+          border: Border.all(color: theme.colorScheme.primary),
         ),
         child: Row(
           children: [
-            const Icon(Icons.category_outlined,
-                color: AppColours.primary, size: 20),
+            Icon(Icons.category_outlined,
+                color: theme.colorScheme.primary, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 selectedCategory?.name ??
                     (isRtl ? 'جميع التصنيفات' : 'All Categories'),
-                style: const TextStyle(color: AppColours.greyDark),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down, color: AppColours.primary),
+            Icon(Icons.keyboard_arrow_down, color: theme.colorScheme.primary),
           ],
         ),
       ),

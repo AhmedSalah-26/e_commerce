@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 
 class CouponCodeField extends StatelessWidget {
   final TextEditingController controller;
@@ -24,6 +23,8 @@ class CouponCodeField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -51,7 +52,7 @@ class CouponCodeField extends StatelessWidget {
               onPressed: () => controller.text = _generateRandomCode(),
               icon: const Icon(Icons.auto_awesome, size: 20),
               style: IconButton.styleFrom(
-                backgroundColor: AppColours.brownMedium,
+                backgroundColor: theme.colorScheme.primary,
                 foregroundColor: Colors.white,
               ),
               tooltip: 'generate_code'.tr(),

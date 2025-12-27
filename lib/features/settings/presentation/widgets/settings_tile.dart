@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 
 class SettingsTile extends StatelessWidget {
   final IconData icon;
@@ -23,28 +22,30 @@ class SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final effectiveIconColor = iconColor ?? theme.colorScheme.primary;
+
     return Column(
       children: [
         ListTile(
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color:
-                  (iconColor ?? AppColours.brownMedium).withValues(alpha: 0.1),
+              color: effectiveIconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: iconColor ?? AppColours.brownMedium,
+              color: effectiveIconColor,
               size: 24,
             ),
           ),
           title: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: AppColours.brownDark,
+              color: theme.colorScheme.onSurface,
             ),
           ),
           trailing: trailing ??
@@ -56,25 +57,27 @@ class SettingsTile extends StatelessWidget {
                       padding: const EdgeInsets.only(right: 8),
                       child: Text(
                         subtitle!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: AppColours.greyDark,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
                         ),
                       ),
                     ),
-                  const Icon(
+                  Icon(
                     Icons.chevron_right,
-                    color: AppColours.greyMedium,
+                    color: theme.colorScheme.outline,
                   ),
                 ],
               ),
           onTap: onTap,
         ),
         if (showDivider)
-          const Divider(
+          Divider(
             height: 1,
             indent: 72,
             endIndent: 16,
+            color: theme.dividerColor,
           ),
       ],
     );

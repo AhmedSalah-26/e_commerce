@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
@@ -47,6 +46,8 @@ class _MerchantDashboardPageState extends State<MerchantDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthUnauthenticated) {
@@ -57,10 +58,10 @@ class _MerchantDashboardPageState extends State<MerchantDashboardPage> {
         body: _pages[_currentIndex],
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.colorScheme.surface,
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withValues(alpha: 0.2),
+                color: theme.shadowColor.withValues(alpha: 0.2),
                 blurRadius: 8,
                 offset: const Offset(0, -2),
               ),
@@ -74,9 +75,10 @@ class _MerchantDashboardPageState extends State<MerchantDashboardPage> {
               });
             },
             type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            selectedItemColor: AppColours.primary,
-            unselectedItemColor: Colors.grey,
+            backgroundColor: theme.colorScheme.surface,
+            selectedItemColor: theme.colorScheme.primary,
+            unselectedItemColor:
+                theme.colorScheme.onSurface.withValues(alpha: 0.6),
             items: [
               BottomNavigationBarItem(
                 icon: const Icon(Icons.receipt_long),

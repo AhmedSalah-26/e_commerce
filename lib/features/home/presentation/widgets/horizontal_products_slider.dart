@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/shared_widgets/product_card/product_grid_card.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../products/domain/entities/product_entity.dart';
 
 class HorizontalProductsSlider extends StatelessWidget {
@@ -19,8 +17,10 @@ class HorizontalProductsSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     if (isLoading) {
-      return _buildSkeleton();
+      return _buildSkeleton(theme);
     }
 
     if (products.isEmpty) {
@@ -32,7 +32,14 @@ class HorizontalProductsSlider extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text(title, style: AppTextStyle.semiBold_16_dark_brown),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
         ),
         SizedBox(
           height: 280,
@@ -58,7 +65,7 @@ class HorizontalProductsSlider extends StatelessWidget {
     );
   }
 
-  Widget _buildSkeleton() {
+  Widget _buildSkeleton(ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -68,7 +75,7 @@ class HorizontalProductsSlider extends StatelessWidget {
             width: 120,
             height: 20,
             decoration: BoxDecoration(
-              color: AppColours.greyLight,
+              color: theme.colorScheme.outline.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -85,7 +92,7 @@ class HorizontalProductsSlider extends StatelessWidget {
                 child: Container(
                   width: 160,
                   decoration: BoxDecoration(
-                    color: AppColours.greyLight.withValues(alpha: 0.3),
+                    color: theme.colorScheme.outline.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),

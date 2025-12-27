@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../categories/domain/entities/category_entity.dart';
@@ -184,6 +182,8 @@ class _CouponsPageContentState extends State<_CouponsPageContent>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlocConsumer<MerchantCouponsCubit, CouponState>(
       listener: _handleStateChanges,
       builder: (context, state) {
@@ -193,12 +193,12 @@ class _CouponsPageContentState extends State<_CouponsPageContent>
         final inactiveCoupons = coupons.where((c) => !c.isActive).toList();
 
         return Scaffold(
-          backgroundColor: AppColours.white,
-          appBar: _buildAppBar(),
-          floatingActionButton: _buildFab(),
+          backgroundColor: theme.scaffoldBackgroundColor,
+          appBar: _buildAppBar(theme),
+          floatingActionButton: _buildFab(theme),
           body: Column(
             children: [
-              _buildTabBar(activeCoupons.length, inactiveCoupons.length),
+              _buildTabBar(activeCoupons.length, inactiveCoupons.length, theme),
               Expanded(
                   child:
                       _buildTabContent(state, activeCoupons, inactiveCoupons)),
@@ -209,39 +209,43 @@ class _CouponsPageContentState extends State<_CouponsPageContent>
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(ThemeData theme) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surface,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: AppColours.brownMedium),
+        icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
         'coupons'.tr(),
-        style: AppTextStyle.semiBold_20_dark_brown
-            .copyWith(color: AppColours.brownMedium),
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: theme.colorScheme.primary,
+        ),
       ),
       centerTitle: true,
     );
   }
 
-  Widget _buildFab() {
+  Widget _buildFab(ThemeData theme) {
     return FloatingActionButton(
       onPressed: () => _navigateToCouponForm(null),
-      backgroundColor: AppColours.brownMedium,
+      backgroundColor: theme.colorScheme.primary,
       child: const Icon(Icons.add, color: Colors.white),
     );
   }
 
-  Widget _buildTabBar(int activeCount, int inactiveCount) {
+  Widget _buildTabBar(int activeCount, int inactiveCount, ThemeData theme) {
     return Container(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       child: TabBar(
         controller: _tabController,
-        labelColor: AppColours.brownMedium,
-        unselectedLabelColor: AppColours.greyMedium,
-        indicatorColor: AppColours.brownMedium,
+        labelColor: theme.colorScheme.primary,
+        unselectedLabelColor:
+            theme.colorScheme.onSurface.withValues(alpha: 0.6),
+        indicatorColor: theme.colorScheme.primary,
         tabs: [
           Tab(text: '${'active_coupons'.tr()} ($activeCount)'),
           Tab(text: '${'inactive_coupons'.tr()} ($inactiveCount)'),

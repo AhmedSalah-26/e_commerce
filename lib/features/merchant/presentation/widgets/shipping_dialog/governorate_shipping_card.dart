@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../shipping/domain/entities/governorate_entity.dart';
 
 class GovernorateShippingCard extends StatelessWidget {
@@ -19,14 +18,17 @@ class GovernorateShippingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final hasPrice = price != null;
 
     return Container(
       decoration: BoxDecoration(
-        color: hasPrice ? Colors.green.shade50 : Colors.grey.shade100,
+        color: hasPrice ? Colors.green.shade50 : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: hasPrice ? Colors.green.shade200 : Colors.grey.shade300,
+          color: hasPrice
+              ? Colors.green.shade200
+              : theme.colorScheme.outline.withValues(alpha: 0.3),
         ),
       ),
       child: ListTile(
@@ -35,12 +37,12 @@ class GovernorateShippingCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: hasPrice
                 ? Colors.green.withValues(alpha: 0.2)
-                : Colors.grey.withValues(alpha: 0.2),
+                : theme.colorScheme.outline.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             Icons.location_city,
-            color: hasPrice ? Colors.green : Colors.grey,
+            color: hasPrice ? Colors.green : theme.colorScheme.outline,
           ),
         ),
         title: Text(
@@ -52,13 +54,13 @@ class GovernorateShippingCard extends StatelessWidget {
               ? '${price!.toStringAsFixed(0)} ${'egp'.tr()}'
               : 'no_shipping_prices'.tr(),
           style: TextStyle(
-            color: hasPrice ? Colors.green.shade700 : Colors.grey,
+            color: hasPrice ? Colors.green.shade700 : theme.colorScheme.outline,
           ),
         ),
         trailing: IconButton(
           icon: Icon(
             hasPrice ? Icons.edit : Icons.add,
-            color: AppColours.brownMedium,
+            color: theme.colorScheme.primary,
           ),
           onPressed: onEdit,
         ),

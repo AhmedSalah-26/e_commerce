@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 
 class OrderTotalsSection extends StatelessWidget {
   final double subtotal;
@@ -84,6 +83,8 @@ class _ShippingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -94,7 +95,9 @@ class _ShippingRow extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 '($merchantCount ${'merchants'.tr()})',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
               ),
             ],
           ],
@@ -103,7 +106,8 @@ class _ShippingRow extends StatelessWidget {
           totalShipping > 0
               ? '${totalShipping.toStringAsFixed(2)} ${'egp'.tr()}'
               : '-',
-          style: TextStyle(color: totalShipping > 0 ? null : Colors.grey),
+          style: TextStyle(
+              color: totalShipping > 0 ? null : theme.colorScheme.outline),
         ),
       ],
     );
@@ -155,6 +159,8 @@ class _TotalRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -164,10 +170,10 @@ class _TotalRow extends StatelessWidget {
         ),
         Text(
           '${total.toStringAsFixed(2)} ${'egp'.tr()}',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppColours.brownMedium,
+            color: theme.colorScheme.primary,
           ),
         ),
       ],

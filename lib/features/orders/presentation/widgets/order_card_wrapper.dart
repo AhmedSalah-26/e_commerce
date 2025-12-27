@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 
 class OrderCardWrapper extends StatelessWidget {
@@ -17,12 +16,14 @@ class OrderCardWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.outline),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withValues(alpha: 0.1),
@@ -36,12 +37,12 @@ class OrderCardWrapper extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColours.primary, size: 22),
+              Icon(icon, color: theme.colorScheme.primary, size: 22),
               const SizedBox(width: 8),
               Text(
                 title,
                 style: AppTextStyle.semiBold_16_dark_brown.copyWith(
-                  color: AppColours.primary,
+                  color: theme.colorScheme.primary,
                 ),
               ),
             ],

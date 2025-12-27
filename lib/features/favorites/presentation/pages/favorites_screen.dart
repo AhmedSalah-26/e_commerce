@@ -6,8 +6,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/shared_widgets/product_card/product_grid_card.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -63,7 +61,6 @@ class _FavoritesScreenState extends State<FavoritesScreen>
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
       final currentState = context.read<FavoritesCubit>().state;
-      // Only load if not already loaded
       if (currentState is! FavoritesLoaded) {
         _loadFavorites();
       }
@@ -83,25 +80,26 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   Widget build(BuildContext context) {
     super.build(context);
     final isRtl = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           title: Text(
             'favorites'.tr(),
-            style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+            style: TextStyle(
               fontSize: 24,
-              color: AppColours.brownMedium,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.primary,
             ),
           ),
           centerTitle: true,
         ),
         body: BlocConsumer<AuthCubit, AuthState>(
           listener: (context, authState) {
-            // Reset favorites when user logs out
             if (_previousAuthState is AuthAuthenticated &&
                 authState is! AuthAuthenticated) {
               context.read<FavoritesCubit>().reset();
@@ -109,7 +107,6 @@ class _FavoritesScreenState extends State<FavoritesScreen>
             _previousAuthState = authState;
           },
           builder: (context, authState) {
-            // Check if user is authenticated first
             if (authState is! AuthAuthenticated) {
               return _buildLoginRequired();
             }
@@ -144,7 +141,6 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                 }
 
                 if (state is FavoritesLoaded) {
-                  // Filter favorites that have valid products
                   final validFavorites =
                       state.favorites.where((f) => f.product != null).toList();
 
@@ -180,7 +176,6 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                   );
                 }
 
-                // FavoritesInitial state - show shimmer loading
                 return const SingleChildScrollView(
                   padding: EdgeInsets.all(16),
                   child: ProductsGridSkeleton(itemCount: 4),
@@ -194,27 +189,36 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   }
 
   Widget _buildEmptyFavorites() {
+    final theme = Theme.of(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.favorite_border,
               size: 80,
-              color: AppColours.greyMedium,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
             ),
             const SizedBox(height: 16),
             Text(
               'no_favorites'.tr(),
-              style: AppTextStyle.semiBold_16_dark_brown,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'no_favorites_desc'.tr(),
-              style: AppTextStyle.normal_14_greyDark,
+              style: TextStyle(
+                fontSize: 14,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -224,6 +228,8 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   }
 
   Widget _buildLoginRequired() {
+    final theme = Theme.of(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -233,25 +239,32 @@ class _FavoritesScreenState extends State<FavoritesScreen>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColours.primaryColor.withValues(alpha: 0.1),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.favorite_border,
                 size: 64,
-                color: AppColours.primaryColor,
+                color: theme.colorScheme.primary,
               ),
             ),
             const SizedBox(height: 24),
             Text(
               'login_required'.tr(),
-              style: AppTextStyle.semiBold_20_dark_brown,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               'login_to_see_favorites'.tr(),
-              style: AppTextStyle.normal_14_greyDark,
+              style: TextStyle(
+                fontSize: 14,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -264,15 +277,19 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                   context.go('/login');
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColours.brownLight,
+                  backgroundColor: theme.colorScheme.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  'login'.tr(),
-                  style: AppTextStyle.semiBold_18_white,
-                ),
+                child: const Text(
+                  'login',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ).tr(),
               ),
             ),
           ],

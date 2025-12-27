@@ -2,9 +2,6 @@ import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
-
 class HomeSearchBar extends StatelessWidget {
   final bool isSearchMode;
   final TextEditingController searchController;
@@ -34,22 +31,17 @@ class HomeSearchBar extends StatelessWidget {
   });
 
   void _handleBackPress() {
-    // If there's text or filters, clear both together
     if (searchController.text.isNotEmpty || hasActiveFilters) {
       searchController.clear();
-      // Clear filters first (this will show categories)
-      if (onClearFilters != null) {
-        onClearFilters!();
-      }
+      if (onClearFilters != null) onClearFilters!();
       return;
     }
-
-    // Otherwise exit search mode
     onExitSearchMode();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -58,7 +50,6 @@ class HomeSearchBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Notification icon (right side in RTL)
           if (!isSearchMode)
             GestureDetector(
               onTap: onNotificationTap,
@@ -67,16 +58,14 @@ class HomeSearchBar extends StatelessWidget {
                 height: screenHeight * 0.055,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  color: AppColours.greyLighter,
+                  color: theme.scaffoldBackgroundColor,
                 ),
                 child: Stack(
                   children: [
                     Center(
-                      child: Icon(
-                        Icons.notifications,
-                        size: screenWidth * 0.055,
-                        color: AppColours.brownLight,
-                      ),
+                      child: Icon(Icons.notifications,
+                          size: screenWidth * 0.055,
+                          color: theme.colorScheme.primary),
                     ),
                     if (unreadNotifications > 0)
                       Positioned(
@@ -85,22 +74,17 @@ class HomeSearchBar extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 16,
-                            minHeight: 16,
-                          ),
+                              color: Colors.red, shape: BoxShape.circle),
+                          constraints:
+                              const BoxConstraints(minWidth: 16, minHeight: 16),
                           child: Text(
                             unreadNotifications > 9
                                 ? '9+'
                                 : '$unreadNotifications',
                             style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -109,23 +93,19 @@ class HomeSearchBar extends StatelessWidget {
                 ),
               ),
             ),
-          // Back button when in search mode
           if (isSearchMode)
             IconButton(
-              icon: const Icon(Icons.arrow_forward,
-                  color: AppColours.brownMedium),
+              icon: Icon(Icons.arrow_forward, color: theme.colorScheme.primary),
               onPressed: _handleBackPress,
             ),
-          // Search bar (center)
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: isSearchMode
-                  ? _buildActiveSearchBar(context)
-                  : _buildInactiveSearchBar(context),
+                  ? _buildActiveSearchBar(context, theme)
+                  : _buildInactiveSearchBar(context, theme),
             ),
           ),
-          // Filter button when in search mode
           if (isSearchMode)
             GestureDetector(
               onTap: onShowFilter,
@@ -133,16 +113,16 @@ class HomeSearchBar extends StatelessWidget {
                 height: 45,
                 width: 45,
                 decoration: BoxDecoration(
-                  color: AppColours.primaryColor.withValues(alpha: 0.1),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                   border:
-                      Border.all(color: AppColours.primaryColor, width: 1.5),
+                      Border.all(color: theme.colorScheme.primary, width: 1.5),
                 ),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    const Icon(Icons.filter_list,
-                        color: AppColours.primaryColor, size: 24),
+                    Icon(Icons.filter_list,
+                        color: theme.colorScheme.primary, size: 24),
                     if (hasActiveFilters)
                       Positioned(
                         right: 4,
@@ -151,9 +131,7 @@ class HomeSearchBar extends StatelessWidget {
                           width: 12,
                           height: 12,
                           decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
+                              color: Colors.red, shape: BoxShape.circle),
                         ),
                       ),
                   ],
@@ -165,33 +143,38 @@ class HomeSearchBar extends StatelessWidget {
     );
   }
 
-  Widget _buildInactiveSearchBar(BuildContext context) {
+  Widget _buildInactiveSearchBar(BuildContext context, ThemeData theme) {
     return GestureDetector(
       onTap: onEnterSearchMode,
       child: Container(
         height: 45,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: AppColours.greyLighter,
+          color: theme.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Text('search'.tr(), style: AppTextStyle.normal_12_greyDark),
+            Text(
+              'search'.tr(),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
             const SizedBox(width: 8),
-            const Icon(Icons.search, color: AppColours.primaryColor),
+            Icon(Icons.search, color: theme.colorScheme.primary),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActiveSearchBar(BuildContext context) {
+  Widget _buildActiveSearchBar(BuildContext context, ThemeData theme) {
     return Container(
       height: 45,
       decoration: BoxDecoration(
-        color: AppColours.greyLighter,
+        color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextField(
@@ -201,21 +184,24 @@ class HomeSearchBar extends StatelessWidget {
         textAlign: TextAlign.right,
         textDirection: ui.TextDirection.rtl,
         textInputAction: TextInputAction.search,
-        style: AppTextStyle.normal_12_black,
+        style: theme.textTheme.bodyMedium,
         decoration: InputDecoration(
           hintText: 'search'.tr(),
-          hintStyle: AppTextStyle.normal_12_greyDark,
+          hintStyle: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
           suffixIcon: searchController.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear,
-                      color: AppColours.greyMedium, size: 20),
+                  icon: Icon(Icons.clear,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      size: 20),
                   onPressed: () {
                     searchController.clear();
                     onSearchChanged('');
                   },
                 )
               : null,
-          prefixIcon: const Icon(Icons.search, color: AppColours.primaryColor),
+          prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

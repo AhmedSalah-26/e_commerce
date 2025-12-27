@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../shipping/domain/entities/governorate_entity.dart';
 import '../../../../shipping/domain/entities/shipping_price_entity.dart';
 import 'governorate_shipping_card.dart';
@@ -23,6 +22,7 @@ class ShippingPricesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final priceMap = <String, double>{};
     for (final price in prices) {
       priceMap[price.governorateId] = price.price;
@@ -35,7 +35,7 @@ class ShippingPricesList extends StatelessWidget {
 
     return Column(
       children: [
-        if (withoutPrices.isNotEmpty) _buildAddZoneButton(context),
+        if (withoutPrices.isNotEmpty) _buildAddZoneButton(context, theme),
         const SizedBox(height: 8),
         if (withPrices.isNotEmpty)
           _buildSectionHeader(
@@ -91,7 +91,7 @@ class ShippingPricesList extends StatelessWidget {
     );
   }
 
-  Widget _buildAddZoneButton(BuildContext context) {
+  Widget _buildAddZoneButton(BuildContext context, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: InkWell(
@@ -100,25 +100,25 @@ class ShippingPricesList extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColours.brownLight.withValues(alpha: 0.1),
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppColours.brownLight,
+              color: theme.colorScheme.primary,
               style: BorderStyle.solid,
             ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.add_circle_outline,
-                color: AppColours.brownMedium,
+                color: theme.colorScheme.primary,
               ),
               const SizedBox(width: 8),
               Text(
                 'add_shipping_zone'.tr(),
-                style: const TextStyle(
-                  color: AppColours.brownMedium,
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
                 ),

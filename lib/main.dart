@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/services/deep_link_service.dart';
-import 'core/theme/app_theme.dart';
+import 'core/theme/theme_cubit.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/auth/presentation/cubit/auth_state.dart';
 import 'features/products/presentation/cubit/products_cubit.dart';
@@ -43,6 +43,9 @@ void main() async {
       startLocale: const Locale('ar'),
       child: MultiBlocProvider(
         providers: [
+          BlocProvider<ThemeCubit>(
+            create: (_) => ThemeCubit(),
+          ),
           BlocProvider<AuthCubit>(
             create: (_) => di.sl<AuthCubit>()..checkAuthStatus(),
           ),
@@ -178,13 +181,17 @@ class _MyAppState extends State<MyApp> {
           di.sl<OrderStatusListener>().stopListening();
         }
       },
-      child: MaterialApp.router(
-        theme: AppTheme.lightTheme,
-        debugShowCheckedModeBanner: false,
-        routerConfig: AppRouter.router,
-        locale: context.locale,
-        supportedLocales: context.supportedLocales,
-        localizationsDelegates: context.localizationDelegates,
+      child: BlocBuilder<ThemeCubit, ThemeState>(
+        builder: (context, themeState) {
+          return MaterialApp.router(
+            theme: themeState.themeData,
+            debugShowCheckedModeBanner: false,
+            routerConfig: AppRouter.router,
+            locale: context.locale,
+            supportedLocales: context.supportedLocales,
+            localizationsDelegates: context.localizationDelegates,
+          );
+        },
       ),
     );
   }

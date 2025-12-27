@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../products/domain/entities/product_entity.dart';
 
 class ProductSelectionSection extends StatelessWidget {
@@ -19,6 +18,8 @@ class ProductSelectionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -31,8 +32,8 @@ class ProductSelectionSection extends StatelessWidget {
               onPressed: onSelectProducts,
               icon: const Icon(Icons.add, size: 18),
               label: Text('select_products'.tr()),
-              style:
-                  TextButton.styleFrom(foregroundColor: AppColours.brownMedium),
+              style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.primary),
             ),
           ],
         ),
@@ -60,19 +61,25 @@ class _EmptySelectionBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: theme.colorScheme.outline),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.info_outline, color: Colors.grey.shade600, size: 18),
+          Icon(Icons.info_outline,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              size: 18),
           const SizedBox(width: 8),
-          Text(message, style: TextStyle(color: Colors.grey.shade600)),
+          Text(message,
+              style: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
         ],
       ),
     );
@@ -109,10 +116,12 @@ class _SelectedItemsList<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       constraints: const BoxConstraints(maxHeight: 150),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: theme.colorScheme.outline),
         borderRadius: BorderRadius.circular(8),
       ),
       child: ListView.builder(
@@ -163,11 +172,13 @@ class _PlaceholderIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Icon(icon, size: 20),

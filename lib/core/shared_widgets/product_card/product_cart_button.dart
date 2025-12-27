@@ -7,10 +7,8 @@ import '../../../features/auth/presentation/cubit/auth_state.dart';
 import '../../../features/cart/presentation/cubit/cart_cubit.dart';
 import '../../../features/cart/presentation/cubit/cart_state.dart';
 import '../../../features/products/domain/entities/product_entity.dart';
-import '../../theme/app_colors.dart';
 import '../toast.dart';
 
-/// Cart button with BlocSelector for optimized rebuilds
 class ProductCartButton extends StatelessWidget {
   final ProductEntity product;
 
@@ -85,6 +83,8 @@ class _QuantityControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -94,10 +94,10 @@ class _QuantityControls extends StatelessWidget {
         ),
         Text(
           '$quantity',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppColours.jumiaDark,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         _QuantityButton(
@@ -132,13 +132,15 @@ class _QuantityButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: onTap != null ? AppColours.brownLight : Colors.grey,
+          color: onTap != null ? theme.colorScheme.primary : Colors.grey,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: Colors.white, size: 20),
@@ -154,6 +156,8 @@ class _AddToCartButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return SizedBox(
       width: double.infinity,
       height: 40,
@@ -161,7 +165,7 @@ class _AddToCartButton extends StatelessWidget {
         onPressed: product.isOutOfStock ? null : () => _addToCart(context),
         style: ElevatedButton.styleFrom(
           backgroundColor:
-              product.isOutOfStock ? Colors.grey : AppColours.brownLight,
+              product.isOutOfStock ? Colors.grey : theme.colorScheme.primary,
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(6),

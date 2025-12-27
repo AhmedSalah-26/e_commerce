@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../categories/presentation/cubit/categories_state.dart';
@@ -45,12 +44,13 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -63,7 +63,7 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: theme.colorScheme.outline,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -73,7 +73,9 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('filters'.tr(),
-                    style: AppTextStyle.semiBold_20_dark_brown),
+                    style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+                      color: theme.colorScheme.onSurface,
+                    )),
                 TextButton(
                   onPressed: () {
                     setState(() {
@@ -90,12 +92,18 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
             ),
             const SizedBox(height: 20),
             // Sort options
-            Text('sort_by'.tr(), style: AppTextStyle.semiBold_16_dark_brown),
+            Text('sort_by'.tr(),
+                style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+                  color: theme.colorScheme.onSurface,
+                )),
             const SizedBox(height: 12),
-            _buildSortOptions(),
+            _buildSortOptions(theme),
             const SizedBox(height: 24),
             // Category filter
-            Text('categories'.tr(), style: AppTextStyle.semiBold_16_dark_brown),
+            Text('categories'.tr(),
+                style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+                  color: theme.colorScheme.onSurface,
+                )),
             const SizedBox(height: 12),
             BlocBuilder<CategoriesCubit, CategoriesState>(
               builder: (context, state) {
@@ -111,6 +119,7 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
                         return _buildCategoryChip(
                           category.name,
                           isSelected,
+                          theme,
                           () {
                             setState(() {
                               // Toggle selection - tap again to deselect
@@ -131,13 +140,18 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
             ),
             const SizedBox(height: 24),
             // Price filter
-            Text('price'.tr(), style: AppTextStyle.semiBold_16_dark_brown),
+            Text('price'.tr(),
+                style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+                  color: theme.colorScheme.onSurface,
+                )),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('${tempPriceRange.start.toInt()} ${'egp'.tr()}'),
-                Text('${tempPriceRange.end.toInt()} ${'egp'.tr()}'),
+                Text('${tempPriceRange.start.toInt()} ${'egp'.tr()}',
+                    style: TextStyle(color: theme.colorScheme.onSurface)),
+                Text('${tempPriceRange.end.toInt()} ${'egp'.tr()}',
+                    style: TextStyle(color: theme.colorScheme.onSurface)),
               ],
             ),
             RangeSlider(
@@ -145,8 +159,8 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
               min: widget.minPrice,
               max: widget.maxPrice,
               divisions: 100,
-              activeColor: AppColours.brownLight,
-              inactiveColor: AppColours.greyLight,
+              activeColor: theme.colorScheme.primary,
+              inactiveColor: theme.colorScheme.outline,
               onChanged: (values) {
                 setState(() => tempPriceRange = values);
               },
@@ -162,7 +176,7 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColours.brownLight,
+                  backgroundColor: theme.colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
@@ -178,7 +192,7 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
     );
   }
 
-  Widget _buildSortOptions() {
+  Widget _buildSortOptions(ThemeData theme) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -189,14 +203,16 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: isSelected ? AppColours.brownLight : Colors.white,
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColours.brownLight),
+              border: Border.all(color: theme.colorScheme.primary),
             ),
             child: Text(
               option.translationKey.tr(),
               style: TextStyle(
-                color: isSelected ? Colors.white : AppColours.brownLight,
+                color: isSelected ? Colors.white : theme.colorScheme.primary,
                 fontSize: 13,
               ),
             ),
@@ -206,21 +222,24 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
     );
   }
 
-  Widget _buildCategoryChip(String label, bool isSelected, VoidCallback onTap) {
+  Widget _buildCategoryChip(
+      String label, bool isSelected, ThemeData theme, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(left: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColours.brownLight : Colors.white,
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColours.brownLight),
+          border: Border.all(color: theme.colorScheme.primary),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : AppColours.brownLight,
+            color: isSelected ? Colors.white : theme.colorScheme.primary,
             fontSize: 14,
           ),
         ),

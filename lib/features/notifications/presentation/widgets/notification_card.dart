@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/notification_entity.dart';
 
 class NotificationCard extends StatelessWidget {
@@ -19,6 +18,8 @@ class NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Dismissible(
       key: Key(notification.id),
       direction: DismissDirection.endToStart,
@@ -40,11 +41,13 @@ class NotificationCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isRead
-                ? Colors.white
-                : AppColours.brownLight.withValues(alpha: 0.1),
+                ? theme.colorScheme.surface
+                : theme.colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isRead ? AppColours.greyLight : AppColours.brownLight,
+              color: isRead
+                  ? theme.colorScheme.outline
+                  : theme.colorScheme.primary,
               width: isRead ? 1 : 2,
             ),
           ),
@@ -54,13 +57,13 @@ class NotificationCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: _getNotificationColor(notification.type)
+                  color: _getNotificationColor(notification.type, theme)
                       .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   _getNotificationIcon(notification.type),
-                  color: _getNotificationColor(notification.type),
+                  color: _getNotificationColor(notification.type, theme),
                   size: 24,
                 ),
               ),
@@ -75,11 +78,9 @@ class NotificationCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             notification.title,
-                            style: TextStyle(
-                              fontSize: 16,
+                            style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight:
                                   isRead ? FontWeight.normal : FontWeight.bold,
-                              color: AppColours.brownDark,
                             ),
                           ),
                         ),
@@ -87,8 +88,8 @@ class NotificationCard extends StatelessWidget {
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColours.brownLight,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -97,17 +98,17 @@ class NotificationCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       notification.body,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       _formatDate(notification.createdAt),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[400],
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.4),
                       ),
                     ),
                   ],
@@ -131,14 +132,14 @@ class NotificationCard extends StatelessWidget {
     }
   }
 
-  Color _getNotificationColor(String type) {
+  Color _getNotificationColor(String type, ThemeData theme) {
     switch (type) {
       case 'order_status':
-        return AppColours.brownMedium;
+        return theme.colorScheme.primary;
       case 'promotion':
         return Colors.green;
       default:
-        return AppColours.brownLight;
+        return theme.colorScheme.primary;
     }
   }
 

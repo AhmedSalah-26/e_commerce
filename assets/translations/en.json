@@ -136,6 +136,11 @@
   "privacy_policy": "Privacy Policy",
   "terms_conditions": "Terms & Conditions",
   "dark_mode": "Dark Mode",
+  "light_mode": "Light Mode",
+  "dark_mode_desc": "Dark appearance, easy on the eyes",
+  "light_mode_desc": "Light and clear appearance",
+  "theme": "Theme",
+  "theme_settings": "Theme Settings",
   "app_version": "App Version",
 
   "field_required": "This field is required",

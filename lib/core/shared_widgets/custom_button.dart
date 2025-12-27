@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_text_style.dart';
 
 class CustomButton extends StatelessWidget {
   final String label;
-  final Color color;
+  final Color? color;
   final double width;
   final double height;
   final VoidCallback onPressed;
@@ -13,7 +12,7 @@ class CustomButton extends StatelessWidget {
   const CustomButton({
     super.key,
     required this.label,
-    this.color = AppColours.brownLight,
+    this.color,
     this.width = 400,
     this.height = 50,
     required this.onPressed,
@@ -22,6 +21,7 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -33,7 +33,7 @@ class CustomButton extends StatelessWidget {
       width: buttonWidth,
       height: buttonHeight,
       decoration: BoxDecoration(
-        color: color,
+        color: color ?? theme.colorScheme.primary,
         borderRadius: BorderRadius.circular(10),
       ),
       child: MaterialButton(

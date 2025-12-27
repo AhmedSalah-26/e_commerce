@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
-import '../../../../../Core/Theme/app_text_style.dart';
 import '../../../../products/domain/entities/product_entity.dart';
 import 'product_form_content.dart';
 
@@ -18,13 +16,16 @@ class ProductFormDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Dialog(
+      backgroundColor: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: const BoxConstraints(maxHeight: 700, maxWidth: 500),
         child: Column(
           children: [
-            _buildHeader(context),
+            _buildHeader(context, theme),
             Expanded(
               child: ProductFormContent(
                 product: product,
@@ -38,12 +39,12 @@ class ProductFormDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: AppColours.primary,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -52,7 +53,11 @@ class ProductFormDialog extends StatelessWidget {
             product == null
                 ? (isRtl ? 'إضافة منتج جديد' : 'Add New Product')
                 : (isRtl ? 'تعديل المنتج' : 'Edit Product'),
-            style: AppTextStyle.semiBold_18_white,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.white),

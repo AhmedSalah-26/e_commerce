@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 
 class CouponActiveSwitch extends StatelessWidget {
   final bool isActive;
@@ -14,14 +13,17 @@ class CouponActiveSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return SwitchListTile(
       title: Text('is_active'.tr()),
       value: isActive,
       onChanged: onChanged,
-      activeTrackColor: AppColours.brownMedium.withValues(alpha: 0.5),
+      activeTrackColor: theme.colorScheme.primary.withValues(alpha: 0.5),
       thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected))
-          return AppColours.brownMedium;
+        if (states.contains(WidgetState.selected)) {
+          return theme.colorScheme.primary;
+        }
         return null;
       }),
       contentPadding: EdgeInsets.zero,

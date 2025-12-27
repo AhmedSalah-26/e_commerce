@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 
 class CategorySearchDialog extends StatefulWidget {
@@ -51,34 +49,40 @@ class _CategorySearchDialogState extends State<CategorySearchDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Dialog(
+      backgroundColor: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: const BoxConstraints(maxHeight: 400, maxWidth: 400),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildHeader(),
-            _buildSearchField(),
-            _buildCategoriesList(),
+            _buildHeader(theme),
+            _buildSearchField(theme),
+            _buildCategoriesList(theme),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: AppColours.primary,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Row(
         children: [
           Text(
             widget.isRtl ? 'اختر التصنيف' : 'Select Category',
-            style: AppTextStyle.semiBold_18_white,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
           ),
           const Spacer(),
           IconButton(
@@ -90,63 +94,63 @@ class _CategorySearchDialogState extends State<CategorySearchDialog> {
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: TextField(
         onChanged: (value) => setState(() => _searchQuery = value),
         decoration: InputDecoration(
           hintText: widget.isRtl ? 'البحث عن تصنيف...' : 'Search category...',
-          prefixIcon: const Icon(Icons.search, color: AppColours.primary),
+          prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: theme.colorScheme.surface,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColours.primary),
+            borderSide: BorderSide(color: theme.colorScheme.primary),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColours.primary),
+            borderSide: BorderSide(color: theme.colorScheme.primary),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColours.primary, width: 2),
+            borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
     );
   }
 
-  Widget _buildCategoriesList() {
+  Widget _buildCategoriesList(ThemeData theme) {
     return Flexible(
       child: ListView(
         shrinkWrap: true,
         children: [
-          _buildAllCategoriesOption(),
+          _buildAllCategoriesOption(theme),
           const Divider(height: 1),
-          ..._filteredCategories.map(_buildCategoryItem),
+          ..._filteredCategories.map((c) => _buildCategoryItem(c, theme)),
         ],
       ),
     );
   }
 
-  Widget _buildAllCategoriesOption() {
+  Widget _buildAllCategoriesOption(ThemeData theme) {
     final isSelected = widget.selectedCategoryId == null;
     return ListTile(
-      leading: const Icon(Icons.all_inclusive, color: AppColours.primary),
+      leading: Icon(Icons.all_inclusive, color: theme.colorScheme.primary),
       title: Text(
         widget.isRtl ? 'جميع التصنيفات' : 'All Categories',
         style: TextStyle(
-          color: isSelected ? AppColours.primary : AppColours.greyDark,
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.onSurface.withValues(alpha: 0.6),
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
       ),
       trailing: isSelected
-          ? const Icon(Icons.check, color: AppColours.primary)
+          ? Icon(Icons.check, color: theme.colorScheme.primary)
           : null,
       onTap: () {
         widget.onCategorySelected(null);
@@ -155,22 +159,26 @@ class _CategorySearchDialogState extends State<CategorySearchDialog> {
     );
   }
 
-  Widget _buildCategoryItem(CategoryEntity category) {
+  Widget _buildCategoryItem(CategoryEntity category, ThemeData theme) {
     final isSelected = widget.selectedCategoryId == category.id;
     return ListTile(
       leading: Icon(
         Icons.category,
-        color: isSelected ? AppColours.primary : AppColours.greyDark,
+        color: isSelected
+            ? theme.colorScheme.primary
+            : theme.colorScheme.onSurface.withValues(alpha: 0.6),
       ),
       title: Text(
         category.name,
         style: TextStyle(
-          color: isSelected ? AppColours.primary : AppColours.greyDark,
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.onSurface.withValues(alpha: 0.6),
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
       ),
       trailing: isSelected
-          ? const Icon(Icons.check, color: AppColours.primary)
+          ? Icon(Icons.check, color: theme.colorScheme.primary)
           : null,
       onTap: () {
         widget.onCategorySelected(category.id);

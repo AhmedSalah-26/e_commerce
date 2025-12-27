@@ -5,8 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/routing/app_router.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
+import '../../../../core/theme/theme_cubit.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../notifications/data/services/local_notification_service.dart';
@@ -49,6 +48,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
 
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, authState) {
@@ -57,14 +57,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           return Directionality(
             textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
             child: Scaffold(
-              backgroundColor: AppColours.white,
+              backgroundColor: theme.scaffoldBackgroundColor,
               appBar: AppBar(
-                backgroundColor: Colors.white,
+                backgroundColor: theme.scaffoldBackgroundColor,
                 title: Text(
                   'settings_title'.tr(),
-                  style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+                  style: TextStyle(
                     fontSize: 24,
-                    color: AppColours.brownMedium,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
                 centerTitle: true,
@@ -84,7 +85,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Directionality(
             textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
             child: Scaffold(
-              backgroundColor: AppColours.white,
+              backgroundColor: theme.scaffoldBackgroundColor,
               body: SafeArea(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
@@ -94,9 +95,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const SizedBox(height: 20),
                       Text(
                         'settings_title'.tr(),
-                        style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+                        style: TextStyle(
                           fontSize: 24,
-                          color: AppColours.primaryColor,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -142,6 +144,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             onTap: () => context.push('/language-settings'),
                             showDivider: false,
                           ),
+                          BlocBuilder<ThemeCubit, ThemeState>(
+                            builder: (context, themeState) {
+                              return SettingsTile(
+                                icon: themeState.themeMode == AppThemeMode.dark
+                                    ? Icons.dark_mode
+                                    : Icons.light_mode,
+                                title: 'theme'.tr(),
+                                subtitle:
+                                    themeState.themeMode == AppThemeMode.dark
+                                        ? 'dark_mode'.tr()
+                                        : 'light_mode'.tr(),
+                                onTap: () => context.push('/theme-settings'),
+                                showDivider: false,
+                              );
+                            },
+                          ),
                           SettingsTile(
                             icon: Icons.help_outline,
                             title: 'help'.tr(),
@@ -182,6 +200,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildLoginRequired(BuildContext context, bool isRtl) {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -191,25 +210,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColours.primaryColor.withValues(alpha: 0.1),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.settings_outlined,
                 size: 64,
-                color: AppColours.primaryColor,
+                color: theme.colorScheme.primary,
               ),
             ),
             const SizedBox(height: 24),
             Text(
               'login_required'.tr(),
-              style: AppTextStyle.semiBold_20_dark_brown,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               'login_to_access_settings'.tr(),
-              style: AppTextStyle.normal_14_greyDark,
+              style: TextStyle(
+                fontSize: 14,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -222,15 +248,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   context.go('/login');
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColours.brownLight,
+                  backgroundColor: theme.colorScheme.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  'login'.tr(),
-                  style: AppTextStyle.semiBold_18_white,
-                ),
+                child: const Text(
+                  'login',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ).tr(),
               ),
             ),
           ],
@@ -240,18 +270,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _handleLogout(BuildContext context) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('logout'.tr()),
-        content: Text('logout_confirm'.tr()),
+        title: Text(
+          'logout'.tr(),
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
+        content: Text(
+          'logout_confirm'.tr(),
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'cancel'.tr(),
-              style: const TextStyle(color: AppColours.greyDark),
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
           ),
           TextButton(

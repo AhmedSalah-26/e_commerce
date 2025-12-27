@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 
-/// Simple button that opens language settings page
 class LanguageToggleButton extends StatelessWidget {
   final Color? iconColor;
   final Color? backgroundColor;
@@ -15,11 +14,12 @@ class LanguageToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isArabic = context.locale.languageCode == 'ar';
 
     return Container(
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white.withValues(alpha: 0.9),
+        color: backgroundColor ?? theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -42,7 +42,7 @@ class LanguageToggleButton extends StatelessWidget {
                 Icon(
                   Icons.language,
                   size: 20,
-                  color: iconColor ?? Colors.black87,
+                  color: iconColor ?? theme.colorScheme.onSurface,
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -50,7 +50,7 @@ class LanguageToggleButton extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: iconColor ?? Colors.black87,
+                    color: iconColor ?? theme.colorScheme.onSurface,
                   ),
                 ),
               ],

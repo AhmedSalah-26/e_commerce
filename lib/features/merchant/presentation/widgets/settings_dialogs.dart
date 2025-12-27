@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/theme/app_colors.dart';
 
 class LanguageDialog {
   static Future<void> show(BuildContext context, bool isRtl) {
@@ -65,7 +64,10 @@ class _NotificationsDialogContentState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
+      backgroundColor: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text(widget.isRtl ? 'الإشعارات' : 'Notifications'),
       content: Column(
@@ -82,8 +84,7 @@ class _NotificationsDialogContentState
             ),
             value: _orderNotifications,
             onChanged: (value) => setState(() => _orderNotifications = value),
-            activeTrackColor: AppColours.primary.withValues(alpha: 0.5),
-            inactiveTrackColor: Colors.grey.shade300,
+            activeColor: theme.colorScheme.primary,
           ),
           const Divider(),
           SwitchListTile(
@@ -98,8 +99,7 @@ class _NotificationsDialogContentState
             value: _promotionNotifications,
             onChanged: (value) =>
                 setState(() => _promotionNotifications = value),
-            activeTrackColor: AppColours.primary.withValues(alpha: 0.5),
-            inactiveTrackColor: Colors.grey.shade300,
+            activeColor: theme.colorScheme.primary,
           ),
         ],
       ),
@@ -119,9 +119,12 @@ class LogoutDialog {
     bool isRtl,
     VoidCallback onLogout,
   ) {
+    final theme = Theme.of(context);
+
     return showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(isRtl ? 'تسجيل الخروج' : 'Logout'),
         content: Text(
@@ -134,7 +137,8 @@ class LogoutDialog {
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               isRtl ? 'إلغاء' : 'Cancel',
-              style: const TextStyle(color: AppColours.greyDark),
+              style: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
             ),
           ),
           TextButton(

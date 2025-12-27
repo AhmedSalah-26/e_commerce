@@ -1,7 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 
 class CategoryListItem extends StatelessWidget {
@@ -18,12 +16,14 @@ class CategoryListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColours.greyLight),
+        border: Border.all(color: theme.colorScheme.outline),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withValues(alpha: 0.1),
@@ -42,23 +42,25 @@ class CategoryListItem extends StatelessWidget {
                   height: 50,
                   fit: BoxFit.cover,
                   memCacheWidth: 100,
-                  placeholder: (_, __) => _buildCategoryPlaceholder(),
-                  errorWidget: (_, __, ___) => _buildCategoryPlaceholder(),
+                  placeholder: (_, __) => _buildCategoryPlaceholder(theme),
+                  errorWidget: (_, __, ___) => _buildCategoryPlaceholder(theme),
                 )
-              : _buildCategoryPlaceholder(),
+              : _buildCategoryPlaceholder(theme),
         ),
         title: Text(
           category.name,
-          style: AppTextStyle.semiBold_16_dark_brown,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
               onPressed: onEdit,
-              icon: const Icon(
+              icon: Icon(
                 Icons.edit_outlined,
-                color: AppColours.primary,
+                color: theme.colorScheme.primary,
               ),
             ),
             IconButton(
@@ -74,17 +76,17 @@ class CategoryListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryPlaceholder() {
+  Widget _buildCategoryPlaceholder(ThemeData theme) {
     return Container(
       width: 50,
       height: 50,
       decoration: BoxDecoration(
-        color: AppColours.primary.withValues(alpha: 0.1),
+        color: theme.colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: const Icon(
+      child: Icon(
         Icons.category,
-        color: AppColours.primary,
+        color: theme.colorScheme.primary,
         size: 24,
       ),
     );

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/shared_widgets/language_toggle_button.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../domain/entities/user_entity.dart';
 import '../cubit/auth_cubit.dart';
@@ -56,12 +55,14 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => context.pop(),
         ),
         actions: const [
@@ -101,27 +102,30 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     Text(
                       'create_new_account'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'enter_your_data'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
                     Text(
                       'account_type'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -183,7 +187,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         onPressed:
                             state is AuthLoading ? null : _handleRegister,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColours.primary,
+                          backgroundColor: theme.colorScheme.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -205,13 +209,16 @@ class _RegisterPageState extends State<RegisterPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('already_have_account'.tr()),
+                        Text(
+                          'already_have_account'.tr(),
+                          style: TextStyle(color: theme.colorScheme.onSurface),
+                        ),
                         TextButton(
                           onPressed: () => context.pop(),
                           child: Text(
                             'login'.tr(),
-                            style: const TextStyle(
-                              color: AppColours.primary,
+                            style: TextStyle(
+                              color: theme.colorScheme.primary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

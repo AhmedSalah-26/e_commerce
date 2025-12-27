@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../domain/entities/coupon_entity.dart';
 import 'coupon_info_chip.dart';
 import 'coupon_scope_badge.dart';
@@ -21,54 +20,60 @@ class CouponCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final locale = context.locale.languageCode;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.colorScheme.outline),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(locale),
+            _buildHeader(locale, theme),
             const SizedBox(height: 12),
-            _buildTitle(locale),
+            _buildTitle(locale, theme),
             if (coupon.getDescription(locale) != null) ...[
               const SizedBox(height: 4),
               Text(
                 coupon.getDescription(locale)!,
-                style: const TextStyle(color: AppColours.greyMedium),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
             ],
             const SizedBox(height: 12),
             _buildInfoChips(),
             if (coupon.endDate != null) ...[
               const SizedBox(height: 8),
-              _buildExpiryInfo(),
+              _buildExpiryInfo(theme),
             ],
             const Divider(height: 24),
-            _buildActions(),
+            _buildActions(theme),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(String locale) {
+  Widget _buildHeader(String locale, ThemeData theme) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColours.brownLight.withValues(alpha: 0.2),
+            color: theme.colorScheme.primary.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             coupon.code,
-            style: const TextStyle(
+            style: theme.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColours.brownDark,
               letterSpacing: 1,
             ),
           ),
@@ -113,19 +118,17 @@ class CouponCard extends StatelessWidget {
         Switch(
           value: coupon.isActive,
           onChanged: onToggle,
-          activeThumbColor: AppColours.brownMedium,
+          activeColor: theme.colorScheme.primary,
         ),
       ],
     );
   }
 
-  Widget _buildTitle(String locale) {
+  Widget _buildTitle(String locale, ThemeData theme) {
     return Text(
       coupon.getName(locale),
-      style: const TextStyle(
-        fontSize: 16,
+      style: theme.textTheme.titleMedium?.copyWith(
         fontWeight: FontWeight.w600,
-        color: AppColours.brownDark,
       ),
     );
   }
@@ -154,13 +157,15 @@ class CouponCard extends StatelessWidget {
     );
   }
 
-  Widget _buildExpiryInfo() {
+  Widget _buildExpiryInfo(ThemeData theme) {
     return Row(
       children: [
         Icon(
           coupon.isExpired ? Icons.error_outline : Icons.schedule,
           size: 16,
-          color: coupon.isExpired ? Colors.red : AppColours.greyMedium,
+          color: coupon.isExpired
+              ? Colors.red
+              : theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         const SizedBox(width: 4),
         Text(
@@ -169,14 +174,16 @@ class CouponCard extends StatelessWidget {
               : '${'ends'.tr()}: ${DateFormat('yyyy/MM/dd').format(coupon.endDate!)}',
           style: TextStyle(
             fontSize: 12,
-            color: coupon.isExpired ? Colors.red : AppColours.greyMedium,
+            color: coupon.isExpired
+                ? Colors.red
+                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildActions() {
+  Widget _buildActions(ThemeData theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -184,7 +191,8 @@ class CouponCard extends StatelessWidget {
           onPressed: onEdit,
           icon: const Icon(Icons.edit_outlined, size: 18),
           label: Text('edit'.tr()),
-          style: TextButton.styleFrom(foregroundColor: AppColours.brownMedium),
+          style:
+              TextButton.styleFrom(foregroundColor: theme.colorScheme.primary),
         ),
       ],
     );

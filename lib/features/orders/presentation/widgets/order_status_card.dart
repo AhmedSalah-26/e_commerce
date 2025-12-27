@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/order_entity.dart';
 
 /// Status configuration (single source of truth)
@@ -67,6 +66,7 @@ class OrderStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final cfg = _statusConfig[order.status]!;
 
     final color = cfg.$1;
@@ -88,12 +88,17 @@ class OrderStatusCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             title,
-            style: AppTextStyle.semiBold_20_dark_brown.copyWith(color: color),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             desc,
-            style: AppTextStyle.normal_14_greyDark,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
             textAlign: TextAlign.center,
           ),
         ],

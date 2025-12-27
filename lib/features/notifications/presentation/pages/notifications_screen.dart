@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../cubit/notifications_cubit.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../widgets/notification_card.dart';
@@ -27,22 +25,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isRtl = context.locale.languageCode == 'ar';
 
     return Directionality(
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.surface,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColours.brownMedium),
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
             onPressed: () => context.pop(),
           ),
           title: Text(
             'notifications'.tr(),
-            style: AppTextStyle.semiBold_20_dark_brown.copyWith(
-              color: AppColours.brownMedium,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.primary,
             ),
           ),
           centerTitle: true,
@@ -52,8 +52,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 if (state is NotificationsLoaded &&
                     state.notifications.isNotEmpty) {
                   return PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert,
-                        color: AppColours.brownMedium),
+                    icon:
+                        Icon(Icons.more_vert, color: theme.colorScheme.primary),
                     onSelected: (value) {
                       if (value == 'mark_all_read') {
                         context.read<NotificationsCubit>().markAllAsRead();
@@ -79,10 +79,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             const Icon(Icons.delete_sweep,
                                 size: 20, color: Colors.red),
                             const SizedBox(width: 8),
-                            Text(
-                              'clear_all'.tr(),
-                              style: const TextStyle(color: Colors.red),
-                            ),
+                            Text('clear_all'.tr(),
+                                style: const TextStyle(color: Colors.red)),
                           ],
                         ),
                       ),
@@ -105,15 +103,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      state.message,
-                      style: const TextStyle(color: Colors.red),
-                    ),
+                    Text(state.message,
+                        style: const TextStyle(color: Colors.red)),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {
-                        context.read<NotificationsCubit>().loadNotifications();
-                      },
+                      onPressed: () => context
+                          .read<NotificationsCubit>()
+                          .loadNotifications(),
                       child: Text('retry'.tr()),
                     ),
                   ],
@@ -122,48 +118,40 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             }
 
             if (state is NotificationsLoaded) {
-              if (state.notifications.isEmpty) {
-                return _buildEmptyState();
-              }
+              if (state.notifications.isEmpty) return _buildEmptyState(theme);
 
               return RefreshIndicator(
-                onRefresh: () async {
-                  context.read<NotificationsCubit>().loadNotifications();
-                },
+                onRefresh: () async =>
+                    context.read<NotificationsCubit>().loadNotifications(),
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: state.notifications.length,
-                  itemBuilder: (context, index) {
-                    final notification = state.notifications[index];
-                    return _buildNotificationCard(notification);
-                  },
+                  itemBuilder: (context, index) =>
+                      _buildNotificationCard(state.notifications[index]),
                 ),
               );
             }
 
-            return _buildEmptyState();
+            return _buildEmptyState(theme);
           },
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(ThemeData theme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.notifications_off_outlined,
-            size: 80,
-            color: Colors.grey[300],
-          ),
+          Icon(Icons.notifications_off_outlined,
+              size: 80,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
           Text(
             'no_notifications'.tr(),
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey[500],
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -178,16 +166,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       notification: notification,
       isRead: isRead,
       onTap: () {
-        if (!isRead) {
+        if (!isRead)
           context.read<NotificationsCubit>().markAsRead(notification.id);
-        }
-        if (notification.orderId != null) {
-          context.push('/orders');
-        }
+        if (notification.orderId != null) context.push('/orders');
       },
-      onDismissed: () {
-        context.read<NotificationsCubit>().deleteNotification(notification.id);
-      },
+      onDismissed: () => context
+          .read<NotificationsCubit>()
+          .deleteNotification(notification.id),
     );
   }
 }

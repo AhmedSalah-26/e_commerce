@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../data/models/coupon_model.dart';
 import '../../domain/entities/coupon_entity.dart';
 import '../cubit/coupon_cubit.dart';
@@ -85,6 +84,7 @@ class _GlobalCouponFormPageState extends State<GlobalCouponFormPage> {
   @override
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
 
     return BlocConsumer<GlobalCouponsCubit, CouponState>(
       listenWhen: (previous, current) => current is CouponSaved,
@@ -96,20 +96,22 @@ class _GlobalCouponFormPageState extends State<GlobalCouponFormPage> {
       builder: (context, state) {
         final isLoading = state is CouponSaving;
         return Scaffold(
-          appBar: _buildAppBar(isRtl),
+          appBar: _buildAppBar(isRtl, theme),
           body: _buildBody(),
-          bottomNavigationBar: _buildFormActions(isLoading),
+          bottomNavigationBar: _buildFormActions(isLoading, theme),
         );
       },
     );
   }
 
-  Widget _buildFormActions(bool isLoading) {
+  Widget _buildFormActions(bool isLoading, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        color: theme.colorScheme.surface,
+        border: Border(
+            top: BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.3))),
       ),
       child: Row(
         children: [
@@ -124,7 +126,7 @@ class _GlobalCouponFormPageState extends State<GlobalCouponFormPage> {
             child: ElevatedButton(
               onPressed: isLoading ? null : _save,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColours.brownMedium,
+                backgroundColor: theme.colorScheme.primary,
                 foregroundColor: Colors.white,
               ),
               child: isLoading
@@ -142,9 +144,9 @@ class _GlobalCouponFormPageState extends State<GlobalCouponFormPage> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(bool isRtl) {
+  PreferredSizeWidget _buildAppBar(bool isRtl, ThemeData theme) {
     return AppBar(
-      backgroundColor: AppColours.brownLight,
+      backgroundColor: theme.colorScheme.primary,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),

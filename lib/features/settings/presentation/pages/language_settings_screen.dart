@@ -201,12 +201,16 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
     if (authState is AuthAuthenticated) {
       context.read<FavoritesCubit>().reset();
       context.read<CartCubit>().reset();
-    }
 
-    // Navigate to home - the scoped cubits (CategoriesCubit, HomeSlidersCubit)
-    // will reload automatically via didChangeDependencies in HomeScreen
-    if (mounted) {
-      context.go('/home');
+      // Navigate to home for authenticated users
+      if (mounted) {
+        context.go('/home');
+      }
+    } else {
+      // Just pop back for non-authenticated users (auth screens)
+      if (mounted) {
+        context.pop();
+      }
     }
   }
 }

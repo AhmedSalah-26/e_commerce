@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
+import '../../../../core/utils/error_helper.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../categories/presentation/cubit/categories_state.dart';
 import '../../../products/presentation/cubit/products_cubit.dart';
@@ -64,8 +65,10 @@ class HomeContentBuilder {
                 }
                 if (state is CategoriesError) {
                   return Center(
-                      child: Text(state.message,
-                          style: const TextStyle(color: Colors.red)));
+                      child: Text(
+                          ErrorHelper.getUserFriendlyMessage(state.message),
+                          style:
+                              TextStyle(color: theme.colorScheme.onSurface)));
                 }
                 return const SizedBox.shrink();
               },
@@ -122,8 +125,14 @@ class HomeContentBuilder {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(state.message,
-                          style: const TextStyle(color: Colors.red),
+                      Icon(
+                        Icons.wifi_off_rounded,
+                        size: 48,
+                        color: theme.colorScheme.error.withValues(alpha: 0.7),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(ErrorHelper.getUserFriendlyMessage(state.message),
+                          style: TextStyle(color: theme.colorScheme.onSurface),
                           textAlign: TextAlign.center),
                       const SizedBox(height: 10),
                       ElevatedButton(

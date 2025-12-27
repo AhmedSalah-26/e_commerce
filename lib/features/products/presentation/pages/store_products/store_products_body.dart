@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/shared_widgets/product_card/product_grid_card.dart';
 import '../../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../../core/theme/app_text_style.dart';
+import '../../../../../core/utils/error_helper.dart';
 import '../../../domain/entities/product_entity.dart';
 
 class StoreProductsBody extends StatelessWidget {
@@ -48,14 +49,14 @@ class StoreProductsBody extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline,
-              size: 48,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+          Icon(Icons.wifi_off_rounded,
+              size: 48, color: theme.colorScheme.error.withValues(alpha: 0.7)),
           const SizedBox(height: 12),
-          Text(error!,
+          Text(ErrorHelper.getUserFriendlyMessage(error!),
               style: AppTextStyle.normal_14_greyDark.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              )),
+                color: theme.colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center),
           const SizedBox(height: 12),
           ElevatedButton(onPressed: onRetry, child: Text('retry'.tr())),
         ],

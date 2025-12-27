@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/shared_widgets/custom_button.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
+import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../cubit/cart_cubit.dart';
@@ -75,9 +76,19 @@ class _CartScreenState extends State<CartScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          Icon(
+                            Icons.wifi_off_rounded,
+                            size: 64,
+                            color:
+                                theme.colorScheme.error.withValues(alpha: 0.7),
+                          ),
+                          const SizedBox(height: 16),
                           Text(
-                            state.message,
-                            style: const TextStyle(color: Colors.red),
+                            ErrorHelper.getUserFriendlyMessage(state.message),
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface,
+                              fontSize: 16,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 16),

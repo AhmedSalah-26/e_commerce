@@ -7,14 +7,15 @@ import '../../features/products/domain/entities/product_entity.dart';
 class ShareUtils {
   static const String _domain = 'zaharadates.chottu.link';
 
-  /// Generate deep link for a product - using direct URL format
+  /// Generate deep link for a product - using query parameter format
+  /// Example: https://zaharadates.chottu.link/product?id=123
   static Future<String> getProductLink(
     String productId, {
     String? productName,
     String? imageUrl,
   }) async {
-    // Use direct URL with product ID
-    final link = 'https://$_domain/product/$productId';
+    // Use URL with query parameter for product ID
+    final link = 'https://$_domain/product?id=$productId';
     debugPrint('✅ Product Link: $link');
     return link;
   }
@@ -32,8 +33,9 @@ class ShareUtils {
   }
 
   /// Simple sync method for quick link generation
+  /// Example: https://zaharadates.chottu.link/product?id=123
   static String getProductLinkSync(String productId) {
-    return 'https://$_domain/product/$productId';
+    return 'https://$_domain/product?id=$productId';
   }
 
   /// Simple sync method for store link

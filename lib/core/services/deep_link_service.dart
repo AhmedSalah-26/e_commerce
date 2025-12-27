@@ -3,8 +3,10 @@ import '../routing/app_router.dart';
 
 /// Service to handle deep links
 /// Supports links like:
-/// - https://zaharadates.chottu.link/product/123
-/// - https://zaharadates.chottu.link/store/456
+/// - https://zaharadates.chottu.link/product?id=123
+/// - https://zaharadates.chottu.link/product?id=abc
+/// - https://zaharadates.chottu.link/product?id=8564767e-1566-432d-be3c-dcb486542a9a
+/// - https://zaharadates.chottu.link/store?id=456
 /// - tamorzahra://product/123 (legacy)
 class DeepLinkService {
   static final DeepLinkService _instance = DeepLinkService._internal();

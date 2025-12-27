@@ -293,8 +293,9 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
       return;
     }
 
+    final userId = authState.user.id;
     final cartCubit = context.read<CartCubit>();
-    cartCubit.setUserId(authState.user.id);
+    cartCubit.setUserId(userId);
 
     setState(() => _isLoading = true);
 
@@ -311,6 +312,7 @@ class _AddToCartButtonState extends State<_AddToCartButton> {
           context,
           cartCubit: cartCubit,
           productId: widget.product.id,
+          userId: userId,
           onSuccess: () {
             if (mounted) {
               Tost.showCustomToast(context, 'added_to_cart'.tr(),

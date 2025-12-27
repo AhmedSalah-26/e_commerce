@@ -100,6 +100,7 @@ class NetworkErrorWidget extends StatelessWidget {
     BuildContext context, {
     required CartCubit cartCubit,
     required String productId,
+    required String userId,
     VoidCallback? onSuccess,
   }) {
     showDialog(
@@ -113,6 +114,7 @@ class NetworkErrorWidget extends StatelessWidget {
           child: _AddToCartRetryContent(
             cartCubit: cartCubit,
             productId: productId,
+            userId: userId,
             onClose: () {
               Navigator.of(dialogContext).pop();
               onSuccess?.call();
@@ -183,11 +185,13 @@ class _CartUpdateRetryContentState extends State<_CartUpdateRetryContent> {
 class _AddToCartRetryContent extends StatefulWidget {
   final CartCubit cartCubit;
   final String productId;
+  final String userId;
   final VoidCallback onClose;
 
   const _AddToCartRetryContent({
     required this.cartCubit,
     required this.productId,
+    required this.userId,
     required this.onClose,
   });
 
@@ -202,20 +206,32 @@ class _AddToCartRetryContentState extends State<_AddToCartRetryContent> {
     if (_isRetrying) return;
 
     setState(() => _isRetrying = true);
+    debugPrint(
+        '🔄 AddToCart Retry: Starting... productId=${widget.productId}, userId=${widget.userId}');
 
     bool success = false;
     try {
+      // Make sure userId is set
+      widget.cartCubit.setUserId(widget.userId);
       success = await widget.cartCubit.addToCart(widget.productId, quantity: 1);
+      debugPrint('🔄 AddToCart Retry: Result = $success');
     } catch (e) {
+      debugPrint('❌ AddToCart Retry: Error = $e');
       success = false;
     }
 
-    if (!mounted) return;
+    if (!mounted) {
+      debugPrint('⚠️ AddToCart Retry: Widget not mounted');
+      return;
+    }
 
     setState(() => _isRetrying = false);
 
     if (success) {
+      debugPrint('✅ AddToCart Retry: Success, closing dialog');
       widget.onClose();
+    } else {
+      debugPrint('❌ AddToCart Retry: Failed, staying open');
     }
   }
 

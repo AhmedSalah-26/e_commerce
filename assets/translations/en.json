@@ -257,6 +257,27 @@
   "troubleshooting_payment": "Payment Issues",
   "troubleshooting_app": "App Issues",
 
+  "help_header_title": "How can we help you?",
+  "help_header_subtitle": "We are here to help you anytime",
+  "help_contact_us": "Contact Us",
+  "help_whatsapp": "WhatsApp",
+  "help_whatsapp_subtitle": "Chat with us on WhatsApp",
+  "help_working_hours": "Working Hours",
+  "help_saturday_thursday": "Saturday - Thursday",
+  "help_friday": "Friday",
+  "help_closed": "Closed",
+  "help_working_time": "9:00 AM - 6:00 PM",
+
+  "about_app_title": "About the App",
+  "about_store_name": "My Store",
+  "about_company_name": "My Store Egypt",
+  "about_location": "Cairo, Egypt",
+  "about_copyright": "© 2024 My Store",
+  "about_rights_reserved": "All rights reserved",
+
+  "support_email": "support@mystore-eg.com",
+  "support_phone": "+20 123 456 7890",
+
   "edit_profile": "Edit Profile",
   "edit_profile_title": "Edit Profile",
   "profile_updated": "Profile updated successfully",

@@ -89,12 +89,12 @@ class HelpScreen extends StatelessWidget {
                       Icon(
                         Icons.support_agent,
                         size: 64,
-                        color: theme.colorScheme.onPrimary,
+                        color: Colors.white,
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        isRtl ? 'كيف يمكننا مساعدتك؟' : 'How can we help you?',
-                        style: TextStyle(
+                        'help_header_title'.tr(),
+                        style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -104,9 +104,7 @@ class HelpScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        isRtl
-                            ? 'نحن هنا لمساعدتك في أي وقت'
-                            : 'We are here to help you anytime',
+                        'help_header_subtitle'.tr(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -119,7 +117,7 @@ class HelpScreen extends StatelessWidget {
                 const SizedBox(height: 32),
                 // Contact Section
                 Text(
-                  isRtl ? 'اتصل بنا' : 'Contact Us',
+                  'help_contact_us'.tr(),
                   style: AppTextStyle.semiBold_20_dark_brown.copyWith(
                     color: theme.colorScheme.onSurface,
                   ),
@@ -128,26 +126,24 @@ class HelpScreen extends StatelessWidget {
                 _buildContactCard(
                   context,
                   icon: Icons.email_outlined,
-                  title: isRtl ? 'البريد الإلكتروني' : 'Email',
-                  subtitle: 'support@mystore-eg.com',
+                  title: 'contact_email'.tr(),
+                  subtitle: 'support_email'.tr(),
                   onTap: _launchEmail,
                 ),
                 const SizedBox(height: 12),
                 _buildContactCard(
                   context,
                   icon: Icons.phone_outlined,
-                  title: isRtl ? 'الهاتف' : 'Phone',
-                  subtitle: '+20 123 456 7890',
+                  title: 'contact_phone'.tr(),
+                  subtitle: 'support_phone'.tr(),
                   onTap: _launchPhone,
                 ),
                 const SizedBox(height: 12),
                 _buildContactCard(
                   context,
                   icon: Icons.chat_outlined,
-                  title: isRtl ? 'واتساب' : 'WhatsApp',
-                  subtitle: isRtl
-                      ? 'تواصل معنا عبر واتساب'
-                      : 'Chat with us on WhatsApp',
+                  title: 'help_whatsapp'.tr(),
+                  subtitle: 'help_whatsapp_subtitle'.tr(),
                   onTap: _launchWhatsApp,
                 ),
                 const SizedBox(height: 32),
@@ -175,7 +171,7 @@ class HelpScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            isRtl ? 'ساعات العمل' : 'Working Hours',
+                            'help_working_hours'.tr(),
                             style: AppTextStyle.semiBold_18_white.copyWith(
                               color: theme.colorScheme.primary,
                             ),
@@ -185,14 +181,14 @@ class HelpScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       _buildWorkingHourRow(
                         context,
-                        isRtl ? 'السبت - الخميس' : 'Saturday - Thursday',
-                        isRtl ? '9:00 ص - 6:00 م' : '9:00 AM - 6:00 PM',
+                        'help_saturday_thursday'.tr(),
+                        'help_working_time'.tr(),
                       ),
                       const SizedBox(height: 8),
                       _buildWorkingHourRow(
                         context,
-                        isRtl ? 'الجمعة' : 'Friday',
-                        isRtl ? 'مغلق' : 'Closed',
+                        'help_friday'.tr(),
+                        'help_closed'.tr(),
                       ),
                     ],
                   ),

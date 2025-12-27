@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../cubit/notifications_cubit.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../widgets/notification_card.dart';
@@ -95,7 +96,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         body: BlocBuilder<NotificationsCubit, NotificationsState>(
           builder: (context, state) {
             if (state is NotificationsLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const NotificationsListSkeleton();
             }
 
             if (state is NotificationsError) {

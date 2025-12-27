@@ -257,6 +257,27 @@
   "troubleshooting_payment": "مشاكل الدفع",
   "troubleshooting_app": "مشاكل التطبيق",
 
+  "help_header_title": "كيف يمكننا مساعدتك؟",
+  "help_header_subtitle": "نحن هنا لمساعدتك في أي وقت",
+  "help_contact_us": "اتصل بنا",
+  "help_whatsapp": "واتساب",
+  "help_whatsapp_subtitle": "تواصل معنا عبر واتساب",
+  "help_working_hours": "ساعات العمل",
+  "help_saturday_thursday": "السبت - الخميس",
+  "help_friday": "الجمعة",
+  "help_closed": "مغلق",
+  "help_working_time": "9:00 ص - 6:00 م",
+
+  "about_app_title": "عن التطبيق",
+  "about_store_name": "متجري",
+  "about_company_name": "My Store Egypt",
+  "about_location": "القاهرة، مصر",
+  "about_copyright": "© 2024 متجري",
+  "about_rights_reserved": "جميع الحقوق محفوظة",
+
+  "support_email": "support@mystore-eg.com",
+  "support_phone": "+20 123 456 7890",
+
   "edit_profile": "تعديل الملف الشخصي",
   "edit_profile_title": "تعديل البيانات",
   "profile_updated": "تم تحديث البيانات بنجاح",

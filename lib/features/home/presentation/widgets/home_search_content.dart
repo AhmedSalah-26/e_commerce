@@ -142,7 +142,7 @@ class _CategoriesGrid extends StatelessWidget {
               return const Center(
                 child: Padding(
                   padding: EdgeInsets.all(32),
-                  child: CircularProgressIndicator(),
+                  child: CategoriesRowSkeleton(),
                 ),
               );
             }

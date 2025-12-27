@@ -9,3 +9,4 @@ export 'skeletons/order_details_skeleton.dart';
 export 'skeletons/review_card_skeleton.dart';
 export 'skeletons/store_info_skeleton.dart';
 export 'skeletons/product_screen_skeleton.dart';
+export 'skeletons/notification_card_skeleton.dart';

@@ -86,22 +86,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
             textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
             child: Scaffold(
               backgroundColor: theme.scaffoldBackgroundColor,
+              appBar: AppBar(
+                backgroundColor: theme.scaffoldBackgroundColor,
+                title: Text(
+                  'settings_title'.tr(),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                centerTitle: true,
+              ),
               body: SafeArea(
+                top: false,
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 20),
-                      Text(
-                        'settings_title'.tr(),
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 8),
                       GestureDetector(
                         onTap: () => context.push('/edit-profile'),
                         child: UserProfileCard(user: authState.user),

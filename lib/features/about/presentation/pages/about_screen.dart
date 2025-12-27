@@ -90,11 +90,11 @@ class _AboutScreenState extends State<AboutScreen> {
                       Icon(
                         Icons.store,
                         size: 80,
-                        color: theme.colorScheme.onPrimary,
+                        color: Colors.white,
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        isRtl ? 'متجري' : 'My Store',
+                        'about_store_name'.tr(),
                         style: const TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w600,
@@ -104,7 +104,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${isRtl ? 'الإصدار' : 'Version'}: $appVersion',
+                        '${'about_version'.tr()}: $appVersion',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -125,11 +125,9 @@ class _AboutScreenState extends State<AboutScreen> {
                 // App Description
                 AboutSectionCard(
                   icon: Icons.info_outline,
-                  title: isRtl ? 'عن التطبيق' : 'About the App',
+                  title: 'about_app_title'.tr(),
                   child: Text(
-                    isRtl
-                        ? 'متجري هو منصة تسوق إلكترونية مصرية متكاملة تربط بين العملاء والتجار. نوفر تجربة تسوق سلسة وآمنة مع مجموعة واسعة من المنتجات عالية الجودة بأسعار تنافسية. نسعى لتوفير أفضل خدمة عملاء وتجربة مستخدم مميزة.'
-                        : 'My Store is an integrated Egyptian e-commerce platform connecting customers with merchants. We provide a seamless and secure shopping experience with a wide range of high-quality products at competitive prices. We strive to provide the best customer service and exceptional user experience.',
+                    'about_description'.tr(),
                     style: AppTextStyle.normal_14_greyDark.copyWith(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
@@ -140,38 +138,28 @@ class _AboutScreenState extends State<AboutScreen> {
                 // Features Section
                 AboutSectionCard(
                   icon: Icons.star_outline,
-                  title: isRtl ? 'المميزات الرئيسية' : 'Key Features',
+                  title: 'about_features'.tr(),
                   child: Column(
                     children: [
                       AboutFeatureItem(
                         icon: Icons.inventory_2_outlined,
-                        text: isRtl
-                            ? 'تصفح آلاف المنتجات من مختلف الفئات'
-                            : 'Browse thousands of products from various categories',
+                        text: 'about_feature_1'.tr(),
                       ),
                       AboutFeatureItem(
                         icon: Icons.security_outlined,
-                        text: isRtl
-                            ? 'نظام دفع آمن عند الاستلام'
-                            : 'Secure cash on delivery payment system',
+                        text: 'about_feature_2'.tr(),
                       ),
                       AboutFeatureItem(
                         icon: Icons.local_shipping_outlined,
-                        text: isRtl
-                            ? 'تتبع فوري لحالة طلباتك'
-                            : 'Real-time order tracking',
+                        text: 'about_feature_3'.tr(),
                       ),
                       AboutFeatureItem(
                         icon: Icons.support_agent_outlined,
-                        text: isRtl
-                            ? 'دعم فني متاح طوال الأسبوع'
-                            : 'Technical support available all week',
+                        text: 'about_feature_4'.tr(),
                       ),
                       AboutFeatureItem(
                         icon: Icons.favorite_outline,
-                        text: isRtl
-                            ? 'قائمة المفضلة لحفظ منتجاتك'
-                            : 'Favorites list to save your products',
+                        text: 'about_feature_5'.tr(),
                       ),
                       AboutFeatureItem(
                         icon: Icons.star_rate_outlined,
@@ -186,31 +174,31 @@ class _AboutScreenState extends State<AboutScreen> {
                 // Company Info
                 AboutSectionCard(
                   icon: Icons.business_outlined,
-                  title: isRtl ? 'معلومات الشركة' : 'Company Information',
+                  title: 'about_developer'.tr(),
                   child: Column(
                     children: [
                       AboutInfoRow(
                         icon: Icons.business,
                         label: isRtl ? 'اسم الشركة' : 'Company Name',
-                        value: 'My Store Egypt',
+                        value: 'about_company_name'.tr(),
                       ),
                       const SizedBox(height: 12),
                       AboutInfoRow(
                         icon: Icons.email_outlined,
-                        label: isRtl ? 'البريد الإلكتروني' : 'Email',
-                        value: 'info@mystore-eg.com',
+                        label: 'contact_email'.tr(),
+                        value: 'support_email'.tr(),
                       ),
                       const SizedBox(height: 12),
                       AboutInfoRow(
                         icon: Icons.phone_outlined,
-                        label: isRtl ? 'الهاتف' : 'Phone',
-                        value: '+20 123 456 7890',
+                        label: 'contact_phone'.tr(),
+                        value: 'support_phone'.tr(),
                       ),
                       const SizedBox(height: 12),
                       AboutInfoRow(
                         icon: Icons.location_on_outlined,
                         label: isRtl ? 'الموقع' : 'Location',
-                        value: isRtl ? 'القاهرة، مصر' : 'Cairo, Egypt',
+                        value: 'about_location'.tr(),
                       ),
                     ],
                   ),
@@ -218,7 +206,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 const SizedBox(height: 32),
                 // Footer
                 Text(
-                  '© 2024 ${isRtl ? 'متجري' : 'My Store'}',
+                  'about_copyright'.tr(),
                   style: AppTextStyle.normal_12_greyDark.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
@@ -226,7 +214,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  isRtl ? 'جميع الحقوق محفوظة' : 'All rights reserved',
+                  'about_rights_reserved'.tr(),
                   style: AppTextStyle.normal_12_greyDark.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),

@@ -101,10 +101,12 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
 
     return BackButtonListener(
       onBackButtonPressed: _handleSystemBack,
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: theme.scaffoldBackgroundColor,
-          body: RefreshIndicator(
+      child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        resizeToAvoidBottomInset: true,
+        body: SafeArea(
+          bottom: false,
+          child: RefreshIndicator(
             onRefresh: refreshSearch,
             color: theme.colorScheme.primary,
             child: CustomScrollView(

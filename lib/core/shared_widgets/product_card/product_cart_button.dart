@@ -129,13 +129,20 @@ class _QuantityControlsState extends State<_QuantityControls> {
   Future<void> _decrease(BuildContext context) async {
     if (_isLoading) return;
 
+    // If quantity is 1, item will be removed and widget will change to AddToCartButton
+    // No need to show loading since widget will be replaced
+    if (widget.quantity <= 1) {
+      await context.read<CartCubit>().updateQuantity(widget.cartItemId, 0);
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
-    final cubit = context.read<CartCubit>();
-    // Always decrease quantity, even if it's 1 (will go to 0 and show Add to Cart button)
-    await cubit.updateQuantity(widget.cartItemId, widget.quantity - 1);
+    await context
+        .read<CartCubit>()
+        .updateQuantity(widget.cartItemId, widget.quantity - 1);
 
     if (mounted) {
       setState(() {

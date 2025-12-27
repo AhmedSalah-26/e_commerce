@@ -25,7 +25,7 @@ class OrderDetailsPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: theme.colorScheme.surface,
+          backgroundColor: theme.scaffoldBackgroundColor,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios, color: theme.colorScheme.primary),
             onPressed: () => Navigator.pop(context),
@@ -33,7 +33,7 @@ class OrderDetailsPage extends StatelessWidget {
           title: Text(
             'order_details'.tr(),
             style: AppTextStyle.semiBold_20_dark_brown.copyWith(
-              color: theme.colorScheme.onSurface,
+              color: theme.colorScheme.primary,
             ),
           ),
           centerTitle: true,

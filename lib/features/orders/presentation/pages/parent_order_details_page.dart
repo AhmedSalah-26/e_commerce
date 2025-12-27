@@ -51,7 +51,7 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: theme.colorScheme.surface,
+          backgroundColor: theme.scaffoldBackgroundColor,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios, color: theme.colorScheme.primary),
             onPressed: _goBackToOrders,
@@ -60,6 +60,7 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
             'order_details'.tr(),
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w600,
+              color: theme.colorScheme.primary,
             ),
           ),
           centerTitle: true,

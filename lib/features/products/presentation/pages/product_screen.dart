@@ -229,6 +229,7 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   Widget _buildFavoriteButton(double screenWidth) {
+    final theme = Theme.of(context);
     return BlocSelector<FavoritesCubit, FavoritesState, bool>(
       selector: (state) =>
           state is FavoritesLoaded && state.isFavorite(_product.id),
@@ -237,7 +238,7 @@ class _ProductScreenState extends State<ProductScreen> {
           onPressed: () => _actions.toggleFavorite(context, _product.id),
           icon: Icon(
             isFav ? Icons.favorite : Icons.favorite_border,
-            color: Colors.red,
+            color: theme.colorScheme.primary,
             size: screenWidth * 0.07,
           ),
         );

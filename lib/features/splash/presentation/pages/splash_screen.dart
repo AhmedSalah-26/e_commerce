@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/services/deep_link_service.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 
@@ -57,6 +58,10 @@ class _SplashScreenState extends State<SplashScreen>
         context.pushReplacement('/merchant-dashboard');
       } else {
         context.pushReplacement('/home');
+        // Process initial deep link after navigating to home
+        Future.delayed(const Duration(milliseconds: 100), () {
+          DeepLinkService().processInitialDeepLink();
+        });
       }
     } else {
       AppRouter.setAuthenticated(false);

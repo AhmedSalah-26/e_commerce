@@ -105,20 +105,22 @@ class _MyAppState extends State<MyApp> {
     _appLinks = AppLinks();
 
     // Handle initial link (app opened from link)
+    // Save it for processing after splash screen completes
     _appLinks.getInitialLink().then((uri) {
       if (uri != null) {
         debugPrint('═══════════════════════════════════════════════════════');
-        debugPrint('🔗 INITIAL DEEP LINK');
+        debugPrint('🔗 INITIAL DEEP LINK (saving for later)');
         debugPrint('URI: $uri');
         debugPrint('═══════════════════════════════════════════════════════');
-        DeepLinkService().handleDeepLink(uri);
+        // Save for processing after splash screen navigation
+        DeepLinkService().saveInitialDeepLink(uri);
       }
     });
 
-    // Handle links while app is running
+    // Handle links while app is running (not initial launch)
     _appLinks.uriLinkStream.listen((Uri uri) {
       debugPrint('═══════════════════════════════════════════════════════');
-      debugPrint('🔗 DEEP LINK RECEIVED');
+      debugPrint('🔗 DEEP LINK RECEIVED (app running)');
       debugPrint('URI: $uri');
       debugPrint('  HOST: ${uri.host}');
       debugPrint('  PATH: ${uri.path}');

@@ -93,139 +93,148 @@ class _RegisterPageState extends State<RegisterPage> {
           }
         },
         builder: (context, state) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'create_new_account'.tr(),
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'enter_your_data'.tr(),
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    'account_type'.tr(),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RoleSelectionCard(
-                          title: 'customer'.tr(),
-                          subtitle: 'customer_desc'.tr(),
-                          icon: Icons.shopping_bag_outlined,
-                          isSelected: _selectedRole == UserRole.customer,
-                          onTap: () {
-                            setState(() {
-                              _selectedRole = UserRole.customer;
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: RoleSelectionCard(
-                          title: 'merchant'.tr(),
-                          subtitle: 'merchant_desc'.tr(),
-                          icon: Icons.store_outlined,
-                          isSelected: _selectedRole == UserRole.merchant,
-                          onTap: () {
-                            setState(() {
-                              _selectedRole = UserRole.merchant;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  RegisterFormFields(
-                    nameController: _nameController,
-                    phoneController: _phoneController,
-                    emailController: _emailController,
-                    passwordController: _passwordController,
-                    confirmPasswordController: _confirmPasswordController,
-                    obscurePassword: _obscurePassword,
-                    obscureConfirmPassword: _obscureConfirmPassword,
-                    onTogglePassword: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                    onToggleConfirmPassword: () {
-                      setState(() {
-                        _obscureConfirmPassword = !_obscureConfirmPassword;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: state is AuthLoading ? null : _handleRegister,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: state is AuthLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
-                          : Text(
-                              'register'.tr(),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        'already_have_account'.tr(),
-                        style: TextStyle(color: theme.colorScheme.onSurface),
-                      ),
-                      TextButton(
-                        onPressed: () => context.pop(),
-                        child: Text(
-                          'login'.tr(),
-                          style: TextStyle(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        'create_new_account'.tr(),
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
                         ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'enter_your_data'.tr(),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 32),
+                      Text(
+                        'account_type'.tr(),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: RoleSelectionCard(
+                              title: 'customer'.tr(),
+                              subtitle: 'customer_desc'.tr(),
+                              icon: Icons.shopping_bag_outlined,
+                              isSelected: _selectedRole == UserRole.customer,
+                              onTap: () {
+                                setState(() {
+                                  _selectedRole = UserRole.customer;
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: RoleSelectionCard(
+                              title: 'merchant'.tr(),
+                              subtitle: 'merchant_desc'.tr(),
+                              icon: Icons.store_outlined,
+                              isSelected: _selectedRole == UserRole.merchant,
+                              onTap: () {
+                                setState(() {
+                                  _selectedRole = UserRole.merchant;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      RegisterFormFields(
+                        nameController: _nameController,
+                        phoneController: _phoneController,
+                        emailController: _emailController,
+                        passwordController: _passwordController,
+                        confirmPasswordController: _confirmPasswordController,
+                        obscurePassword: _obscurePassword,
+                        obscureConfirmPassword: _obscureConfirmPassword,
+                        onTogglePassword: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                        onToggleConfirmPassword: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed:
+                              state is AuthLoading ? null : _handleRegister,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: state is AuthLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Text(
+                                  'register'.tr(),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'already_have_account'.tr(),
+                            style:
+                                TextStyle(color: theme.colorScheme.onSurface),
+                          ),
+                          TextButton(
+                            onPressed: () => context.pop(),
+                            child: Text(
+                              'login'.tr(),
+                              style: TextStyle(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),

@@ -169,77 +169,83 @@ class _GlobalCouponFormPageState extends State<GlobalCouponFormPage> {
   Widget _buildBody() {
     final isRtl = context.locale.languageCode == 'ar';
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Info banner
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, color: Colors.blue.shade700),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      isRtl
-                          ? 'الكوبونات العامة تعمل على جميع المنتجات من جميع التجار'
-                          : 'Global coupons work on all products from all merchants',
-                      style: TextStyle(
-                        color: Colors.blue.shade700,
-                        fontSize: 13,
-                      ),
-                    ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Info banner
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
                   ),
-                ],
-              ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue.shade700),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          isRtl
+                              ? 'الكوبونات العامة تعمل على جميع المنتجات من جميع التجار'
+                              : 'Global coupons work on all products from all merchants',
+                          style: TextStyle(
+                            color: Colors.blue.shade700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                CouponCodeField(
+                    controller: _codeController, isEditing: isEditing),
+                const SizedBox(height: 16),
+                CouponNamesFields(
+                  nameArController: _nameArController,
+                  nameEnController: _nameEnController,
+                ),
+                const SizedBox(height: 16),
+                DiscountTypeSelector(
+                  selectedType: _discountType,
+                  onChanged: (type) => setState(() => _discountType = type),
+                ),
+                const SizedBox(height: 16),
+                DiscountValueFields(
+                  discountValueController: _discountValueController,
+                  maxDiscountController: _maxDiscountController,
+                  discountType: _discountType,
+                ),
+                const SizedBox(height: 16),
+                CouponLimitsFields(
+                  minOrderController: _minOrderController,
+                  usageLimitController: _usageLimitController,
+                ),
+                const SizedBox(height: 16),
+                CouponDatesFields(
+                  startDate: _startDate,
+                  endDate: _endDate,
+                  onStartDateChanged: (d) => setState(() => _startDate = d),
+                  onEndDateChanged: (d) => setState(() => _endDate = d),
+                ),
+                const SizedBox(height: 16),
+                CouponActiveSwitch(
+                  isActive: _isActive,
+                  onChanged: (v) => setState(() => _isActive = v),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            CouponCodeField(controller: _codeController, isEditing: isEditing),
-            const SizedBox(height: 16),
-            CouponNamesFields(
-              nameArController: _nameArController,
-              nameEnController: _nameEnController,
-            ),
-            const SizedBox(height: 16),
-            DiscountTypeSelector(
-              selectedType: _discountType,
-              onChanged: (type) => setState(() => _discountType = type),
-            ),
-            const SizedBox(height: 16),
-            DiscountValueFields(
-              discountValueController: _discountValueController,
-              maxDiscountController: _maxDiscountController,
-              discountType: _discountType,
-            ),
-            const SizedBox(height: 16),
-            CouponLimitsFields(
-              minOrderController: _minOrderController,
-              usageLimitController: _usageLimitController,
-            ),
-            const SizedBox(height: 16),
-            CouponDatesFields(
-              startDate: _startDate,
-              endDate: _endDate,
-              onStartDateChanged: (d) => setState(() => _startDate = d),
-              onEndDateChanged: (d) => setState(() => _endDate = d),
-            ),
-            const SizedBox(height: 16),
-            CouponActiveSwitch(
-              isActive: _isActive,
-              onChanged: (v) => setState(() => _isActive = v),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

@@ -177,70 +177,76 @@ class _CouponFormPageState extends State<CouponFormPage> {
   }
 
   Widget _buildBody() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CouponCodeField(controller: _codeController, isEditing: isEditing),
-            const SizedBox(height: 16),
-            CouponNamesFields(
-                nameArController: _nameArController,
-                nameEnController: _nameEnController),
-            const SizedBox(height: 16),
-            DiscountTypeSelector(
-                selectedType: _discountType,
-                onChanged: (type) => setState(() => _discountType = type)),
-            const SizedBox(height: 16),
-            DiscountValueFields(
-              discountValueController: _discountValueController,
-              maxDiscountController: _maxDiscountController,
-              discountType: _discountType,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CouponCodeField(
+                    controller: _codeController, isEditing: isEditing),
+                const SizedBox(height: 16),
+                CouponNamesFields(
+                    nameArController: _nameArController,
+                    nameEnController: _nameEnController),
+                const SizedBox(height: 16),
+                DiscountTypeSelector(
+                    selectedType: _discountType,
+                    onChanged: (type) => setState(() => _discountType = type)),
+                const SizedBox(height: 16),
+                DiscountValueFields(
+                  discountValueController: _discountValueController,
+                  maxDiscountController: _maxDiscountController,
+                  discountType: _discountType,
+                ),
+                const SizedBox(height: 16),
+                CouponLimitsFields(
+                    minOrderController: _minOrderController,
+                    usageLimitController: _usageLimitController),
+                const SizedBox(height: 16),
+                CouponDatesFields(
+                  startDate: _startDate,
+                  endDate: _endDate,
+                  onStartDateChanged: (d) => setState(() => _startDate = d),
+                  onEndDateChanged: (d) => setState(() => _endDate = d),
+                ),
+                const SizedBox(height: 16),
+                CouponScopeSelector(
+                    selectedScope: _scope,
+                    onChanged: (scope) => setState(() => _scope = scope)),
+                if (_scope == 'products') ...[
+                  const SizedBox(height: 16),
+                  ProductSelectionSection(
+                    selectedProductIds: _selectedProductIds,
+                    storeProducts: widget.storeProducts,
+                    onSelectProducts: _showProductSelectionDialog,
+                    onRemoveProduct: (id) =>
+                        setState(() => _selectedProductIds.remove(id)),
+                  ),
+                ],
+                if (_scope == 'categories') ...[
+                  const SizedBox(height: 16),
+                  CategorySelectionSection(
+                    selectedCategoryIds: _selectedCategoryIds,
+                    categories: widget.categories,
+                    onSelectCategories: _showCategorySelectionDialog,
+                    onRemoveCategory: (id) =>
+                        setState(() => _selectedCategoryIds.remove(id)),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                CouponActiveSwitch(
+                    isActive: _isActive,
+                    onChanged: (v) => setState(() => _isActive = v)),
+              ],
             ),
-            const SizedBox(height: 16),
-            CouponLimitsFields(
-                minOrderController: _minOrderController,
-                usageLimitController: _usageLimitController),
-            const SizedBox(height: 16),
-            CouponDatesFields(
-              startDate: _startDate,
-              endDate: _endDate,
-              onStartDateChanged: (d) => setState(() => _startDate = d),
-              onEndDateChanged: (d) => setState(() => _endDate = d),
-            ),
-            const SizedBox(height: 16),
-            CouponScopeSelector(
-                selectedScope: _scope,
-                onChanged: (scope) => setState(() => _scope = scope)),
-            if (_scope == 'products') ...[
-              const SizedBox(height: 16),
-              ProductSelectionSection(
-                selectedProductIds: _selectedProductIds,
-                storeProducts: widget.storeProducts,
-                onSelectProducts: _showProductSelectionDialog,
-                onRemoveProduct: (id) =>
-                    setState(() => _selectedProductIds.remove(id)),
-              ),
-            ],
-            if (_scope == 'categories') ...[
-              const SizedBox(height: 16),
-              CategorySelectionSection(
-                selectedCategoryIds: _selectedCategoryIds,
-                categories: widget.categories,
-                onSelectCategories: _showCategorySelectionDialog,
-                onRemoveCategory: (id) =>
-                    setState(() => _selectedCategoryIds.remove(id)),
-              ),
-            ],
-            const SizedBox(height: 16),
-            CouponActiveSwitch(
-                isActive: _isActive,
-                onChanged: (v) => setState(() => _isActive = v)),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

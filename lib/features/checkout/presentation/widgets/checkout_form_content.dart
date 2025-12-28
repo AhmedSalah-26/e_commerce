@@ -23,7 +23,8 @@ class CheckoutBody extends StatelessWidget {
   final void Function(double, String?, Map<String, double>?, CartLoaded,
       {double couponDiscount,
       String? couponId,
-      String? couponCode}) onPlaceOrder;
+      String? couponCode,
+      String? governorateName}) onPlaceOrder;
 
   const CheckoutBody({
     super.key,
@@ -76,7 +77,8 @@ class CheckoutFormContent extends StatelessWidget {
   final void Function(double, String?, Map<String, double>?, CartLoaded,
       {double couponDiscount,
       String? couponId,
-      String? couponCode}) onPlaceOrder;
+      String? couponCode,
+      String? governorateName}) onPlaceOrder;
 
   const CheckoutFormContent({
     super.key,
@@ -109,6 +111,18 @@ class CheckoutFormContent extends StatelessWidget {
         final totalShippingPrice = shippingState is GovernoratesLoaded
             ? shippingState.totalShippingPrice
             : 0.0;
+        final merchantsShippingData = shippingState is GovernoratesLoaded
+            ? shippingState.merchantsShippingData
+            : <String, Map<String, double>>{};
+
+        // Get merchant IDs and names from cart
+        final merchantsInfo = <String, String>{};
+        for (final item in cartState.items) {
+          if (item.product?.merchantId != null) {
+            merchantsInfo[item.product!.merchantId!] =
+                item.product!.storeName ?? '';
+          }
+        }
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -122,6 +136,8 @@ class CheckoutFormContent extends StatelessWidget {
                   selected: selectedGovernorate,
                   locale: locale,
                   cartState: cartState,
+                  merchantsShippingData: merchantsShippingData,
+                  merchantsInfo: merchantsInfo,
                 ),
                 const SizedBox(height: 16),
                 CheckoutFormFields(
@@ -151,6 +167,7 @@ class CheckoutFormContent extends StatelessWidget {
                   selectedGovernorate: selectedGovernorate,
                   merchantShippingPrices: merchantShippingPrices,
                   cartState: cartState,
+                  locale: locale,
                   onPlaceOrder: onPlaceOrder,
                 ),
                 const SizedBox(height: 16),

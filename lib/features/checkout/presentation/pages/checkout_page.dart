@@ -7,6 +7,7 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../coupons/presentation/cubit/coupon_cubit.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
@@ -31,7 +32,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
   final _notesController = TextEditingController();
 
   static const _validator = CheckoutValidator();
-  static const _stateHandler = OrderStateHandler();
 
   @override
   void initState() {
@@ -58,7 +58,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   void _placeOrder(double shippingCost, String? governorateId,
       Map<String, double>? merchantShippingPrices, CartLoaded cartState,
-      {double couponDiscount = 0, String? couponId, String? couponCode}) {
+      {double couponDiscount = 0,
+      String? couponId,
+      String? couponCode,
+      String? governorateName}) {
     if (!_formKey.currentState!.validate()) return;
 
     final validation = _validator.validate(
@@ -82,17 +85,26 @@ class _CheckoutPageState extends State<CheckoutPage> {
     _submitOrder(shippingCost, governorateId!,
         couponDiscount: couponDiscount,
         couponId: couponId,
-        couponCode: couponCode);
+        couponCode: couponCode,
+        governorateName: governorateName);
   }
 
   void _submitOrder(double shippingCost, String governorateId,
-      {double couponDiscount = 0, String? couponId, String? couponCode}) {
+      {double couponDiscount = 0,
+      String? couponId,
+      String? couponCode,
+      String? governorateName}) {
     final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) return;
 
+    // Combine governorate name with address
+    final address = _addressController.text.trim();
+    final fullAddress =
+        governorateName != null ? '$governorateName - $address' : address;
+
     context.read<OrdersCubit>().createMultiVendorOrder(
           authState.user.id,
-          deliveryAddress: _addressController.text.trim(),
+          deliveryAddress: fullAddress,
           customerName: _nameController.text.trim(),
           customerPhone: _phoneController.text.trim(),
           notes: _notesController.text.trim().isEmpty
@@ -110,7 +122,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Widget build(BuildContext context) {
     final isRtl = context.locale.languageCode == 'ar';
     final locale = context.locale.languageCode;
-    final theme = Theme.of(context);
 
     final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) {
@@ -124,12 +135,80 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-            create: (context) => sl<ShippingCubit>()..loadGovernorates()),
+        BlocProvider(create: (context) => sl<ShippingCubit>()),
         BlocProvider(create: (context) => sl<CouponCubit>()),
       ],
+      child: _CheckoutPageContent(
+        formKey: _formKey,
+        addressController: _addressController,
+        nameController: _nameController,
+        phoneController: _phoneController,
+        notesController: _notesController,
+        locale: locale,
+        isRtl: isRtl,
+        onPlaceOrder: _placeOrder,
+      ),
+    );
+  }
+}
+
+class _CheckoutPageContent extends StatefulWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController addressController;
+  final TextEditingController nameController;
+  final TextEditingController phoneController;
+  final TextEditingController notesController;
+  final String locale;
+  final bool isRtl;
+  final void Function(double, String?, Map<String, double>?, CartLoaded,
+      {double couponDiscount,
+      String? couponId,
+      String? couponCode,
+      String? governorateName}) onPlaceOrder;
+
+  const _CheckoutPageContent({
+    required this.formKey,
+    required this.addressController,
+    required this.nameController,
+    required this.phoneController,
+    required this.notesController,
+    required this.locale,
+    required this.isRtl,
+    required this.onPlaceOrder,
+  });
+
+  @override
+  State<_CheckoutPageContent> createState() => _CheckoutPageContentState();
+}
+
+class _CheckoutPageContentState extends State<_CheckoutPageContent> {
+  static const _stateHandler = OrderStateHandler();
+  bool _shippingLoaded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return BlocListener<CartCubit, CartState>(
+      listener: (context, cartState) {
+        if (cartState is CartLoaded && !_shippingLoaded) {
+          _shippingLoaded = true;
+          // Get merchant IDs from cart
+          final merchantIds = <String>{};
+          for (final item in cartState.items) {
+            if (item.product?.merchantId != null) {
+              merchantIds.add(item.product!.merchantId!);
+            }
+          }
+          // Load governorates with availability
+          context
+              .read<ShippingCubit>()
+              .loadGovernoratesWithAvailability(merchantIds.toList());
+        }
+      },
       child: Directionality(
-        textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+        textDirection:
+            widget.isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
         child: BlocListener<OrdersCubit, OrdersState>(
           listener: (context, state) =>
               _stateHandler.handleState(context, state),
@@ -155,13 +234,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
               centerTitle: true,
             ),
             body: CheckoutBody(
-              formKey: _formKey,
-              addressController: _addressController,
-              nameController: _nameController,
-              phoneController: _phoneController,
-              notesController: _notesController,
-              locale: locale,
-              onPlaceOrder: _placeOrder,
+              formKey: widget.formKey,
+              addressController: widget.addressController,
+              nameController: widget.nameController,
+              phoneController: widget.phoneController,
+              notesController: widget.notesController,
+              locale: widget.locale,
+              onPlaceOrder: widget.onPlaceOrder,
             ),
           ),
         ),

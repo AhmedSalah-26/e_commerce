@@ -21,6 +21,9 @@ class GovernoratesLoaded extends ShippingState {
   final double shippingPrice;
   final Map<String, double> merchantShippingPrices;
   final double totalShippingPrice;
+  // Map: governorateId -> { merchantId -> price }
+  // If price > 0, merchant is available for that governorate
+  final Map<String, Map<String, double>> merchantsShippingData;
 
   const GovernoratesLoaded({
     required this.governorates,
@@ -28,6 +31,7 @@ class GovernoratesLoaded extends ShippingState {
     this.shippingPrice = 0,
     this.merchantShippingPrices = const {},
     this.totalShippingPrice = 0,
+    this.merchantsShippingData = const {},
   });
 
   @override
@@ -37,6 +41,7 @@ class GovernoratesLoaded extends ShippingState {
         shippingPrice,
         merchantShippingPrices,
         totalShippingPrice,
+        merchantsShippingData,
       ];
 
   GovernoratesLoaded copyWith({
@@ -45,6 +50,7 @@ class GovernoratesLoaded extends ShippingState {
     double? shippingPrice,
     Map<String, double>? merchantShippingPrices,
     double? totalShippingPrice,
+    Map<String, Map<String, double>>? merchantsShippingData,
   }) {
     return GovernoratesLoaded(
       governorates: governorates ?? this.governorates,
@@ -55,6 +61,8 @@ class GovernoratesLoaded extends ShippingState {
       merchantShippingPrices:
           merchantShippingPrices ?? this.merchantShippingPrices,
       totalShippingPrice: totalShippingPrice ?? this.totalShippingPrice,
+      merchantsShippingData:
+          merchantsShippingData ?? this.merchantsShippingData,
     );
   }
 }
@@ -96,6 +104,35 @@ class ShippingCubit extends Cubit<ShippingState> {
     );
   }
 
+  /// Load governorates with merchants shipping data in one call
+  Future<void> loadGovernoratesWithAvailability(
+      List<String> merchantIds) async {
+    emit(ShippingLoading());
+
+    final governoratesResult = await _repository.getGovernorates();
+
+    await governoratesResult.fold(
+      (failure) async => emit(ShippingError(failure.message)),
+      (governorates) async {
+        if (merchantIds.isEmpty) {
+          emit(GovernoratesLoaded(governorates: governorates));
+          return;
+        }
+
+        final dataResult =
+            await _repository.getMerchantsShippingData(merchantIds);
+
+        dataResult.fold(
+          (_) => emit(GovernoratesLoaded(governorates: governorates)),
+          (data) => emit(GovernoratesLoaded(
+            governorates: governorates,
+            merchantsShippingData: data,
+          )),
+        );
+      },
+    );
+  }
+
   Future<void> selectGovernorate(
       GovernorateEntity governorate, String? merchantId) async {
     final currentState = state;
@@ -122,41 +159,31 @@ class ShippingCubit extends Cubit<ShippingState> {
   }
 
   /// Select governorate and calculate shipping for multiple merchants
-  Future<void> selectGovernorateForMultipleMerchants(
-      GovernorateEntity governorate, List<String> merchantIds) async {
+  /// Uses pre-loaded data from merchantsShippingData
+  void selectGovernorateForMultipleMerchants(
+      GovernorateEntity governorate, List<String> merchantIds) {
     final currentState = state;
     if (currentState is GovernoratesLoaded) {
+      // Get prices from pre-loaded data
+      final governorateData =
+          currentState.merchantsShippingData[governorate.id] ?? {};
+
+      final Map<String, double> prices = {};
+      double total = 0;
+
+      for (final merchantId in merchantIds) {
+        final price = governorateData[merchantId] ?? 0;
+        prices[merchantId] = price;
+        total += price;
+      }
+
       emit(currentState.copyWith(
         selectedGovernorate: () => governorate,
-        shippingPrice: 0,
-        merchantShippingPrices: {},
-        totalShippingPrice: 0,
+        merchantShippingPrices: prices,
+        totalShippingPrice: total,
+        shippingPrice:
+            merchantIds.isNotEmpty ? (prices[merchantIds.first] ?? 0) : 0,
       ));
-
-      if (merchantIds.isNotEmpty) {
-        final pricesResult = await _repository
-            .getMultipleMerchantsShippingPrices(merchantIds, governorate.id);
-        pricesResult.fold(
-          (_) {},
-          (prices) {
-            if (state is GovernoratesLoaded) {
-              // Calculate total shipping
-              double total = 0;
-              for (final merchantId in merchantIds) {
-                total += prices[merchantId] ?? 0;
-              }
-              emit((state as GovernoratesLoaded).copyWith(
-                merchantShippingPrices: prices,
-                totalShippingPrice: total,
-                // Keep shippingPrice as first merchant's price for backward compatibility
-                shippingPrice: merchantIds.isNotEmpty
-                    ? (prices[merchantIds.first] ?? 0)
-                    : 0,
-              ));
-            }
-          },
-        );
-      }
     }
   }
 

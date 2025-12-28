@@ -10,8 +10,11 @@ abstract class ShippingRemoteDataSource {
   Future<void> setShippingPrice(
       String merchantId, String governorateId, double price);
   Future<void> deleteShippingPrice(String merchantId, String governorateId);
-  Future<Map<String, double>> getMultipleMerchantsShippingPrices(
-      List<String> merchantIds, String governorateId);
+
+  /// Get all shipping data for merchants in one request
+  /// Returns: Map<governorateId, Map<merchantId, price>>
+  Future<Map<String, Map<String, double>>> getMerchantsShippingData(
+      List<String> merchantIds);
 }
 
 class ShippingRemoteDataSourceImpl implements ShippingRemoteDataSource {
@@ -137,35 +140,38 @@ class ShippingRemoteDataSourceImpl implements ShippingRemoteDataSource {
   }
 
   @override
-  Future<Map<String, double>> getMultipleMerchantsShippingPrices(
-      List<String> merchantIds, String governorateId) async {
+  Future<Map<String, Map<String, double>>> getMerchantsShippingData(
+      List<String> merchantIds) async {
     try {
-      _logger
-          .d('🔍 Getting shipping prices for ${merchantIds.length} merchants');
+      _logger.d(
+          '🔍 Getting all shipping data for ${merchantIds.length} merchants');
 
-      final Map<String, double> prices = {};
+      // Map: governorateId -> { merchantId -> price }
+      final Map<String, Map<String, double>> data = {};
 
       if (merchantIds.isEmpty) {
-        return prices;
+        return data;
       }
 
       final response = await _client
           .from('merchant_shipping_prices')
-          .select('merchant_id, price')
+          .select('merchant_id, governorate_id, price')
           .inFilter('merchant_id', merchantIds)
-          .eq('governorate_id', governorateId)
           .eq('is_active', true);
 
       for (final row in response as List) {
         final merchantId = row['merchant_id'] as String;
+        final governorateId = row['governorate_id'] as String;
         final price = (row['price'] as num).toDouble();
-        prices[merchantId] = price;
+
+        data.putIfAbsent(governorateId, () => {});
+        data[governorateId]![merchantId] = price;
       }
 
-      _logger.d('✅ Found shipping prices for ${prices.length} merchants');
-      return prices;
+      _logger.d('✅ Found shipping data for ${data.length} governorates');
+      return data;
     } catch (e) {
-      _logger.e('❌ Error getting multiple merchants shipping prices: $e');
+      _logger.e('❌ Error getting merchants shipping data: $e');
       return {};
     }
   }

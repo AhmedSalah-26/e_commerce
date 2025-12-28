@@ -68,13 +68,12 @@ class ShippingRepositoryImpl implements ShippingRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, double>>>
-      getMultipleMerchantsShippingPrices(
-          List<String> merchantIds, String governorateId) async {
+  Future<Either<Failure, Map<String, Map<String, double>>>>
+      getMerchantsShippingData(List<String> merchantIds) async {
     try {
-      final prices = await _remoteDataSource.getMultipleMerchantsShippingPrices(
-          merchantIds, governorateId);
-      return Right(prices);
+      final data =
+          await _remoteDataSource.getMerchantsShippingData(merchantIds);
+      return Right(data);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }

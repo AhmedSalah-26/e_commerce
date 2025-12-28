@@ -16,10 +16,12 @@ class PlaceOrderButton extends StatelessWidget {
   final GovernorateEntity? selectedGovernorate;
   final Map<String, double> merchantShippingPrices;
   final CartLoaded cartState;
+  final String locale;
   final void Function(double, String?, Map<String, double>?, CartLoaded,
       {double couponDiscount,
       String? couponId,
-      String? couponCode}) onPlaceOrder;
+      String? couponCode,
+      String? governorateName}) onPlaceOrder;
 
   const PlaceOrderButton({
     super.key,
@@ -28,6 +30,7 @@ class PlaceOrderButton extends StatelessWidget {
     required this.selectedGovernorate,
     required this.merchantShippingPrices,
     required this.cartState,
+    required this.locale,
     required this.onPlaceOrder,
   });
 
@@ -58,6 +61,7 @@ class PlaceOrderButton extends StatelessWidget {
                           couponDiscount: couponDiscount,
                           couponId: appliedCoupon?.couponId,
                           couponCode: appliedCoupon?.code,
+                          governorateName: selectedGovernorate?.getName(locale),
                         ),
                 label: isLoading ? 'loading'.tr() : 'place_order'.tr(),
                 color: theme.colorScheme.primary,

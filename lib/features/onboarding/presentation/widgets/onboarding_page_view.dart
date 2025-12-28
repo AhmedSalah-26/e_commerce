@@ -25,6 +25,7 @@ class OnboardingPageView extends StatelessWidget {
         controller: pageController,
         itemCount: pages.length,
         onPageChanged: onPageChanged,
+        clipBehavior: Clip.none,
         itemBuilder: (context, index) {
           final page = pages[index];
           return Column(

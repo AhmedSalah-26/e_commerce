@@ -114,6 +114,7 @@ class _CouponFormPageState extends State<CouponFormPage> {
       builder: (context, state) {
         final isLoading = state is CouponSaving;
         return Scaffold(
+          resizeToAvoidBottomInset: true,
           appBar: _buildAppBar(theme),
           body: _buildBody(),
           bottomNavigationBar: _buildFormActions(isLoading, theme),

@@ -93,6 +93,7 @@ class _ProductScreenState extends State<ProductScreen> {
       ],
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
+        resizeToAvoidBottomInset: false,
         appBar: _buildAppBar(context),
         body: _isLoading
             ? const ProductScreenSkeleton()

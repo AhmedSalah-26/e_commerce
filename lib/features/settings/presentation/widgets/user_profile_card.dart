@@ -7,6 +7,10 @@ class UserProfileCard extends StatelessWidget {
 
   const UserProfileCard({super.key, required this.user});
 
+  String _getInitial(String text) {
+    return text.isNotEmpty ? text[0].toUpperCase() : '?';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -38,7 +42,7 @@ class UserProfileCard extends StatelessWidget {
             radius: 30,
             backgroundColor: theme.colorScheme.secondary,
             child: Text(
-              (user.name ?? user.email)[0].toUpperCase(),
+              _getInitial(user.name ?? user.email),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 24,

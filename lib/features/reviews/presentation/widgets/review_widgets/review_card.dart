@@ -36,7 +36,9 @@ class ReviewCard extends StatelessWidget {
                 backgroundColor:
                     theme.colorScheme.primary.withValues(alpha: 0.2),
                 child: Text(
-                  review.userName[0].toUpperCase(),
+                  review.userName.isNotEmpty
+                      ? review.userName[0].toUpperCase()
+                      : '?',
                   style: TextStyle(
                     color: theme.colorScheme.primary,
                     fontWeight: FontWeight.bold,

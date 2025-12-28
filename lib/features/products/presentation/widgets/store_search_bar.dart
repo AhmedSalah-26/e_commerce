@@ -41,7 +41,7 @@ class StoreSearchBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: theme.colorScheme.outline),
+        border: Border.all(color: theme.colorScheme.primary),
       ),
       child: TextField(
         controller: controller,
@@ -66,6 +66,8 @@ class StoreSearchBar extends StatelessWidget {
           prefixIcon:
               Icon(Icons.search, color: theme.colorScheme.primary, size: 18),
           border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         ),

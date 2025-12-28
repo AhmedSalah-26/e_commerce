@@ -17,7 +17,7 @@ class ProfileAvatarSection extends StatelessWidget {
       radius: 40,
       backgroundColor: theme.colorScheme.primary,
       child: Text(
-        displayName[0].toUpperCase(),
+        displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
         style: const TextStyle(
           fontSize: 32,
           color: Colors.white,

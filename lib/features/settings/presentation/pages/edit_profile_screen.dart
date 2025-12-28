@@ -21,6 +21,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _phoneController = TextEditingController();
   bool _isLoading = false;
 
+  String _getInitial(String text) {
+    return text.isNotEmpty ? text[0].toUpperCase() : '?';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -118,8 +122,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         radius: 50,
                         backgroundColor: theme.colorScheme.primary,
                         child: Text(
-                          (state.user.name ?? state.user.email)[0]
-                              .toUpperCase(),
+                          _getInitial(state.user.name ?? state.user.email),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 36,

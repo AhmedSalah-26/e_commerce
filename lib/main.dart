@@ -35,6 +35,17 @@ void main() async {
   // Initialize dependencies (Supabase, etc.)
   await di.initializeDependencies();
 
+  // Get initial deep link BEFORE app starts (important for cold start)
+  final appLinks = AppLinks();
+  final initialUri = await appLinks.getInitialLink();
+  if (initialUri != null) {
+    debugPrint('═══════════════════════════════════════════════════════');
+    debugPrint('🔗 INITIAL DEEP LINK (in main, before app starts)');
+    debugPrint('URI: $initialUri');
+    debugPrint('═══════════════════════════════════════════════════════');
+    DeepLinkService().saveInitialDeepLink(initialUri);
+  }
+
   // Cleanup expired flash sales on app start
   _cleanupExpiredFlashSales();
 
@@ -100,24 +111,12 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  /// Initialize deep links listener using app_links package
+  /// Initialize deep links listener for links while app is running
   void _initDeepLinks() {
     _appLinks = AppLinks();
 
-    // Handle initial link (app opened from link)
-    // Save it for processing after splash screen completes
-    _appLinks.getInitialLink().then((uri) {
-      if (uri != null) {
-        debugPrint('═══════════════════════════════════════════════════════');
-        debugPrint('🔗 INITIAL DEEP LINK (saving for later)');
-        debugPrint('URI: $uri');
-        debugPrint('═══════════════════════════════════════════════════════');
-        // Save for processing after splash screen navigation
-        DeepLinkService().saveInitialDeepLink(uri);
-      }
-    });
-
-    // Handle links while app is running (not initial launch)
+    // Only listen for links while app is running (not initial launch)
+    // Initial link is handled in main() before app starts
     _appLinks.uriLinkStream.listen((Uri uri) {
       debugPrint('═══════════════════════════════════════════════════════');
       debugPrint('🔗 DEEP LINK RECEIVED (app running)');

@@ -14,16 +14,45 @@ class DeepLinkService {
   DeepLinkService._internal();
 
   String? _pendingDeepLink;
+  String? _initialDeepLink;
+  bool _initialLinkProcessed = false;
 
   /// Get pending deep link (for after login)
   String? get pendingDeepLink => _pendingDeepLink;
+
+  /// Check if there's an initial deep link waiting to be processed
+  bool get hasInitialDeepLink =>
+      _initialDeepLink != null && !_initialLinkProcessed;
 
   /// Clear pending deep link
   void clearPendingDeepLink() {
     _pendingDeepLink = null;
   }
 
-  /// Handle incoming deep link URI
+  /// Save initial deep link to process after splash screen
+  void saveInitialDeepLink(Uri uri) {
+    if (!_initialLinkProcessed) {
+      final path = _uriToPath(uri);
+      if (path != null && path != '/home') {
+        _initialDeepLink = path;
+        debugPrint('Deep Link: Saved initial link for later: $path');
+      }
+    }
+  }
+
+  /// Process initial deep link after splash screen navigation
+  void processInitialDeepLink() {
+    if (_initialDeepLink != null && !_initialLinkProcessed) {
+      _initialLinkProcessed = true;
+      final path = _initialDeepLink!;
+      _initialDeepLink = null;
+      debugPrint('Deep Link: Processing initial link: $path');
+      // Use push to add on top of home screen
+      AppRouter.router.push(path);
+    }
+  }
+
+  /// Handle incoming deep link URI (for links while app is running)
   void handleDeepLink(Uri uri) {
     debugPrint('Deep Link received: $uri');
 
@@ -89,7 +118,7 @@ class DeepLinkService {
 
       case 'category':
         if (segments.length > 1) {
-          return '/home'; // TODO: Add category route
+          return '/home';
         }
         return '/home';
 
@@ -117,11 +146,11 @@ class DeepLinkService {
     }
   }
 
-  /// Navigate to path using push (preserves back navigation)
+  /// Navigate to path using go (replaces current route)
   void _navigateToPath(String path) {
     try {
-      // Use push instead of go to preserve the navigation stack
-      // This way when user presses back, they return to where they were
+      // Use push to add on top of current screen
+      // This way back button returns to previous screen
       AppRouter.router.push(path);
     } catch (e) {
       debugPrint('Deep Link navigation error: $e');
@@ -135,7 +164,7 @@ class DeepLinkService {
     if (_pendingDeepLink != null) {
       final path = _pendingDeepLink!;
       _pendingDeepLink = null;
-      // Use push to preserve navigation stack
+      // Use push to add on top of home
       AppRouter.router.push(path);
     }
   }

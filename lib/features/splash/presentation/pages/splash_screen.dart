@@ -51,17 +51,22 @@ class _SplashScreenState extends State<SplashScreen>
     }
 
     final authState = context.read<AuthCubit>().state;
+    final hasInitialDeepLink = DeepLinkService().hasInitialDeepLink;
 
     if (authState is AuthAuthenticated) {
       AppRouter.setAuthenticated(true);
-      if (authState.user.isMerchant) {
-        context.pushReplacement('/merchant-dashboard');
-      } else {
+
+      // If there's a deep link, always go to home (user mode) to show the product
+      // Even for merchants - they can switch to merchant mode later
+      if (hasInitialDeepLink) {
         context.pushReplacement('/home');
-        // Process initial deep link after navigating to home
         Future.delayed(const Duration(milliseconds: 100), () {
           DeepLinkService().processInitialDeepLink();
         });
+      } else if (authState.user.isMerchant) {
+        context.pushReplacement('/merchant-dashboard');
+      } else {
+        context.pushReplacement('/home');
       }
     } else {
       AppRouter.setAuthenticated(false);

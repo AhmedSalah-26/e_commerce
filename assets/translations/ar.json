@@ -428,5 +428,8 @@
   "error_not_found": "البيانات غير موجودة",
   "error_rate_limit": "محاولات كثيرة، انتظر قليلاً",
   "error_generic": "حدث خطأ، حاول مرة أخرى",
-  "error_favorite_failed": "فشل في تحديث المفضلة، حاول مرة أخرى"
+  "error_favorite_failed": "فشل في تحديث المفضلة، حاول مرة أخرى",
+
+  "switch_to_merchant_mode": "التبديل لوضع التاجر",
+  "switch_to_user_mode": "التبديل لوضع المستخدم"
 }

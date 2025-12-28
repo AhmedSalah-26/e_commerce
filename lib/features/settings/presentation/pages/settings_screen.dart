@@ -179,6 +179,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ],
                       ),
+                      // Show merchant mode option only for merchants
+                      if (authState.user.isMerchant) ...[
+                        const SizedBox(height: 16),
+                        SettingsSection(
+                          title: '',
+                          children: [
+                            SettingsTile(
+                              icon: Icons.store,
+                              title: 'switch_to_merchant_mode'.tr(),
+                              onTap: () => context.go('/merchant-dashboard'),
+                              showDivider: false,
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       SettingsSection(
                         title: '',

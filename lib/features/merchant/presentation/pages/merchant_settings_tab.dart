@@ -129,6 +129,16 @@ class MerchantSettingsTab extends StatelessWidget {
                   _SettingsSection(
                     items: [
                       _SettingsItem(
+                        title: 'switch_to_user_mode'.tr(),
+                        icon: Icons.person,
+                        onTap: () => context.go('/home'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _SettingsSection(
+                    items: [
+                      _SettingsItem(
                         title: isRtl ? 'تسجيل الخروج' : 'Logout',
                         icon: Icons.logout,
                         isDestructive: true,

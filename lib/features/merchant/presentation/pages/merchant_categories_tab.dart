@@ -242,6 +242,7 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
 
   void _showDeleteConfirmation(
       BuildContext context, bool isRtl, String categoryId) {
+    final categoriesCubit = context.read<CategoriesCubit>();
     AppDialog.showConfirmation(
       context: context,
       title: isRtl ? 'حذف التصنيف' : 'Delete Category',
@@ -254,8 +255,7 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
       isDestructive: true,
     ).then((confirmed) async {
       if (confirmed == true) {
-        final success =
-            await context.read<CategoriesCubit>().deleteCategory(categoryId);
+        final success = await categoriesCubit.deleteCategory(categoryId);
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

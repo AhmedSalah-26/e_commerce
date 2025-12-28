@@ -118,7 +118,7 @@ class CouponCard extends StatelessWidget {
         Switch(
           value: coupon.isActive,
           onChanged: onToggle,
-          activeColor: theme.colorScheme.primary,
+          activeTrackColor: theme.colorScheme.primary,
         ),
       ],
     );

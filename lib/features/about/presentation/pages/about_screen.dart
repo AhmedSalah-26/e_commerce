@@ -87,7 +87,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   child: Column(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.store,
                         size: 80,
                         color: Colors.white,

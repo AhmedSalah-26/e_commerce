@@ -59,7 +59,7 @@ class SettingsSwitchTile extends StatelessWidget {
               : null,
           value: value,
           onChanged: onChanged,
-          activeColor: theme.colorScheme.primary,
+          activeTrackColor: theme.colorScheme.primary,
         ),
         if (showDivider)
           Divider(

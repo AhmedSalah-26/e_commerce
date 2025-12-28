@@ -13,6 +13,11 @@ import '../../domain/entities/parent_order_entity.dart';
 import '../cubit/orders_cubit.dart';
 import '../cubit/orders_state.dart';
 import '../widgets/merchant_order_card.dart';
+import '../widgets/parent_order/order_summary_card.dart';
+import '../widgets/parent_order/customer_info_card.dart';
+import '../widgets/parent_order/payment_method_card.dart';
+import '../widgets/parent_order/total_summary_card.dart';
+import '../widgets/parent_order/notes_card.dart';
 
 class ParentOrderDetailsPage extends StatefulWidget {
   final String parentOrderId;
@@ -35,7 +40,6 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
   }
 
   void _goBackToOrders() {
-    // Reload parent orders before going back
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
       context.read<OrdersCubit>().watchUserParentOrders(authState.user.id);
@@ -81,13 +85,10 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
             }
 
             if (state is ParentOrderLoaded) {
-              return _buildContent(context, state.parentOrder, isRtl, theme);
+              return _buildContent(state.parentOrder, isRtl, theme);
             }
 
-            // If not the right state, reload
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _loadDetails();
-            });
+            WidgetsBinding.instance.addPostFrameCallback((_) => _loadDetails());
             return const OrderDetailsSkeleton();
           },
         ),
@@ -96,21 +97,17 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
   }
 
   Widget _buildContent(
-    BuildContext context,
-    ParentOrderEntity parentOrder,
-    bool isRtl,
-    ThemeData theme,
-  ) {
+      ParentOrderEntity parentOrder, bool isRtl, ThemeData theme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildOrderSummaryCard(parentOrder, isRtl, theme),
+          OrderSummaryCard(parentOrder: parentOrder),
           const SizedBox(height: 16),
-          _buildCustomerInfoCard(parentOrder, isRtl, theme),
+          CustomerInfoCard(parentOrder: parentOrder),
           const SizedBox(height: 16),
-          _buildPaymentMethodCard(parentOrder, isRtl, theme),
+          PaymentMethodCard(parentOrder: parentOrder),
           const SizedBox(height: 16),
           Text(
             'merchant_orders'.tr(),
@@ -124,376 +121,12 @@ class _ParentOrderDetailsPageState extends State<ParentOrderDetailsPage> {
                 child: MerchantOrderCard(order: order, isRtl: isRtl),
               )),
           const SizedBox(height: 16),
-          _buildTotalSummaryCard(parentOrder, isRtl, theme),
+          TotalSummaryCard(parentOrder: parentOrder),
           if (parentOrder.notes != null && parentOrder.notes!.isNotEmpty) ...[
             const SizedBox(height: 16),
-            _buildNotesCard(parentOrder.notes!, isRtl, theme),
+            NotesCard(notes: parentOrder.notes!),
           ],
           const SizedBox(height: 32),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOrderSummaryCard(
-      ParentOrderEntity parentOrder, bool isRtl, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outline),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${'order_number'.tr()}: #${parentOrder.id.substring(0, 8)}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              _buildOverallStatusBadge(parentOrder.overallStatus),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${'merchants_count'.tr()}: ${parentOrder.merchantCount}',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-          if (parentOrder.createdAt != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              DateFormat('dd/MM/yyyy - hh:mm a', context.locale.languageCode)
-                  .format(parentOrder.createdAt!),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOverallStatusBadge(String status) {
-    Color bgColor;
-    Color textColor;
-    String displayText;
-
-    switch (status) {
-      case 'delivered':
-        bgColor = Colors.green.shade100;
-        textColor = Colors.green.shade700;
-        displayText = 'delivered'.tr();
-        break;
-      case 'shipped':
-        bgColor = Colors.blue.shade100;
-        textColor = Colors.blue.shade700;
-        displayText = 'shipped'.tr();
-        break;
-      case 'processing':
-        bgColor = Colors.orange.shade100;
-        textColor = Colors.orange.shade700;
-        displayText = 'processing'.tr();
-        break;
-      case 'partially_cancelled':
-        bgColor = Colors.red.shade100;
-        textColor = Colors.red.shade700;
-        displayText = 'partially_cancelled'.tr();
-        break;
-      default:
-        bgColor = Colors.grey.shade100;
-        textColor = Colors.grey.shade700;
-        displayText = 'pending'.tr();
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        displayText,
-        style: TextStyle(
-          color: textColor,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCustomerInfoCard(
-      ParentOrderEntity parentOrder, bool isRtl, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outline),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'delivery_info'.tr(),
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (parentOrder.customerName != null)
-            _buildInfoRow(
-                Icons.person_outline, parentOrder.customerName!, theme),
-          if (parentOrder.customerPhone != null)
-            _buildInfoRow(
-                Icons.phone_outlined, parentOrder.customerPhone!, theme),
-          if (parentOrder.deliveryAddress != null)
-            _buildInfoRow(Icons.location_on_outlined,
-                parentOrder.deliveryAddress!, theme),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String text, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: theme.colorScheme.primary),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethodCard(
-      ParentOrderEntity parentOrder, bool isRtl, ThemeData theme) {
-    final paymentMethod = parentOrder.paymentMethod ?? 'cash_on_delivery';
-
-    IconData paymentIcon;
-    String paymentLabel;
-    Color iconColor;
-
-    switch (paymentMethod) {
-      case 'credit_card':
-        paymentIcon = Icons.credit_card;
-        paymentLabel = 'credit_card'.tr();
-        iconColor = Colors.blue.shade600;
-        break;
-      case 'wallet':
-        paymentIcon = Icons.account_balance_wallet;
-        paymentLabel = 'wallet'.tr();
-        iconColor = Colors.purple.shade600;
-        break;
-      default:
-        paymentIcon = Icons.payments_outlined;
-        paymentLabel = 'cash_on_delivery'.tr();
-        iconColor = Colors.green.shade600;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outline),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'payment_method'.tr(),
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(paymentIcon, size: 24, color: iconColor),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                paymentLabel,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTotalSummaryCard(
-      ParentOrderEntity parentOrder, bool isRtl, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outline),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildPriceRow('subtotal'.tr(), parentOrder.subtotal, theme: theme),
-          const SizedBox(height: 8),
-          _buildPriceRow('shipping'.tr(), parentOrder.shippingCost,
-              theme: theme),
-          if (parentOrder.hasCoupon) ...[
-            const SizedBox(height: 8),
-            _buildCouponRow(parentOrder),
-          ],
-          const Divider(height: 24),
-          _buildPriceRow('total'.tr(), parentOrder.total,
-              isTotal: true, theme: theme),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCouponRow(ParentOrderEntity parentOrder) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.local_offer, size: 16, color: Colors.green.shade600),
-            const SizedBox(width: 6),
-            Text(
-              '${'coupon_discount'.tr()} (${parentOrder.couponCode})',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.green.shade600,
-              ),
-            ),
-          ],
-        ),
-        Text(
-          '-${parentOrder.couponDiscount.toStringAsFixed(2)} ${'egp'.tr()}',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.green.shade600,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPriceRow(String label, double amount,
-      {bool isTotal = false, ThemeData? theme}) {
-    final t = theme ?? Theme.of(context);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: isTotal
-              ? t.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)
-              : t.textTheme.bodyMedium?.copyWith(
-                  color: t.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-        ),
-        Text(
-          '${amount.toStringAsFixed(2)} ${'egp'.tr()}',
-          style: isTotal
-              ? t.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: t.colorScheme.primary,
-                )
-              : t.textTheme.bodyMedium?.copyWith(
-                  color: t.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNotesCard(String notes, bool isRtl, ThemeData theme) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.amber.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.note_outlined, size: 18, color: Colors.amber.shade700),
-              const SizedBox(width: 8),
-              Text(
-                'notes'.tr(),
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.amber.shade700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            notes,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
         ],
       ),
     );

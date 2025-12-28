@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:path/path.dart' as path;
+import 'package:flutter/foundation.dart';
 
 enum FileType {
   presentation,
@@ -54,7 +54,7 @@ class FileAnalyzer {
 
   Future<List<FileMetrics>> analyzeCodebase(String rootPath) async {
     final List<FileMetrics> allMetrics = [];
-    final libDir = Directory(path.join(rootPath, 'lib'));
+    final libDir = Directory('$rootPath/lib');
 
     if (!await libDir.exists()) {
       throw Exception('lib directory not found at $rootPath');
@@ -66,7 +66,7 @@ class FileAnalyzer {
           final metrics = await analyzeFile(entity, rootPath);
           allMetrics.add(metrics);
         } catch (e) {
-          print('Error analyzing ${entity.path}: $e');
+          debugPrint('Error analyzing ${entity.path}: $e');
         }
       }
     }
@@ -80,7 +80,7 @@ class FileAnalyzer {
     final lineCount = lines.length;
     final sizeInBytes = await file.length();
     final sizeInKB = sizeInBytes / 1024;
-    final relativePath = path.relative(file.path, from: rootPath);
+    final relativePath = file.path.replaceFirst('$rootPath/', '');
 
     final fileType = _categorizeFile(relativePath);
     final complexityScore = _calculateComplexity(content);

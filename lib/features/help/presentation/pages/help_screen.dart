@@ -86,7 +86,7 @@ class HelpScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.support_agent,
                         size: 64,
                         color: Colors.white,

@@ -128,11 +128,13 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
 
   Widget _buildTabContent(CouponState state, List<CouponEntity> activeCoupons,
       List<CouponEntity> inactiveCoupons, ThemeData theme) {
-    if (state is MerchantCouponsLoading)
+    if (state is MerchantCouponsLoading) {
       return const Center(child: CircularProgressIndicator());
+    }
 
-    if (state is MerchantCouponsError)
+    if (state is MerchantCouponsError) {
       return _buildErrorView(state.message, theme);
+    }
 
     if (state is MerchantCouponsLoaded && state.coupons.isEmpty) {
       return CouponsEmptyState(onAdd: () => _navigateToCouponForm(null));

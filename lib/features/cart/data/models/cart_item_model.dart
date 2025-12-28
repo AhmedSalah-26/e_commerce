@@ -56,6 +56,7 @@ class CartItemModel extends CartItemEntity {
   }
 
   /// Create a copy with updated fields
+  @override
   CartItemModel copyWith({
     String? id,
     String? userId,

@@ -5,6 +5,7 @@ import '../../../../core/shared_widgets/app_dialog.dart';
 import '../cubit/notifications_cubit.dart';
 
 void showClearAllDialog(BuildContext context) {
+  final notificationsCubit = context.read<NotificationsCubit>();
   AppDialog.showConfirmation(
     context: context,
     title: 'clear_all_notifications'.tr(),
@@ -15,7 +16,7 @@ void showClearAllDialog(BuildContext context) {
     isDestructive: true,
   ).then((confirmed) {
     if (confirmed == true) {
-      context.read<NotificationsCubit>().clearAllNotifications();
+      notificationsCubit.clearAllNotifications();
     }
   });
 }

@@ -158,9 +158,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       notification: notification,
       isRead: isRead,
       onTap: () {
-        if (!isRead)
+        if (!isRead) {
           context.read<NotificationsCubit>().markAsRead(notification.id);
-        if (notification.orderId != null) context.push('/orders');
+        }
+        if (notification.orderId != null) {
+          context.push('/orders');
+        }
       },
       onDismissed: () => context
           .read<NotificationsCubit>()

@@ -1,5 +1,4 @@
 import 'dart:ui' as ui;
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,14 +8,14 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../domain/entities/cart_item_entity.dart';
 import '../cubit/cart_cubit.dart';
+import 'cart_item/cart_item_image.dart';
+import 'cart_item/cart_item_quantity_control.dart';
+import 'cart_item/cart_item_badge.dart';
 
 class CartItemCard extends StatefulWidget {
   final CartItemEntity cartItem;
 
-  const CartItemCard({
-    super.key,
-    required this.cartItem,
-  });
+  const CartItemCard({super.key, required this.cartItem});
 
   @override
   State<CartItemCard> createState() => _CartItemCardState();
@@ -41,7 +40,6 @@ class _CartItemCardState extends State<CartItemCard> {
   }
 
   void _handleIncrease() {
-    // Optimistic update
     setState(() {
       _localQuantity++;
       _isUpdating = true;
@@ -49,10 +47,7 @@ class _CartItemCardState extends State<CartItemCard> {
 
     context
         .read<CartCubit>()
-        .updateQuantity(
-          widget.cartItem.id,
-          _localQuantity,
-        )
+        .updateQuantity(widget.cartItem.id, _localQuantity)
         .then((_) {
       if (mounted) setState(() => _isUpdating = false);
     });
@@ -60,12 +55,10 @@ class _CartItemCardState extends State<CartItemCard> {
 
   void _handleDecrease() {
     if (_localQuantity <= 1) {
-      // Remove from cart
       context.read<CartCubit>().removeFromCart(widget.cartItem.id);
       return;
     }
 
-    // Optimistic update
     setState(() {
       _localQuantity--;
       _isUpdating = true;
@@ -73,10 +66,7 @@ class _CartItemCardState extends State<CartItemCard> {
 
     context
         .read<CartCubit>()
-        .updateQuantity(
-          widget.cartItem.id,
-          _localQuantity,
-        )
+        .updateQuantity(widget.cartItem.id, _localQuantity)
         .then((_) {
       if (mounted) setState(() => _isUpdating = false);
     });
@@ -89,17 +79,17 @@ class _CartItemCardState extends State<CartItemCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-    double imageSize = screenHeight * 0.08;
-    double fontSize = screenWidth * 0.04;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final imageSize = screenHeight * 0.08;
+    final fontSize = screenWidth * 0.04;
     final isRtl = context.locale.languageCode == 'ar';
 
     final product = widget.cartItem.product;
     final productName = product?.name ?? 'منتج';
     final productPrice = product?.effectivePrice ?? 0;
     final productImage = product?.mainImage ?? '';
-    double totalPrice = productPrice * _localQuantity;
+    final totalPrice = productPrice * _localQuantity;
     final hasDiscount = product?.hasDiscount ?? false;
     final isFlashSale = product?.isFlashSaleActive ?? false;
     final discountPercent = product?.discountPercentage ?? 0;
@@ -122,9 +112,7 @@ class _CartItemCardState extends State<CartItemCard> {
       ),
       child: GestureDetector(
         onTap: () {
-          if (product != null) {
-            context.push('/product/${product.id}');
-          }
+          if (product != null) context.push('/product/${product.id}');
         },
         child: Stack(
           clipBehavior: Clip.none,
@@ -153,241 +141,132 @@ class _CartItemCardState extends State<CartItemCard> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Image
-                      SizedBox(
-                        width: imageSize,
-                        height: imageSize,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: productImage.isNotEmpty
-                              ? (productImage.startsWith('http')
-                                  ? CachedNetworkImage(
-                                      imageUrl: productImage,
-                                      fit: BoxFit.cover,
-                                      memCacheWidth: 160,
-                                      placeholder: (_, __) =>
-                                          _buildPlaceholder(theme),
-                                      errorWidget: (_, __, ___) =>
-                                          _buildPlaceholder(theme),
-                                    )
-                                  : Image.asset(
-                                      productImage,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return _buildPlaceholder(theme);
-                                      },
-                                    ))
-                              : _buildPlaceholder(theme),
-                        ),
-                      ),
+                      CartItemImage(imageUrl: productImage, size: imageSize),
                       SizedBox(width: screenWidth * 0.03),
-                      // Product Info
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Text(
-                              productName,
-                              style: AppTextStyle.bold_18_medium_brown.copyWith(
-                                fontSize: fontSize,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            // Price with discount display
-                            if (hasDiscount || isFlashSale)
-                              Row(
-                                children: [
-                                  Text(
-                                    '${product?.price.toStringAsFixed(0)} ',
-                                    style: TextStyle(
-                                      fontSize: fontSize * 0.75,
-                                      color: Colors.grey,
-                                      decoration: TextDecoration.lineThrough,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${productPrice.toStringAsFixed(2)} ${'egp'.tr()}',
-                                    style: AppTextStyle.normal_16_brownLight
-                                        .copyWith(
-                                            fontSize: fontSize * 0.8,
-                                            color: theme.colorScheme.primary),
-                                  ),
-                                ],
-                              )
-                            else
-                              Text(
-                                '${'unit_price'.tr()}: ${productPrice.toStringAsFixed(2)} ${'egp'.tr()}',
-                                style: AppTextStyle.normal_16_brownLight
-                                    .copyWith(fontSize: fontSize * 0.8),
-                              ),
-                            Text(
-                              '${'total_price'.tr()}: ${totalPrice.toStringAsFixed(2)} ${'egp'.tr()}',
-                              style:
-                                  AppTextStyle.semiBold_16_dark_brown.copyWith(
-                                fontSize: fontSize * 0.8,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
+                        child: _buildProductInfo(
+                          productName: productName,
+                          productPrice: productPrice,
+                          totalPrice: totalPrice,
+                          hasDiscount: hasDiscount,
+                          isFlashSale: isFlashSale,
+                          originalPrice: product?.price ?? 0,
+                          fontSize: fontSize,
+                          theme: theme,
                         ),
                       ),
                       SizedBox(width: screenWidth * 0.03),
-                      // Quantity control
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.1),
-                        ),
-                        child: Column(
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.add,
-                                color: Colors.green,
-                                size: fontSize * 1.2,
-                              ),
-                              onPressed: _handleIncrease,
-                            ),
-                            SizedBox(
-                              width: 30,
-                              height: 24,
-                              child: Center(
-                                child: Text(
-                                  '${_localQuantity < 1 ? 1 : _localQuantity}',
-                                  style: AppTextStyle.bold_18_medium_brown
-                                      .copyWith(fontSize: fontSize),
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.remove,
-                                color: Colors.red,
-                                size: fontSize * 1.2,
-                              ),
-                              onPressed: _handleDecrease,
-                            ),
-                          ],
-                        ),
+                      CartItemQuantityControl(
+                        quantity: _localQuantity,
+                        fontSize: fontSize,
+                        onIncrease: _handleIncrease,
+                        onDecrease: _handleDecrease,
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-            // Flash Sale Badge on Card
-            if (isFlashSale)
-              Positioned(
-                top: screenHeight * 0.01,
-                left: isRtl ? null : 0,
-                right: isRtl ? 0 : null,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.only(
-                      topLeft: isRtl ? Radius.zero : const Radius.circular(10),
-                      topRight: isRtl ? const Radius.circular(10) : Radius.zero,
-                      bottomLeft:
-                          isRtl ? const Radius.circular(10) : Radius.zero,
-                      bottomRight:
-                          isRtl ? Radius.zero : const Radius.circular(10),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.flash_on,
-                          color: Colors.yellow, size: 12),
-                      Text(
-                        'flash_sale_badge'.tr(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            // Inactive Product Badge
-            else if (isInactive)
-              Positioned(
-                top: screenHeight * 0.01,
-                left: isRtl ? null : 0,
-                right: isRtl ? 0 : null,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.orange[700],
-                    borderRadius: BorderRadius.only(
-                      topLeft: isRtl ? Radius.zero : const Radius.circular(10),
-                      topRight: isRtl ? const Radius.circular(10) : Radius.zero,
-                      bottomLeft:
-                          isRtl ? const Radius.circular(10) : Radius.zero,
-                      bottomRight:
-                          isRtl ? Radius.zero : const Radius.circular(10),
-                    ),
-                  ),
-                  child: Text(
-                    'shipping_unavailable'.tr(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              )
-            // Discount Badge on Card (only if not flash sale)
-            else if (hasDiscount)
-              Positioned(
-                top: screenHeight * 0.01,
-                left: isRtl ? null : 0,
-                right: isRtl ? 0 : null,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
-                    borderRadius: BorderRadius.only(
-                      topLeft: isRtl ? Radius.zero : const Radius.circular(10),
-                      topRight: isRtl ? const Radius.circular(10) : Radius.zero,
-                      bottomLeft:
-                          isRtl ? const Radius.circular(10) : Radius.zero,
-                      bottomRight:
-                          isRtl ? Radius.zero : const Radius.circular(10),
-                    ),
-                  ),
-                  child: Text(
-                    '-$discountPercent%',
-                    textDirection: ui.TextDirection.ltr,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+            _buildBadge(
+              isFlashSale: isFlashSale,
+              isInactive: isInactive,
+              hasDiscount: hasDiscount,
+              discountPercent: discountPercent,
+              isRtl: isRtl,
+              topOffset: screenHeight * 0.01,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPlaceholder(ThemeData theme) {
-    return Container(
-      color: theme.colorScheme.surface,
-      child: const Icon(Icons.image_not_supported, color: Colors.grey),
+  Widget _buildProductInfo({
+    required String productName,
+    required double productPrice,
+    required double totalPrice,
+    required bool hasDiscount,
+    required bool isFlashSale,
+    required double originalPrice,
+    required double fontSize,
+    required ThemeData theme,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        Text(
+          productName,
+          style: AppTextStyle.bold_18_medium_brown.copyWith(fontSize: fontSize),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4),
+        if (hasDiscount || isFlashSale)
+          Row(
+            children: [
+              Text(
+                '${originalPrice.toStringAsFixed(0)} ',
+                style: TextStyle(
+                  fontSize: fontSize * 0.75,
+                  color: Colors.grey,
+                  decoration: TextDecoration.lineThrough,
+                ),
+              ),
+              Text(
+                '${productPrice.toStringAsFixed(2)} ${'egp'.tr()}',
+                style: AppTextStyle.normal_16_brownLight.copyWith(
+                  fontSize: fontSize * 0.8,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          )
+        else
+          Text(
+            '${'unit_price'.tr()}: ${productPrice.toStringAsFixed(2)} ${'egp'.tr()}',
+            style: AppTextStyle.normal_16_brownLight
+                .copyWith(fontSize: fontSize * 0.8),
+          ),
+        Text(
+          '${'total_price'.tr()}: ${totalPrice.toStringAsFixed(2)} ${'egp'.tr()}',
+          style: AppTextStyle.semiBold_16_dark_brown.copyWith(
+            fontSize: fontSize * 0.8,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildBadge({
+    required bool isFlashSale,
+    required bool isInactive,
+    required bool hasDiscount,
+    required int discountPercent,
+    required bool isRtl,
+    required double topOffset,
+  }) {
+    if (isFlashSale) {
+      return CartItemBadge(
+        type: CartItemBadgeType.flashSale,
+        isRtl: isRtl,
+        topOffset: topOffset,
+      );
+    } else if (isInactive) {
+      return CartItemBadge(
+        type: CartItemBadgeType.inactive,
+        isRtl: isRtl,
+        topOffset: topOffset,
+      );
+    } else if (hasDiscount) {
+      return CartItemBadge(
+        type: CartItemBadgeType.discount,
+        isRtl: isRtl,
+        topOffset: topOffset,
+        discountPercent: discountPercent,
+      );
+    }
+    return const SizedBox.shrink();
   }
 }

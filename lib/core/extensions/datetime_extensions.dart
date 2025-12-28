@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/intl.dart';
 
 /// DateTime extension methods
 extension DateTimeExtensions on DateTime {

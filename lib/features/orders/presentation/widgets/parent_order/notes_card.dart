@@ -9,27 +9,41 @@ class NotesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.amber.shade50,
+        color: isDark
+            ? theme.colorScheme.surfaceContainerHighest
+            : Colors.amber.shade50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.shade200),
+        border: Border.all(
+          color: isDark
+              ? theme.colorScheme.outline.withValues(alpha: 0.3)
+              : Colors.amber.shade200,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.note_outlined, size: 18, color: Colors.amber.shade700),
+              Icon(
+                Icons.note_outlined,
+                size: 18,
+                color:
+                    isDark ? theme.colorScheme.primary : Colors.amber.shade700,
+              ),
               const SizedBox(width: 8),
               Text(
                 'notes'.tr(),
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: Colors.amber.shade700,
+                  color: isDark
+                      ? theme.colorScheme.primary
+                      : Colors.amber.shade700,
                 ),
               ),
             ],
@@ -38,7 +52,7 @@ class NotesCard extends StatelessWidget {
           Text(
             notes,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
             ),
           ),
         ],

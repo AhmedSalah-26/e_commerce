@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/app_text_style.dart';
+import '../../../../../core/shared_widgets/app_dialog.dart';
 import '../../../../../core/shared_widgets/toast.dart';
 import '../../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../../core/utils/error_helper.dart';
@@ -170,45 +171,26 @@ class _ReviewsSectionState extends State<ReviewsSection> {
   void _showDeleteConfirmation(ReviewEntity review) {
     final reviewsCubit = context.read<ReviewsCubit>();
     final authCubit = context.read<AuthCubit>();
-    final theme = Theme.of(context);
 
-    showDialog(
+    AppDialog.showConfirmation(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('delete_review'.tr(),
-            style: TextStyle(color: theme.colorScheme.onSurface)),
-        content: Text('هل أنت متأكد من حذف تقييمك؟',
-            style: TextStyle(color: theme.colorScheme.onSurface)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'cancel'.tr(),
-              style: TextStyle(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              final authState = authCubit.state;
-              if (authState is AuthAuthenticated) {
-                reviewsCubit.deleteReview(
-                  review.id,
-                  widget.productId,
-                  authState.user.id,
-                );
-              }
-            },
-            child: Text(
-              'delete'.tr(),
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
+      title: 'delete_review'.tr(),
+      message: 'هل أنت متأكد من حذف تقييمك؟',
+      confirmText: 'delete'.tr(),
+      cancelText: 'cancel'.tr(),
+      icon: Icons.delete_outline,
+      isDestructive: true,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        final authState = authCubit.state;
+        if (authState is AuthAuthenticated) {
+          reviewsCubit.deleteReview(
+            review.id,
+            widget.productId,
+            authState.user.id,
+          );
+        }
+      }
+    });
   }
 }

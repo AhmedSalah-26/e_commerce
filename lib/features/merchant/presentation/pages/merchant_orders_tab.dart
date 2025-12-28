@@ -10,7 +10,7 @@ import '../../../orders/presentation/cubit/orders_cubit.dart';
 import '../../../orders/presentation/cubit/orders_state.dart';
 import '../widgets/merchant_empty_state.dart';
 import '../widgets/order_card.dart';
-import '../widgets/order_details_sheet.dart';
+import '../widgets/order_details/order_details_sheet.dart';
 import '../widgets/orders_header.dart';
 import '../widgets/orders_filter_section.dart';
 import '../widgets/orders_statistics_tab.dart';

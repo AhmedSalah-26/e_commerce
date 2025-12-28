@@ -190,12 +190,13 @@ mixin MerchantOrdersMixin {
           .eq('merchant_id', merchantId)
           .eq('status', 'pending');
 
+      // Use updated_at for delivered orders (when status changed to delivered)
       final todayDeliveredResponse = await client
           .from('orders')
           .select()
           .eq('merchant_id', merchantId)
           .eq('status', 'delivered')
-          .gte('created_at', startOfDay.toIso8601String());
+          .gte('updated_at', startOfDay.toIso8601String());
 
       return {
         'todayPending': (allPendingResponse as List).length,
@@ -259,11 +260,12 @@ mixin MerchantOrdersMixin {
 
       var query = client.from('orders').select().eq('merchant_id', merchantId);
 
+      // Use updated_at for filtering (when order status was last changed)
       if (startDate != null) {
-        query = query.gte('created_at', startDate.toIso8601String());
+        query = query.gte('updated_at', startDate.toIso8601String());
       }
       if (endDate != null) {
-        query = query.lte('created_at',
+        query = query.lte('updated_at',
             endDate.add(const Duration(days: 1)).toIso8601String());
       }
 

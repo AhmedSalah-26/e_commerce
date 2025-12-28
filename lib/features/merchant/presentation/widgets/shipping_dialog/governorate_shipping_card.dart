@@ -20,14 +20,21 @@ class GovernorateShippingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final hasPrice = price != null;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       decoration: BoxDecoration(
-        color: hasPrice ? Colors.green.shade50 : theme.colorScheme.surface,
+        color: hasPrice
+            ? (isDark
+                ? Colors.green.withValues(alpha: 0.15)
+                : Colors.green.shade50)
+            : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: hasPrice
-              ? Colors.green.shade200
+              ? (isDark
+                  ? Colors.green.withValues(alpha: 0.4)
+                  : Colors.green.shade200)
               : theme.colorScheme.outline.withValues(alpha: 0.3),
         ),
       ),
@@ -47,14 +54,19 @@ class GovernorateShippingCard extends StatelessWidget {
         ),
         title: Text(
           governorate.getName(locale),
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
         ),
         subtitle: Text(
           hasPrice
               ? '${price!.toStringAsFixed(0)} ${'egp'.tr()}'
               : 'no_shipping_prices'.tr(),
           style: TextStyle(
-            color: hasPrice ? Colors.green.shade700 : theme.colorScheme.outline,
+            color: hasPrice
+                ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
+                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         trailing: IconButton(

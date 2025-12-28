@@ -117,10 +117,12 @@ class DeepLinkService {
     }
   }
 
-  /// Navigate to path
+  /// Navigate to path using push (preserves back navigation)
   void _navigateToPath(String path) {
     try {
-      AppRouter.router.go(path);
+      // Use push instead of go to preserve the navigation stack
+      // This way when user presses back, they return to where they were
+      AppRouter.router.push(path);
     } catch (e) {
       debugPrint('Deep Link navigation error: $e');
       // Save for later if navigation fails (e.g., not logged in)
@@ -133,7 +135,8 @@ class DeepLinkService {
     if (_pendingDeepLink != null) {
       final path = _pendingDeepLink!;
       _pendingDeepLink = null;
-      AppRouter.router.go(path);
+      // Use push to preserve navigation stack
+      AppRouter.router.push(path);
     }
   }
 

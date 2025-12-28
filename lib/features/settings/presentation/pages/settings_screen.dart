@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/shared_widgets/app_dialog.dart';
 import '../../../../core/theme/theme_cubit.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -274,42 +275,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _handleLogout(BuildContext context) {
-    final theme = Theme.of(context);
-    showDialog(
+    final authCubit = context.read<AuthCubit>();
+    AppDialog.showConfirmation(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'logout'.tr(),
-          style: TextStyle(color: theme.colorScheme.onSurface),
-        ),
-        content: Text(
-          'logout_confirm'.tr(),
-          style: TextStyle(color: theme.colorScheme.onSurface),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'cancel'.tr(),
-              style: TextStyle(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.read<AuthCubit>().signOut();
-            },
-            child: Text(
-              'logout'.tr(),
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
+      title: 'logout'.tr(),
+      message: 'logout_confirm'.tr(),
+      confirmText: 'logout'.tr(),
+      cancelText: 'cancel'.tr(),
+      icon: Icons.logout,
+      isDestructive: true,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        authCubit.signOut();
+      }
+    });
   }
 }

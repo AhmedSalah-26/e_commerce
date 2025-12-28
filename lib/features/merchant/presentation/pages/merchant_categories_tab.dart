@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/shared_widgets/app_dialog.dart';
 import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
@@ -241,49 +242,38 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
 
   void _showDeleteConfirmation(
       BuildContext context, bool isRtl, String categoryId) {
-    showDialog(
+    AppDialog.showConfirmation(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(isRtl ? 'حذف التصنيف' : 'Delete Category'),
-        content: Text(
-          isRtl
-              ? 'هل أنت متأكد من حذف هذا التصنيف؟'
-              : 'Are you sure you want to delete this category?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(isRtl ? 'إلغاء' : 'Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-              final success = await context
-                  .read<CategoriesCubit>()
-                  .deleteCategory(categoryId);
+      title: isRtl ? 'حذف التصنيف' : 'Delete Category',
+      message: isRtl
+          ? 'هل أنت متأكد من حذف هذا التصنيف؟'
+          : 'Are you sure you want to delete this category?',
+      confirmText: isRtl ? 'حذف' : 'Delete',
+      cancelText: isRtl ? 'إلغاء' : 'Cancel',
+      icon: Icons.delete_outline,
+      isDestructive: true,
+    ).then((confirmed) async {
+      if (confirmed == true) {
+        final success =
+            await context.read<CategoriesCubit>().deleteCategory(categoryId);
 
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      success
-                          ? (isRtl
-                              ? 'تم حذف التصنيف بنجاح'
-                              : 'Category deleted successfully')
-                          : (isRtl
-                              ? 'فشل في حذف التصنيف'
-                              : 'Failed to delete category'),
-                    ),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
-              }
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(isRtl ? 'حذف' : 'Delete'),
-          ),
-        ],
-      ),
-    );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                success
+                    ? (isRtl
+                        ? 'تم حذف التصنيف بنجاح'
+                        : 'Category deleted successfully')
+                    : (isRtl
+                        ? 'فشل في حذف التصنيف'
+                        : 'Failed to delete category'),
+              ),
+              backgroundColor: success ? Colors.green : Colors.red,
+            ),
+          );
+        }
+      }
+    });
   }
 }

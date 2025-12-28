@@ -17,6 +17,8 @@ class CouponDateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return InkWell(
       onTap: () async {
         final picked = await showDatePicker(
@@ -41,11 +43,18 @@ class CouponDateField extends StatelessWidget {
                 date != null
                     ? DateFormat('yyyy/MM/dd').format(date!)
                     : (isOptional ? 'optional'.tr() : 'select_date'.tr()),
-                style:
-                    TextStyle(color: date != null ? Colors.black : Colors.grey),
+                style: TextStyle(
+                  color: date != null
+                      ? theme.colorScheme.onSurface
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
               ),
             ),
-            const Icon(Icons.calendar_today, size: 18, color: Colors.grey),
+            Icon(
+              Icons.calendar_today,
+              size: 18,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ],
         ),
       ),

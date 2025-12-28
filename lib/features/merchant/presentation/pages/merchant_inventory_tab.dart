@@ -30,6 +30,7 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
   String _searchQuery = '';
   String? _selectedCategoryId;
   String _activityFilter = 'all';
+  bool _isInitialized = false;
 
   @override
   void dispose() {
@@ -40,6 +41,13 @@ class _MerchantInventoryTabState extends State<MerchantInventoryTab> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (!_isInitialized) {
+      _isInitialized = true;
+      _loadData();
+    }
+  }
+
+  void _loadData() {
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
       context

@@ -198,7 +198,11 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
 
     if (mounted) {
       setState(() => _isApplying = false);
-      context.pop();
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        Navigator.of(context).pop();
+      }
     }
   }
 }

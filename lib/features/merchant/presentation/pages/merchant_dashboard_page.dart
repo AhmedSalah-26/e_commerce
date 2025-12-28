@@ -22,89 +22,84 @@ class MerchantDashboardPage extends StatefulWidget {
 class _MerchantDashboardPageState extends State<MerchantDashboardPage> {
   int _currentIndex = 0;
 
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      BlocProvider(
-        create: (_) => sl<OrdersCubit>(),
-        child: const MerchantOrdersTab(),
-      ),
-      BlocProvider(
-        create: (_) => sl<MerchantProductsCubit>(),
-        child: const MerchantInventoryTab(),
-      ),
-      BlocProvider(
-        create: (_) => sl<CategoriesCubit>(),
-        child: const MerchantCategoriesTab(),
-      ),
-      const MerchantSettingsTab(),
-    ];
-  }
+  final List<Widget> _pages = const [
+    MerchantOrdersTab(),
+    MerchantInventoryTab(),
+    MerchantCategoriesTab(),
+    MerchantSettingsTab(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state) {
-        if (state is AuthUnauthenticated) {
-          context.go('/login');
-        }
-      },
-      child: Scaffold(
-        body: _pages[_currentIndex],
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            boxShadow: [
-              BoxShadow(
-                color: theme.shadowColor.withValues(alpha: 0.2),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
-              ),
-            ],
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<OrdersCubit>()),
+        BlocProvider(create: (_) => sl<MerchantProductsCubit>()),
+        BlocProvider(create: (_) => sl<CategoriesCubit>()),
+      ],
+      child: BlocListener<AuthCubit, AuthState>(
+        listener: (context, state) {
+          if (state is AuthUnauthenticated) {
+            context.go('/login');
+          }
+        },
+        child: Scaffold(
+          body: IndexedStack(
+            index: _currentIndex,
+            children: _pages,
           ),
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: theme.colorScheme.surface,
-            selectedItemColor: theme.colorScheme.primary,
-            unselectedItemColor:
-                theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            items: [
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.receipt_long),
-                label: Localizations.localeOf(context).languageCode == 'ar'
-                    ? 'الطلبات'
-                    : 'Orders',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.inventory),
-                label: Localizations.localeOf(context).languageCode == 'ar'
-                    ? 'المخزون'
-                    : 'Inventory',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.category),
-                label: Localizations.localeOf(context).languageCode == 'ar'
-                    ? 'التصنيفات'
-                    : 'Categories',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.settings),
-                label: Localizations.localeOf(context).languageCode == 'ar'
-                    ? 'الإعدادات'
-                    : 'Settings',
-              ),
-            ],
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: theme.shadowColor.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: theme.colorScheme.surface,
+              selectedItemColor: theme.colorScheme.primary,
+              unselectedItemColor:
+                  theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              items: [
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.receipt_long),
+                  label: Localizations.localeOf(context).languageCode == 'ar'
+                      ? 'الطلبات'
+                      : 'Orders',
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.inventory),
+                  label: Localizations.localeOf(context).languageCode == 'ar'
+                      ? 'المخزون'
+                      : 'Inventory',
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.category),
+                  label: Localizations.localeOf(context).languageCode == 'ar'
+                      ? 'التصنيفات'
+                      : 'Categories',
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.settings),
+                  label: Localizations.localeOf(context).languageCode == 'ar'
+                      ? 'الإعدادات'
+                      : 'Settings',
+                ),
+              ],
+            ),
           ),
         ),
       ),

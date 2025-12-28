@@ -19,37 +19,43 @@ class ProfileFormFields extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _buildEmailField(),
+        _buildEmailField(context),
         const SizedBox(height: 12),
-        _buildNameField(),
+        _buildNameField(context),
         const SizedBox(height: 12),
-        _buildPhoneField(),
+        _buildPhoneField(context),
       ],
     );
   }
 
-  Widget _buildEmailField() {
+  Widget _buildEmailField(BuildContext context) {
+    final theme = Theme.of(context);
     return TextField(
       controller: TextEditingController(text: email),
       readOnly: true,
+      style: TextStyle(color: theme.colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: 'email'.tr(),
-        prefixIcon: const Icon(Icons.email_outlined),
+        prefixIcon: Icon(Icons.email_outlined,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: theme.colorScheme.onSurface.withValues(alpha: 0.05),
       ),
     );
   }
 
-  Widget _buildNameField() {
+  Widget _buildNameField(BuildContext context) {
+    final theme = Theme.of(context);
     return TextField(
       controller: nameController,
+      style: TextStyle(color: theme.colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: 'full_name'.tr(),
-        prefixIcon: const Icon(Icons.person_outline),
+        prefixIcon: Icon(Icons.person_outline,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -57,13 +63,16 @@ class ProfileFormFields extends StatelessWidget {
     );
   }
 
-  Widget _buildPhoneField() {
+  Widget _buildPhoneField(BuildContext context) {
+    final theme = Theme.of(context);
     return TextField(
       controller: phoneController,
       keyboardType: TextInputType.phone,
+      style: TextStyle(color: theme.colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: 'phone'.tr(),
-        prefixIcon: const Icon(Icons.phone_outlined),
+        prefixIcon: Icon(Icons.phone_outlined,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),

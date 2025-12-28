@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../../../../core/shared_widgets/app_dialog.dart';
 import '../../../products/domain/entities/product_entity.dart';
 
 class MerchantProductCard extends StatelessWidget {
@@ -170,44 +171,30 @@ class MerchantProductCard extends StatelessWidget {
   void _showToggleConfirmation(BuildContext context, bool isRtl) {
     final willDeactivate = product.isActive;
 
-    showDialog(
+    AppDialog.showConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          willDeactivate
-              ? (isRtl ? 'إلغاء تنشيط المنتج' : 'Deactivate Product')
-              : (isRtl ? 'تنشيط المنتج' : 'Activate Product'),
-        ),
-        content: Text(
-          willDeactivate
-              ? (isRtl
-                  ? 'هل أنت متأكد من إلغاء تنشيط هذا المنتج؟ لن يظهر للعملاء.'
-                  : 'Are you sure you want to deactivate this product? It won\'t be visible to customers.')
-              : (isRtl
-                  ? 'هل أنت متأكد من تنشيط هذا المنتج؟ سيظهر للعملاء.'
-                  : 'Are you sure you want to activate this product? It will be visible to customers.'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(isRtl ? 'إلغاء' : 'Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onToggleActive();
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: willDeactivate ? Colors.orange : Colors.green,
-            ),
-            child: Text(
-              willDeactivate
-                  ? (isRtl ? 'إلغاء التنشيط' : 'Deactivate')
-                  : (isRtl ? 'تنشيط' : 'Activate'),
-            ),
-          ),
-        ],
-      ),
-    );
+      title: willDeactivate
+          ? (isRtl ? 'إلغاء تنشيط المنتج' : 'Deactivate Product')
+          : (isRtl ? 'تنشيط المنتج' : 'Activate Product'),
+      message: willDeactivate
+          ? (isRtl
+              ? 'هل أنت متأكد من إلغاء تنشيط هذا المنتج؟ لن يظهر للعملاء.'
+              : 'Are you sure you want to deactivate this product? It won\'t be visible to customers.')
+          : (isRtl
+              ? 'هل أنت متأكد من تنشيط هذا المنتج؟ سيظهر للعملاء.'
+              : 'Are you sure you want to activate this product? It will be visible to customers.'),
+      confirmText: willDeactivate
+          ? (isRtl ? 'إلغاء التنشيط' : 'Deactivate')
+          : (isRtl ? 'تنشيط' : 'Activate'),
+      cancelText: isRtl ? 'إلغاء' : 'Cancel',
+      icon: willDeactivate
+          ? Icons.visibility_off_outlined
+          : Icons.visibility_outlined,
+      iconColor: willDeactivate ? Colors.orange : Colors.green,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        onToggleActive();
+      }
+    });
   }
 }

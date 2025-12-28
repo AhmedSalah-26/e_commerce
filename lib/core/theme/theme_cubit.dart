@@ -119,6 +119,7 @@ class ThemeCubit extends Cubit<ThemeState> {
     const secondaryColor = Color(0xFFD4894A);
     const surfaceColor = Color(0xFF1E1E1E);
     const cardColor = Color(0xFF2D2D2D);
+    const textColor = Color(0xFFF5F5F5); // Lighter text for better visibility
 
     return ThemeData(
       brightness: Brightness.dark,
@@ -129,8 +130,8 @@ class ThemeCubit extends Cubit<ThemeState> {
         primary: primaryColor,
         secondary: secondaryColor,
         surface: cardColor,
-        onSurface: Color(0xFFE0E0E0),
-        outline: Color(0xFF4A4A4A),
+        onSurface: textColor,
+        outline: Color(0xFF5A5A5A),
       ),
       appBarTheme: const AppBarTheme(
         elevation: 0,
@@ -138,7 +139,7 @@ class ThemeCubit extends Cubit<ThemeState> {
         shadowColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         backgroundColor: surfaceColor,
-        foregroundColor: Color(0xFFE0E0E0),
+        foregroundColor: textColor,
       ),
       cardTheme: CardThemeData(
         color: cardColor,
@@ -165,11 +166,11 @@ class ThemeCubit extends Cubit<ThemeState> {
           ),
         ),
       ),
-      iconTheme: const IconThemeData(color: Color(0xFFE0E0E0)),
+      iconTheme: const IconThemeData(color: textColor),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: surfaceColor,
         selectedItemColor: primaryColor,
-        unselectedItemColor: Color(0xFF9E9E9E),
+        unselectedItemColor: Color(0xFFB0B0B0),
       ),
     );
   }
@@ -177,7 +178,7 @@ class ThemeCubit extends Cubit<ThemeState> {
   static TextTheme _buildTextTheme(Brightness brightness) {
     final color = brightness == Brightness.light
         ? const Color(0xFF5C4033)
-        : const Color(0xFFE0E0E0);
+        : const Color(0xFFF5F5F5); // Lighter text for dark mode
 
     return TextTheme(
       displayLarge: TextStyle(fontFamily: 'Changa', color: color),

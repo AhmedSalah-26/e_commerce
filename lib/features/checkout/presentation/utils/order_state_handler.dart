@@ -52,9 +52,10 @@ class OrderStateHandler {
       // Show full screen network error
       _showNetworkErrorDialog(context);
     } else {
+      final locale = context.locale.languageCode;
       Tost.showCustomToast(
         context,
-        ErrorHelper.getUserFriendlyMessage(message),
+        ErrorHelper.getUserFriendlyMessage(message, locale: locale),
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );

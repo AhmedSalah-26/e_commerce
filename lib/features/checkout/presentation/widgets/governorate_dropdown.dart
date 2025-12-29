@@ -27,6 +27,31 @@ class GovernorateDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final merchantIds = merchantsInfo.keys.toList();
+    final isSingleMerchant = merchantIds.length == 1;
+    final hasShippingData = merchantsShippingData.isNotEmpty;
+
+    // Filter governorates for single merchant - show only available ones
+    // But only if we have shipping data loaded
+    List<GovernorateEntity> displayGovernorates;
+    if (isSingleMerchant && hasShippingData) {
+      displayGovernorates = governorates.where((gov) {
+        final shippingData = merchantsShippingData[gov.id] ?? {};
+        return shippingData.containsKey(merchantIds.first);
+      }).toList();
+
+      // If no available governorates for single merchant, show all with warning
+      if (displayGovernorates.isEmpty) {
+        displayGovernorates = governorates;
+      }
+    } else {
+      displayGovernorates = governorates;
+    }
+
+    // Check if selected value exists in filtered list
+    final validSelected = selected != null &&
+            displayGovernorates.any((gov) => gov.id == selected!.id)
+        ? selected
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,50 +72,78 @@ class GovernorateDropdown extends StatelessWidget {
             border: Border.all(color: theme.colorScheme.primary, width: 1.5),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<GovernorateEntity>(
-              value: selected,
-              hint: Text(
-                'select_governorate'.tr(),
-                style: TextStyle(color: theme.colorScheme.primary),
-              ),
-              isExpanded: true,
-              icon: Icon(
-                Icons.keyboard_arrow_down,
-                color: theme.colorScheme.primary,
-              ),
-              dropdownColor: theme.colorScheme.surface,
-              items: governorates.map((gov) {
-                final shippingData = merchantsShippingData[gov.id] ?? {};
-
-                return DropdownMenuItem<GovernorateEntity>(
-                  value: gov,
-                  child: _GovernorateItem(
-                    governorate: gov,
-                    locale: locale,
-                    merchantIds: merchantIds,
-                    merchantsInfo: merchantsInfo,
-                    shippingData: shippingData,
+          child: governorates.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'loading'.tr(),
+                        style: TextStyle(color: theme.colorScheme.primary),
+                      ),
+                    ],
                   ),
-                );
-              }).toList(),
-              onChanged: (gov) {
-                if (gov != null) {
-                  context
-                      .read<ShippingCubit>()
-                      .selectGovernorateForMultipleMerchants(gov, merchantIds);
-                }
-              },
-            ),
-          ),
+                )
+              : DropdownButtonHideUnderline(
+                  child: DropdownButton<GovernorateEntity>(
+                    value: validSelected,
+                    hint: Text(
+                      'select_governorate'.tr(),
+                      style: TextStyle(color: theme.colorScheme.primary),
+                    ),
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: theme.colorScheme.primary,
+                    ),
+                    dropdownColor: theme.colorScheme.surface,
+                    items: displayGovernorates.map((gov) {
+                      final shippingData = merchantsShippingData[gov.id] ?? {};
+
+                      return DropdownMenuItem<GovernorateEntity>(
+                        value: gov,
+                        child: (isSingleMerchant && hasShippingData)
+                            ? Text(
+                                gov.getName(locale),
+                                style:
+                                    TextStyle(color: theme.colorScheme.primary),
+                              )
+                            : _GovernorateItem(
+                                governorate: gov,
+                                locale: locale,
+                                merchantIds: merchantIds,
+                                merchantsInfo: merchantsInfo,
+                                shippingData: shippingData,
+                              ),
+                      );
+                    }).toList(),
+                    onChanged: (gov) {
+                      if (gov != null) {
+                        context
+                            .read<ShippingCubit>()
+                            .selectGovernorateForMultipleMerchants(
+                                gov, merchantIds);
+                      }
+                    },
+                  ),
+                ),
         ),
-        // Show availability info for selected governorate
-        if (selected != null && merchantIds.length > 1) ...[
+        // Show availability info for selected governorate (only for multiple merchants)
+        if (validSelected != null && !isSingleMerchant && hasShippingData) ...[
           const SizedBox(height: 12),
           _MerchantsAvailabilityInfo(
             merchantIds: merchantIds,
             merchantsInfo: merchantsInfo,
-            shippingData: merchantsShippingData[selected!.id] ?? {},
+            shippingData: merchantsShippingData[validSelected.id] ?? {},
             locale: locale,
           ),
         ],

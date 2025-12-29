@@ -183,65 +183,76 @@ class _CheckoutPageContent extends StatefulWidget {
 
 class _CheckoutPageContentState extends State<_CheckoutPageContent> {
   static const _stateHandler = OrderStateHandler();
-  bool _shippingLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load shipping data after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadShippingData();
+    });
+  }
+
+  void _loadShippingData() {
+    final cartState = context.read<CartCubit>().state;
+    debugPrint('🛒 CheckoutPage: Cart state type: ${cartState.runtimeType}');
+
+    if (cartState is CartLoaded) {
+      final merchantIds = <String>{};
+      for (final item in cartState.items) {
+        if (item.product?.merchantId != null) {
+          merchantIds.add(item.product!.merchantId!);
+        }
+      }
+      debugPrint(
+          '🛒 CheckoutPage: Found ${merchantIds.length} merchants: $merchantIds');
+
+      context
+          .read<ShippingCubit>()
+          .loadGovernoratesWithAvailability(merchantIds.toList());
+    } else {
+      debugPrint('⚠️ CheckoutPage: Cart not loaded, loading governorates only');
+      context.read<ShippingCubit>().loadGovernorates();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BlocListener<CartCubit, CartState>(
-      listener: (context, cartState) {
-        if (cartState is CartLoaded && !_shippingLoaded) {
-          _shippingLoaded = true;
-          // Get merchant IDs from cart
-          final merchantIds = <String>{};
-          for (final item in cartState.items) {
-            if (item.product?.merchantId != null) {
-              merchantIds.add(item.product!.merchantId!);
-            }
-          }
-          // Load governorates with availability
-          context
-              .read<ShippingCubit>()
-              .loadGovernoratesWithAvailability(merchantIds.toList());
-        }
-      },
-      child: Directionality(
-        textDirection:
-            widget.isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-        child: BlocListener<OrdersCubit, OrdersState>(
-          listener: (context, state) =>
-              _stateHandler.handleState(context, state),
-          child: Scaffold(
+    return Directionality(
+      textDirection: widget.isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: BlocListener<OrdersCubit, OrdersState>(
+        listener: (context, state) => _stateHandler.handleState(context, state),
+        child: Scaffold(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          appBar: AppBar(
             backgroundColor: theme.scaffoldBackgroundColor,
-            appBar: AppBar(
-              backgroundColor: theme.scaffoldBackgroundColor,
-              leading: IconButton(
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: theme.colorScheme.primary,
-                ),
-                onPressed: () => context.pop(),
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: theme.colorScheme.primary,
               ),
-              title: Text(
-                'checkout_title'.tr(),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.primary,
-                ),
+              onPressed: () => context.pop(),
+            ),
+            title: Text(
+              'checkout_title'.tr(),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
               ),
-              centerTitle: true,
             ),
-            body: CheckoutBody(
-              formKey: widget.formKey,
-              addressController: widget.addressController,
-              nameController: widget.nameController,
-              phoneController: widget.phoneController,
-              notesController: widget.notesController,
-              locale: widget.locale,
-              onPlaceOrder: widget.onPlaceOrder,
-            ),
+            centerTitle: true,
+          ),
+          body: CheckoutBody(
+            formKey: widget.formKey,
+            addressController: widget.addressController,
+            nameController: widget.nameController,
+            phoneController: widget.phoneController,
+            notesController: widget.notesController,
+            locale: widget.locale,
+            onPlaceOrder: widget.onPlaceOrder,
           ),
         ),
       ),

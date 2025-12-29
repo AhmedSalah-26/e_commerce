@@ -60,12 +60,18 @@ class CheckoutValidator {
     Map<String, double>? merchantShippingPrices,
     CartLoaded cartState,
   ) {
+    final merchantIds = _extractMerchantIds(cartState);
+
+    // If no merchant shipping prices loaded, can't validate
     if (merchantShippingPrices == null || merchantShippingPrices.isEmpty) {
+      // If we have merchants but no prices, shipping is not supported
+      if (merchantIds.isNotEmpty) {
+        return const CheckoutValidationResult.invalid('shipping_not_supported');
+      }
       return const CheckoutValidationResult.valid();
     }
 
-    final merchantIds = _extractMerchantIds(cartState);
-
+    // Check each merchant has shipping price for selected governorate
     for (final merchantId in merchantIds) {
       if (!merchantShippingPrices.containsKey(merchantId)) {
         return const CheckoutValidationResult.invalid('shipping_not_supported');

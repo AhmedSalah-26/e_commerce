@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/governorate_entity.dart';
@@ -94,10 +95,12 @@ class ShippingCubit extends Cubit<ShippingState> {
   ShippingCubit(this._repository) : super(ShippingInitial());
 
   Future<void> loadGovernorates() async {
+    if (isClosed) return;
     emit(ShippingLoading());
 
     final result = await _repository.getGovernorates();
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(ShippingError(failure.message)),
       (governorates) => emit(GovernoratesLoaded(governorates: governorates)),
@@ -107,27 +110,55 @@ class ShippingCubit extends Cubit<ShippingState> {
   /// Load governorates with merchants shipping data in one call
   Future<void> loadGovernoratesWithAvailability(
       List<String> merchantIds) async {
+    debugPrint(
+        '🔍 ShippingCubit: Loading governorates with availability for ${merchantIds.length} merchants');
+    debugPrint('🔍 ShippingCubit: Merchant IDs: $merchantIds');
+
+    if (isClosed) return;
     emit(ShippingLoading());
 
     final governoratesResult = await _repository.getGovernorates();
 
+    if (isClosed) return;
+
     await governoratesResult.fold(
-      (failure) async => emit(ShippingError(failure.message)),
+      (failure) async {
+        debugPrint(
+            '❌ ShippingCubit: Failed to load governorates: ${failure.message}');
+        if (!isClosed) emit(ShippingError(failure.message));
+      },
       (governorates) async {
+        debugPrint(
+            '✅ ShippingCubit: Loaded ${governorates.length} governorates');
+
         if (merchantIds.isEmpty) {
-          emit(GovernoratesLoaded(governorates: governorates));
+          debugPrint(
+              '⚠️ ShippingCubit: No merchant IDs, emitting without shipping data');
+          if (!isClosed) emit(GovernoratesLoaded(governorates: governorates));
           return;
         }
 
         final dataResult =
             await _repository.getMerchantsShippingData(merchantIds);
 
+        if (isClosed) return;
+
         dataResult.fold(
-          (_) => emit(GovernoratesLoaded(governorates: governorates)),
-          (data) => emit(GovernoratesLoaded(
-            governorates: governorates,
-            merchantsShippingData: data,
-          )),
+          (failure) {
+            debugPrint(
+                '❌ ShippingCubit: Failed to load shipping data: ${failure.message}');
+            if (!isClosed) emit(GovernoratesLoaded(governorates: governorates));
+          },
+          (data) {
+            debugPrint(
+                '✅ ShippingCubit: Loaded shipping data for ${data.length} governorates');
+            if (!isClosed) {
+              emit(GovernoratesLoaded(
+                governorates: governorates,
+                merchantsShippingData: data,
+              ));
+            }
+          },
         );
       },
     );
@@ -137,6 +168,7 @@ class ShippingCubit extends Cubit<ShippingState> {
       GovernorateEntity governorate, String? merchantId) async {
     final currentState = state;
     if (currentState is GovernoratesLoaded) {
+      if (isClosed) return;
       emit(currentState.copyWith(
         selectedGovernorate: () => governorate,
         shippingPrice: 0,
@@ -145,10 +177,11 @@ class ShippingCubit extends Cubit<ShippingState> {
       if (merchantId != null) {
         final priceResult =
             await _repository.getShippingPrice(merchantId, governorate.id);
+        if (isClosed) return;
         priceResult.fold(
           (_) {},
           (price) {
-            if (state is GovernoratesLoaded) {
+            if (state is GovernoratesLoaded && !isClosed) {
               emit(
                   (state as GovernoratesLoaded).copyWith(shippingPrice: price));
             }
@@ -160,10 +193,11 @@ class ShippingCubit extends Cubit<ShippingState> {
 
   /// Select governorate and calculate shipping for multiple merchants
   /// Uses pre-loaded data from merchantsShippingData
+  /// Only adds merchant to prices map if they support shipping to this governorate
   void selectGovernorateForMultipleMerchants(
       GovernorateEntity governorate, List<String> merchantIds) {
     final currentState = state;
-    if (currentState is GovernoratesLoaded) {
+    if (currentState is GovernoratesLoaded && !isClosed) {
       // Get prices from pre-loaded data
       final governorateData =
           currentState.merchantsShippingData[governorate.id] ?? {};
@@ -172,9 +206,14 @@ class ShippingCubit extends Cubit<ShippingState> {
       double total = 0;
 
       for (final merchantId in merchantIds) {
-        final price = governorateData[merchantId] ?? 0;
-        prices[merchantId] = price;
-        total += price;
+        // Only add to prices if merchant supports shipping to this governorate
+        if (governorateData.containsKey(merchantId)) {
+          final price = governorateData[merchantId]!;
+          prices[merchantId] = price;
+          total += price;
+        }
+        // If merchant doesn't support shipping, don't add to prices map
+        // This allows PlaceOrderButton to detect unsupported merchants
       }
 
       emit(currentState.copyWith(
@@ -188,11 +227,14 @@ class ShippingCubit extends Cubit<ShippingState> {
   }
 
   Future<void> loadMerchantShippingPrices(String merchantId) async {
+    if (isClosed) return;
     emit(ShippingLoading());
 
     final governoratesResult = await _repository.getGovernorates();
     final pricesResult =
         await _repository.getMerchantShippingPrices(merchantId);
+
+    if (isClosed) return;
 
     governoratesResult.fold(
       (failure) => emit(ShippingError(failure.message)),
@@ -213,6 +255,8 @@ class ShippingCubit extends Cubit<ShippingState> {
     final result =
         await _repository.setShippingPrice(merchantId, governorateId, price);
 
+    if (isClosed) return;
+
     result.fold(
       (failure) => emit(ShippingError(failure.message)),
       (_) => loadMerchantShippingPrices(merchantId),
@@ -224,6 +268,8 @@ class ShippingCubit extends Cubit<ShippingState> {
     final result =
         await _repository.deleteShippingPrice(merchantId, governorateId);
 
+    if (isClosed) return;
+
     result.fold(
       (failure) => emit(ShippingError(failure.message)),
       (_) => loadMerchantShippingPrices(merchantId),
@@ -232,6 +278,6 @@ class ShippingCubit extends Cubit<ShippingState> {
 
   /// Reset state - used when language changes
   void reset() {
-    emit(ShippingInitial());
+    if (!isClosed) emit(ShippingInitial());
   }
 }

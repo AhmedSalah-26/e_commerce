@@ -2,8 +2,23 @@ import 'package:easy_localization/easy_localization.dart';
 
 /// Helper class to convert technical errors to user-friendly messages
 class ErrorHelper {
-  static String getUserFriendlyMessage(String error) {
+  static String getUserFriendlyMessage(String error, {String? locale}) {
     final lowerError = error.toLowerCase();
+    final isArabic = locale == 'ar';
+
+    // Shipping not supported error from database
+    if (lowerError.contains('shipping_not_supported')) {
+      // Parse: SHIPPING_NOT_SUPPORTED|merchant_name|governorate_ar|governorate_en
+      final parts = error.split('|');
+      if (parts.length >= 4) {
+        final merchantName = parts[1];
+        final governorateName = isArabic ? parts[2] : parts[3];
+        return isArabic
+            ? 'المتجر "$merchantName" لا يدعم التوصيل إلى $governorateName'
+            : 'Store "$merchantName" does not deliver to $governorateName';
+      }
+      return 'shipping_not_supported'.tr();
+    }
 
     // Network errors
     if (lowerError.contains('socketexception') ||

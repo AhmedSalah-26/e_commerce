@@ -49,6 +49,7 @@ class ReviewsCubit extends Cubit<ReviewsState> {
   ReviewsCubit(this._dataSource) : super(ReviewsInitial());
 
   Future<void> loadReviews(String productId, {String? userId}) async {
+    if (isClosed) return;
     emit(ReviewsLoading());
     try {
       final reviews = await _dataSource.getProductReviews(productId);
@@ -63,6 +64,7 @@ class ReviewsCubit extends Cubit<ReviewsState> {
           ? reviews.map((r) => r.rating).reduce((a, b) => a + b) / totalReviews
           : 0.0;
 
+      if (isClosed) return;
       emit(ReviewsLoaded(
         reviews: reviews,
         userReview: userReview,
@@ -70,7 +72,7 @@ class ReviewsCubit extends Cubit<ReviewsState> {
         totalReviews: totalReviews,
       ));
     } catch (e) {
-      emit(ReviewsError(e.toString()));
+      if (!isClosed) emit(ReviewsError(e.toString()));
     }
   }
 
@@ -80,13 +82,15 @@ class ReviewsCubit extends Cubit<ReviewsState> {
     int rating,
     String? comment,
   ) async {
+    if (isClosed) return;
     emit(ReviewSubmitting());
     try {
       await _dataSource.addReview(productId, userId, rating, comment);
+      if (isClosed) return;
       emit(ReviewSubmitted());
       await loadReviews(productId, userId: userId);
     } catch (e) {
-      emit(ReviewsError(e.toString()));
+      if (!isClosed) emit(ReviewsError(e.toString()));
     }
   }
 
@@ -97,25 +101,29 @@ class ReviewsCubit extends Cubit<ReviewsState> {
     int rating,
     String? comment,
   ) async {
+    if (isClosed) return;
     emit(ReviewSubmitting());
     try {
       await _dataSource.updateReview(reviewId, rating, comment);
+      if (isClosed) return;
       emit(ReviewSubmitted());
       await loadReviews(productId, userId: userId);
     } catch (e) {
-      emit(ReviewsError(e.toString()));
+      if (!isClosed) emit(ReviewsError(e.toString()));
     }
   }
 
   Future<void> deleteReview(
       String reviewId, String productId, String userId) async {
+    if (isClosed) return;
     emit(ReviewSubmitting());
     try {
       await _dataSource.deleteReview(reviewId);
+      if (isClosed) return;
       emit(ReviewSubmitted());
       await loadReviews(productId, userId: userId);
     } catch (e) {
-      emit(ReviewsError(e.toString()));
+      if (!isClosed) emit(ReviewsError(e.toString()));
     }
   }
 }

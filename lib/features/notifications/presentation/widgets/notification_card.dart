@@ -21,8 +21,12 @@ class NotificationCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Dismissible(
-      key: Key(notification.id),
+      key: Key('dismiss-${notification.id}'),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) async {
+        onDismissed();
+        return false; // Don't remove from tree, let state update handle it
+      },
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
@@ -33,7 +37,6 @@ class NotificationCard extends StatelessWidget {
         ),
         child: const Icon(Icons.delete, color: Colors.white),
       ),
-      onDismissed: (direction) => onDismissed(),
       child: GestureDetector(
         onTap: onTap,
         child: Container(

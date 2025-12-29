@@ -241,8 +241,12 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
         // 1. Loading state (show loading for this tab)
         // 2. Error state
         // 3. Loaded state with matching status
+        // 4. Updating state with matching status
         if (current is OrdersLoading) return true;
         if (current is OrdersError) return true;
+        if (current is OrderStatusUpdating) {
+          return current.currentStatus == status;
+        }
         if (current is OrdersLoaded) {
           return current.currentStatus == status;
         }
@@ -261,6 +265,11 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
       builder: (context, state) {
         if (state is OrdersLoading) {
           return const Center(child: CircularProgressIndicator());
+        }
+
+        // Show shimmer when updating order status
+        if (state is OrderStatusUpdating && state.currentStatus == status) {
+          return _buildShimmerList(theme);
         }
 
         if (state is OrdersError) {
@@ -309,6 +318,61 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
     );
   }
 
+  Widget _buildShimmerList(ThemeData theme) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 5,
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: theme.colorScheme.outline),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildShimmerBox(theme, width: 100, height: 16),
+                  _buildShimmerBox(theme, width: 80, height: 24),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _buildShimmerBox(theme, width: 150, height: 14),
+              const SizedBox(height: 8),
+              _buildShimmerBox(theme, width: 200, height: 14),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildShimmerBox(theme, width: 80, height: 14),
+                  _buildShimmerBox(theme, width: 60, height: 14),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShimmerBox(ThemeData theme,
+      {required double width, required double height}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: const _ShimmerEffect(),
+    );
+  }
+
   void _setFilterPeriod(String status, String period) {
     setState(() {
       if (status == 'delivered') {
@@ -324,6 +388,67 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
     return NetworkErrorWidget(
       message: ErrorHelper.getUserFriendlyMessage(message),
       onRetry: () => _loadOrdersForStatus(status),
+    );
+  }
+}
+
+/// Shimmer effect widget for loading animation
+class _ShimmerEffect extends StatefulWidget {
+  const _ShimmerEffect();
+
+  @override
+  State<_ShimmerEffect> createState() => _ShimmerEffectState();
+}
+
+class _ShimmerEffectState extends State<_ShimmerEffect>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
+    _animation = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                theme.colorScheme.onSurface.withValues(alpha: 0.15),
+                theme.colorScheme.onSurface.withValues(alpha: 0.05),
+              ],
+              stops: [
+                (_animation.value - 0.3).clamp(0.0, 1.0),
+                _animation.value.clamp(0.0, 1.0),
+                (_animation.value + 0.3).clamp(0.0, 1.0),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -75,6 +75,17 @@ class OrderCreating extends OrdersState {
   const OrderCreating();
 }
 
+/// Order status updating
+class OrderStatusUpdating extends OrdersState {
+  final List<OrderEntity> orders;
+  final String? currentStatus;
+
+  const OrderStatusUpdating(this.orders, {this.currentStatus});
+
+  @override
+  List<Object?> get props => [orders, currentStatus];
+}
+
 /// Order created successfully
 class OrderCreated extends OrdersState {
   final String orderId;

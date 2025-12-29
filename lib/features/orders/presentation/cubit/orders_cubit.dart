@@ -309,15 +309,19 @@ class OrdersCubit extends Cubit<OrdersState> {
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
     final currentState = state;
 
+    // Show updating state with shimmer
+    if (currentState is OrdersLoaded) {
+      emit(OrderStatusUpdating(currentState.orders,
+          currentStatus: currentState.currentStatus));
+    }
+
     final result = await _repository.updateOrderStatus(orderId, status);
 
     result.fold(
       (failure) => emit(OrdersError(failure.message)),
       (_) {
-        // Refresh orders if we have a loaded state
-        if (currentState is OrdersLoaded) {
-          // The stream will automatically update
-        }
+        // The stream will automatically update with new data
+        // Keep the updating state until stream updates
       },
     );
   }

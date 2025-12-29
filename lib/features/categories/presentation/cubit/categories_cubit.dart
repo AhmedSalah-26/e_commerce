@@ -57,6 +57,26 @@ class CategoriesCubit extends Cubit<CategoriesState> {
     );
   }
 
+  /// Load all categories (active and inactive) for management
+  Future<void> loadAllCategories({bool forceReload = false}) async {
+    // Prevent duplicate loading
+    if (_isLoading) return;
+
+    // Skip if already loaded and not forcing reload
+    if (!forceReload && state is CategoriesLoaded) return;
+
+    _isLoading = true;
+    emit(const CategoriesLoading());
+
+    final result = await _repository.getAllCategories();
+
+    _isLoading = false;
+    result.fold(
+      (failure) => emit(CategoriesError(failure.message)),
+      (categories) => emit(CategoriesLoaded(categories)),
+    );
+  }
+
   /// Create a new category
   Future<bool> createCategory(Map<String, dynamic> categoryData) async {
     try {
@@ -125,7 +145,7 @@ class CategoriesCubit extends Cubit<CategoriesState> {
         (_) {
           AppLogger.success('Category created successfully!');
           AppLogger.i('═══════════════════════════════════════');
-          loadCategories();
+          loadAllCategories(forceReload: true);
           return true;
         },
       );
@@ -151,7 +171,7 @@ class CategoriesCubit extends Cubit<CategoriesState> {
         },
         (_) {
           AppLogger.success('Category deleted');
-          loadCategories();
+          loadAllCategories(forceReload: true);
           return true;
         },
       );
@@ -236,7 +256,7 @@ class CategoriesCubit extends Cubit<CategoriesState> {
         (_) {
           AppLogger.success('Category updated successfully!');
           AppLogger.i('═══════════════════════════════════════');
-          loadCategories();
+          loadAllCategories(forceReload: true);
           return true;
         },
       );

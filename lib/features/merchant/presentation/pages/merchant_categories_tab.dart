@@ -19,7 +19,7 @@ class MerchantCategoriesTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<CategoriesCubit>()..loadCategories(),
+      create: (_) => sl<CategoriesCubit>()..loadAllCategories(),
       child: const _MerchantCategoriesContent(),
     );
   }
@@ -125,7 +125,7 @@ class _MerchantCategoriesContentState extends State<_MerchantCategoriesContent>
                         message:
                             ErrorHelper.getUserFriendlyMessage(state.message),
                         onRetry: () =>
-                            context.read<CategoriesCubit>().loadCategories(),
+                            context.read<CategoriesCubit>().loadAllCategories(),
                       );
                     } else if (state is CategoriesLoaded) {
                       if (state.categories.isEmpty) {
@@ -227,7 +227,7 @@ class _MerchantCategoriesContentState extends State<_MerchantCategoriesContent>
 
     return RefreshIndicator(
       onRefresh: () async {
-        context.read<CategoriesCubit>().loadCategories();
+        context.read<CategoriesCubit>().loadAllCategories();
       },
       child: ListView.builder(
         padding: const EdgeInsets.all(16),

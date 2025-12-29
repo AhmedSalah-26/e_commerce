@@ -6,6 +6,7 @@ import '../models/category_model.dart';
 /// Abstract interface for category remote data source
 abstract class CategoryRemoteDataSource {
   Future<List<CategoryModel>> getCategories({String locale = 'ar'});
+  Future<List<CategoryModel>> getAllCategories({String locale = 'ar'});
   Future<CategoryModel> getCategoryById(String id, {String locale = 'ar'});
   Future<Map<String, dynamic>> getCategoryRawById(String id);
   Future<void> createCategory(CategoryModel category,
@@ -29,6 +30,22 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
           .from('categories')
           .select()
           .eq('is_active', true)
+          .order('sort_order', ascending: true);
+
+      return (response as List)
+          .map((json) => CategoryModel.fromJson(json, locale: locale))
+          .toList();
+    } catch (e) {
+      throw ServerException('فشل في جلب التصنيفات: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<CategoryModel>> getAllCategories({String locale = 'ar'}) async {
+    try {
+      final response = await _client
+          .from('categories')
+          .select()
           .order('sort_order', ascending: true);
 
       return (response as List)

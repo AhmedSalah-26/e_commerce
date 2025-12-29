@@ -7,6 +7,9 @@ abstract class CategoryRepository {
   /// Get all active categories
   Future<Either<Failure, List<CategoryEntity>>> getCategories();
 
+  /// Get all categories (active and inactive) for management
+  Future<Either<Failure, List<CategoryEntity>>> getAllCategories();
+
   /// Get category by ID
   Future<Either<Failure, CategoryEntity>> getCategoryById(String id);
 

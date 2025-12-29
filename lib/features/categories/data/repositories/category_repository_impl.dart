@@ -31,6 +31,19 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }
 
   @override
+  Future<Either<Failure, List<CategoryEntity>>> getAllCategories() async {
+    try {
+      final categories =
+          await _remoteDataSource.getAllCategories(locale: _locale);
+      return Right(categories);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, code: e.code));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, CategoryEntity>> getCategoryById(String id) async {
     try {
       final category =

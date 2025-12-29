@@ -144,6 +144,10 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
     final customerName = order['customer_name'] ?? '';
     final customerPhone = order['customer_phone'] ?? '';
     final orderId = (order['id'] ?? '').toString();
+    final profile = order['profiles'];
+    final userEmail = profile?['email'] ?? '';
+    final userId = profile?['id'] ?? order['user_id'] ?? '';
+    final shippingAddress = order['shipping_address'] ?? '';
 
     return Card(
       margin: EdgeInsets.only(bottom: isMobile ? 8 : 12),
@@ -155,55 +159,101 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                 ? const BorderSide(color: Colors.orange, width: 1)
                 : BorderSide.none,
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => _showOrderDetails(order),
-        child: Padding(
-          padding: EdgeInsets.all(isMobile ? 12 : 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Text(
-                          '#${orderId.length > 8 ? orderId.substring(0, 8) : orderId}',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: isMobile ? 14 : 16),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.copy, size: 16),
-                          onPressed: () => _copyToClipboard(orderId),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _buildPriorityChip(priority, isMobile),
-                  const SizedBox(width: 8),
-                  _buildStatusChip(status, isMobile),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(customerName,
-                  style: TextStyle(fontSize: isMobile ? 13 : 14)),
-              Text(customerPhone,
-                  style: TextStyle(
-                      fontSize: isMobile ? 12 : 13, color: Colors.grey)),
-              const SizedBox(height: 8),
-              Text(
-                '${total.toStringAsFixed(0)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
-                style: TextStyle(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              _buildActionButtons(order, status, isMobile),
-            ],
-          ),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16),
+        childrenPadding:
+            EdgeInsets.fromLTRB(isMobile ? 12 : 16, 0, isMobile ? 12 : 16, 12),
+        leading: CircleAvatar(
+          backgroundColor: _getStatusColor(status),
+          radius: isMobile ? 18 : 22,
+          child: Icon(Icons.receipt,
+              color: Colors.white, size: isMobile ? 18 : 22),
         ),
+        title: Row(
+          children: [
+            Text(
+              '#${orderId.length > 8 ? orderId.substring(0, 8) : orderId}',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: isMobile ? 14 : 16),
+            ),
+            const SizedBox(width: 8),
+            _buildPriorityChip(priority, isMobile),
+          ],
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(customerName, style: TextStyle(fontSize: isMobile ? 13 : 14)),
+            Text(
+              '${total.toStringAsFixed(0)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
+              style: TextStyle(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13),
+            ),
+          ],
+        ),
+        trailing: _buildStatusChip(status, isMobile),
+        children: [
+          // Customer Details Section
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              children: [
+                _buildCopyableRow(
+                    widget.isRtl ? 'رقم الطلب' : 'Order ID', orderId),
+                _buildCopyableRow(
+                    widget.isRtl ? 'الاسم' : 'Name', customerName),
+                _buildCopyableRow(
+                    widget.isRtl ? 'الهاتف' : 'Phone', customerPhone),
+                if (userEmail.isNotEmpty)
+                  _buildCopyableRow(
+                      widget.isRtl ? 'الإيميل' : 'Email', userEmail),
+                if (userId.toString().isNotEmpty)
+                  _buildCopyableRow(widget.isRtl ? 'معرف العميل' : 'User ID',
+                      userId.toString()),
+                if (shippingAddress.isNotEmpty)
+                  _buildCopyableRow(
+                      widget.isRtl ? 'العنوان' : 'Address', shippingAddress),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Action Buttons
+          _buildActionButtons(order, status, isMobile),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCopyableRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(label,
+                style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+          ),
+          Expanded(
+            child: Text(value,
+                style: const TextStyle(fontSize: 13),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
+          ),
+          IconButton(
+            icon: const Icon(Icons.copy, size: 16),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: () => _copyToClipboard(value),
+          ),
+        ],
       ),
     );
   }
@@ -282,132 +332,6 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
                 style: const TextStyle(fontSize: 11)),
           ),
       ],
-    );
-  }
-
-  void _showOrderDetails(Map<String, dynamic> order) async {
-    final theme = Theme.of(context);
-    final cubit = context.read<AdminCubit>();
-    final details = await cubit.getOrderDetails(order['id']);
-    if (!mounted || details == null) return;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Text(
-                    '${widget.isRtl ? 'طلب' : 'Order'} #${order['id'].toString().substring(0, 8)}',
-                    style: theme.textTheme.titleLarge
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(ctx)),
-                ],
-              ),
-            ),
-            const Divider(),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _buildSection(widget.isRtl ? 'معلومات العميل' : 'Customer', [
-                    _buildRow(widget.isRtl ? 'الاسم' : 'Name',
-                        details['customer_name'] ?? ''),
-                    _buildRow(widget.isRtl ? 'الهاتف' : 'Phone',
-                        details['customer_phone'] ?? ''),
-                    _buildRow(widget.isRtl ? 'العنوان' : 'Address',
-                        details['shipping_address'] ?? ''),
-                  ]),
-                  const SizedBox(height: 16),
-                  _buildSection(widget.isRtl ? 'المنتجات' : 'Products', [
-                    for (final item in (details['order_items'] as List? ?? []))
-                      _buildProductRow(item),
-                  ]),
-                  const SizedBox(height: 16),
-                  _buildSection(widget.isRtl ? 'الملخص' : 'Summary', [
-                    _buildRow(widget.isRtl ? 'المجموع' : 'Subtotal',
-                        '${details['subtotal'] ?? 0}'),
-                    _buildRow(widget.isRtl ? 'الشحن' : 'Shipping',
-                        '${details['shipping_cost'] ?? 0}'),
-                    _buildRow(widget.isRtl ? 'الإجمالي' : 'Total',
-                        '${details['total'] ?? 0}',
-                        bold: true),
-                  ]),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSection(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title,
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary)),
-        const SizedBox(height: 8),
-        ...children,
-      ],
-    );
-  }
-
-  Widget _buildRow(String label, String value, {bool bold = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label),
-          Text(value,
-              style:
-                  bold ? const TextStyle(fontWeight: FontWeight.bold) : null),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProductRow(Map<String, dynamic> item) {
-    final product = item['products'] as Map<String, dynamic>?;
-    final name = widget.isRtl
-        ? (product?['name_ar'] ?? product?['name'] ?? '')
-        : (product?['name'] ?? '');
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(child: Text('$name x${item['quantity'] ?? 1}')),
-          Text(
-              '${((item['price'] ?? 0) * (item['quantity'] ?? 1)).toStringAsFixed(0)}'),
-        ],
-      ),
     );
   }
 

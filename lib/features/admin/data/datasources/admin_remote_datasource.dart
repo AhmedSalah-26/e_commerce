@@ -19,11 +19,15 @@ abstract class AdminRemoteDatasource {
   // Phase 2: Orders
   Future<List<Map<String, dynamic>>> getAllOrders({
     String? status,
+    String? priority,
     String? search,
     int page = 0,
     int pageSize = 20,
   });
   Future<void> updateOrderStatus(String orderId, String status);
+  Future<void> updateOrderPriority(String orderId, String priority);
+  Future<void> updateOrderDetails(String orderId, Map<String, dynamic> data);
+  Future<Map<String, dynamic>> getOrderDetails(String orderId);
 
   // Phase 3: Products
   Future<List<Map<String, dynamic>>> getAllProducts({
@@ -210,6 +214,7 @@ class AdminRemoteDatasourceImpl implements AdminRemoteDatasource {
   @override
   Future<List<Map<String, dynamic>>> getAllOrders({
     String? status,
+    String? priority,
     String? search,
     int page = 0,
     int pageSize = 20,
@@ -217,16 +222,21 @@ class AdminRemoteDatasourceImpl implements AdminRemoteDatasource {
     try {
       var query = _client.from('orders').select('''
         *,
-        profiles!orders_user_id_fkey(name, email)
+        profiles!orders_user_id_fkey(id, name, email, phone)
       ''');
 
       if (status != null && status.isNotEmpty) {
         query = query.eq('status', status);
       }
 
+      if (priority != null && priority.isNotEmpty) {
+        query = query.eq('priority', priority);
+      }
+
       if (search != null && search.isNotEmpty) {
-        query = query
-            .or('customer_name.ilike.%$search%,customer_phone.ilike.%$search%');
+        // Search by name, phone, email, or order ID
+        query = query.or(
+            'customer_name.ilike.%$search%,customer_phone.ilike.%$search%,id.ilike.%$search%');
       }
 
       final response = await query
@@ -242,9 +252,56 @@ class AdminRemoteDatasourceImpl implements AdminRemoteDatasource {
   @override
   Future<void> updateOrderStatus(String orderId, String status) async {
     try {
-      await _client.from('orders').update({'status': status}).eq('id', orderId);
+      final updates = <String, dynamic>{'status': status};
+
+      // Set timestamps based on status
+      if (status == 'closed') {
+        updates['closed_at'] = DateTime.now().toIso8601String();
+      } else if (status == 'delivered') {
+        updates['delivered_at'] = DateTime.now().toIso8601String();
+      }
+
+      await _client.from('orders').update(updates).eq('id', orderId);
     } catch (e) {
       throw ServerException('Failed to update order status: $e');
+    }
+  }
+
+  @override
+  Future<void> updateOrderPriority(String orderId, String priority) async {
+    try {
+      await _client
+          .from('orders')
+          .update({'priority': priority}).eq('id', orderId);
+    } catch (e) {
+      throw ServerException('Failed to update order priority: $e');
+    }
+  }
+
+  @override
+  Future<void> updateOrderDetails(
+      String orderId, Map<String, dynamic> data) async {
+    try {
+      await _client.from('orders').update(data).eq('id', orderId);
+    } catch (e) {
+      throw ServerException('Failed to update order details: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getOrderDetails(String orderId) async {
+    try {
+      final response = await _client.from('orders').select('''
+        *,
+        profiles!orders_user_id_fkey(id, name, email, phone),
+        order_items(
+          id, quantity, price, total,
+          products(id, name, name_ar, images)
+        )
+      ''').eq('id', orderId).single();
+      return Map<String, dynamic>.from(response);
+    } catch (e) {
+      throw ServerException('Failed to get order details: $e');
     }
   }
 

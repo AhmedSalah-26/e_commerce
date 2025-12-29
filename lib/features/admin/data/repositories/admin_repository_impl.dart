@@ -88,6 +88,7 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<Either<Failure, List<Map<String, dynamic>>>> getAllOrders({
     String? status,
+    String? priority,
     String? search,
     int page = 0,
     int pageSize = 20,
@@ -95,6 +96,7 @@ class AdminRepositoryImpl implements AdminRepository {
     try {
       final orders = await _datasource.getAllOrders(
         status: status,
+        priority: priority,
         search: search,
         page: page,
         pageSize: pageSize,
@@ -111,6 +113,39 @@ class AdminRepositoryImpl implements AdminRepository {
     try {
       await _datasource.updateOrderStatus(orderId, status);
       return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateOrderPriority(
+      String orderId, String priority) async {
+    try {
+      await _datasource.updateOrderPriority(orderId, priority);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateOrderDetails(
+      String orderId, Map<String, dynamic> data) async {
+    try {
+      await _datasource.updateOrderDetails(orderId, data);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> getOrderDetails(
+      String orderId) async {
+    try {
+      final order = await _datasource.getOrderDetails(orderId);
+      return Right(order);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }

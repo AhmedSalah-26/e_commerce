@@ -52,10 +52,11 @@ class AdminCubit extends Cubit<AdminState> {
   }
 
   // Phase 2: Orders
-  Future<void> loadOrders({String? status, String? search}) async {
+  Future<void> loadOrders(
+      {String? status, String? priority, String? search}) async {
     emit(const AdminOrdersLoading());
-    final result =
-        await _repository.getAllOrders(status: status, search: search);
+    final result = await _repository.getAllOrders(
+        status: status, priority: priority, search: search);
     result.fold(
       (failure) => emit(AdminError(failure.message)),
       (orders) => emit(AdminOrdersLoaded(orders, currentStatus: status)),
@@ -65,6 +66,22 @@ class AdminCubit extends Cubit<AdminState> {
   Future<bool> updateOrderStatus(String orderId, String status) async {
     final result = await _repository.updateOrderStatus(orderId, status);
     return result.isRight();
+  }
+
+  Future<bool> updateOrderPriority(String orderId, String priority) async {
+    final result = await _repository.updateOrderPriority(orderId, priority);
+    return result.isRight();
+  }
+
+  Future<bool> updateOrderDetails(
+      String orderId, Map<String, dynamic> data) async {
+    final result = await _repository.updateOrderDetails(orderId, data);
+    return result.isRight();
+  }
+
+  Future<Map<String, dynamic>?> getOrderDetails(String orderId) async {
+    final result = await _repository.getOrderDetails(orderId);
+    return result.fold((f) => null, (order) => order);
   }
 
   // Phase 3: Products

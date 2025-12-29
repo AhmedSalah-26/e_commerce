@@ -52,17 +52,17 @@ class LanguageDialog {
               _LanguageOption(
                 title: 'العربية',
                 isSelected: isRtl,
-                onTap: () {
-                  context.setLocale(const Locale('ar'));
-                  Navigator.pop(ctx);
+                onTap: () async {
+                  await context.setLocale(const Locale('ar'));
+                  if (ctx.mounted) Navigator.pop(ctx);
                 },
               ),
               _LanguageOption(
                 title: 'English',
                 isSelected: !isRtl,
-                onTap: () {
-                  context.setLocale(const Locale('en'));
-                  Navigator.pop(ctx);
+                onTap: () async {
+                  await context.setLocale(const Locale('en'));
+                  if (ctx.mounted) Navigator.pop(ctx);
                 },
               ),
               const SizedBox(height: 16),

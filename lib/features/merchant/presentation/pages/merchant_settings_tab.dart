@@ -86,6 +86,11 @@ class MerchantSettingsTab extends StatelessWidget {
                         icon: Icons.public,
                         onTap: () => context.push('/global-coupons'),
                       ),
+                      _SettingsItem(
+                        title: isRtl ? 'التصنيفات' : 'Categories',
+                        icon: Icons.category_outlined,
+                        onTap: () => context.push('/manage-categories'),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),

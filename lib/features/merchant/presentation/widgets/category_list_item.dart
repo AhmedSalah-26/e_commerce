@@ -5,13 +5,11 @@ import '../../../categories/domain/entities/category_entity.dart';
 class CategoryListItem extends StatelessWidget {
   final CategoryEntity category;
   final VoidCallback onEdit;
-  final VoidCallback onDelete;
 
   const CategoryListItem({
     super.key,
     required this.category,
     required this.onEdit,
-    required this.onDelete,
   });
 
   @override
@@ -53,24 +51,12 @@ class CategoryListItem extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              onPressed: onEdit,
-              icon: Icon(
-                Icons.edit_outlined,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            IconButton(
-              onPressed: onDelete,
-              icon: const Icon(
-                Icons.delete_outline,
-                color: Colors.red,
-              ),
-            ),
-          ],
+        trailing: IconButton(
+          onPressed: onEdit,
+          icon: Icon(
+            Icons.edit_outlined,
+            color: theme.colorScheme.primary,
+          ),
         ),
       ),
     );

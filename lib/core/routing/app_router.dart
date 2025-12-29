@@ -11,6 +11,7 @@ import '../../features/cart/presentation/pages/cart_screen.dart';
 import '../../features/checkout/presentation/pages/checkout_page.dart';
 import '../../features/coupons/presentation/pages/merchant_coupons_page.dart';
 import '../../features/coupons/presentation/pages/global_coupons_page.dart';
+import '../../features/merchant/presentation/pages/merchant_categories_tab.dart';
 import '../../features/favorites/presentation/pages/favorites_screen.dart';
 import '../../features/help/presentation/pages/help_screen.dart';
 import '../../features/home/presentation/pages/home_screen.dart';
@@ -219,6 +220,10 @@ class AppRouter {
       GoRoute(
         path: '/global-coupons',
         builder: (context, state) => const GlobalCouponsPage(),
+      ),
+      GoRoute(
+        path: '/manage-categories',
+        builder: (context, state) => const MerchantCategoriesTab(),
       ),
     ],
   );

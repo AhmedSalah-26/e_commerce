@@ -2,7 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/shared_widgets/app_dialog.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
@@ -10,26 +10,33 @@ import '../../../categories/presentation/cubit/categories_state.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 import '../widgets/merchant_empty_state.dart';
 import '../widgets/category_form_dialog.dart';
-import '../widgets/categories_header.dart';
 import '../widgets/categories_search_bar.dart';
 import '../widgets/category_list_item.dart';
 
-class MerchantCategoriesTab extends StatefulWidget {
+class MerchantCategoriesTab extends StatelessWidget {
   const MerchantCategoriesTab({super.key});
 
   @override
-  State<MerchantCategoriesTab> createState() => _MerchantCategoriesTabState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<CategoriesCubit>()..loadCategories(),
+      child: const _MerchantCategoriesContent(),
+    );
+  }
 }
 
-class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
+class _MerchantCategoriesContent extends StatefulWidget {
+  const _MerchantCategoriesContent();
 
   @override
-  void initState() {
-    super.initState();
-    context.read<CategoriesCubit>().loadCategories();
-  }
+  State<_MerchantCategoriesContent> createState() =>
+      _MerchantCategoriesContentState();
+}
+
+class _MerchantCategoriesContentState
+    extends State<_MerchantCategoriesContent> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void dispose() {
@@ -46,13 +53,31 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
       textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: theme.colorScheme.surface,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            isRtl ? 'إدارة التصنيفات' : 'Manage Categories',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.add, color: theme.colorScheme.primary),
+              onPressed: () => _showAddCategoryDialog(context, isRtl),
+            ),
+          ],
+        ),
         body: SafeArea(
           child: Column(
             children: [
-              CategoriesHeader(
-                title: isRtl ? 'إدارة التصنيفات' : 'Manage Categories',
-                onAdd: () => _showAddCategoryDialog(context, isRtl),
-              ),
               CategoriesSearchBar(
                 controller: _searchController,
                 hintText: isRtl ? 'البحث عن تصنيف...' : 'Search categories...',
@@ -154,8 +179,6 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
                               category: category,
                               onEdit: () => _showEditCategoryDialog(
                                   context, category, isRtl),
-                              onDelete: () => _showDeleteConfirmation(
-                                  context, isRtl, category.id),
                             );
                           },
                         ),
@@ -173,107 +196,75 @@ class _MerchantCategoriesTabState extends State<MerchantCategoriesTab> {
   }
 
   void _showAddCategoryDialog(BuildContext context, bool isRtl) {
+    final categoriesCubit = context.read<CategoriesCubit>();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => CategoryFormDialog(
-        isRtl: isRtl,
-        onSave: (categoryData) async {
-          final success = await context
-              .read<CategoriesCubit>()
-              .createCategory(categoryData);
+      builder: (dialogContext) => BlocProvider.value(
+        value: categoriesCubit,
+        child: CategoryFormDialog(
+          isRtl: isRtl,
+          onSave: (categoryData) async {
+            final success = await categoriesCubit.createCategory(categoryData);
 
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  success
-                      ? (isRtl
-                          ? 'تم إضافة التصنيف بنجاح'
-                          : 'Category added successfully')
-                      : (isRtl
-                          ? 'فشل في إضافة التصنيف'
-                          : 'Failed to add category'),
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    success
+                        ? (isRtl
+                            ? 'تم إضافة التصنيف بنجاح'
+                            : 'Category added successfully')
+                        : (isRtl
+                            ? 'فشل في إضافة التصنيف'
+                            : 'Failed to add category'),
+                  ),
+                  backgroundColor: success ? Colors.green : Colors.red,
                 ),
-                backgroundColor: success ? Colors.green : Colors.red,
-              ),
-            );
-          }
-          return success;
-        },
+              );
+            }
+            return success;
+          },
+        ),
       ),
     );
   }
 
   void _showEditCategoryDialog(
       BuildContext context, CategoryEntity category, bool isRtl) {
+    final categoriesCubit = context.read<CategoriesCubit>();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => CategoryFormDialog(
-        category: category,
-        isRtl: isRtl,
-        onSave: (categoryData) async {
-          final success = await context
-              .read<CategoriesCubit>()
-              .updateCategory(category.id, categoryData);
+      builder: (dialogContext) => BlocProvider.value(
+        value: categoriesCubit,
+        child: CategoryFormDialog(
+          category: category,
+          isRtl: isRtl,
+          onSave: (categoryData) async {
+            final success =
+                await categoriesCubit.updateCategory(category.id, categoryData);
 
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  success
-                      ? (isRtl
-                          ? 'تم تحديث التصنيف بنجاح'
-                          : 'Category updated successfully')
-                      : (isRtl
-                          ? 'فشل في تحديث التصنيف'
-                          : 'Failed to update category'),
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    success
+                        ? (isRtl
+                            ? 'تم تحديث التصنيف بنجاح'
+                            : 'Category updated successfully')
+                        : (isRtl
+                            ? 'فشل في تحديث التصنيف'
+                            : 'Failed to update category'),
+                  ),
+                  backgroundColor: success ? Colors.green : Colors.red,
                 ),
-                backgroundColor: success ? Colors.green : Colors.red,
-              ),
-            );
-          }
-          return success;
-        },
+              );
+            }
+            return success;
+          },
+        ),
       ),
     );
-  }
-
-  void _showDeleteConfirmation(
-      BuildContext context, bool isRtl, String categoryId) {
-    final categoriesCubit = context.read<CategoriesCubit>();
-    AppDialog.showConfirmation(
-      context: context,
-      title: isRtl ? 'حذف التصنيف' : 'Delete Category',
-      message: isRtl
-          ? 'هل أنت متأكد من حذف هذا التصنيف؟'
-          : 'Are you sure you want to delete this category?',
-      confirmText: isRtl ? 'حذف' : 'Delete',
-      cancelText: isRtl ? 'إلغاء' : 'Cancel',
-      icon: Icons.delete_outline,
-      isDestructive: true,
-    ).then((confirmed) async {
-      if (confirmed == true) {
-        final success = await categoriesCubit.deleteCategory(categoryId);
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                success
-                    ? (isRtl
-                        ? 'تم حذف التصنيف بنجاح'
-                        : 'Category deleted successfully')
-                    : (isRtl
-                        ? 'فشل في حذف التصنيف'
-                        : 'Failed to delete category'),
-              ),
-              backgroundColor: success ? Colors.green : Colors.red,
-            ),
-          );
-        }
-      }
-    });
   }
 }

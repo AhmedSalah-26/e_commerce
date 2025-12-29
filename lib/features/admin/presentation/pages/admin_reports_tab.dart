@@ -16,15 +16,26 @@ class AdminReportsTab extends StatefulWidget {
 class _AdminReportsTabState extends State<AdminReportsTab> {
   DateTime? _fromDate;
   DateTime? _toDate;
+  bool _isFiltering = false;
+  String? _selectedQuickFilter;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isMobile = MediaQuery.of(context).size.width < 600;
 
-    return BlocBuilder<AdminCubit, AdminState>(
+    return BlocConsumer<AdminCubit, AdminState>(
+      listenWhen: (previous, current) =>
+          previous is AdminLoading && current is AdminLoaded,
+      listener: (context, state) {
+        if (_isFiltering) {
+          setState(() => _isFiltering = false);
+        }
+      },
+      buildWhen: (previous, current) =>
+          current is AdminLoaded || (current is AdminLoading && !_isFiltering),
       builder: (context, state) {
-        if (state is AdminLoading) {
+        if (state is AdminLoading && !_isFiltering) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -34,15 +45,15 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildDateFilter(context, theme, isMobile, state),
-                const SizedBox(height: 20),
-                _buildTitle(theme, widget.isRtl ? 'الترتيبات' : 'Rankings'),
-                const SizedBox(height: 12),
-                _buildRankingsGrid(context, isMobile),
+                _buildDateFilter(context, theme, isMobile),
                 const SizedBox(height: 24),
                 _buildTitle(theme, widget.isRtl ? 'الإحصائيات' : 'Statistics'),
                 const SizedBox(height: 12),
                 ..._buildStatCards(state, isMobile),
+                const SizedBox(height: 24),
+                _buildTitle(theme, widget.isRtl ? 'الترتيبات' : 'Rankings'),
+                const SizedBox(height: 12),
+                _buildRankingsGrid(context, isMobile),
               ],
             ),
           );
@@ -54,7 +65,7 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
   }
 
   Widget _buildDateFilter(
-      BuildContext context, ThemeData theme, bool isMobile, AdminLoaded state) {
+      BuildContext context, ThemeData theme, bool isMobile) {
     final dateFormat = DateFormat('yyyy/MM/dd');
 
     return Card(
@@ -73,7 +84,13 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
                       ?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
-                if (_fromDate != null || _toDate != null)
+                if (_isFiltering)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else if (_fromDate != null || _toDate != null)
                   TextButton(
                     onPressed: _clearFilter,
                     child: Text(
@@ -92,18 +109,18 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
                   label: widget.isRtl ? 'من' : 'From',
                   date: _fromDate,
                   dateFormat: dateFormat,
-                  onTap: () => _selectDate(true),
+                  onTap: _isFiltering ? null : () => _selectDate(true),
                   isRtl: widget.isRtl,
                 ),
                 _DatePickerButton(
                   label: widget.isRtl ? 'إلى' : 'To',
                   date: _toDate,
                   dateFormat: dateFormat,
-                  onTap: () => _selectDate(false),
+                  onTap: _isFiltering ? null : () => _selectDate(false),
                   isRtl: widget.isRtl,
                 ),
                 ElevatedButton.icon(
-                  onPressed: _applyFilter,
+                  onPressed: _isFiltering ? null : _applyFilter,
                   icon: const Icon(Icons.filter_alt, size: 18),
                   label: Text(widget.isRtl ? 'تطبيق' : 'Apply'),
                 ),
@@ -116,23 +133,32 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
               children: [
                 _QuickFilterChip(
                   label: widget.isRtl ? 'اليوم' : 'Today',
-                  onTap: () => _setQuickFilter(0),
+                  isSelected: _selectedQuickFilter == 'today',
+                  onTap:
+                      _isFiltering ? null : () => _setQuickFilter(0, 'today'),
                 ),
                 _QuickFilterChip(
                   label: widget.isRtl ? 'أمس' : 'Yesterday',
-                  onTap: () => _setQuickFilter(1),
+                  isSelected: _selectedQuickFilter == 'yesterday',
+                  onTap: _isFiltering
+                      ? null
+                      : () => _setQuickFilter(1, 'yesterday'),
                 ),
                 _QuickFilterChip(
                   label: widget.isRtl ? 'آخر 7 أيام' : 'Last 7 days',
-                  onTap: () => _setQuickFilter(7),
+                  isSelected: _selectedQuickFilter == 'week',
+                  onTap: _isFiltering ? null : () => _setQuickFilter(7, 'week'),
                 ),
                 _QuickFilterChip(
                   label: widget.isRtl ? 'آخر 30 يوم' : 'Last 30 days',
-                  onTap: () => _setQuickFilter(30),
+                  isSelected: _selectedQuickFilter == 'month',
+                  onTap:
+                      _isFiltering ? null : () => _setQuickFilter(30, 'month'),
                 ),
                 _QuickFilterChip(
                   label: widget.isRtl ? 'هذا الشهر' : 'This month',
-                  onTap: () => _setThisMonth(),
+                  isSelected: _selectedQuickFilter == 'this_month',
+                  onTap: _isFiltering ? null : () => _setThisMonth(),
                 ),
               ],
             ),
@@ -161,9 +187,10 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
     }
   }
 
-  void _setQuickFilter(int days) {
+  void _setQuickFilter(int days, String filterKey) {
     final now = DateTime.now();
     setState(() {
+      _selectedQuickFilter = filterKey;
       if (days == 0) {
         _fromDate = DateTime(now.year, now.month, now.day);
         _toDate = now;
@@ -183,6 +210,7 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
   void _setThisMonth() {
     final now = DateTime.now();
     setState(() {
+      _selectedQuickFilter = 'this_month';
       _fromDate = DateTime(now.year, now.month, 1);
       _toDate = now;
     });
@@ -190,6 +218,7 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
   }
 
   void _applyFilter() {
+    setState(() => _isFiltering = true);
     context.read<AdminCubit>().loadDashboard(
           fromDate: _fromDate,
           toDate: _toDate,
@@ -200,6 +229,8 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
     setState(() {
       _fromDate = null;
       _toDate = null;
+      _selectedQuickFilter = null;
+      _isFiltering = true;
     });
     context.read<AdminCubit>().loadDashboard();
   }
@@ -339,7 +370,7 @@ class _DatePickerButton extends StatelessWidget {
   final String label;
   final DateTime? date;
   final DateFormat dateFormat;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool isRtl;
 
   const _DatePickerButton({
@@ -384,16 +415,30 @@ class _DatePickerButton extends StatelessWidget {
 
 class _QuickFilterChip extends StatelessWidget {
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool isSelected;
 
-  const _QuickFilterChip({required this.label, required this.onTap});
+  const _QuickFilterChip({
+    required this.label,
+    required this.onTap,
+    this.isSelected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return ActionChip(
-      label: Text(label, style: const TextStyle(fontSize: 12)),
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          color: isSelected ? Colors.white : null,
+        ),
+      ),
       onPressed: onTap,
       visualDensity: VisualDensity.compact,
+      backgroundColor: isSelected ? theme.colorScheme.primary : null,
+      side: isSelected ? BorderSide.none : null,
     );
   }
 }

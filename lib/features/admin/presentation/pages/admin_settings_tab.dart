@@ -34,12 +34,6 @@ class AdminSettingsTab extends StatelessWidget {
                 title: isRtl ? 'الملف الشخصي' : 'Profile',
                 onTap: () => context.push('/edit-profile'),
               ),
-              _buildSettingItem(
-                theme,
-                icon: Icons.lock,
-                title: isRtl ? 'تغيير كلمة المرور' : 'Change Password',
-                onTap: () {},
-              ),
             ],
           ),
           const SizedBox(height: 16),

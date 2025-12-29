@@ -35,15 +35,12 @@ abstract class AdminRepository {
   // Phase 2: Orders
   Future<Either<Failure, List<Map<String, dynamic>>>> getAllOrders({
     String? status,
-    String? priority,
     String? search,
     int page = 0,
     int pageSize = 20,
   });
   Future<Either<Failure, void>> updateOrderStatus(
       String orderId, String status);
-  Future<Either<Failure, void>> updateOrderPriority(
-      String orderId, String priority);
   Future<Either<Failure, void>> updateOrderDetails(
       String orderId, Map<String, dynamic> data);
   Future<Either<Failure, Map<String, dynamic>>> getOrderDetails(String orderId);

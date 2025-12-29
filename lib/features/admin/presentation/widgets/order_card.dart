@@ -22,7 +22,6 @@ class OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final status = order['status'] ?? 'pending';
-    final priority = order['priority'] ?? 'normal';
     final total = (order['total'] ?? 0).toDouble();
     final orderId = (order['id'] ?? '').toString();
     final customerName = order['customer_name'] ?? '';
@@ -31,14 +30,13 @@ class OrderCard extends StatelessWidget {
       margin: EdgeInsets.only(bottom: isMobile ? 8 : 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: _getPriorityBorder(priority),
       ),
       child: ExpansionTile(
         tilePadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16),
         childrenPadding:
             EdgeInsets.fromLTRB(isMobile ? 12 : 16, 0, isMobile ? 12 : 16, 12),
         leading: _buildLeading(status),
-        title: _buildTitle(orderId, priority),
+        title: _buildTitle(orderId),
         subtitle: _buildSubtitle(theme, customerName, total),
         trailing: StatusChip(status: status, isRtl: isRtl),
         children: [
@@ -55,14 +53,6 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  BorderSide _getPriorityBorder(String priority) {
-    return switch (priority) {
-      'urgent' => const BorderSide(color: Colors.red, width: 2),
-      'high' => const BorderSide(color: Colors.orange, width: 1),
-      _ => BorderSide.none,
-    };
-  }
-
   Widget _buildLeading(String status) {
     return CircleAvatar(
       backgroundColor: _getStatusColor(status),
@@ -71,17 +61,11 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle(String orderId, String priority) {
+  Widget _buildTitle(String orderId) {
     final displayId = orderId.length > 8 ? orderId.substring(0, 8) : orderId;
-    return Row(
-      children: [
-        Text('#$displayId',
-            style: TextStyle(
-                fontWeight: FontWeight.bold, fontSize: isMobile ? 14 : 16)),
-        const SizedBox(width: 8),
-        PriorityChip(priority: priority, isRtl: isRtl),
-      ],
-    );
+    return Text('#$displayId',
+        style: TextStyle(
+            fontWeight: FontWeight.bold, fontSize: isMobile ? 14 : 16));
   }
 
   Widget _buildSubtitle(ThemeData theme, String name, double total) {
@@ -192,11 +176,6 @@ class _OrderActions extends StatelessWidget {
             onTap: () => _showStatusDialog(context),
           ),
         _ActionBtn(
-          label: isRtl ? 'الأولوية' : 'Priority',
-          icon: Icons.flag,
-          onTap: () => _showPriorityDialog(context),
-        ),
-        _ActionBtn(
           label: isRtl ? 'تعديل' : 'Edit',
           icon: Icons.edit,
           onTap: () => _showEditDialog(context),
@@ -263,36 +242,6 @@ class _OrderActions extends StatelessWidget {
     );
   }
 
-  void _showPriorityDialog(BuildContext context) {
-    final current = order['priority'] ?? 'normal';
-    final priorities = ['low', 'normal', 'high', 'urgent'];
-    final labels = isRtl
-        ? {'low': 'منخفض', 'normal': 'عادي', 'high': 'عالي', 'urgent': 'عاجل'}
-        : null;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => SimpleDialog(
-        title: Text(isRtl ? 'تغيير الأولوية' : 'Change Priority'),
-        children: priorities
-            .map((p) => SimpleDialogOption(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    if (p != current) _updatePriority(context, p);
-                  },
-                  child: Row(children: [
-                    Icon(p == current
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_off),
-                    const SizedBox(width: 8),
-                    Text(labels?[p] ?? p),
-                  ]),
-                ))
-            .toList(),
-      ),
-    );
-  }
-
   void _showEditDialog(BuildContext context) {
     final addressCtrl =
         TextEditingController(text: order['shipping_address'] ?? '');
@@ -343,15 +292,6 @@ class _OrderActions extends StatelessWidget {
   Future<void> _updateStatus(BuildContext context, String newStatus) async {
     final cubit = context.read<AdminCubit>();
     final ok = await cubit.updateOrderStatus(order['id'], newStatus);
-    if (ok && context.mounted) {
-      onRefresh();
-      _showSnack(context);
-    }
-  }
-
-  Future<void> _updatePriority(BuildContext context, String priority) async {
-    final cubit = context.read<AdminCubit>();
-    final ok = await cubit.updateOrderPriority(order['id'], priority);
     if (ok && context.mounted) {
       onRefresh();
       _showSnack(context);

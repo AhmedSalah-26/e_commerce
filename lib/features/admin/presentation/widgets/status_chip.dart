@@ -67,34 +67,3 @@ class StatusChip extends StatelessWidget {
     return status[0].toUpperCase() + status.substring(1);
   }
 }
-
-class PriorityChip extends StatelessWidget {
-  final String priority;
-  final bool isRtl;
-
-  const PriorityChip({super.key, required this.priority, this.isRtl = false});
-
-  @override
-  Widget build(BuildContext context) {
-    if (priority == 'normal') return const SizedBox.shrink();
-
-    final colors = {
-      'low': Colors.grey,
-      'high': Colors.orange,
-      'urgent': Colors.red
-    };
-    final labels = isRtl
-        ? {'low': 'منخفض', 'high': 'عالي', 'urgent': 'عاجل'}
-        : {'low': 'Low', 'high': 'High', 'urgent': 'Urgent'};
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: colors[priority]?.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(labels[priority] ?? '',
-          style: TextStyle(color: colors[priority], fontSize: 10)),
-    );
-  }
-}

@@ -30,13 +30,11 @@ abstract class AdminRemoteDatasource {
   // Orders
   Future<List<Map<String, dynamic>>> getAllOrders({
     String? status,
-    String? priority,
     String? search,
     int page = 0,
     int pageSize = 20,
   });
   Future<void> updateOrderStatus(String orderId, String status);
-  Future<void> updateOrderPriority(String orderId, String priority);
   Future<void> updateOrderDetails(String orderId, Map<String, dynamic> data);
   Future<Map<String, dynamic>> getOrderDetails(String orderId);
 
@@ -131,25 +129,16 @@ class AdminRemoteDatasourceImpl extends AdminRemoteDatasource
   @override
   Future<List<Map<String, dynamic>>> getAllOrders({
     String? status,
-    String? priority,
     String? search,
     int page = 0,
     int pageSize = 20,
   }) =>
       getAllOrdersImpl(
-          status: status,
-          priority: priority,
-          search: search,
-          page: page,
-          pageSize: pageSize);
+          status: status, search: search, page: page, pageSize: pageSize);
 
   @override
   Future<void> updateOrderStatus(String orderId, String status) =>
       updateOrderStatusImpl(orderId, status);
-
-  @override
-  Future<void> updateOrderPriority(String orderId, String priority) =>
-      updateOrderPriorityImpl(orderId, priority);
 
   @override
   Future<void> updateOrderDetails(String orderId, Map<String, dynamic> data) =>

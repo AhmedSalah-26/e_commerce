@@ -6,7 +6,6 @@ mixin AdminOrdersMixin {
 
   Future<List<Map<String, dynamic>>> getAllOrdersImpl({
     String? status,
-    String? priority,
     String? search,
     int page = 0,
     int pageSize = 20,
@@ -19,10 +18,6 @@ mixin AdminOrdersMixin {
 
       if (status != null && status.isNotEmpty) {
         query = query.eq('status', status);
-      }
-
-      if (priority != null && priority.isNotEmpty) {
-        query = query.eq('priority', priority);
       }
 
       if (search != null && search.isNotEmpty) {
@@ -63,16 +58,6 @@ mixin AdminOrdersMixin {
       await client.from('orders').update(updates).eq('id', orderId);
     } catch (e) {
       throw ServerException('Failed to update order status: $e');
-    }
-  }
-
-  Future<void> updateOrderPriorityImpl(String orderId, String priority) async {
-    try {
-      await client
-          .from('orders')
-          .update({'priority': priority}).eq('id', orderId);
-    } catch (e) {
-      throw ServerException('Failed to update order priority: $e');
     }
   }
 

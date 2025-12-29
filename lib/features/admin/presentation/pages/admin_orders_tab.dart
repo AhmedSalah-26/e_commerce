@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/admin_cubit.dart';
 import '../cubit/admin_state.dart';
@@ -21,13 +22,14 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
     'processing',
     'shipped',
     'delivered',
-    'cancelled'
+    'cancelled',
+    'closed'
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 7, vsync: this);
     _tabController.addListener(_onTabChanged);
     _loadOrders('');
   }
@@ -68,17 +70,18 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
           labelStyle: TextStyle(fontSize: isMobile ? 11 : 13),
           tabs: [
             Tab(text: widget.isRtl ? 'الكل' : 'All'),
-            Tab(text: widget.isRtl ? 'معلق' : 'Pending'),
+            Tab(text: widget.isRtl ? 'جديد' : 'Pending'),
             Tab(text: widget.isRtl ? 'تجهيز' : 'Processing'),
             Tab(text: widget.isRtl ? 'شحن' : 'Shipped'),
             Tab(text: widget.isRtl ? 'تم' : 'Delivered'),
             Tab(text: widget.isRtl ? 'ملغي' : 'Cancelled'),
+            Tab(text: widget.isRtl ? 'مغلق' : 'Closed'),
           ],
         ),
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: List.generate(6, (_) => _buildOrdersList(isMobile)),
+            children: List.generate(7, (_) => _buildOrdersList(isMobile)),
           ),
         ),
       ],
@@ -92,8 +95,8 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
         controller: _searchController,
         decoration: InputDecoration(
           hintText: widget.isRtl
-              ? 'بحث بالاسم أو الهاتف...'
-              : 'Search by name or phone...',
+              ? 'بحث بالاسم / الهاتف / رقم الطلب...'
+              : 'Search by name / phone / order ID...',
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           isDense: isMobile,
@@ -115,8 +118,8 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
         if (state is AdminOrdersLoaded) {
           if (state.orders.isEmpty) {
             return Center(
-              child: Text(widget.isRtl ? 'لا توجد طلبات' : 'No orders found'),
-            );
+                child:
+                    Text(widget.isRtl ? 'لا توجد طلبات' : 'No orders found'));
           }
           return RefreshIndicator(
             onRefresh: () async => _loadOrders(_statuses[_tabController.index]),
@@ -136,169 +139,445 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
   Widget _buildOrderCard(Map<String, dynamic> order, bool isMobile) {
     final theme = Theme.of(context);
     final status = order['status'] ?? 'pending';
+    final priority = order['priority'] ?? 'normal';
     final total = (order['total'] ?? 0).toDouble();
     final customerName = order['customer_name'] ?? '';
+    final customerPhone = order['customer_phone'] ?? '';
     final orderId = (order['id'] ?? '').toString();
 
     return Card(
       margin: EdgeInsets.only(bottom: isMobile ? 8 : 12),
-      child: Padding(
-        padding: EdgeInsets.all(isMobile ? 12 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '#${orderId.length > 8 ? orderId.substring(0, 8) : orderId}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: isMobile ? 14 : 16,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: priority == 'urgent'
+            ? const BorderSide(color: Colors.red, width: 2)
+            : priority == 'high'
+                ? const BorderSide(color: Colors.orange, width: 1)
+                : BorderSide.none,
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _showOrderDetails(order),
+        child: Padding(
+          padding: EdgeInsets.all(isMobile ? 12 : 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Text(
+                          '#${orderId.length > 8 ? orderId.substring(0, 8) : orderId}',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: isMobile ? 14 : 16),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.copy, size: 16),
+                          onPressed: () => _copyToClipboard(orderId),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                _buildStatusChip(status, isMobile),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(customerName, style: TextStyle(fontSize: isMobile ? 13 : 14)),
-            const SizedBox(height: 4),
-            Text(
-              '${total.toStringAsFixed(0)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
-              style: TextStyle(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: isMobile ? 14 : 16,
+                  _buildPriorityChip(priority, isMobile),
+                  const SizedBox(width: 8),
+                  _buildStatusChip(status, isMobile),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(customerName,
+                  style: TextStyle(fontSize: isMobile ? 13 : 14)),
+              Text(customerPhone,
+                  style: TextStyle(
+                      fontSize: isMobile ? 12 : 13, color: Colors.grey)),
+              const SizedBox(height: 8),
+              Text(
+                '${total.toStringAsFixed(0)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
+                style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              _buildActionButtons(order, status, isMobile),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPriorityChip(String priority, bool isMobile) {
+    if (priority == 'normal') return const SizedBox.shrink();
+    final colors = {
+      'low': Colors.grey,
+      'high': Colors.orange,
+      'urgent': Colors.red
+    };
+    final labels = widget.isRtl
+        ? {'low': 'منخفض', 'high': 'عالي', 'urgent': 'عاجل'}
+        : {'low': 'Low', 'high': 'High', 'urgent': 'Urgent'};
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors[priority]?.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(labels[priority] ?? '',
+          style: TextStyle(color: colors[priority], fontSize: 10)),
+    );
+  }
+
+  Widget _buildStatusChip(String status, bool isMobile) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: _getStatusColor(status).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(_getStatusText(status),
+          style: TextStyle(color: _getStatusColor(status), fontSize: 11)),
+    );
+  }
+
+  Widget _buildActionButtons(
+      Map<String, dynamic> order, String status, bool isMobile) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        if (status != 'closed' && status != 'cancelled')
+          OutlinedButton.icon(
+            onPressed: () => _showStatusDialog(order),
+            icon: const Icon(Icons.update, size: 14),
+            label: Text(widget.isRtl ? 'الحالة' : 'Status',
+                style: const TextStyle(fontSize: 11)),
+          ),
+        OutlinedButton.icon(
+          onPressed: () => _showPriorityDialog(order),
+          icon: const Icon(Icons.flag, size: 14),
+          label: Text(widget.isRtl ? 'الأولوية' : 'Priority',
+              style: const TextStyle(fontSize: 11)),
+        ),
+        OutlinedButton.icon(
+          onPressed: () => _showEditAddressDialog(order),
+          icon: const Icon(Icons.edit_location, size: 14),
+          label: Text(widget.isRtl ? 'العنوان' : 'Address',
+              style: const TextStyle(fontSize: 11)),
+        ),
+        if (status == 'closed')
+          OutlinedButton.icon(
+            onPressed: () => _updateStatus(order['id'], 'delivered'),
+            icon: const Icon(Icons.lock_open, size: 14, color: Colors.green),
+            label: Text(widget.isRtl ? 'فتح' : 'Reopen',
+                style: const TextStyle(fontSize: 11, color: Colors.green)),
+          )
+        else if (status == 'delivered' || status == 'cancelled')
+          OutlinedButton.icon(
+            onPressed: () => _updateStatus(order['id'], 'closed'),
+            icon: const Icon(Icons.lock, size: 14),
+            label: Text(widget.isRtl ? 'إغلاق' : 'Close',
+                style: const TextStyle(fontSize: 11)),
+          ),
+      ],
+    );
+  }
+
+  void _showOrderDetails(Map<String, dynamic> order) async {
+    final theme = Theme.of(context);
+    final cubit = context.read<AdminCubit>();
+    final details = await cubit.getOrderDetails(order['id']);
+    if (!mounted || details == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 12),
-            _buildStatusButtons(order, status, isMobile),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Text(
+                    '${widget.isRtl ? 'طلب' : 'Order'} #${order['id'].toString().substring(0, 8)}',
+                    style: theme.textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(ctx)),
+                ],
+              ),
+            ),
+            const Divider(),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  _buildSection(widget.isRtl ? 'معلومات العميل' : 'Customer', [
+                    _buildRow(widget.isRtl ? 'الاسم' : 'Name',
+                        details['customer_name'] ?? ''),
+                    _buildRow(widget.isRtl ? 'الهاتف' : 'Phone',
+                        details['customer_phone'] ?? ''),
+                    _buildRow(widget.isRtl ? 'العنوان' : 'Address',
+                        details['shipping_address'] ?? ''),
+                  ]),
+                  const SizedBox(height: 16),
+                  _buildSection(widget.isRtl ? 'المنتجات' : 'Products', [
+                    for (final item in (details['order_items'] as List? ?? []))
+                      _buildProductRow(item),
+                  ]),
+                  const SizedBox(height: 16),
+                  _buildSection(widget.isRtl ? 'الملخص' : 'Summary', [
+                    _buildRow(widget.isRtl ? 'المجموع' : 'Subtotal',
+                        '${details['subtotal'] ?? 0}'),
+                    _buildRow(widget.isRtl ? 'الشحن' : 'Shipping',
+                        '${details['shipping_cost'] ?? 0}'),
+                    _buildRow(widget.isRtl ? 'الإجمالي' : 'Total',
+                        '${details['total'] ?? 0}',
+                        bold: true),
+                  ]),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatusChip(String status, bool isMobile) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8 : 12,
-        vertical: isMobile ? 4 : 6,
-      ),
-      decoration: BoxDecoration(
-        color: _getStatusColor(status).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Text(
-        _getStatusText(status),
-        style: TextStyle(
-          color: _getStatusColor(status),
-          fontSize: isMobile ? 11 : 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusButtons(
-      Map<String, dynamic> order, String status, bool isMobile) {
-    if (status == 'delivered' || status == 'cancelled')
-      return const SizedBox.shrink();
-
-    final nextStatus = _getNextStatus(status);
-    if (nextStatus == null) return const SizedBox.shrink();
-
-    return Row(
+  Widget _buildSection(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () => _updateStatus(order['id'], nextStatus),
-            icon: Icon(Icons.check, size: isMobile ? 16 : 18),
-            label: Text(
-              _getStatusText(nextStatus),
-              style: TextStyle(fontSize: isMobile ? 12 : 14),
-            ),
-          ),
-        ),
-        if (status != 'cancelled') ...[
-          const SizedBox(width: 8),
-          OutlinedButton.icon(
-            onPressed: () => _updateStatus(order['id'], 'cancelled'),
-            icon:
-                Icon(Icons.close, size: isMobile ? 16 : 18, color: Colors.red),
-            label: Text(
-              widget.isRtl ? 'إلغاء' : 'Cancel',
-              style: TextStyle(fontSize: isMobile ? 12 : 14, color: Colors.red),
-            ),
-            style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.red)),
-          ),
-        ],
+        Text(title,
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary)),
+        const SizedBox(height: 8),
+        ...children,
       ],
     );
   }
 
-  String? _getNextStatus(String current) {
-    switch (current) {
-      case 'pending':
-        return 'processing';
-      case 'processing':
-        return 'shipped';
-      case 'shipped':
-        return 'delivered';
-      default:
-        return null;
-    }
+  Widget _buildRow(String label, String value, {bool bold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(value,
+              style:
+                  bold ? const TextStyle(fontWeight: FontWeight.bold) : null),
+        ],
+      ),
+    );
   }
 
-  Future<void> _updateStatus(String orderId, String status) async {
-    final success =
-        await context.read<AdminCubit>().updateOrderStatus(orderId, status);
-    if (success) {
+  Widget _buildProductRow(Map<String, dynamic> item) {
+    final product = item['products'] as Map<String, dynamic>?;
+    final name = widget.isRtl
+        ? (product?['name_ar'] ?? product?['name'] ?? '')
+        : (product?['name'] ?? '');
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(child: Text('$name x${item['quantity'] ?? 1}')),
+          Text(
+              '${((item['price'] ?? 0) * (item['quantity'] ?? 1)).toStringAsFixed(0)}'),
+        ],
+      ),
+    );
+  }
+
+  void _showStatusDialog(Map<String, dynamic> order) {
+    final current = order['status'] ?? 'pending';
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(widget.isRtl ? 'تغيير الحالة' : 'Change Status'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children:
+              ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+                  .map((s) => RadioListTile<String>(
+                        title: Text(_getStatusText(s)),
+                        value: s,
+                        groupValue: current,
+                        onChanged: (v) {
+                          Navigator.pop(ctx);
+                          if (v != null && v != current)
+                            _updateStatus(order['id'], v);
+                        },
+                      ))
+                  .toList(),
+        ),
+      ),
+    );
+  }
+
+  void _showPriorityDialog(Map<String, dynamic> order) {
+    final current = order['priority'] ?? 'normal';
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(widget.isRtl ? 'تغيير الأولوية' : 'Change Priority'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: ['low', 'normal', 'high', 'urgent']
+              .map((p) => RadioListTile<String>(
+                    title: Text(_getPriorityText(p)),
+                    value: p,
+                    groupValue: current,
+                    onChanged: (v) {
+                      Navigator.pop(ctx);
+                      if (v != null && v != current)
+                        _updatePriority(order['id'], v);
+                    },
+                  ))
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  void _showEditAddressDialog(Map<String, dynamic> order) {
+    final addressCtrl =
+        TextEditingController(text: order['shipping_address'] ?? '');
+    final notesCtrl = TextEditingController(text: order['admin_notes'] ?? '');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(widget.isRtl ? 'تعديل' : 'Edit'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: addressCtrl,
+              decoration: InputDecoration(
+                  labelText: widget.isRtl ? 'العنوان' : 'Address'),
+              maxLines: 2,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: notesCtrl,
+              decoration: InputDecoration(
+                  labelText: widget.isRtl ? 'ملاحظات' : 'Notes'),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(widget.isRtl ? 'إلغاء' : 'Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _updateDetails(order['id'], {
+                'shipping_address': addressCtrl.text,
+                'admin_notes': notesCtrl.text
+              });
+            },
+            child: Text(widget.isRtl ? 'حفظ' : 'Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _updateStatus(String id, String status) async {
+    final ok = await context.read<AdminCubit>().updateOrderStatus(id, status);
+    if (ok && mounted) {
       _loadOrders(_statuses[_tabController.index]);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(widget.isRtl ? 'تم التحديث' : 'Updated')),
-        );
-      }
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(widget.isRtl ? 'تم' : 'Done')));
     }
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'pending':
-        return Colors.orange;
-      case 'processing':
-        return Colors.blue;
-      case 'shipped':
-        return Colors.purple;
-      case 'delivered':
-        return Colors.green;
-      case 'cancelled':
-        return Colors.red;
-      default:
-        return Colors.grey;
+  Future<void> _updatePriority(String id, String priority) async {
+    final ok =
+        await context.read<AdminCubit>().updateOrderPriority(id, priority);
+    if (ok && mounted) {
+      _loadOrders(_statuses[_tabController.index]);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(widget.isRtl ? 'تم' : 'Done')));
     }
   }
 
-  String _getStatusText(String status) {
+  Future<void> _updateDetails(String id, Map<String, dynamic> data) async {
+    final ok = await context.read<AdminCubit>().updateOrderDetails(id, data);
+    if (ok && mounted) {
+      _loadOrders(_statuses[_tabController.index]);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(widget.isRtl ? 'تم' : 'Done')));
+    }
+  }
+
+  void _copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.isRtl ? 'تم النسخ' : 'Copied')));
+  }
+
+  Color _getStatusColor(String s) {
+    return {
+          'pending': Colors.orange,
+          'processing': Colors.blue,
+          'shipped': Colors.purple,
+          'delivered': Colors.green,
+          'cancelled': Colors.red,
+          'closed': Colors.grey
+        }[s] ??
+        Colors.grey;
+  }
+
+  String _getStatusText(String s) {
     if (widget.isRtl) {
-      switch (status) {
-        case 'pending':
-          return 'معلق';
-        case 'processing':
-          return 'تجهيز';
-        case 'shipped':
-          return 'شحن';
-        case 'delivered':
-          return 'تم التوصيل';
-        case 'cancelled':
-          return 'ملغي';
-        default:
-          return status;
-      }
+      return {
+            'pending': 'جديد',
+            'processing': 'تجهيز',
+            'shipped': 'شحن',
+            'delivered': 'تم',
+            'cancelled': 'ملغي',
+            'closed': 'مغلق'
+          }[s] ??
+          s;
     }
-    return status.substring(0, 1).toUpperCase() + status.substring(1);
+    return s[0].toUpperCase() + s.substring(1);
+  }
+
+  String _getPriorityText(String p) {
+    if (widget.isRtl) {
+      return {
+            'low': 'منخفض',
+            'normal': 'عادي',
+            'high': 'عالي',
+            'urgent': 'عاجل'
+          }[p] ??
+          p;
+    }
+    return p[0].toUpperCase() + p.substring(1);
   }
 }

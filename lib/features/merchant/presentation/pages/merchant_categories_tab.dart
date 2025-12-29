@@ -33,14 +33,22 @@ class _MerchantCategoriesContent extends StatefulWidget {
       _MerchantCategoriesContentState();
 }
 
-class _MerchantCategoriesContentState
-    extends State<_MerchantCategoriesContent> {
+class _MerchantCategoriesContentState extends State<_MerchantCategoriesContent>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -94,7 +102,19 @@ class _MerchantCategoriesContentState
                 },
                 showClearButton: _searchQuery.isNotEmpty,
               ),
-              // Categories list
+              BlocBuilder<CategoriesCubit, CategoriesState>(
+                builder: (context, state) {
+                  final categories = state is CategoriesLoaded
+                      ? state.categories
+                      : <CategoryEntity>[];
+                  final activeCount =
+                      categories.where((c) => c.isActive).length;
+                  final inactiveCount =
+                      categories.where((c) => !c.isActive).length;
+
+                  return _buildTabBar(activeCount, inactiveCount, theme, isRtl);
+                },
+              ),
               Expanded(
                 child: BlocBuilder<CategoriesCubit, CategoriesState>(
                   builder: (context, state) {
@@ -122,66 +142,19 @@ class _MerchantCategoriesContentState
                         );
                       }
 
-                      // Filter categories by search query
-                      final filteredCategories = _searchQuery.isEmpty
-                          ? state.categories
-                          : state.categories
-                              .where((c) => c.name
-                                  .toLowerCase()
-                                  .contains(_searchQuery.toLowerCase()))
-                              .toList();
+                      final activeCategories =
+                          state.categories.where((c) => c.isActive).toList();
+                      final inactiveCategories =
+                          state.categories.where((c) => !c.isActive).toList();
 
-                      if (filteredCategories.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.search_off,
-                                size: 64,
-                                color: theme.colorScheme.outline,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                isRtl ? 'لا توجد نتائج' : 'No results found',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onSurface,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                isRtl
-                                    ? 'جرب البحث بكلمات أخرى'
-                                    : 'Try different search terms',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: theme.colorScheme.onSurface
-                                      .withValues(alpha: 0.6),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      return RefreshIndicator(
-                        onRefresh: () async {
-                          context.read<CategoriesCubit>().loadCategories();
-                        },
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: filteredCategories.length,
-                          itemBuilder: (context, index) {
-                            final category = filteredCategories[index];
-                            return CategoryListItem(
-                              category: category,
-                              onEdit: () => _showEditCategoryDialog(
-                                  context, category, isRtl),
-                            );
-                          },
-                        ),
+                      return TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildCategoriesList(
+                              activeCategories, isRtl, theme, true),
+                          _buildCategoriesList(
+                              inactiveCategories, isRtl, theme, false),
+                        ],
                       );
                     }
                     return const SizedBox.shrink();
@@ -191,6 +164,81 @@ class _MerchantCategoriesContentState
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTabBar(
+      int activeCount, int inactiveCount, ThemeData theme, bool isRtl) {
+    return Container(
+      color: theme.colorScheme.surface,
+      child: TabBar(
+        controller: _tabController,
+        labelColor: theme.colorScheme.primary,
+        unselectedLabelColor:
+            theme.colorScheme.onSurface.withValues(alpha: 0.6),
+        indicatorColor: theme.colorScheme.primary,
+        tabs: [
+          Tab(text: '${isRtl ? 'نشط' : 'Active'} ($activeCount)'),
+          Tab(text: '${isRtl ? 'غير نشط' : 'Inactive'} ($inactiveCount)'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoriesList(List<CategoryEntity> categories, bool isRtl,
+      ThemeData theme, bool isActive) {
+    // Filter by search query
+    final filteredCategories = _searchQuery.isEmpty
+        ? categories
+        : categories
+            .where((c) =>
+                c.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+            .toList();
+
+    if (filteredCategories.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isActive ? Icons.category_outlined : Icons.block,
+              size: 64,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _searchQuery.isNotEmpty
+                  ? (isRtl ? 'لا توجد نتائج' : 'No results found')
+                  : (isActive
+                      ? (isRtl
+                          ? 'لا توجد تصنيفات نشطة'
+                          : 'No active categories')
+                      : (isRtl
+                          ? 'لا توجد تصنيفات غير نشطة'
+                          : 'No inactive categories')),
+              style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<CategoriesCubit>().loadCategories();
+      },
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: filteredCategories.length,
+        itemBuilder: (context, index) {
+          final category = filteredCategories[index];
+          return CategoryListItem(
+            category: category,
+            onEdit: () => _showEditCategoryDialog(context, category, isRtl),
+          );
+        },
       ),
     );
   }

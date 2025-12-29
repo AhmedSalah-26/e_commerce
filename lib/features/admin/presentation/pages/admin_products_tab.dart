@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/admin_cubit.dart';
 import '../cubit/admin_state.dart';
 import '../widgets/product_card.dart';
+import '../widgets/admin_error_widget.dart';
 
 class AdminProductsTab extends StatefulWidget {
   final bool isRtl;
@@ -16,6 +17,8 @@ class _AdminProductsTabState extends State<AdminProductsTab>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
+  String? _currentSearch;
 
   @override
   void initState() {
@@ -24,6 +27,7 @@ class _AdminProductsTabState extends State<AdminProductsTab>
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) _loadProducts();
     });
+    _scrollController.addListener(_onScroll);
     _loadProducts();
   }
 
@@ -31,7 +35,15 @@ class _AdminProductsTabState extends State<AdminProductsTab>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreProducts();
+    }
   }
 
   bool? get _currentFilter {
@@ -43,10 +55,19 @@ class _AdminProductsTabState extends State<AdminProductsTab>
   }
 
   void _loadProducts() {
+    _currentSearch =
+        _searchController.text.isEmpty ? null : _searchController.text;
     context.read<AdminCubit>().loadProducts(
           isActive: _currentFilter,
-          search:
-              _searchController.text.isEmpty ? null : _searchController.text,
+          search: _currentSearch,
+        );
+  }
+
+  void _loadMoreProducts() {
+    context.read<AdminCubit>().loadProducts(
+          isActive: _currentFilter,
+          search: _currentSearch,
+          loadMore: true,
         );
   }
 
@@ -95,7 +116,8 @@ class _AdminProductsTabState extends State<AdminProductsTab>
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: widget.isRtl ? 'بحث...' : 'Search...',
+          hintText:
+              widget.isRtl ? 'بحث بالاسم أو ID...' : 'Search by name or ID...',
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           isDense: isMobile,
@@ -112,7 +134,11 @@ class _AdminProductsTabState extends State<AdminProductsTab>
           return const Center(child: CircularProgressIndicator());
         }
         if (state is AdminError) {
-          return Center(child: Text(state.message));
+          return AdminErrorWidget(
+            message: state.message,
+            isRtl: widget.isRtl,
+            onRetry: _loadProducts,
+          );
         }
         if (state is AdminProductsLoaded) {
           var products = _filterProducts(state.products);
@@ -123,14 +149,23 @@ class _AdminProductsTabState extends State<AdminProductsTab>
           return RefreshIndicator(
             onRefresh: () async => _loadProducts(),
             child: ListView.builder(
+              controller: _scrollController,
               padding: EdgeInsets.all(isMobile ? 12 : 16),
-              itemCount: products.length,
-              itemBuilder: (_, i) => ProductCard(
-                product: products[i],
-                isRtl: widget.isRtl,
-                isMobile: isMobile,
-                onAction: (action) => _handleAction(action, products[i]),
-              ),
+              itemCount: products.length + (state.hasMore ? 1 : 0),
+              itemBuilder: (_, i) {
+                if (i >= products.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                return ProductCard(
+                  product: products[i],
+                  isRtl: widget.isRtl,
+                  isMobile: isMobile,
+                  onAction: (action) => _handleAction(action, products[i]),
+                );
+              },
             ),
           );
         }

@@ -5,6 +5,8 @@ import '../cubit/admin_cubit.dart';
 import '../cubit/admin_state.dart';
 import '../widgets/user_card.dart';
 import '../widgets/user_details_sheet.dart';
+import '../widgets/merchant_coupons_sheet.dart';
+import '../widgets/admin_error_widget.dart';
 
 class AdminUsersTab extends StatefulWidget {
   final bool isRtl;
@@ -18,7 +20,9 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
   final _roles = ['customer', 'merchant', 'admin'];
+  String? _currentSearch;
 
   @override
   void initState() {
@@ -27,6 +31,7 @@ class _AdminUsersTabState extends State<AdminUsersTab>
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) _loadUsers();
     });
+    _scrollController.addListener(_onScroll);
     _loadUsers();
   }
 
@@ -34,14 +39,31 @@ class _AdminUsersTabState extends State<AdminUsersTab>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreUsers();
+    }
+  }
+
   void _loadUsers() {
+    _currentSearch =
+        _searchController.text.isEmpty ? null : _searchController.text;
     context.read<AdminCubit>().loadUsers(
           role: _roles[_tabController.index],
-          search:
-              _searchController.text.isEmpty ? null : _searchController.text,
+          search: _currentSearch,
+        );
+  }
+
+  void _loadMoreUsers() {
+    context.read<AdminCubit>().loadUsers(
+          role: _roles[_tabController.index],
+          search: _currentSearch,
+          loadMore: true,
         );
   }
 
@@ -79,7 +101,9 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: widget.isRtl ? 'بحث...' : 'Search...',
+          hintText: widget.isRtl
+              ? 'بحث بالاسم، الإيميل، الهاتف أو ID...'
+              : 'Search by name, email, phone or ID...',
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           isDense: isMobile,
@@ -96,7 +120,11 @@ class _AdminUsersTabState extends State<AdminUsersTab>
           return const Center(child: CircularProgressIndicator());
         }
         if (state is AdminError) {
-          return Center(child: Text(state.message));
+          return AdminErrorWidget(
+            message: state.message,
+            isRtl: widget.isRtl,
+            onRetry: _loadUsers,
+          );
         }
         if (state is AdminUsersLoaded) {
           if (state.users.isEmpty) {
@@ -104,15 +132,24 @@ class _AdminUsersTabState extends State<AdminUsersTab>
                 child: Text(widget.isRtl ? 'لا يوجد مستخدمين' : 'No users'));
           }
           return ListView.builder(
+            controller: _scrollController,
             padding: EdgeInsets.all(isMobile ? 12 : 16),
-            itemCount: state.users.length,
-            itemBuilder: (_, i) => UserCard(
-              user: state.users[i],
-              isRtl: widget.isRtl,
-              isMobile: isMobile,
-              onTap: () => _showUserDetails(state.users[i]),
-              onAction: (action) => _handleAction(action, state.users[i]),
-            ),
+            itemCount: state.users.length + (state.hasMore ? 1 : 0),
+            itemBuilder: (_, i) {
+              if (i >= state.users.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return UserCard(
+                user: state.users[i],
+                isRtl: widget.isRtl,
+                isMobile: isMobile,
+                onTap: () => _showUserDetails(state.users[i]),
+                onAction: (action) => _handleAction(action, state.users[i]),
+              );
+            },
           );
         }
         return const SizedBox.shrink();
@@ -131,14 +168,19 @@ class _AdminUsersTabState extends State<AdminUsersTab>
         break;
       case 'copy_id':
         await Clipboard.setData(ClipboardData(text: userId ?? ''));
-        if (mounted)
+        if (mounted) {
           _showSnack(widget.isRtl ? 'تم نسخ ID' : 'ID Copied', Colors.blue);
+        }
         break;
       case 'copy_email':
         await Clipboard.setData(ClipboardData(text: user['email'] ?? ''));
-        if (mounted)
+        if (mounted) {
           _showSnack(
               widget.isRtl ? 'تم نسخ الإيميل' : 'Email Copied', Colors.blue);
+        }
+        break;
+      case 'coupons':
+        _showMerchantCoupons(user);
         break;
       case 'toggle':
         final ok = await cubit.toggleUserStatus(userId, !isActive);
@@ -220,6 +262,22 @@ class _AdminUsersTabState extends State<AdminUsersTab>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => UserDetailsSheet(user: user, isRtl: widget.isRtl),
+    );
+  }
+
+  void _showMerchantCoupons(Map<String, dynamic> user) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: context.read<AdminCubit>(),
+        child: MerchantCouponsSheet(
+          merchantId: user['id'],
+          merchantName: user['name'] ?? 'Unknown',
+          isRtl: widget.isRtl,
+        ),
+      ),
     );
   }
 

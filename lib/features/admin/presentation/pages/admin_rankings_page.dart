@@ -22,28 +22,85 @@ class AdminRankingsPage extends StatefulWidget {
 class _AdminRankingsPageState extends State<AdminRankingsPage> {
   List<Map<String, dynamic>> _data = [];
   bool _loading = true;
+  bool _loadingMore = false;
+  bool _hasMore = true;
+  int _currentPage = 0;
+  static const int _pageSize = 20;
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _loadData();
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMore();
+    }
+  }
+
   Future<void> _loadData() async {
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _currentPage = 0;
+      _hasMore = true;
+    });
+
+    final result = await _fetchData(0);
+
+    if (mounted) {
+      setState(() {
+        _data = result;
+        _loading = false;
+        _hasMore = result.length >= _pageSize;
+      });
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_loadingMore || !_hasMore) return;
+
+    setState(() => _loadingMore = true);
+
+    final nextPage = _currentPage + 1;
+    final result = await _fetchData(nextPage);
+
+    if (mounted) {
+      setState(() {
+        _data.addAll(result);
+        _currentPage = nextPage;
+        _loadingMore = false;
+        _hasMore = result.length >= _pageSize;
+      });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchData(int page) async {
     final cubit = context.read<AdminCubit>();
+    final offset = page * _pageSize;
+    final limit = _pageSize;
 
     List<Map<String, dynamic>> result;
     switch (widget.type) {
       case 'top_selling':
-        result = await cubit.getTopSellingMerchants();
+        result = await cubit.getTopSellingMerchants(limit: limit + offset);
         break;
       case 'top_customers':
-        result = await cubit.getTopOrderingCustomers();
+        result = await cubit.getTopOrderingCustomers(limit: limit + offset);
         break;
       case 'most_cancellations':
       case 'problematic':
-        result = await cubit.getMerchantsCancellationStats();
+        result =
+            await cubit.getMerchantsCancellationStats(limit: limit + offset);
         if (widget.type == 'problematic') {
           result = result.where((m) => m['is_problematic'] == true).toList();
         }
@@ -52,12 +109,11 @@ class _AdminRankingsPageState extends State<AdminRankingsPage> {
         result = [];
     }
 
-    if (mounted) {
-      setState(() {
-        _data = result;
-        _loading = false;
-      });
+    // Return only the items for this page
+    if (page > 0 && result.length > offset) {
+      return result.skip(offset).take(limit).toList();
     }
+    return result.take(limit).toList();
   }
 
   @override
@@ -74,14 +130,23 @@ class _AdminRankingsPageState extends State<AdminRankingsPage> {
           : _data.isEmpty
               ? Center(child: Text(widget.isRtl ? 'لا توجد بيانات' : 'No data'))
               : ListView.builder(
+                  controller: _scrollController,
                   padding: const EdgeInsets.all(16),
-                  itemCount: _data.length,
-                  itemBuilder: (context, index) => _RankingCard(
-                    rank: index + 1,
-                    item: _data[index],
-                    type: widget.type,
-                    isRtl: widget.isRtl,
-                  ),
+                  itemCount: _data.length + (_hasMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index >= _data.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    return _RankingCard(
+                      rank: index + 1,
+                      item: _data[index],
+                      type: widget.type,
+                      isRtl: widget.isRtl,
+                    );
+                  },
                 ),
     );
   }

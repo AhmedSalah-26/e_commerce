@@ -24,7 +24,7 @@ class CouponActiveSwitch extends StatelessWidget {
         if (states.contains(WidgetState.selected)) {
           return theme.colorScheme.primary;
         }
-        return null;
+        return Colors.grey[300];
       }),
       contentPadding: EdgeInsets.zero,
     );

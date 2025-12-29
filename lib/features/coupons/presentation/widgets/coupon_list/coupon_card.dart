@@ -119,6 +119,12 @@ class CouponCard extends StatelessWidget {
           value: coupon.isActive,
           onChanged: onToggle,
           activeTrackColor: theme.colorScheme.primary,
+          thumbColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return Colors.white;
+            }
+            return Colors.grey[300];
+          }),
         ),
       ],
     );

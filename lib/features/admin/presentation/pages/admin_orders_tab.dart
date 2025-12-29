@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/admin_cubit.dart';
 import '../cubit/admin_state.dart';
 import '../widgets/order_card.dart';
+import '../widgets/admin_error_widget.dart';
 
 class AdminOrdersTab extends StatefulWidget {
   final bool isRtl;
@@ -16,6 +17,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
   final _statuses = [
     '',
     'pending',
@@ -25,6 +27,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
     'cancelled',
     'closed'
   ];
+  String? _currentSearch;
 
   @override
   void initState() {
@@ -33,6 +36,7 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) _loadOrders();
     });
+    _scrollController.addListener(_onScroll);
     _loadOrders();
   }
 
@@ -40,15 +44,33 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreOrders();
+    }
   }
 
   void _loadOrders() {
     final status = _statuses[_tabController.index];
+    _currentSearch =
+        _searchController.text.isEmpty ? null : _searchController.text;
     context.read<AdminCubit>().loadOrders(
           status: status.isEmpty ? null : status,
-          search:
-              _searchController.text.isEmpty ? null : _searchController.text,
+          search: _currentSearch,
+        );
+  }
+
+  void _loadMoreOrders() {
+    final status = _statuses[_tabController.index];
+    context.read<AdminCubit>().loadOrders(
+          status: status.isEmpty ? null : status,
+          search: _currentSearch,
+          loadMore: true,
         );
   }
 
@@ -91,7 +113,9 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: widget.isRtl ? 'بحث...' : 'Search...',
+          hintText: widget.isRtl
+              ? 'بحث بالاسم، الهاتف أو ID...'
+              : 'Search by name, phone or ID...',
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           isDense: isMobile,
@@ -108,7 +132,11 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
           return const Center(child: CircularProgressIndicator());
         }
         if (state is AdminError) {
-          return Center(child: Text(state.message));
+          return AdminErrorWidget(
+            message: state.message,
+            isRtl: widget.isRtl,
+            onRetry: _loadOrders,
+          );
         }
         if (state is AdminOrdersLoaded) {
           if (state.orders.isEmpty) {
@@ -118,14 +146,23 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
           return RefreshIndicator(
             onRefresh: () async => _loadOrders(),
             child: ListView.builder(
+              controller: _scrollController,
               padding: EdgeInsets.all(isMobile ? 12 : 16),
-              itemCount: state.orders.length,
-              itemBuilder: (_, i) => OrderCard(
-                order: state.orders[i],
-                isRtl: widget.isRtl,
-                isMobile: isMobile,
-                onRefresh: _loadOrders,
-              ),
+              itemCount: state.orders.length + (state.hasMore ? 1 : 0),
+              itemBuilder: (_, i) {
+                if (i >= state.orders.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                return OrderCard(
+                  order: state.orders[i],
+                  isRtl: widget.isRtl,
+                  isMobile: isMobile,
+                  onRefresh: _loadOrders,
+                );
+              },
             ),
           );
         }

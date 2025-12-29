@@ -3,11 +3,33 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/admin_cubit.dart';
 import '../cubit/admin_state.dart';
 import '../widgets/stats_card.dart';
+import '../widgets/admin_error_widget.dart';
 
-class AdminHomeTab extends StatelessWidget {
+class AdminHomeTab extends StatefulWidget {
   final bool isRtl;
 
   const AdminHomeTab({super.key, required this.isRtl});
+
+  @override
+  State<AdminHomeTab> createState() => _AdminHomeTabState();
+}
+
+class _AdminHomeTabState extends State<AdminHomeTab> {
+  @override
+  void initState() {
+    super.initState();
+    // Load this month's stats on init
+    _loadThisMonthStats();
+  }
+
+  void _loadThisMonthStats() {
+    final now = DateTime.now();
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    context.read<AdminCubit>().loadDashboard(
+          fromDate: startOfMonth,
+          toDate: now,
+        );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +39,11 @@ class AdminHomeTab extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         if (state is AdminError) {
-          return Center(child: Text(state.message));
+          return AdminErrorWidget(
+            message: state.message,
+            isRtl: widget.isRtl,
+            onRetry: _loadThisMonthStats,
+          );
         }
         if (state is AdminLoaded) {
           return _buildContent(context, state);
@@ -33,17 +59,50 @@ class AdminHomeTab extends StatelessWidget {
     final isMobile = screenWidth < 600;
 
     return RefreshIndicator(
-      onRefresh: () => context.read<AdminCubit>().loadDashboard(),
+      onRefresh: () async => _loadThisMonthStats(),
       child: SingleChildScrollView(
         padding: EdgeInsets.all(isMobile ? 16 : 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              isRtl ? 'نظرة عامة' : 'Overview',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.isRtl ? 'نظرة عامة' : 'Overview',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.calendar_month,
+                        size: 16,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        widget.isRtl ? 'هذا الشهر' : 'This Month',
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             _buildStatsGrid(context, state),
@@ -101,43 +160,48 @@ class AdminHomeTab extends StatelessWidget {
   List<Widget> _buildStatCards(AdminLoaded state, bool compact) {
     return [
       StatsCard(
-        title: isRtl ? 'العملاء' : 'Customers',
+        title: widget.isRtl ? 'العملاء' : 'Customers',
         value: '${state.stats.totalCustomers}',
         icon: Icons.people,
         color: Colors.blue,
         compact: compact,
       ),
       StatsCard(
-        title: isRtl ? 'التجار' : 'Merchants',
+        title: widget.isRtl ? 'التجار' : 'Merchants',
         value: '${state.stats.totalMerchants}',
         icon: Icons.store,
         color: Colors.purple,
         compact: compact,
       ),
       StatsCard(
-        title: isRtl ? 'المنتجات' : 'Products',
+        title: widget.isRtl ? 'المنتجات' : 'Products',
         value: '${state.stats.activeProducts}',
         icon: Icons.inventory,
         color: Colors.green,
         compact: compact,
       ),
       StatsCard(
-        title: isRtl ? 'معلقة' : 'Pending',
-        value: '${state.stats.pendingOrders}',
-        icon: Icons.pending_actions,
+        title: widget.isRtl ? 'الطلبات' : 'Orders',
+        value: '${state.stats.totalOrders}',
+        subtitle:
+            '${state.stats.pendingOrders} ${widget.isRtl ? 'معلق' : 'pending'}',
+        icon: Icons.receipt_long,
         color: Colors.orange,
         compact: compact,
       ),
       StatsCard(
-        title: isRtl ? 'اليوم' : 'Today',
+        title: widget.isRtl ? 'اليوم' : 'Today',
         value: '${state.stats.todayOrders}',
+        subtitle:
+            '${state.stats.todayRevenue.toStringAsFixed(0)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
         icon: Icons.today,
         color: Colors.teal,
         compact: compact,
       ),
       StatsCard(
-        title: isRtl ? 'الإيرادات' : 'Revenue',
-        value: '${state.stats.totalRevenue.toStringAsFixed(0)}',
+        title: widget.isRtl ? 'إيرادات الشهر' : 'Month Revenue',
+        value: state.stats.totalRevenue.toStringAsFixed(0),
+        subtitle: widget.isRtl ? 'ج.م' : 'EGP',
         icon: Icons.attach_money,
         color: Colors.green,
         compact: compact,
@@ -152,7 +216,7 @@ class AdminHomeTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          isRtl ? 'أحدث الطلبات' : 'Recent Orders',
+          widget.isRtl ? 'أحدث الطلبات' : 'Recent Orders',
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -168,7 +232,8 @@ class AdminHomeTab extends StatelessWidget {
               ? Padding(
                   padding: const EdgeInsets.all(24),
                   child: Center(
-                    child: Text(isRtl ? 'لا توجد طلبات' : 'No orders yet'),
+                    child:
+                        Text(widget.isRtl ? 'لا توجد طلبات' : 'No orders yet'),
                   ),
                 )
               : ListView.separated(
@@ -207,7 +272,7 @@ class AdminHomeTab extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '${order.total.toStringAsFixed(0)} ${isRtl ? 'ج.م' : 'EGP'}',
+                            '${order.total.toStringAsFixed(0)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: isMobile ? 12 : 14,
@@ -250,7 +315,7 @@ class AdminHomeTab extends StatelessWidget {
 
   String _getStatusText(dynamic status) {
     final s = status.toString().split('.').last;
-    if (isRtl) {
+    if (widget.isRtl) {
       switch (s) {
         case 'pending':
           return 'انتظار';

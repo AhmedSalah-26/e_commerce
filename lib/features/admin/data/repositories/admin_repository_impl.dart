@@ -15,9 +15,15 @@ class AdminRepositoryImpl implements AdminRepository {
   AdminRepositoryImpl(this._datasource);
 
   @override
-  Future<Either<Failure, AdminStatsEntity>> getStats() async {
+  Future<Either<Failure, AdminStatsEntity>> getStats({
+    DateTime? fromDate,
+    DateTime? toDate,
+  }) async {
     try {
-      final stats = await _datasource.getStats();
+      final stats = await _datasource.getStats(
+        fromDate: fromDate,
+        toDate: toDate,
+      );
       return Right(stats);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -292,6 +298,72 @@ class AdminRepositoryImpl implements AdminRepository {
       final result =
           await _datasource.getMerchantsCancellationStats(limit: limit);
       return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  // Coupons
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> getMerchantCoupons(
+      String merchantId) async {
+    try {
+      final result = await _datasource.getMerchantCoupons(merchantId);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> toggleCouponStatus(
+      String couponId, bool isActive) async {
+    try {
+      await _datasource.toggleCouponStatus(couponId, isActive);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> suspendCoupon(
+      String couponId, String reason) async {
+    try {
+      await _datasource.suspendCoupon(couponId, reason);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> unsuspendCoupon(String couponId) async {
+    try {
+      await _datasource.unsuspendCoupon(couponId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> suspendAllMerchantCoupons(
+      String merchantId, String reason) async {
+    try {
+      await _datasource.suspendAllMerchantCoupons(merchantId, reason);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> unsuspendAllMerchantCoupons(
+      String merchantId) async {
+    try {
+      await _datasource.unsuspendAllMerchantCoupons(merchantId);
+      return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }

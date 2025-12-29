@@ -35,12 +35,6 @@ class AdminHeader extends StatelessWidget {
             ),
           ],
           const Spacer(),
-          Text(
-            isRtl ? 'لوحة التحكم' : 'Admin Dashboard',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
         ],
       ),
     );

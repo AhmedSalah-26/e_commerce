@@ -302,6 +302,12 @@ class _NotificationSwitch extends StatelessWidget {
             onChanged: onChanged,
             activeTrackColor: theme.colorScheme.primary,
             inactiveTrackColor: theme.colorScheme.outline,
+            thumbColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return Colors.white;
+              }
+              return Colors.grey[300];
+            }),
           ),
         ],
       ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class UserCard extends StatelessWidget {
   final Map<String, dynamic> user;
@@ -131,11 +130,17 @@ class UserCard extends StatelessWidget {
 
   List<PopupMenuEntry<String>> _buildMenuItems(bool isActive, bool isBanned) {
     final isAdmin = user['role'] == 'admin';
+    final isMerchant = user['role'] == 'merchant';
     return [
       _menuItem('details', Icons.info_outline, isRtl ? 'التفاصيل' : 'Details'),
       _menuItem('copy_id', Icons.copy, isRtl ? 'نسخ ID' : 'Copy ID'),
       _menuItem('copy_email', Icons.email_outlined,
           isRtl ? 'نسخ الإيميل' : 'Copy Email'),
+      if (isMerchant) ...[
+        const PopupMenuDivider(),
+        _menuItem('coupons', Icons.local_offer, isRtl ? 'الكوبونات' : 'Coupons',
+            Colors.orange),
+      ],
       const PopupMenuDivider(),
       _menuItem(
         'toggle',

@@ -7,7 +7,10 @@ import '../entities/admin_stats_entity.dart';
 /// Admin repository interface
 abstract class AdminRepository {
   /// Get dashboard statistics
-  Future<Either<Failure, AdminStatsEntity>> getStats();
+  Future<Either<Failure, AdminStatsEntity>> getStats({
+    DateTime? fromDate,
+    DateTime? toDate,
+  });
 
   /// Get recent orders (all merchants)
   Future<Either<Failure, List<OrderEntity>>> getRecentOrders({int limit = 10});
@@ -79,4 +82,15 @@ abstract class AdminRepository {
       {int limit = 20});
   Future<Either<Failure, List<Map<String, dynamic>>>>
       getMerchantsCancellationStats({int limit = 20});
+
+  // Coupons
+  Future<Either<Failure, List<Map<String, dynamic>>>> getMerchantCoupons(
+      String merchantId);
+  Future<Either<Failure, void>> toggleCouponStatus(
+      String couponId, bool isActive);
+  Future<Either<Failure, void>> suspendCoupon(String couponId, String reason);
+  Future<Either<Failure, void>> unsuspendCoupon(String couponId);
+  Future<Either<Failure, void>> suspendAllMerchantCoupons(
+      String merchantId, String reason);
+  Future<Either<Failure, void>> unsuspendAllMerchantCoupons(String merchantId);
 }

@@ -21,15 +21,20 @@ class AdminLoaded extends AdminState {
   final AdminStatsEntity stats;
   final List<OrderEntity> recentOrders;
   final List<ProductEntity> topProducts;
+  final DateTime? fromDate;
+  final DateTime? toDate;
 
   const AdminLoaded({
     required this.stats,
     this.recentOrders = const [],
     this.topProducts = const [],
+    this.fromDate,
+    this.toDate,
   });
 
   @override
-  List<Object?> get props => [stats, recentOrders, topProducts];
+  List<Object?> get props =>
+      [stats, recentOrders, topProducts, fromDate, toDate];
 }
 
 class AdminError extends AdminState {
@@ -47,11 +52,37 @@ class AdminUsersLoading extends AdminState {
 class AdminUsersLoaded extends AdminState {
   final List<Map<String, dynamic>> users;
   final String? currentRole;
+  final int currentPage;
+  final bool hasMore;
+  final bool isLoadingMore;
 
-  const AdminUsersLoaded(this.users, {this.currentRole});
+  const AdminUsersLoaded(
+    this.users, {
+    this.currentRole,
+    this.currentPage = 0,
+    this.hasMore = true,
+    this.isLoadingMore = false,
+  });
+
+  AdminUsersLoaded copyWith({
+    List<Map<String, dynamic>>? users,
+    String? currentRole,
+    int? currentPage,
+    bool? hasMore,
+    bool? isLoadingMore,
+  }) {
+    return AdminUsersLoaded(
+      users ?? this.users,
+      currentRole: currentRole ?? this.currentRole,
+      currentPage: currentPage ?? this.currentPage,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
 
   @override
-  List<Object?> get props => [users, currentRole];
+  List<Object?> get props =>
+      [users, currentRole, currentPage, hasMore, isLoadingMore];
 }
 
 // Orders states
@@ -62,11 +93,37 @@ class AdminOrdersLoading extends AdminState {
 class AdminOrdersLoaded extends AdminState {
   final List<Map<String, dynamic>> orders;
   final String? currentStatus;
+  final int currentPage;
+  final bool hasMore;
+  final bool isLoadingMore;
 
-  const AdminOrdersLoaded(this.orders, {this.currentStatus});
+  const AdminOrdersLoaded(
+    this.orders, {
+    this.currentStatus,
+    this.currentPage = 0,
+    this.hasMore = true,
+    this.isLoadingMore = false,
+  });
+
+  AdminOrdersLoaded copyWith({
+    List<Map<String, dynamic>>? orders,
+    String? currentStatus,
+    int? currentPage,
+    bool? hasMore,
+    bool? isLoadingMore,
+  }) {
+    return AdminOrdersLoaded(
+      orders ?? this.orders,
+      currentStatus: currentStatus ?? this.currentStatus,
+      currentPage: currentPage ?? this.currentPage,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
 
   @override
-  List<Object?> get props => [orders, currentStatus];
+  List<Object?> get props =>
+      [orders, currentStatus, currentPage, hasMore, isLoadingMore];
 }
 
 // Products states
@@ -77,11 +134,37 @@ class AdminProductsLoading extends AdminState {
 class AdminProductsLoaded extends AdminState {
   final List<Map<String, dynamic>> products;
   final bool? isActive;
+  final int currentPage;
+  final bool hasMore;
+  final bool isLoadingMore;
 
-  const AdminProductsLoaded(this.products, {this.isActive});
+  const AdminProductsLoaded(
+    this.products, {
+    this.isActive,
+    this.currentPage = 0,
+    this.hasMore = true,
+    this.isLoadingMore = false,
+  });
+
+  AdminProductsLoaded copyWith({
+    List<Map<String, dynamic>>? products,
+    bool? isActive,
+    int? currentPage,
+    bool? hasMore,
+    bool? isLoadingMore,
+  }) {
+    return AdminProductsLoaded(
+      products ?? this.products,
+      isActive: isActive ?? this.isActive,
+      currentPage: currentPage ?? this.currentPage,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
 
   @override
-  List<Object?> get props => [products, isActive];
+  List<Object?> get props =>
+      [products, isActive, currentPage, hasMore, isLoadingMore];
 }
 
 // Categories states

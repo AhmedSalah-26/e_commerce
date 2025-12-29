@@ -7,11 +7,17 @@ class AdminCubit extends Cubit<AdminState> {
 
   AdminCubit(this._repository) : super(const AdminInitial());
 
-  /// Load dashboard data
-  Future<void> loadDashboard() async {
+  /// Load dashboard data with optional date filter
+  Future<void> loadDashboard({
+    DateTime? fromDate,
+    DateTime? toDate,
+  }) async {
     emit(const AdminLoading());
 
-    final statsResult = await _repository.getStats();
+    final statsResult = await _repository.getStats(
+      fromDate: fromDate,
+      toDate: toDate,
+    );
 
     await statsResult.fold(
       (failure) async => emit(AdminError(failure.message)),
@@ -23,20 +29,49 @@ class AdminCubit extends Cubit<AdminState> {
           stats: stats,
           recentOrders: ordersResult.fold((f) => [], (orders) => orders),
           topProducts: productsResult.fold((f) => [], (products) => products),
+          fromDate: fromDate,
+          toDate: toDate,
         ));
       },
     );
   }
 
-  /// Load users
-  Future<void> loadUsers({String? role, String? search}) async {
-    emit(const AdminUsersLoading());
+  static const int _pageSize = 20;
 
-    final result = await _repository.getUsers(role: role, search: search);
+  /// Load users
+  Future<void> loadUsers(
+      {String? role, String? search, bool loadMore = false}) async {
+    final currentState = state;
+    int page = 0;
+    List<Map<String, dynamic>> existingUsers = [];
+
+    if (loadMore && currentState is AdminUsersLoaded) {
+      if (currentState.isLoadingMore || !currentState.hasMore) return;
+      page = currentState.currentPage + 1;
+      existingUsers = currentState.users;
+      emit(currentState.copyWith(isLoadingMore: true));
+    } else {
+      emit(const AdminUsersLoading());
+    }
+
+    final result = await _repository.getUsers(
+      role: role,
+      search: search,
+      page: page,
+      pageSize: _pageSize,
+    );
 
     result.fold(
       (failure) => emit(AdminError(failure.message)),
-      (users) => emit(AdminUsersLoaded(users, currentRole: role)),
+      (users) {
+        final allUsers = loadMore ? [...existingUsers, ...users] : users;
+        emit(AdminUsersLoaded(
+          allUsers,
+          currentRole: role,
+          currentPage: page,
+          hasMore: users.length >= _pageSize,
+        ));
+      },
     );
   }
 
@@ -52,14 +87,44 @@ class AdminCubit extends Cubit<AdminState> {
   }
 
   // Phase 2: Orders
-  Future<void> loadOrders(
-      {String? status, String? priority, String? search}) async {
-    emit(const AdminOrdersLoading());
+  Future<void> loadOrders({
+    String? status,
+    String? priority,
+    String? search,
+    bool loadMore = false,
+  }) async {
+    final currentState = state;
+    int page = 0;
+    List<Map<String, dynamic>> existingOrders = [];
+
+    if (loadMore && currentState is AdminOrdersLoaded) {
+      if (currentState.isLoadingMore || !currentState.hasMore) return;
+      page = currentState.currentPage + 1;
+      existingOrders = currentState.orders;
+      emit(currentState.copyWith(isLoadingMore: true));
+    } else {
+      emit(const AdminOrdersLoading());
+    }
+
     final result = await _repository.getAllOrders(
-        status: status, priority: priority, search: search);
+      status: status,
+      priority: priority,
+      search: search,
+      page: page,
+      pageSize: _pageSize,
+    );
+
     result.fold(
       (failure) => emit(AdminError(failure.message)),
-      (orders) => emit(AdminOrdersLoaded(orders, currentStatus: status)),
+      (orders) {
+        final allOrders = loadMore ? [...existingOrders, ...orders] : orders;
+        emit(AdminOrdersLoaded(
+          allOrders,
+          currentStatus: status,
+          currentPage: page,
+          hasMore: orders.length >= _pageSize,
+        ));
+      },
     );
   }
 
@@ -85,17 +150,45 @@ class AdminCubit extends Cubit<AdminState> {
   }
 
   // Phase 3: Products
-  Future<void> loadProducts(
-      {String? categoryId, bool? isActive, String? search}) async {
-    emit(const AdminProductsLoading());
+  Future<void> loadProducts({
+    String? categoryId,
+    bool? isActive,
+    String? search,
+    bool loadMore = false,
+  }) async {
+    final currentState = state;
+    int page = 0;
+    List<Map<String, dynamic>> existingProducts = [];
+
+    if (loadMore && currentState is AdminProductsLoaded) {
+      if (currentState.isLoadingMore || !currentState.hasMore) return;
+      page = currentState.currentPage + 1;
+      existingProducts = currentState.products;
+      emit(currentState.copyWith(isLoadingMore: true));
+    } else {
+      emit(const AdminProductsLoading());
+    }
+
     final result = await _repository.getAllProducts(
       categoryId: categoryId,
       isActive: isActive,
       search: search,
+      page: page,
+      pageSize: _pageSize,
     );
+
     result.fold(
       (failure) => emit(AdminError(failure.message)),
-      (products) => emit(AdminProductsLoaded(products, isActive: isActive)),
+      (products) {
+        final allProducts =
+            loadMore ? [...existingProducts, ...products] : products;
+        emit(AdminProductsLoaded(
+          allProducts,
+          isActive: isActive,
+          currentPage: page,
+          hasMore: products.length >= _pageSize,
+        ));
+      },
     );
   }
 
@@ -148,18 +241,56 @@ class AdminCubit extends Cubit<AdminState> {
   }
 
   // Rankings & Reports
-  Future<List<Map<String, dynamic>>> getTopSellingMerchants() async {
-    final result = await _repository.getTopSellingMerchants();
+  Future<List<Map<String, dynamic>>> getTopSellingMerchants(
+      {int limit = 20}) async {
+    final result = await _repository.getTopSellingMerchants(limit: limit);
     return result.fold((f) => [], (data) => data);
   }
 
-  Future<List<Map<String, dynamic>>> getTopOrderingCustomers() async {
-    final result = await _repository.getTopOrderingCustomers();
+  Future<List<Map<String, dynamic>>> getTopOrderingCustomers(
+      {int limit = 20}) async {
+    final result = await _repository.getTopOrderingCustomers(limit: limit);
     return result.fold((f) => [], (data) => data);
   }
 
-  Future<List<Map<String, dynamic>>> getMerchantsCancellationStats() async {
-    final result = await _repository.getMerchantsCancellationStats();
+  Future<List<Map<String, dynamic>>> getMerchantsCancellationStats(
+      {int limit = 20}) async {
+    final result =
+        await _repository.getMerchantsCancellationStats(limit: limit);
     return result.fold((f) => [], (data) => data);
+  }
+
+  // Coupons
+  Future<List<Map<String, dynamic>>> getMerchantCoupons(
+      String merchantId) async {
+    final result = await _repository.getMerchantCoupons(merchantId);
+    return result.fold((f) => [], (data) => data);
+  }
+
+  Future<bool> toggleCouponStatus(String couponId, bool isActive) async {
+    final result = await _repository.toggleCouponStatus(couponId, isActive);
+    return result.isRight();
+  }
+
+  Future<bool> suspendCoupon(String couponId, String reason) async {
+    final result = await _repository.suspendCoupon(couponId, reason);
+    return result.isRight();
+  }
+
+  Future<bool> unsuspendCoupon(String couponId) async {
+    final result = await _repository.unsuspendCoupon(couponId);
+    return result.isRight();
+  }
+
+  Future<bool> suspendAllMerchantCoupons(
+      String merchantId, String reason) async {
+    final result =
+        await _repository.suspendAllMerchantCoupons(merchantId, reason);
+    return result.isRight();
+  }
+
+  Future<bool> unsuspendAllMerchantCoupons(String merchantId) async {
+    final result = await _repository.unsuspendAllMerchantCoupons(merchantId);
+    return result.isRight();
   }
 }

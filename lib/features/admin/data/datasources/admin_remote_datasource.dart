@@ -581,36 +581,38 @@ class AdminRemoteDatasourceImpl implements AdminRemoteDatasource {
   Future<List<Map<String, dynamic>>> getMerchantsCancellationStats(
       {int limit = 20}) async {
     try {
-      // Get all orders with merchant info
-      final orders = await _client
-          .from('orders')
-          .select('id, status, order_items(product_id, products(merchant_id))');
+      // Get all orders with merchant info - using merchant_id directly from orders
+      final orders =
+          await _client.from('orders').select('id, status, merchant_id');
 
       // Aggregate by merchant
       final Map<String, Map<String, dynamic>> merchantStats = {};
+      final Set<String> processedOrders =
+          {}; // Track processed order IDs per merchant
 
       for (final order in orders) {
-        final items = order['order_items'] as List? ?? [];
-        for (final item in items) {
-          final product = item['products'];
-          if (product != null) {
-            final merchantId = product['merchant_id'];
-            if (merchantId != null) {
-              if (!merchantStats.containsKey(merchantId)) {
-                merchantStats[merchantId] = {
-                  'merchant_id': merchantId,
-                  'total_orders': 0,
-                  'cancelled_orders': 0,
-                  'delivered_orders': 0,
-                };
-              }
-              merchantStats[merchantId]!['total_orders']++;
-              if (order['status'] == 'cancelled') {
-                merchantStats[merchantId]!['cancelled_orders']++;
-              } else if (order['status'] == 'delivered') {
-                merchantStats[merchantId]!['delivered_orders']++;
-              }
-            }
+        final merchantId = order['merchant_id']?.toString();
+        final orderId = order['id']?.toString() ?? '';
+        final status = order['status'];
+
+        if (merchantId != null && merchantId.isNotEmpty) {
+          final key = '$merchantId-$orderId';
+          if (processedOrders.contains(key)) continue;
+          processedOrders.add(key);
+
+          if (!merchantStats.containsKey(merchantId)) {
+            merchantStats[merchantId] = {
+              'merchant_id': merchantId,
+              'total_orders': 0,
+              'cancelled_orders': 0,
+              'delivered_orders': 0,
+            };
+          }
+          merchantStats[merchantId]!['total_orders']++;
+          if (status == 'cancelled') {
+            merchantStats[merchantId]!['cancelled_orders']++;
+          } else if (status == 'delivered') {
+            merchantStats[merchantId]!['delivered_orders']++;
           }
         }
       }
@@ -621,7 +623,7 @@ class AdminRemoteDatasourceImpl implements AdminRemoteDatasource {
 
       final profiles = await _client
           .from('profiles')
-          .select('id, name, email')
+          .select('id, name, email, phone')
           .inFilter('id', merchantIds);
 
       // Merge data and calculate difference
@@ -631,14 +633,15 @@ class AdminRemoteDatasourceImpl implements AdminRemoteDatasource {
         if (stats != null) {
           final cancelled = stats['cancelled_orders'] as int;
           final delivered = stats['delivered_orders'] as int;
+          final total = stats['total_orders'] as int;
           result.add({
             ...profile,
             ...stats,
-            'cancellation_rate': stats['total_orders'] > 0
-                ? (cancelled / stats['total_orders'] * 100).toStringAsFixed(1)
+            'cancellation_rate': total > 0
+                ? (cancelled / total * 100).toStringAsFixed(1)
                 : '0.0',
             'difference': cancelled - delivered,
-            'is_problematic': cancelled > delivered,
+            'is_problematic': cancelled > delivered && cancelled > 0,
           });
         }
       }

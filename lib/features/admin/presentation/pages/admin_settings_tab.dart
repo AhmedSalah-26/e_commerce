@@ -105,9 +105,11 @@ class AdminSettingsTab extends StatelessWidget {
                 icon: Icons.logout,
                 title: isRtl ? 'تسجيل الخروج' : 'Logout',
                 color: Colors.red,
-                onTap: () {
-                  context.read<AuthCubit>().signOut();
-                  context.go('/login');
+                onTap: () async {
+                  await context.read<AuthCubit>().signOut();
+                  if (context.mounted) {
+                    context.go('/login');
+                  }
                 },
               ),
             ],

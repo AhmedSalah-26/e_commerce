@@ -8,6 +8,9 @@ class NetworkErrorHandler {
   factory NetworkErrorHandler() => _instance;
   NetworkErrorHandler._internal();
 
+  static DateTime? _lastToastTime;
+  static const _toastDebounce = Duration(seconds: 2);
+
   /// Check if error is a network error
   static bool isNetworkError(dynamic error) {
     final errorStr = error.toString().toLowerCase();
@@ -29,8 +32,15 @@ class NetworkErrorHandler {
     return true;
   }
 
-  /// Show network error toast
+  /// Show network error toast (with debounce to prevent duplicates)
   static void showNetworkError([BuildContext? context]) {
+    final now = DateTime.now();
+    if (_lastToastTime != null &&
+        now.difference(_lastToastTime!) < _toastDebounce) {
+      return; // Skip if shown recently
+    }
+    _lastToastTime = now;
+
     toastification.show(
       title: Text('error_network'.tr(),
           style: const TextStyle(color: Colors.white)),

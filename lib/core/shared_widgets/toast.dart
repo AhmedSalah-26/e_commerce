@@ -2,12 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
 class Tost {
+  static DateTime? _lastToastTime;
+  static const _toastDebounce = Duration(seconds: 2);
+
+  static bool _canShowToast() {
+    final now = DateTime.now();
+    if (_lastToastTime != null &&
+        now.difference(_lastToastTime!) < _toastDebounce) {
+      return false;
+    }
+    _lastToastTime = now;
+    return true;
+  }
+
   static void showCustomToast(
     BuildContext context,
     String message, {
     Color backgroundColor = Colors.black,
     Color textColor = Colors.white,
   }) {
+    if (!_canShowToast()) return;
+
     toastification.show(
       context: context,
       title: Text(message, style: TextStyle(color: textColor)),
@@ -33,6 +48,8 @@ class Tost {
   }
 
   static void showSuccessToast(BuildContext context, String message) {
+    if (!_canShowToast()) return;
+
     toastification.show(
       context: context,
       type: ToastificationType.success,
@@ -47,6 +64,8 @@ class Tost {
   }
 
   static void showErrorToast(BuildContext context, String message) {
+    if (!_canShowToast()) return;
+
     toastification.show(
       context: context,
       type: ToastificationType.error,

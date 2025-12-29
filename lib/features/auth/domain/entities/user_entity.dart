@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 /// User roles in the system
 enum UserRole {
+  admin,
   merchant,
   customer;
 
@@ -35,6 +36,7 @@ class UserEntity extends Equatable {
 
   bool get isMerchant => role == UserRole.merchant;
   bool get isCustomer => role == UserRole.customer;
+  bool get isAdmin => role == UserRole.admin;
 
   @override
   List<Object?> get props =>

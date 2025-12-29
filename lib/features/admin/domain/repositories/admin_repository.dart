@@ -17,7 +17,7 @@ abstract class AdminRepository {
 
   /// Get all users with filters
   Future<Either<Failure, List<Map<String, dynamic>>>> getUsers({
-    String? role, // customer, merchant, admin
+    String? role,
     String? search,
     int page = 0,
     int pageSize = 20,
@@ -28,4 +28,49 @@ abstract class AdminRepository {
 
   /// Check if user is admin
   Future<bool> isAdmin(String userId);
+
+  // Phase 2: Orders
+  Future<Either<Failure, List<Map<String, dynamic>>>> getAllOrders({
+    String? status,
+    String? search,
+    int page = 0,
+    int pageSize = 20,
+  });
+  Future<Either<Failure, void>> updateOrderStatus(
+      String orderId, String status);
+
+  // Phase 3: Products
+  Future<Either<Failure, List<Map<String, dynamic>>>> getAllProducts({
+    String? categoryId,
+    bool? isActive,
+    String? search,
+    int page = 0,
+    int pageSize = 20,
+  });
+  Future<Either<Failure, void>> toggleProductStatus(
+      String productId, bool isActive);
+  Future<Either<Failure, void>> deleteProduct(String productId);
+
+  // Phase 4: Categories
+  Future<Either<Failure, List<Map<String, dynamic>>>> getAllCategories(
+      {bool? isActive});
+  Future<Either<Failure, void>> toggleCategoryStatus(
+      String categoryId, bool isActive);
+
+  // Product Suspension (Admin only)
+  Future<Either<Failure, void>> suspendProduct(String productId, String reason);
+  Future<Either<Failure, void>> unsuspendProduct(String productId);
+
+  // User Ban (Admin only - Supabase Auth)
+  Future<Either<Failure, Map<String, dynamic>>> banUser(
+      String userId, String duration);
+  Future<Either<Failure, Map<String, dynamic>>> unbanUser(String userId);
+
+  // Rankings & Reports
+  Future<Either<Failure, List<Map<String, dynamic>>>> getTopSellingMerchants(
+      {int limit = 20});
+  Future<Either<Failure, List<Map<String, dynamic>>>> getTopOrderingCustomers(
+      {int limit = 20});
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+      getMerchantsCancellationStats({int limit = 20});
 }

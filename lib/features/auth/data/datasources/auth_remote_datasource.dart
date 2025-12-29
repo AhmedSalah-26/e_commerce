@@ -251,8 +251,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return UserModel(
         id: userId,
         email: user.email ?? '',
-        role:
-            roleFromMeta == 'merchant' ? UserRole.merchant : UserRole.customer,
+        role: UserRole.fromString(roleFromMeta),
         name: nameFromMeta,
         phone: phoneFromMeta,
         createdAt: DateTime.now(),
@@ -270,9 +269,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return UserModel(
           id: userId,
           email: user.email ?? '',
-          role: roleFromMeta == 'merchant'
-              ? UserRole.merchant
-              : UserRole.customer,
+          role: UserRole.fromString(roleFromMeta),
           name: user.userMetadata?['name'] as String?,
           phone: user.userMetadata?['phone'] as String?,
           createdAt: DateTime.now(),

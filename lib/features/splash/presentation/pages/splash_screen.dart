@@ -63,6 +63,8 @@ class _SplashScreenState extends State<SplashScreen>
         Future.delayed(const Duration(milliseconds: 100), () {
           DeepLinkService().processInitialDeepLink();
         });
+      } else if (authState.user.isAdmin) {
+        context.pushReplacement('/admin');
       } else if (authState.user.isMerchant) {
         context.pushReplacement('/merchant-dashboard');
       } else {

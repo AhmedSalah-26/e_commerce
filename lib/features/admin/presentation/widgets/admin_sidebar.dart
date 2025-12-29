@@ -21,34 +21,37 @@ class AdminSidebar extends StatelessWidget {
     final theme = Theme.of(context);
     final items = _getMenuItems(isRtl);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      width: isCollapsed ? 70 : 250,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border(
-          right:
-              isRtl ? BorderSide.none : BorderSide(color: theme.dividerColor),
-          left: isRtl ? BorderSide(color: theme.dividerColor) : BorderSide.none,
+    return SafeArea(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: isCollapsed ? 70 : 250,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(
+            right:
+                isRtl ? BorderSide.none : BorderSide(color: theme.dividerColor),
+            left:
+                isRtl ? BorderSide(color: theme.dividerColor) : BorderSide.none,
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          _buildHeader(theme),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: items.length,
-              itemBuilder: (context, index) => _buildMenuItem(
-                context,
-                items[index],
-                index,
-                theme,
+        child: Column(
+          children: [
+            _buildHeader(theme),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: items.length,
+                itemBuilder: (context, index) => _buildMenuItem(
+                  context,
+                  items[index],
+                  index,
+                  theme,
+                ),
               ),
             ),
-          ),
-          _buildCollapseButton(theme),
-        ],
+            _buildCollapseButton(theme),
+          ],
+        ),
       ),
     );
   }

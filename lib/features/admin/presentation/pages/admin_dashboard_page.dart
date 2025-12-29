@@ -11,7 +11,13 @@ import '../widgets/admin_sidebar.dart';
 import '../widgets/admin_header.dart';
 import 'admin_home_tab.dart';
 import 'admin_users_tab.dart';
-import 'admin_placeholder_tab.dart';
+import 'admin_orders_tab.dart';
+import 'admin_products_tab.dart';
+import 'admin_categories_tab.dart';
+import 'admin_coupons_tab.dart';
+import 'admin_shipping_tab.dart';
+import 'admin_reports_tab.dart';
+import 'admin_settings_tab.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -56,43 +62,49 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
     return BlocProvider(
       create: (_) => sl<AdminCubit>()..loadDashboard(),
-      child: BlocListener<AuthCubit, AuthState>(
-        listener: (context, state) {
-          if (state is AuthUnauthenticated) {
-            context.go('/login');
-          }
-        },
-        child: Directionality(
-          textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-          child: Scaffold(
-            key: _scaffoldKey,
-            drawer: isDesktop ? null : _buildDrawer(isRtl),
-            body: Row(
-              children: [
-                if (isDesktop)
-                  AdminSidebar(
-                    selectedIndex: _selectedIndex,
-                    onItemSelected: (index) =>
-                        setState(() => _selectedIndex = index),
-                    isCollapsed: _sidebarCollapsed,
-                    onToggleCollapse: () =>
-                        setState(() => _sidebarCollapsed = !_sidebarCollapsed),
-                    isRtl: isRtl,
-                  ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      AdminHeader(
+      child: Builder(
+        builder: (blocContext) => BlocListener<AuthCubit, AuthState>(
+          listener: (context, state) {
+            if (state is AuthUnauthenticated) {
+              context.go('/login');
+            }
+          },
+          child: Directionality(
+            textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+            child: Scaffold(
+              key: _scaffoldKey,
+              drawer: isDesktop ? null : _buildDrawer(blocContext, isRtl),
+              body: SafeArea(
+                child: Row(
+                  children: [
+                    if (isDesktop)
+                      AdminSidebar(
+                        selectedIndex: _selectedIndex,
+                        onItemSelected: (index) {
+                          setState(() => _selectedIndex = index);
+                          _loadTabData(blocContext, index);
+                        },
+                        isCollapsed: _sidebarCollapsed,
+                        onToggleCollapse: () => setState(
+                            () => _sidebarCollapsed = !_sidebarCollapsed),
                         isRtl: isRtl,
-                        onMenuTap: isDesktop
-                            ? null
-                            : () => _scaffoldKey.currentState?.openDrawer(),
                       ),
-                      Expanded(child: _buildContent(isRtl)),
-                    ],
-                  ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          AdminHeader(
+                            isRtl: isRtl,
+                            onMenuTap: isDesktop
+                                ? null
+                                : () => _scaffoldKey.currentState?.openDrawer(),
+                          ),
+                          Expanded(child: _buildContent(isRtl)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -100,19 +112,42 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  Widget _buildDrawer(bool isRtl) {
+  Widget _buildDrawer(BuildContext blocContext, bool isRtl) {
     return Drawer(
       child: AdminSidebar(
         selectedIndex: _selectedIndex,
         onItemSelected: (index) {
           setState(() => _selectedIndex = index);
           Navigator.pop(context);
+          _loadTabData(blocContext, index);
         },
         isCollapsed: false,
         onToggleCollapse: () {},
         isRtl: isRtl,
       ),
     );
+  }
+
+  void _loadTabData(BuildContext blocContext, int index) {
+    final cubit = blocContext.read<AdminCubit>();
+    switch (index) {
+      case 0:
+      case 7:
+        cubit.loadDashboard();
+        break;
+      case 1:
+        cubit.loadUsers(role: 'customer');
+        break;
+      case 2:
+        cubit.loadOrders();
+        break;
+      case 3:
+        cubit.loadProducts();
+        break;
+      case 4:
+        cubit.loadCategories();
+        break;
+    }
   }
 
   Widget _buildContent(bool isRtl) {
@@ -122,47 +157,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       case 1:
         return AdminUsersTab(isRtl: isRtl);
       case 2:
-        return AdminPlaceholderTab(
-          title: isRtl ? 'الطلبات' : 'Orders',
-          icon: Icons.receipt_long,
-          isRtl: isRtl,
-        );
+        return AdminOrdersTab(isRtl: isRtl);
       case 3:
-        return AdminPlaceholderTab(
-          title: isRtl ? 'المنتجات' : 'Products',
-          icon: Icons.inventory,
-          isRtl: isRtl,
-        );
+        return AdminProductsTab(isRtl: isRtl);
       case 4:
-        return AdminPlaceholderTab(
-          title: isRtl ? 'التصنيفات' : 'Categories',
-          icon: Icons.category,
-          isRtl: isRtl,
-        );
+        return AdminCategoriesTab(isRtl: isRtl);
       case 5:
-        return AdminPlaceholderTab(
-          title: isRtl ? 'الكوبونات' : 'Coupons',
-          icon: Icons.local_offer,
-          isRtl: isRtl,
-        );
+        return AdminCouponsTab(isRtl: isRtl);
       case 6:
-        return AdminPlaceholderTab(
-          title: isRtl ? 'الشحن' : 'Shipping',
-          icon: Icons.local_shipping,
-          isRtl: isRtl,
-        );
+        return AdminShippingTab(isRtl: isRtl);
       case 7:
-        return AdminPlaceholderTab(
-          title: isRtl ? 'التقارير' : 'Reports',
-          icon: Icons.analytics,
-          isRtl: isRtl,
-        );
+        return AdminReportsTab(isRtl: isRtl);
       case 8:
-        return AdminPlaceholderTab(
-          title: isRtl ? 'الإعدادات' : 'Settings',
-          icon: Icons.settings,
-          isRtl: isRtl,
-        );
+        return AdminSettingsTab(isRtl: isRtl);
       default:
         return AdminHomeTab(isRtl: isRtl);
     }

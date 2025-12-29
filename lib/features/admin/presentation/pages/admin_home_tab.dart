@@ -16,15 +16,12 @@ class AdminHomeTab extends StatelessWidget {
         if (state is AdminLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-
         if (state is AdminError) {
           return Center(child: Text(state.message));
         }
-
         if (state is AdminLoaded) {
           return _buildContent(context, state);
         }
-
         return const SizedBox.shrink();
       },
     );
@@ -32,23 +29,25 @@ class AdminHomeTab extends StatelessWidget {
 
   Widget _buildContent(BuildContext context, AdminLoaded state) {
     final theme = Theme.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
 
     return RefreshIndicator(
       onRefresh: () => context.read<AdminCubit>().loadDashboard(),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(isMobile ? 16 : 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               isRtl ? 'نظرة عامة' : 'Overview',
-              style: theme.textTheme.headlineSmall?.copyWith(
+              style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
+            const SizedBox(height: 16),
+            _buildStatsGrid(context, state),
             const SizedBox(height: 24),
-            _buildStatsGrid(state),
-            const SizedBox(height: 32),
             _buildRecentOrders(context, state, theme),
           ],
         ),
@@ -56,90 +55,109 @@ class AdminHomeTab extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsGrid(AdminLoaded state) {
+  Widget _buildStatsGrid(BuildContext context, AdminLoaded state) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < 600) {
+      return _buildMobileStats(state);
+    }
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 1200
-            ? 4
-            : constraints.maxWidth > 800
-                ? 3
-                : 2;
-
+        final crossAxisCount = constraints.maxWidth > 1000 ? 4 : 3;
+        final aspectRatio = constraints.maxWidth > 1000 ? 1.8 : 1.6;
         return GridView.count(
           crossAxisCount: crossAxisCount,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 1.5,
-          children: [
-            StatsCard(
-              title: isRtl ? 'إجمالي العملاء' : 'Total Customers',
-              value: '${state.stats.totalCustomers}',
-              icon: Icons.people,
-              color: Colors.blue,
-            ),
-            StatsCard(
-              title: isRtl ? 'التجار' : 'Merchants',
-              value: '${state.stats.totalMerchants}',
-              icon: Icons.store,
-              color: Colors.purple,
-            ),
-            StatsCard(
-              title: isRtl ? 'المنتجات النشطة' : 'Active Products',
-              value: '${state.stats.activeProducts}',
-              icon: Icons.inventory,
-              color: Colors.green,
-            ),
-            StatsCard(
-              title: isRtl ? 'طلبات معلقة' : 'Pending Orders',
-              value: '${state.stats.pendingOrders}',
-              icon: Icons.pending_actions,
-              color: Colors.orange,
-            ),
-            StatsCard(
-              title: isRtl ? 'طلبات اليوم' : 'Today Orders',
-              value: '${state.stats.todayOrders}',
-              icon: Icons.today,
-              color: Colors.teal,
-            ),
-            StatsCard(
-              title: isRtl ? 'إجمالي الإيرادات' : 'Total Revenue',
-              value:
-                  '${state.stats.totalRevenue.toStringAsFixed(0)} ${isRtl ? 'ج.م' : 'EGP'}',
-              icon: Icons.attach_money,
-              color: Colors.green,
-            ),
-            StatsCard(
-              title: isRtl ? 'إيرادات اليوم' : 'Today Revenue',
-              value:
-                  '${state.stats.todayRevenue.toStringAsFixed(0)} ${isRtl ? 'ج.م' : 'EGP'}',
-              icon: Icons.trending_up,
-              color: Colors.indigo,
-            ),
-            StatsCard(
-              title: isRtl ? 'إجمالي الطلبات' : 'Total Orders',
-              value: '${state.stats.totalOrders}',
-              icon: Icons.receipt_long,
-              color: Colors.brown,
-            ),
-          ],
+          childAspectRatio: aspectRatio,
+          children: _buildStatCards(state, false),
         );
       },
     );
   }
 
+  Widget _buildMobileStats(AdminLoaded state) {
+    final cards = _buildStatCards(state, true);
+    return Column(
+      children: [
+        for (int i = 0; i < cards.length; i += 2)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: [
+                Expanded(child: cards[i]),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: i + 1 < cards.length ? cards[i + 1] : const SizedBox(),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  List<Widget> _buildStatCards(AdminLoaded state, bool compact) {
+    return [
+      StatsCard(
+        title: isRtl ? 'العملاء' : 'Customers',
+        value: '${state.stats.totalCustomers}',
+        icon: Icons.people,
+        color: Colors.blue,
+        compact: compact,
+      ),
+      StatsCard(
+        title: isRtl ? 'التجار' : 'Merchants',
+        value: '${state.stats.totalMerchants}',
+        icon: Icons.store,
+        color: Colors.purple,
+        compact: compact,
+      ),
+      StatsCard(
+        title: isRtl ? 'المنتجات' : 'Products',
+        value: '${state.stats.activeProducts}',
+        icon: Icons.inventory,
+        color: Colors.green,
+        compact: compact,
+      ),
+      StatsCard(
+        title: isRtl ? 'معلقة' : 'Pending',
+        value: '${state.stats.pendingOrders}',
+        icon: Icons.pending_actions,
+        color: Colors.orange,
+        compact: compact,
+      ),
+      StatsCard(
+        title: isRtl ? 'اليوم' : 'Today',
+        value: '${state.stats.todayOrders}',
+        icon: Icons.today,
+        color: Colors.teal,
+        compact: compact,
+      ),
+      StatsCard(
+        title: isRtl ? 'الإيرادات' : 'Revenue',
+        value: '${state.stats.totalRevenue.toStringAsFixed(0)}',
+        icon: Icons.attach_money,
+        color: Colors.green,
+        compact: compact,
+      ),
+    ];
+  }
+
   Widget _buildRecentOrders(
       BuildContext context, AdminLoaded state, ThemeData theme) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           isRtl ? 'أحدث الطلبات' : 'Recent Orders',
-          style:
-              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
@@ -148,7 +166,7 @@ class AdminHomeTab extends StatelessWidget {
           ),
           child: state.recentOrders.isEmpty
               ? Padding(
-                  padding: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(24),
                   child: Center(
                     child: Text(isRtl ? 'لا توجد طلبات' : 'No orders yet'),
                   ),
@@ -162,26 +180,44 @@ class AdminHomeTab extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final order = state.recentOrders[index];
                     return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: _getStatusColor(order.status),
-                        child:
-                            Icon(Icons.receipt, color: Colors.white, size: 20),
+                      dense: isMobile,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: isMobile ? 12 : 16,
+                        vertical: isMobile ? 4 : 8,
                       ),
-                      title: Text('#${order.id.substring(0, 8)}'),
-                      subtitle: Text(order.customerName ?? ''),
+                      leading: CircleAvatar(
+                        radius: isMobile ? 16 : 20,
+                        backgroundColor: _getStatusColor(order.status),
+                        child: Icon(
+                          Icons.receipt,
+                          color: Colors.white,
+                          size: isMobile ? 16 : 20,
+                        ),
+                      ),
+                      title: Text(
+                        '#${order.id.substring(0, 8)}',
+                        style: TextStyle(fontSize: isMobile ? 13 : 14),
+                      ),
+                      subtitle: Text(
+                        order.customerName ?? '',
+                        style: TextStyle(fontSize: isMobile ? 11 : 12),
+                      ),
                       trailing: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
                             '${order.total.toStringAsFixed(0)} ${isRtl ? 'ج.م' : 'EGP'}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: isMobile ? 12 : 14,
+                            ),
                           ),
                           Text(
                             _getStatusText(order.status),
                             style: TextStyle(
                               color: _getStatusColor(order.status),
-                              fontSize: 12,
+                              fontSize: isMobile ? 10 : 12,
                             ),
                           ),
                         ],
@@ -195,8 +231,8 @@ class AdminHomeTab extends StatelessWidget {
   }
 
   Color _getStatusColor(dynamic status) {
-    final statusStr = status.toString().split('.').last;
-    switch (statusStr) {
+    final s = status.toString().split('.').last;
+    switch (s) {
       case 'pending':
         return Colors.orange;
       case 'processing':
@@ -213,9 +249,9 @@ class AdminHomeTab extends StatelessWidget {
   }
 
   String _getStatusText(dynamic status) {
-    final statusStr = status.toString().split('.').last;
+    final s = status.toString().split('.').last;
     if (isRtl) {
-      switch (statusStr) {
+      switch (s) {
         case 'pending':
           return 'انتظار';
         case 'processing':
@@ -223,13 +259,13 @@ class AdminHomeTab extends StatelessWidget {
         case 'shipped':
           return 'شحن';
         case 'delivered':
-          return 'تم التوصيل';
+          return 'تم';
         case 'cancelled':
           return 'ملغي';
         default:
-          return statusStr;
+          return s;
       }
     }
-    return statusStr;
+    return s;
   }
 }

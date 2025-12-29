@@ -83,4 +83,182 @@ class AdminRepositoryImpl implements AdminRepository {
   Future<bool> isAdmin(String userId) async {
     return await _datasource.isAdmin(userId);
   }
+
+  // Phase 2: Orders
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> getAllOrders({
+    String? status,
+    String? search,
+    int page = 0,
+    int pageSize = 20,
+  }) async {
+    try {
+      final orders = await _datasource.getAllOrders(
+        status: status,
+        search: search,
+        page: page,
+        pageSize: pageSize,
+      );
+      return Right(orders);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateOrderStatus(
+      String orderId, String status) async {
+    try {
+      await _datasource.updateOrderStatus(orderId, status);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  // Phase 3: Products
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> getAllProducts({
+    String? categoryId,
+    bool? isActive,
+    String? search,
+    int page = 0,
+    int pageSize = 20,
+  }) async {
+    try {
+      final products = await _datasource.getAllProducts(
+        categoryId: categoryId,
+        isActive: isActive,
+        search: search,
+        page: page,
+        pageSize: pageSize,
+      );
+      return Right(products);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> toggleProductStatus(
+      String productId, bool isActive) async {
+    try {
+      await _datasource.toggleProductStatus(productId, isActive);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteProduct(String productId) async {
+    try {
+      await _datasource.deleteProduct(productId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  // Phase 4: Categories
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> getAllCategories(
+      {bool? isActive}) async {
+    try {
+      final categories = await _datasource.getAllCategories(isActive: isActive);
+      return Right(categories);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> toggleCategoryStatus(
+      String categoryId, bool isActive) async {
+    try {
+      await _datasource.toggleCategoryStatus(categoryId, isActive);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  // Product Suspension (Admin only)
+  @override
+  Future<Either<Failure, void>> suspendProduct(
+      String productId, String reason) async {
+    try {
+      await _datasource.suspendProduct(productId, reason);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> unsuspendProduct(String productId) async {
+    try {
+      await _datasource.unsuspendProduct(productId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  // User Ban (Admin only - Supabase Auth)
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> banUser(
+      String userId, String duration) async {
+    try {
+      final result = await _datasource.banUser(userId, duration);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> unbanUser(String userId) async {
+    try {
+      final result = await _datasource.unbanUser(userId);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  // Rankings & Reports
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> getTopSellingMerchants(
+      {int limit = 20}) async {
+    try {
+      final result = await _datasource.getTopSellingMerchants(limit: limit);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> getTopOrderingCustomers(
+      {int limit = 20}) async {
+    try {
+      final result = await _datasource.getTopOrderingCustomers(limit: limit);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>>
+      getMerchantsCancellationStats({int limit = 20}) async {
+    try {
+      final result =
+          await _datasource.getMerchantsCancellationStats(limit: limit);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
 }

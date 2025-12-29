@@ -47,7 +47,9 @@ class _LoginPageState extends State<LoginPage> {
         listener: (context, state) {
           if (state is AuthAuthenticated) {
             AppRouter.setAuthenticated(true);
-            if (state.user.isMerchant) {
+            if (state.user.isAdmin) {
+              context.pushReplacement('/admin');
+            } else if (state.user.isMerchant) {
               context.pushReplacement('/merchant-dashboard');
             } else {
               context.pushReplacement('/home');

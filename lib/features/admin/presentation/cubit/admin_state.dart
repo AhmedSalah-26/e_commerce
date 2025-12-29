@@ -53,3 +53,48 @@ class AdminUsersLoaded extends AdminState {
   @override
   List<Object?> get props => [users, currentRole];
 }
+
+// Orders states
+class AdminOrdersLoading extends AdminState {
+  const AdminOrdersLoading();
+}
+
+class AdminOrdersLoaded extends AdminState {
+  final List<Map<String, dynamic>> orders;
+  final String? currentStatus;
+
+  const AdminOrdersLoaded(this.orders, {this.currentStatus});
+
+  @override
+  List<Object?> get props => [orders, currentStatus];
+}
+
+// Products states
+class AdminProductsLoading extends AdminState {
+  const AdminProductsLoading();
+}
+
+class AdminProductsLoaded extends AdminState {
+  final List<Map<String, dynamic>> products;
+  final bool? isActive;
+
+  const AdminProductsLoaded(this.products, {this.isActive});
+
+  @override
+  List<Object?> get props => [products, isActive];
+}
+
+// Categories states
+class AdminCategoriesLoading extends AdminState {
+  const AdminCategoriesLoading();
+}
+
+class AdminCategoriesLoaded extends AdminState {
+  final List<Map<String, dynamic>> categories;
+  final bool? isActive;
+
+  const AdminCategoriesLoaded(this.categories, {this.isActive});
+
+  @override
+  List<Object?> get props => [categories, isActive];
+}

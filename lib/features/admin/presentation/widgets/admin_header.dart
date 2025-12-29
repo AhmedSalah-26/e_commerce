@@ -13,10 +13,11 @@ class AdminHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isMobile = MediaQuery.of(context).size.width < 600;
 
     return Container(
-      height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: isMobile ? 56 : 64,
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(bottom: BorderSide(color: theme.dividerColor)),
@@ -28,39 +29,58 @@ class AdminHeader extends StatelessWidget {
               icon: const Icon(Icons.menu),
               onPressed: onMenuTap,
             ),
+          if (isMobile && onMenuTap != null) ...[
+            const SizedBox(width: 8),
+            Text(
+              isRtl ? 'لوحة التحكم' : 'Admin',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
           const Spacer(),
-          // Notifications
           IconButton(
             icon: Badge(
               label: const Text('3'),
-              child: Icon(Icons.notifications_outlined,
-                  color: theme.colorScheme.onSurface),
+              child: Icon(
+                Icons.notifications_outlined,
+                color: theme.colorScheme.onSurface,
+                size: isMobile ? 22 : 24,
+              ),
             ),
             onPressed: () {},
           ),
-          const SizedBox(width: 8),
-          // Profile
+          SizedBox(width: isMobile ? 4 : 8),
           BlocBuilder<AuthCubit, AuthState>(
             builder: (context, state) {
               final name = state is AuthAuthenticated
-                  ? state.user.fullName
+                  ? (state.user.name ?? '')
                   : (isRtl ? 'مسؤول' : 'Admin');
 
               return PopupMenuButton<String>(
                 offset: const Offset(0, 50),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     CircleAvatar(
-                      radius: 18,
+                      radius: isMobile ? 16 : 18,
                       backgroundColor: theme.colorScheme.primary,
                       child: Text(
                         name.isNotEmpty ? name[0].toUpperCase() : 'A',
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isMobile ? 12 : 14,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(name, style: theme.textTheme.bodyMedium),
-                    const Icon(Icons.arrow_drop_down),
+                    if (!isMobile) ...[
+                      const SizedBox(width: 8),
+                      Text(name, style: theme.textTheme.bodyMedium),
+                    ],
+                    Icon(
+                      Icons.arrow_drop_down,
+                      size: isMobile ? 20 : 24,
+                    ),
                   ],
                 ),
                 itemBuilder: (context) => [

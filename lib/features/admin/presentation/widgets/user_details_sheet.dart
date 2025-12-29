@@ -13,9 +13,10 @@ class UserDetailsSheet extends StatelessWidget {
     final isActive = user['is_active'] ?? true;
     final isBanned = _isUserBanned();
     final name = user['name'] ?? 'Unknown';
+    final avatarUrl = user['avatar_url'] as String?;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.65,
+      height: MediaQuery.of(context).size.height * 0.7,
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -23,7 +24,7 @@ class UserDetailsSheet extends StatelessWidget {
       child: Column(
         children: [
           _buildHandle(theme),
-          _buildHeader(context, theme, name, isActive, isBanned),
+          _buildHeader(context, theme, name, avatarUrl, isActive, isBanned),
           if (isBanned) _buildBanBanner(),
           const Divider(),
           Expanded(child: _buildDetails(context, theme)),
@@ -45,17 +46,12 @@ class UserDetailsSheet extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context, ThemeData theme, String name,
-      bool isActive, bool isBanned) {
+      String? avatarUrl, bool isActive, bool isBanned) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: isBanned ? Colors.red : theme.colorScheme.primary,
-            child: Text(name[0].toUpperCase(),
-                style: const TextStyle(color: Colors.white, fontSize: 24)),
-          ),
+          _buildAvatar(theme, name, avatarUrl, isBanned),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -92,6 +88,34 @@ class UserDetailsSheet extends StatelessWidget {
     );
   }
 
+  Widget _buildAvatar(
+      ThemeData theme, String name, String? avatarUrl, bool isBanned) {
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      return CircleAvatar(
+        radius: 35,
+        backgroundColor: isBanned ? Colors.red : theme.colorScheme.primary,
+        child: ClipOval(
+          child: Image.network(
+            avatarUrl,
+            width: 66,
+            height: 66,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Text(
+              name[0].toUpperCase(),
+              style: const TextStyle(color: Colors.white, fontSize: 28),
+            ),
+          ),
+        ),
+      );
+    }
+    return CircleAvatar(
+      radius: 35,
+      backgroundColor: isBanned ? Colors.red : theme.colorScheme.primary,
+      child: Text(name[0].toUpperCase(),
+          style: const TextStyle(color: Colors.white, fontSize: 28)),
+    );
+  }
+
   Widget _buildBanBanner() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -113,6 +137,13 @@ class UserDetailsSheet extends StatelessWidget {
   }
 
   Widget _buildDetails(BuildContext context, ThemeData theme) {
+    final governorate = user['governorates'];
+    final governorateName = governorate != null
+        ? (isRtl
+            ? (governorate['name_ar'] ?? governorate['name_en'])
+            : (governorate['name_en'] ?? governorate['name_ar']))
+        : null;
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -122,6 +153,9 @@ class UserDetailsSheet extends StatelessWidget {
             user['phone'] ?? '-', Icons.phone),
         _detailItem(context, theme, isRtl ? 'الدور' : 'Role',
             user['role'] ?? '-', Icons.badge),
+        if (governorateName != null)
+          _detailItem(context, theme, isRtl ? 'المحافظة' : 'Governorate',
+              governorateName, Icons.location_city),
         _detailItem(context, theme, 'ID', user['id'] ?? '', Icons.fingerprint),
         _detailItem(
           context,

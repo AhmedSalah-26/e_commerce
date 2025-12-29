@@ -13,6 +13,8 @@ abstract class AuthRemoteDataSource {
     required UserRole role,
     required String name,
     String? phone,
+    String? avatarUrl,
+    String? governorateId,
   });
   Future<void> signOut();
   Future<UserModel?> getCurrentUser();
@@ -20,6 +22,8 @@ abstract class AuthRemoteDataSource {
     required String userId,
     String? name,
     String? phone,
+    String? avatarUrl,
+    String? governorateId,
   });
   Stream<UserModel?> get authStateChanges;
 }
@@ -66,6 +70,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required UserRole role,
     required String name,
     String? phone,
+    String? avatarUrl,
+    String? governorateId,
   }) async {
     logger.i(
         '📝 Attempting sign up for: $email, role: ${role.name}, name: $name');
@@ -79,6 +85,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'role': role.name,
           'name': name,
           'phone': phone,
+          'avatar_url': avatarUrl,
+          'governorate_id': governorateId,
         },
       );
 
@@ -108,6 +116,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         role: role,
         name: name,
         phone: phone,
+        avatarUrl: avatarUrl,
+        governorateId: governorateId,
         createdAt: DateTime.now(),
       );
     } on AuthApiException catch (e, stackTrace) {
@@ -175,12 +185,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String userId,
     String? name,
     String? phone,
+    String? avatarUrl,
+    String? governorateId,
   }) async {
     logger.i('📝 Updating profile for user: $userId');
     try {
       final updateData = <String, dynamic>{};
       if (name != null) updateData['name'] = name;
       if (phone != null) updateData['phone'] = phone;
+      if (avatarUrl != null) updateData['avatar_url'] = avatarUrl;
+      if (governorateId != null) updateData['governorate_id'] = governorateId;
 
       if (updateData.isEmpty) {
         logger.w('⚠️ No data to update');

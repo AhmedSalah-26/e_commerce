@@ -91,6 +91,9 @@ class OrderModel extends OrderEntity {
     super.paymentMethod,
     super.couponCode,
     super.couponDiscount,
+    super.governorateId,
+    super.governorateNameAr,
+    super.governorateNameEn,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -121,6 +124,15 @@ class OrderModel extends OrderEntity {
       merchantAddress = profile['address'] as String?;
     }
 
+    // Parse governorate info
+    String? governorateNameAr;
+    String? governorateNameEn;
+    if (json['governorates'] != null) {
+      final gov = json['governorates'];
+      governorateNameAr = gov['name_ar'] as String?;
+      governorateNameEn = gov['name_en'] as String?;
+    }
+
     return OrderModel(
       id: json['id'] as String,
       userId: json['user_id'] as String,
@@ -144,6 +156,9 @@ class OrderModel extends OrderEntity {
       paymentMethod: json['payment_method'] as String?,
       couponCode: json['coupon_code'] as String?,
       couponDiscount: (json['coupon_discount'] as num?)?.toDouble() ?? 0,
+      governorateId: json['governorate_id'] as String?,
+      governorateNameAr: governorateNameAr,
+      governorateNameEn: governorateNameEn,
     );
   }
 

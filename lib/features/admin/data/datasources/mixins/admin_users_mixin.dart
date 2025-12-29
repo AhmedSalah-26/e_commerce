@@ -11,7 +11,10 @@ mixin AdminUsersMixin {
     int pageSize = 20,
   }) async {
     try {
-      var query = client.from('profiles').select();
+      var query = client.from('profiles').select('''
+        *,
+        governorates:governorate_id (id, name_ar, name_en)
+      ''');
 
       if (role == 'customer') {
         query = query.eq('role', 'customer');

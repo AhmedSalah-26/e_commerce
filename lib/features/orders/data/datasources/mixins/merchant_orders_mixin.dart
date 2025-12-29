@@ -11,6 +11,10 @@ mixin MerchantOrdersMixin {
   String get _orderItemsWithProduct =>
       '*, products(name_ar, name_en, description_ar, description_en, images)';
 
+  /// Orders query with governorate JOIN
+  String get _ordersWithGovernorate =>
+      '*, governorates:governorate_id(id, name_ar, name_en)';
+
   /// Fetch parent order data for coupon/payment info
   Future<Map<String, dynamic>?> _fetchParentOrderData(
       String? parentOrderId) async {
@@ -73,7 +77,7 @@ mixin MerchantOrdersMixin {
 
       final ordersResponse = await client
           .from('orders')
-          .select()
+          .select(_ordersWithGovernorate)
           .eq('merchant_id', merchantId)
           .order('created_at', ascending: false);
 

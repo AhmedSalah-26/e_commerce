@@ -22,6 +22,7 @@ class UserEntity extends Equatable {
   final String? name;
   final String? phone;
   final String? avatarUrl;
+  final String? governorateId;
   final DateTime? createdAt;
 
   const UserEntity({
@@ -31,6 +32,7 @@ class UserEntity extends Equatable {
     this.name,
     this.phone,
     this.avatarUrl,
+    this.governorateId,
     this.createdAt,
   });
 
@@ -40,5 +42,5 @@ class UserEntity extends Equatable {
 
   @override
   List<Object?> get props =>
-      [id, email, role, name, phone, avatarUrl, createdAt];
+      [id, email, role, name, phone, avatarUrl, governorateId, createdAt];
 }

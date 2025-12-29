@@ -117,6 +117,10 @@ class OrderEntity extends Equatable {
   final String? paymentMethod;
   final String? couponCode;
   final double couponDiscount;
+  // Governorate info
+  final String? governorateId;
+  final String? governorateNameAr;
+  final String? governorateNameEn;
 
   const OrderEntity({
     required this.id,
@@ -139,10 +143,20 @@ class OrderEntity extends Equatable {
     this.paymentMethod,
     this.couponCode,
     this.couponDiscount = 0,
+    this.governorateId,
+    this.governorateNameAr,
+    this.governorateNameEn,
   });
 
   bool get hasMerchantInfo => merchantName != null && merchantName!.isNotEmpty;
   bool get hasCoupon => couponCode != null && couponCode!.isNotEmpty;
+
+  String? getGovernorateName(String locale) {
+    if (locale == 'en') {
+      return governorateNameEn ?? governorateNameAr;
+    }
+    return governorateNameAr ?? governorateNameEn;
+  }
 
   @override
   List<Object?> get props => [
@@ -166,5 +180,8 @@ class OrderEntity extends Equatable {
         paymentMethod,
         couponCode,
         couponDiscount,
+        governorateId,
+        governorateNameAr,
+        governorateNameEn,
       ];
 }

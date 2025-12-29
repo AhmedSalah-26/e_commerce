@@ -14,6 +14,8 @@ abstract class AuthRepository {
     required UserRole role,
     required String name,
     String? phone,
+    String? avatarUrl,
+    String? governorateId,
   });
 
   /// Sign out current user
@@ -27,6 +29,8 @@ abstract class AuthRepository {
     required String userId,
     String? name,
     String? phone,
+    String? avatarUrl,
+    String? governorateId,
   });
 
   /// Stream of auth state changes

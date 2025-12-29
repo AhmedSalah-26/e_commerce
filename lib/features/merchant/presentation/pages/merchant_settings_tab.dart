@@ -74,6 +74,19 @@ class MerchantSettingsTab extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   _SettingsSection(
+                    title: isRtl ? 'التقييمات' : 'Reviews',
+                    items: [
+                      _SettingsItem(
+                        title: isRtl
+                            ? 'المنتجات الأعلى تقييماً'
+                            : 'Top Rated Products',
+                        icon: Icons.star_outline,
+                        onTap: () => context.push('/merchant-top-rated'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _SettingsSection(
                     title: isRtl ? 'التسويق' : 'Marketing',
                     items: [
                       _SettingsItem(

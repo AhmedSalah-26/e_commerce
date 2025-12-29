@@ -85,6 +85,8 @@ class OrderDetailsSheet extends StatelessWidget {
     ScrollController scrollController,
     ThemeData theme,
   ) {
+    final governorateName = order.getGovernorateName(isRtl ? 'ar' : 'en');
+
     return ListView(
       controller: scrollController,
       padding: const EdgeInsets.all(16),
@@ -104,6 +106,12 @@ class OrderDetailsSheet extends StatelessWidget {
           order.customerPhone ?? (isRtl ? 'غير محدد' : 'N/A'),
           theme,
         ),
+        if (governorateName != null)
+          _buildDetailRow(
+            isRtl ? 'المحافظة' : 'Governorate',
+            governorateName,
+            theme,
+          ),
         _buildDetailRow(
           isRtl ? 'عنوان التوصيل' : 'Delivery Address',
           order.deliveryAddress ?? (isRtl ? 'غير محدد' : 'N/A'),

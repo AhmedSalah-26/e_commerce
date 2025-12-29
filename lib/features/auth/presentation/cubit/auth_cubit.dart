@@ -66,6 +66,8 @@ class AuthCubit extends Cubit<AuthState> {
     required UserRole role,
     required String name,
     String? phone,
+    String? avatarUrl,
+    String? governorateId,
   }) async {
     emit(const AuthLoading());
 
@@ -75,6 +77,8 @@ class AuthCubit extends Cubit<AuthState> {
       role: role,
       name: name,
       phone: phone,
+      avatarUrl: avatarUrl,
+      governorateId: governorateId,
     );
 
     result.fold(
@@ -111,7 +115,12 @@ class AuthCubit extends Cubit<AuthState> {
   bool get isCustomer => currentUser?.isCustomer ?? false;
 
   /// Update user profile
-  Future<bool> updateProfile({String? name, String? phone}) async {
+  Future<bool> updateProfile({
+    String? name,
+    String? phone,
+    String? avatarUrl,
+    String? governorateId,
+  }) async {
     final user = currentUser;
     if (user == null) return false;
 
@@ -119,6 +128,8 @@ class AuthCubit extends Cubit<AuthState> {
       userId: user.id,
       name: name,
       phone: phone,
+      avatarUrl: avatarUrl,
+      governorateId: governorateId,
     );
 
     return result.fold(

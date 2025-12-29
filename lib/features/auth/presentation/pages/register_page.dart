@@ -5,6 +5,8 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/shared_widgets/language_toggle_button.dart';
 import '../../../../core/utils/error_helper.dart';
+import '../../../shipping/domain/entities/governorate_entity.dart';
+import '../../../shipping/presentation/cubit/shipping_cubit.dart';
 import '../../domain/entities/user_entity.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -28,6 +30,13 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   UserRole _selectedRole = UserRole.customer;
+  GovernorateEntity? _selectedGovernorate;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<ShippingCubit>().loadGovernorates();
+  }
 
   @override
   void dispose() {
@@ -49,6 +58,7 @@ class _RegisterPageState extends State<RegisterPage> {
             phone: _phoneController.text.trim().isEmpty
                 ? null
                 : _phoneController.text.trim(),
+            governorateId: _selectedGovernorate?.id,
           );
     }
   }
@@ -56,6 +66,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isRtl = context.locale.languageCode == 'ar';
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -184,6 +195,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           });
                         },
                       ),
+                      const SizedBox(height: 16),
+                      _buildGovernorateDropdown(theme, isRtl),
                       const SizedBox(height: 24),
                       SizedBox(
                         height: 50,
@@ -238,6 +251,39 @@ class _RegisterPageState extends State<RegisterPage> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildGovernorateDropdown(ThemeData theme, bool isRtl) {
+    return BlocBuilder<ShippingCubit, ShippingState>(
+      builder: (context, state) {
+        List<GovernorateEntity> governorates = [];
+        if (state is GovernoratesLoaded) {
+          governorates = state.governorates;
+        }
+
+        return DropdownButtonFormField<GovernorateEntity>(
+          value: _selectedGovernorate,
+          decoration: InputDecoration(
+            labelText: isRtl ? 'المحافظة (اختياري)' : 'Governorate (Optional)',
+            prefixIcon: const Icon(Icons.location_city_outlined),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          items: governorates.map((gov) {
+            return DropdownMenuItem(
+              value: gov,
+              child: Text(gov.getName(isRtl ? 'ar' : 'en')),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedGovernorate = value;
+            });
+          },
+        );
+      },
     );
   }
 }

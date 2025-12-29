@@ -125,6 +125,20 @@ class AppTheme {
       cardTheme: const CardThemeData(
         color: AppColours.darkCard,
       ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColours.brownLight;
+          }
+          return const Color(0xFF5C4033); // dark brown for inactive
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColours.brownLight.withValues(alpha: 0.5);
+          }
+          return AppColours.darkGreyMedium;
+        }),
+      ),
       textTheme: const TextTheme(
         displayLarge: TextStyle(fontFamily: 'Changa', color: AppColours.white),
         displayMedium: TextStyle(fontFamily: 'Changa', color: AppColours.white),

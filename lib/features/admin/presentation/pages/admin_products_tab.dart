@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/admin_cubit.dart';
 import '../cubit/admin_state.dart';
+import '../widgets/product_card.dart';
 
 class AdminProductsTab extends StatefulWidget {
   final bool isRtl;
@@ -20,8 +21,10 @@ class _AdminProductsTabState extends State<AdminProductsTab>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(_onTabChanged);
-    _loadProducts(null);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) _loadProducts();
+    });
+    _loadProducts();
   }
 
   @override
@@ -31,22 +34,17 @@ class _AdminProductsTabState extends State<AdminProductsTab>
     super.dispose();
   }
 
-  void _onTabChanged() {
-    if (!_tabController.indexIsChanging) {
-      final isActive = _tabController.index == 0
-          ? null
-          : _tabController.index == 1
-              ? true
-              : _tabController.index == 2
-                  ? false
-                  : null;
-      _loadProducts(isActive);
-    }
+  bool? get _currentFilter {
+    return switch (_tabController.index) {
+      1 => true,
+      2 => false,
+      _ => null,
+    };
   }
 
-  void _loadProducts(bool? isActive) {
+  void _loadProducts() {
     context.read<AdminCubit>().loadProducts(
-          isActive: isActive,
+          isActive: _currentFilter,
           search:
               _searchController.text.isEmpty ? null : _searchController.text,
         );
@@ -59,7 +57,7 @@ class _AdminProductsTabState extends State<AdminProductsTab>
 
     return Column(
       children: [
-        _buildHeader(theme, isMobile),
+        _buildSearchBar(isMobile),
         TabBar(
           controller: _tabController,
           labelColor: theme.colorScheme.primary,
@@ -73,8 +71,8 @@ class _AdminProductsTabState extends State<AdminProductsTab>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.block, size: 14, color: Colors.red),
-                  SizedBox(width: 4),
+                  const Icon(Icons.block, size: 14, color: Colors.red),
+                  const SizedBox(width: 4),
                   Text(widget.isRtl ? 'موقوف' : 'Suspended'),
                 ],
               ),
@@ -91,7 +89,7 @@ class _AdminProductsTabState extends State<AdminProductsTab>
     );
   }
 
-  Widget _buildHeader(ThemeData theme, bool isMobile) {
+  Widget _buildSearchBar(bool isMobile) {
     return Padding(
       padding: EdgeInsets.all(isMobile ? 12 : 16),
       child: TextField(
@@ -102,16 +100,7 @@ class _AdminProductsTabState extends State<AdminProductsTab>
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           isDense: isMobile,
         ),
-        onSubmitted: (_) {
-          final isActive = _tabController.index == 0
-              ? null
-              : _tabController.index == 1
-                  ? true
-                  : _tabController.index == 2
-                      ? false
-                      : null;
-          _loadProducts(isActive);
-        },
+        onSubmitted: (_) => _loadProducts(),
       ),
     );
   }
@@ -126,40 +115,22 @@ class _AdminProductsTabState extends State<AdminProductsTab>
           return Center(child: Text(state.message));
         }
         if (state is AdminProductsLoaded) {
-          var products = state.products;
-
-          // Filter suspended products for tab 3
-          if (_tabController.index == 3) {
-            products =
-                products.where((p) => p['is_suspended'] == true).toList();
-          } else if (_tabController.index != 0) {
-            // For active/inactive tabs, exclude suspended
-            products =
-                products.where((p) => p['is_suspended'] != true).toList();
-          }
-
+          var products = _filterProducts(state.products);
           if (products.isEmpty) {
             return Center(
-              child:
-                  Text(widget.isRtl ? 'لا توجد منتجات' : 'No products found'),
-            );
+                child: Text(widget.isRtl ? 'لا توجد منتجات' : 'No products'));
           }
           return RefreshIndicator(
-            onRefresh: () async {
-              final isActive = _tabController.index == 0
-                  ? null
-                  : _tabController.index == 1
-                      ? true
-                      : _tabController.index == 2
-                          ? false
-                          : null;
-              _loadProducts(isActive);
-            },
+            onRefresh: () async => _loadProducts(),
             child: ListView.builder(
               padding: EdgeInsets.all(isMobile ? 12 : 16),
               itemCount: products.length,
-              itemBuilder: (context, index) =>
-                  _buildProductCard(products[index], isMobile),
+              itemBuilder: (_, i) => ProductCard(
+                product: products[i],
+                isRtl: widget.isRtl,
+                isMobile: isMobile,
+                onAction: (action) => _handleAction(action, products[i]),
+              ),
             ),
           );
         }
@@ -168,316 +139,70 @@ class _AdminProductsTabState extends State<AdminProductsTab>
     );
   }
 
-  Widget _buildProductCard(Map<String, dynamic> product, bool isMobile) {
-    final theme = Theme.of(context);
-    final isActive = product['is_active'] ?? true;
-    final isSuspended = product['is_suspended'] ?? false;
-    final suspensionReason = product['suspension_reason'];
-    final name = widget.isRtl
-        ? (product['name_ar'] ?? product['name'])
-        : product['name'];
-    final price = (product['price'] ?? 0).toDouble();
-    final stock = product['stock'] ?? 0;
-    final images = product['images'] as List? ?? [];
-    final imageUrl = images.isNotEmpty ? images[0] : null;
-    final merchant = product['profiles'];
-    final merchantName = merchant?['name'] ?? '';
-
-    return Card(
-      margin: EdgeInsets.only(bottom: isMobile ? 8 : 12),
-      color: isSuspended ? Colors.red.withValues(alpha: 0.05) : null,
-      child: Column(
-        children: [
-          ListTile(
-            contentPadding: EdgeInsets.all(isMobile ? 8 : 12),
-            leading: Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: imageUrl != null
-                      ? Image.network(
-                          imageUrl,
-                          width: isMobile ? 50 : 60,
-                          height: isMobile ? 50 : 60,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              _buildPlaceholder(isMobile),
-                        )
-                      : _buildPlaceholder(isMobile),
-                ),
-                if (isSuspended)
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.block, color: Colors.white),
-                    ),
-                  ),
-              ],
-            ),
-            title: Text(
-              name ?? '',
-              style: TextStyle(
-                fontSize: isMobile ? 13 : 14,
-                decoration: isSuspended ? TextDecoration.lineThrough : null,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${price.toStringAsFixed(0)} ${widget.isRtl ? 'ج.م' : 'EGP'}',
-                  style: TextStyle(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: isMobile ? 12 : 13,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Text(
-                      '${widget.isRtl ? 'المخزون:' : 'Stock:'} $stock',
-                      style: TextStyle(fontSize: isMobile ? 11 : 12),
-                    ),
-                    if (merchantName.isNotEmpty) ...[
-                      const Text(' • '),
-                      Expanded(
-                        child: Text(
-                          merchantName,
-                          style: TextStyle(
-                            fontSize: isMobile ? 10 : 11,
-                            color: theme.colorScheme.outline,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildStatusBadges(isActive, isSuspended, isMobile),
-                PopupMenuButton<String>(
-                  itemBuilder: (context) =>
-                      _buildMenuItems(isActive, isSuspended),
-                  onSelected: (value) =>
-                      _handleAction(value, product, isActive, isSuspended),
-                ),
-              ],
-            ),
-          ),
-          if (isSuspended && suspensionReason != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius:
-                    const BorderRadius.vertical(bottom: Radius.circular(12)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning, size: 16, color: Colors.red),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${widget.isRtl ? 'سبب الإيقاف:' : 'Reason:'} $suspensionReason',
-                      style: const TextStyle(fontSize: 12, color: Colors.red),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusBadges(bool isActive, bool isSuspended, bool isMobile) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (isSuspended)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              widget.isRtl ? 'موقوف' : 'Suspended',
-              style: const TextStyle(color: Colors.red, fontSize: 10),
-            ),
-          )
-        else
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? Colors.green.withValues(alpha: 0.1)
-                  : Colors.orange.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              isActive
-                  ? (widget.isRtl ? 'نشط' : 'Active')
-                  : (widget.isRtl ? 'معطل' : 'Inactive'),
-              style: TextStyle(
-                color: isActive ? Colors.green : Colors.orange,
-                fontSize: 10,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  List<PopupMenuEntry<String>> _buildMenuItems(
-      bool isActive, bool isSuspended) {
-    return [
-      if (isSuspended)
-        PopupMenuItem(
-          value: 'unsuspend',
-          child: Row(
-            children: [
-              const Icon(Icons.check_circle, size: 18, color: Colors.green),
-              const SizedBox(width: 8),
-              Text(widget.isRtl ? 'إلغاء الإيقاف' : 'Unsuspend'),
-            ],
-          ),
-        )
-      else ...[
-        PopupMenuItem(
-          value: 'suspend',
-          child: Row(
-            children: [
-              const Icon(Icons.block, size: 18, color: Colors.red),
-              const SizedBox(width: 8),
-              Text(
-                widget.isRtl ? 'إيقاف (مخالفة)' : 'Suspend (Violation)',
-                style: const TextStyle(color: Colors.red),
-              ),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 'toggle',
-          child: Row(
-            children: [
-              Icon(
-                isActive ? Icons.visibility_off : Icons.visibility,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Text(isActive
-                  ? (widget.isRtl ? 'تعطيل (تاجر)' : 'Deactivate (Merchant)')
-                  : (widget.isRtl ? 'تفعيل' : 'Activate')),
-            ],
-          ),
-        ),
-      ],
-      const PopupMenuDivider(),
-      PopupMenuItem(
-        value: 'delete',
-        child: Row(
-          children: [
-            const Icon(Icons.delete, size: 18, color: Colors.red),
-            const SizedBox(width: 8),
-            Text(
-              widget.isRtl ? 'حذف' : 'Delete',
-              style: const TextStyle(color: Colors.red),
-            ),
-          ],
-        ),
-      ),
-    ];
-  }
-
-  Widget _buildPlaceholder(bool isMobile) {
-    return Container(
-      width: isMobile ? 50 : 60,
-      height: isMobile ? 50 : 60,
-      color: Colors.grey[200],
-      child: const Icon(Icons.image, color: Colors.grey),
-    );
-  }
-
-  Future<void> _handleAction(String value, Map<String, dynamic> product,
-      bool isActive, bool isSuspended) async {
-    final productId = product['id'];
-    final cubit = context.read<AdminCubit>();
-
-    if (value == 'suspend') {
-      final reason = await _showSuspendDialog();
-      if (reason != null && mounted) {
-        final success = await cubit.suspendProduct(productId, reason);
-        if (success && mounted) {
-          _showSnackBar(widget.isRtl ? 'تم إيقاف المنتج' : 'Product suspended');
-          _reloadProducts();
-        }
-      }
-    } else if (value == 'unsuspend') {
-      final success = await cubit.unsuspendProduct(productId);
-      if (success && mounted) {
-        _showSnackBar(
-            widget.isRtl ? 'تم إلغاء الإيقاف' : 'Product unsuspended');
-        _reloadProducts();
-      }
-    } else if (value == 'toggle') {
-      final success = await cubit.toggleProductStatus(productId, !isActive);
-      if (success && mounted) {
-        _reloadProducts();
-      }
-    } else if (value == 'delete') {
-      final confirm = await _showDeleteDialog();
-      if (confirm == true && mounted) {
-        final success = await cubit.deleteProduct(productId);
-        if (success && mounted) {
-          _showSnackBar(widget.isRtl ? 'تم الحذف' : 'Deleted');
-          _reloadProducts();
-        }
-      }
+  List<Map<String, dynamic>> _filterProducts(
+      List<Map<String, dynamic>> products) {
+    if (_tabController.index == 3) {
+      return products.where((p) => p['is_suspended'] == true).toList();
+    } else if (_tabController.index != 0) {
+      return products.where((p) => p['is_suspended'] != true).toList();
     }
+    return products;
   }
 
-  void _reloadProducts() {
-    final isActive = _tabController.index == 0
-        ? null
-        : _tabController.index == 1
-            ? true
-            : _tabController.index == 2
-                ? false
-                : null;
-    _loadProducts(isActive);
-  }
+  Future<void> _handleAction(
+      String action, Map<String, dynamic> product) async {
+    final cubit = context.read<AdminCubit>();
+    final productId = product['id'];
+    final isActive = product['is_active'] ?? true;
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green),
-    );
+    switch (action) {
+      case 'suspend':
+        final reason = await _showSuspendDialog();
+        if (reason != null && mounted) {
+          final ok = await cubit.suspendProduct(productId, reason);
+          if (ok && mounted) {
+            _showSnack(widget.isRtl ? 'تم إيقاف المنتج' : 'Product suspended');
+            _loadProducts();
+          }
+        }
+        break;
+      case 'unsuspend':
+        final ok = await cubit.unsuspendProduct(productId);
+        if (ok && mounted) {
+          _showSnack(widget.isRtl ? 'تم إلغاء الإيقاف' : 'Product unsuspended');
+          _loadProducts();
+        }
+        break;
+      case 'toggle':
+        final ok = await cubit.toggleProductStatus(productId, !isActive);
+        if (ok && mounted) _loadProducts();
+        break;
+      case 'delete':
+        final confirm = await _showDeleteDialog();
+        if (confirm == true && mounted) {
+          final ok = await cubit.deleteProduct(productId);
+          if (ok && mounted) {
+            _showSnack(widget.isRtl ? 'تم الحذف' : 'Deleted');
+            _loadProducts();
+          }
+        }
+        break;
+    }
   }
 
   Future<String?> _showSuspendDialog() async {
     final controller = TextEditingController();
     return showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: Text(widget.isRtl ? 'إيقاف المنتج' : 'Suspend Product'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               widget.isRtl
-                  ? 'هذا الإيقاف للمنتجات المخالفة فقط. التاجر لن يستطيع إعادة تفعيله.'
-                  : 'This suspension is for policy violations. Merchant cannot reactivate.',
+                  ? 'هذا الإيقاف للمنتجات المخالفة فقط.'
+                  : 'This suspension is for policy violations.',
               style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
@@ -493,20 +218,17 @@ class _AdminProductsTabState extends State<AdminProductsTab>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(widget.isRtl ? 'إلغاء' : 'Cancel'),
-          ),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(widget.isRtl ? 'إلغاء' : 'Cancel')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               if (controller.text.trim().isNotEmpty) {
-                Navigator.pop(context, controller.text.trim());
+                Navigator.pop(ctx, controller.text.trim());
               }
             },
-            child: Text(
-              widget.isRtl ? 'إيقاف' : 'Suspend',
-              style: const TextStyle(color: Colors.white),
-            ),
+            child: Text(widget.isRtl ? 'إيقاف' : 'Suspend',
+                style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -516,22 +238,25 @@ class _AdminProductsTabState extends State<AdminProductsTab>
   Future<bool?> _showDeleteDialog() {
     return showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: Text(widget.isRtl ? 'تأكيد الحذف' : 'Confirm Delete'),
         content: Text(
             widget.isRtl ? 'هل تريد حذف هذا المنتج؟' : 'Delete this product?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(widget.isRtl ? 'إلغاء' : 'Cancel'),
-          ),
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(widget.isRtl ? 'إلغاء' : 'Cancel')),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(widget.isRtl ? 'حذف' : 'Delete',
-                style: const TextStyle(color: Colors.red)),
-          ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(widget.isRtl ? 'حذف' : 'Delete',
+                  style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
+  }
+
+  void _showSnack(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: Colors.green));
   }
 }

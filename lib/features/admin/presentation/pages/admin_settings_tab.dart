@@ -60,26 +60,6 @@ class AdminSettingsTab extends StatelessWidget {
           _buildSection(
             theme,
             isMobile,
-            title: isRtl ? 'التنقل' : 'Navigation',
-            children: [
-              _buildSettingItem(
-                theme,
-                icon: Icons.home,
-                title: isRtl ? 'الصفحة الرئيسية' : 'Home Page',
-                onTap: () => context.go('/home'),
-              ),
-              _buildSettingItem(
-                theme,
-                icon: Icons.store,
-                title: isRtl ? 'لوحة التاجر' : 'Merchant Dashboard',
-                onTap: () => context.go('/merchant-dashboard'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildSection(
-            theme,
-            isMobile,
             title: isRtl ? 'أخرى' : 'Other',
             children: [
               _buildSettingItem(

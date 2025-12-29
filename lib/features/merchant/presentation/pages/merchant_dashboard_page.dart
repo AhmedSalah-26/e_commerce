@@ -5,6 +5,7 @@ import '../../../../core/di/injection_container.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
+import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../cubit/merchant_products_cubit.dart';
 import 'merchant_orders_tab.dart';
 import 'merchant_inventory_tab.dart';
@@ -34,6 +35,7 @@ class _MerchantDashboardPageState extends State<MerchantDashboardPage> {
       providers: [
         BlocProvider(create: (_) => sl<OrdersCubit>()),
         BlocProvider(create: (_) => sl<MerchantProductsCubit>()),
+        BlocProvider(create: (_) => sl<CategoriesCubit>()),
       ],
       child: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {

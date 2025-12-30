@@ -27,17 +27,16 @@ mixin AdminProductsMixin {
       }
 
       if (search != null && search.isNotEmpty) {
-        // UUID لا يدعم ilike مباشرة
+        // Check if search is UUID format
         final isUuidSearch = RegExp(
           r'^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$',
-        ).hasMatch(search.replaceAll('-', '').length >= 32 ? search : '');
+        ).hasMatch(search);
 
         if (isUuidSearch) {
           query = query.or(
-              'name.ilike.%$search%,name_ar.ilike.%$search%,name_en.ilike.%$search%,id.eq.$search');
+              'name_ar.ilike.%$search%,name_en.ilike.%$search%,id.eq.$search,merchant_id.eq.$search');
         } else {
-          query = query.or(
-              'name.ilike.%$search%,name_ar.ilike.%$search%,name_en.ilike.%$search%');
+          query = query.or('name_ar.ilike.%$search%,name_en.ilike.%$search%');
         }
       }
 

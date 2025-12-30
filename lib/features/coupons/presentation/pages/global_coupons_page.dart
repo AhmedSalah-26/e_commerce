@@ -41,6 +41,8 @@ class _GlobalCouponsContent extends StatefulWidget {
 class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -51,7 +53,15 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
   @override
   void dispose() {
     _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  List<CouponEntity> _filterCoupons(List<CouponEntity> coupons) {
+    if (_searchQuery.isEmpty) return coupons;
+    return coupons
+        .where((c) => c.code.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
   }
 
   @override
@@ -62,10 +72,12 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
     return BlocConsumer<GlobalCouponsCubit, CouponState>(
       listener: _handleStateChanges,
       builder: (context, state) {
-        final coupons =
+        final allCoupons =
             state is MerchantCouponsLoaded ? state.coupons : <CouponEntity>[];
-        final activeCoupons = coupons.where((c) => c.isActive).toList();
-        final inactiveCoupons = coupons.where((c) => !c.isActive).toList();
+        final filteredCoupons = _filterCoupons(allCoupons);
+        final activeCoupons = filteredCoupons.where((c) => c.isActive).toList();
+        final inactiveCoupons =
+            filteredCoupons.where((c) => !c.isActive).toList();
 
         return Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
@@ -73,6 +85,7 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
           floatingActionButton: _buildFab(theme),
           body: Column(
             children: [
+              _buildSearchBar(theme, isRtl),
               _buildTabBar(activeCoupons.length, inactiveCoupons.length, theme),
               Expanded(
                   child: _buildTabContent(
@@ -98,6 +111,34 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
             fontWeight: FontWeight.w600, color: theme.colorScheme.primary),
       ),
       centerTitle: true,
+    );
+  }
+
+  Widget _buildSearchBar(ThemeData theme, bool isRtl) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: isRtl ? 'بحث بكود الكوبون...' : 'Search by coupon code...',
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                  },
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        onChanged: (value) => setState(() => _searchQuery = value),
+      ),
     );
   }
 
@@ -163,7 +204,13 @@ class _GlobalCouponsContentState extends State<_GlobalCouponsContent>
             ),
             const SizedBox(height: 16),
             Text(
-              isActive ? 'no_active_coupons'.tr() : 'no_inactive_coupons'.tr(),
+              _searchQuery.isNotEmpty
+                  ? (Localizations.localeOf(context).languageCode == 'ar'
+                      ? 'لا توجد نتائج'
+                      : 'No results found')
+                  : (isActive
+                      ? 'no_active_coupons'.tr()
+                      : 'no_inactive_coupons'.tr()),
               style: theme.textTheme.titleMedium?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
             ),

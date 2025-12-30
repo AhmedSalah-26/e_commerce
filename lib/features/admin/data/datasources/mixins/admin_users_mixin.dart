@@ -25,17 +25,15 @@ mixin AdminUsersMixin {
       }
 
       if (search != null && search.isNotEmpty) {
-        // UUID لا يدعم ilike مباشرة، نتحقق إذا كان البحث يشبه UUID
+        // Check if search is UUID format
         final isUuidSearch = RegExp(
           r'^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$',
-        ).hasMatch(search.replaceAll('-', '').length >= 32 ? search : '');
+        ).hasMatch(search);
 
         if (isUuidSearch) {
-          // البحث بالـ UUID مباشرة
           query = query.or(
               'name.ilike.%$search%,email.ilike.%$search%,phone.ilike.%$search%,id.eq.$search');
         } else {
-          // البحث في الحقول النصية فقط
           query = query.or(
               'name.ilike.%$search%,email.ilike.%$search%,phone.ilike.%$search%');
         }

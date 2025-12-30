@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../di/injection_container.dart';
 import '../../features/about/presentation/pages/about_screen.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
+import '../../features/admin/presentation/pages/admin_merchant_coupons_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/cart/presentation/pages/cart_screen.dart';
@@ -234,6 +235,10 @@ class AppRouter {
       GoRoute(
         path: '/merchant-top-rated',
         builder: (context, state) => const MerchantTopRatedProductsPage(),
+      ),
+      GoRoute(
+        path: '/admin-merchant-coupons',
+        builder: (context, state) => const AdminMerchantCouponsPage(),
       ),
     ],
   );

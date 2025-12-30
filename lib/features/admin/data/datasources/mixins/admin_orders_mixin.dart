@@ -21,14 +21,14 @@ mixin AdminOrdersMixin {
       }
 
       if (search != null && search.isNotEmpty) {
-        // UUID لا يدعم ilike مباشرة
+        // Check if search is UUID format
         final isUuidSearch = RegExp(
           r'^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$',
-        ).hasMatch(search.replaceAll('-', '').length >= 32 ? search : '');
+        ).hasMatch(search);
 
         if (isUuidSearch) {
           query = query.or(
-              'customer_name.ilike.%$search%,customer_phone.ilike.%$search%,id.eq.$search');
+              'customer_name.ilike.%$search%,customer_phone.ilike.%$search%,id.eq.$search,user_id.eq.$search,merchant_id.eq.$search');
         } else {
           query = query.or(
               'customer_name.ilike.%$search%,customer_phone.ilike.%$search%');
@@ -77,7 +77,7 @@ mixin AdminOrdersMixin {
         profiles!orders_user_id_fkey(id, name, email, phone),
         order_items(
           id, quantity, price, total,
-          products(id, name, name_ar, images)
+          products(id, name_ar, name_en, images)
         )
       ''').eq('id', orderId).single();
       return Map<String, dynamic>.from(response);

@@ -15,12 +15,12 @@ class TopRatedProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final name = isRtl
-        ? (product['name_ar'] ?? product['name'])
-        : (product['name'] ?? product['name_ar']);
+        ? (product['name_ar'] ?? product['name_en'])
+        : (product['name_en'] ?? product['name_ar']);
     final images = product['images'] as List? ?? [];
     final imageUrl = images.isNotEmpty ? images[0] : null;
-    final avgRating = (product['avg_rating'] ?? 0).toDouble();
-    final reviewCount = product['review_count'] ?? 0;
+    final avgRating = (product['rating'] ?? 0).toDouble();
+    final reviewCount = product['rating_count'] ?? 0;
     final price = (product['price'] ?? 0).toDouble();
 
     return Card(
@@ -137,10 +137,10 @@ class TopRatedProductCard extends StatelessWidget {
       builder: (_) => ProductReviewsSheet(
         productId: product['id'],
         productName: isRtl
-            ? (product['name_ar'] ?? product['name'])
-            : (product['name'] ?? product['name_ar']),
-        avgRating: (product['avg_rating'] ?? 0).toDouble(),
-        reviewCount: product['review_count'] ?? 0,
+            ? (product['name_ar'] ?? product['name_en'])
+            : (product['name_en'] ?? product['name_ar']),
+        avgRating: (product['rating'] ?? 0).toDouble(),
+        reviewCount: product['rating_count'] ?? 0,
         isRtl: isRtl,
       ),
     );

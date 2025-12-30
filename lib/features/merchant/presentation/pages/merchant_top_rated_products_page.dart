@@ -58,13 +58,13 @@ class _MerchantTopRatedProductsPageState
       final response = await Supabase.instance.client
           .from('products')
           .select('''
-            id, name, name_ar, images, price, 
-            avg_rating, review_count
+            id, name_ar, name_en, images, price, 
+            rating, rating_count
           ''')
           .eq('merchant_id', _merchantId!)
-          .gt('review_count', 0)
-          .order('avg_rating', ascending: false)
-          .order('review_count', ascending: false)
+          .gt('rating_count', 0)
+          .order('rating', ascending: false)
+          .order('rating_count', ascending: false)
           .range(_page * _pageSize, (_page + 1) * _pageSize - 1);
 
       final products = List<Map<String, dynamic>>.from(response);

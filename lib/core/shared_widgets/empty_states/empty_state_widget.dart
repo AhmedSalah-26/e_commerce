@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
+import '../../routing/app_router.dart';
 
 class EmptyStateWidget extends StatelessWidget {
   final IconData icon;
@@ -185,7 +186,10 @@ class EmptyStates {
       title: 'login_required'.tr(),
       subtitle: message ?? 'login_to_continue'.tr(),
       actionLabel: 'login'.tr(),
-      onAction: () => context.go('/login'),
+      onAction: () {
+        AppRouter.setAuthenticated(false);
+        context.go('/login');
+      },
     );
   }
 }

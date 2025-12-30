@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 
 class UserProfileCard extends StatelessWidget {
@@ -38,18 +39,7 @@ class UserProfileCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: theme.colorScheme.secondary,
-            child: Text(
-              _getInitial(user.name ?? user.email),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+          _buildAvatar(theme),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -90,6 +80,53 @@ class UserProfileCard extends StatelessWidget {
             size: 28,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAvatar(ThemeData theme) {
+    if (user.avatarUrl != null && user.avatarUrl!.isNotEmpty) {
+      return CircleAvatar(
+        radius: 30,
+        backgroundColor: theme.colorScheme.secondary,
+        child: ClipOval(
+          child: CachedNetworkImage(
+            imageUrl: user.avatarUrl!,
+            width: 60,
+            height: 60,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              color: theme.colorScheme.secondary,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              ),
+            ),
+            errorWidget: (context, url, error) => Text(
+              _getInitial(user.name ?? user.email),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return CircleAvatar(
+      radius: 30,
+      backgroundColor: theme.colorScheme.secondary,
+      child: Text(
+        _getInitial(user.name ?? user.email),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

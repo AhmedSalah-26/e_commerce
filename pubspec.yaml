@@ -44,6 +44,8 @@ dependencies:
   # Image Picker
   image_picker: ^1.1.2
   image_picker_for_web: ^3.0.5
+  # Image Compression
+  flutter_image_compress: ^2.3.0
   # Shared Preferences
   shared_preferences: ^2.3.3
   # Cached Network Image for optimized image loading

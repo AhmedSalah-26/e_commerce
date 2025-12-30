@@ -1,8 +1,11 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/services/image_upload_service.dart';
 import '../../../../core/shared_widgets/language_toggle_button.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../shipping/domain/entities/governorate_entity.dart';
@@ -10,6 +13,7 @@ import '../../../shipping/presentation/cubit/shipping_cubit.dart';
 import '../../domain/entities/user_entity.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import '../widgets/avatar_picker.dart';
 import '../widgets/role_selection_card.dart';
 import '../widgets/register_form_fields.dart';
 
@@ -31,11 +35,14 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _obscureConfirmPassword = true;
   UserRole _selectedRole = UserRole.customer;
   GovernorateEntity? _selectedGovernorate;
+  Uint8List? _selectedAvatarBytes;
+  String? _selectedAvatarName;
+  bool _isUploadingAvatar = false;
 
   @override
   void initState() {
     super.initState();
-    context.read<ShippingCubit>().loadGovernorates();
+    // ShippingCubit.loadGovernorates() is called in the route provider
   }
 
   @override
@@ -48,8 +55,33 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void _handleRegister() {
+  void _handleRegister() async {
     if (_formKey.currentState!.validate()) {
+      String? avatarUrl;
+
+      // Upload avatar if selected
+      if (_selectedAvatarBytes != null && _selectedAvatarName != null) {
+        setState(() => _isUploadingAvatar = true);
+        final imageService = sl<ImageUploadService>();
+        final imageData = PickedImageData(
+          bytes: _selectedAvatarBytes!,
+          name: _selectedAvatarName!,
+        );
+        // Use email as temp folder since we don't have userId yet
+        avatarUrl = await imageService.uploadImageBytes(
+          imageData.bytes,
+          imageData.name,
+          'avatars',
+          _emailController.text
+              .trim()
+              .replaceAll('@', '_')
+              .replaceAll('.', '_'),
+        );
+        setState(() => _isUploadingAvatar = false);
+      }
+
+      if (!mounted) return;
+
       context.read<AuthCubit>().signUp(
             email: _emailController.text.trim(),
             password: _passwordController.text,
@@ -58,9 +90,28 @@ class _RegisterPageState extends State<RegisterPage> {
             phone: _phoneController.text.trim().isEmpty
                 ? null
                 : _phoneController.text.trim(),
+            avatarUrl: avatarUrl,
             governorateId: _selectedGovernorate?.id,
           );
     }
+  }
+
+  Future<void> _pickAvatar() async {
+    final imageService = sl<ImageUploadService>();
+    final pickedImage = await imageService.pickAvatarImage();
+    if (pickedImage != null) {
+      setState(() {
+        _selectedAvatarBytes = pickedImage.bytes;
+        _selectedAvatarName = pickedImage.name;
+      });
+    }
+  }
+
+  void _removeAvatar() {
+    setState(() {
+      _selectedAvatarBytes = null;
+      _selectedAvatarName = null;
+    });
   }
 
   @override
@@ -135,6 +186,16 @@ class _RegisterPageState extends State<RegisterPage> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
+                      // Avatar picker
+                      AvatarPicker(
+                        selectedImageBytes: _selectedAvatarBytes,
+                        userName: _nameController.text,
+                        onPickImage: _pickAvatar,
+                        onRemoveImage:
+                            _selectedAvatarBytes != null ? _removeAvatar : null,
+                        isLoading: _isUploadingAvatar,
+                      ),
+                      const SizedBox(height: 24),
                       Text(
                         'account_type'.tr(),
                         style: TextStyle(

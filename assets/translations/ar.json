@@ -431,5 +431,8 @@
   "error_favorite_failed": "فشل في تحديث المفضلة، حاول مرة أخرى",
 
   "switch_to_merchant_mode": "التبديل لوضع التاجر",
-  "switch_to_user_mode": "التبديل لوضع المستخدم"
+  "switch_to_user_mode": "التبديل لوضع المستخدم",
+
+  "tap_to_change_photo": "اضغط لتغيير الصورة",
+  "remove_photo": "إزالة الصورة"
 }

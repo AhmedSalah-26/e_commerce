@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app_logger.dart';
@@ -10,22 +11,67 @@ class ImageUploadService {
 
   ImageUploadService(this._client);
 
+  /// Compress image bytes
+  Future<Uint8List> _compressImage(Uint8List bytes,
+      {int quality = 70, int minWidth = 800, int minHeight = 800}) async {
+    if (kIsWeb) {
+      // Web doesn't support flutter_image_compress, return original
+      return bytes;
+    }
+
+    try {
+      final originalSize = bytes.length;
+      AppLogger.d(
+          '🗜️ Compressing image... Original size: ${(originalSize / 1024).toStringAsFixed(1)} KB');
+
+      final compressedBytes = await FlutterImageCompress.compressWithList(
+        bytes,
+        minWidth: minWidth,
+        minHeight: minHeight,
+        quality: quality,
+        format: CompressFormat.jpeg,
+      );
+
+      final compressedSize = compressedBytes.length;
+      final savedPercent =
+          ((originalSize - compressedSize) / originalSize * 100)
+              .toStringAsFixed(1);
+
+      AppLogger.success('Image compressed', {
+        'original': '${(originalSize / 1024).toStringAsFixed(1)} KB',
+        'compressed': '${(compressedSize / 1024).toStringAsFixed(1)} KB',
+        'saved': '$savedPercent%',
+      });
+
+      return compressedBytes;
+    } catch (e, stackTrace) {
+      AppLogger.e('❌ Compression failed, using original', e, stackTrace);
+      return bytes;
+    }
+  }
+
   /// Pick image (works on both web and mobile)
-  Future<PickedImageData?> pickImage() async {
+  Future<PickedImageData?> pickImage({bool compress = true}) async {
     try {
       AppLogger.i('📷 Picking single image...');
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1024,
         maxHeight: 1024,
-        imageQuality: 80,
+        imageQuality: 85,
       );
 
       if (image != null) {
-        final bytes = await image.readAsBytes();
+        var bytes = await image.readAsBytes();
+
+        // Compress image if enabled
+        if (compress) {
+          bytes = await _compressImage(bytes);
+        }
+
         AppLogger.success('Image picked', {
           'name': image.name,
-          'size': '${bytes.length} bytes',
+          'size': '${(bytes.length / 1024).toStringAsFixed(1)} KB',
         });
         return PickedImageData(
           bytes: bytes,
@@ -42,20 +88,28 @@ class ImageUploadService {
   }
 
   /// Pick multiple images (works on both web and mobile)
-  Future<List<PickedImageData>> pickMultipleImages() async {
+  Future<List<PickedImageData>> pickMultipleImages(
+      {bool compress = true}) async {
     try {
       AppLogger.i('📷 Picking multiple images...');
       final List<XFile> images = await _picker.pickMultiImage(
         maxWidth: 1024,
         maxHeight: 1024,
-        imageQuality: 80,
+        imageQuality: 85,
       );
 
       AppLogger.d('Images selected: ${images.length}');
       final List<PickedImageData> results = [];
       for (final image in images) {
-        final bytes = await image.readAsBytes();
-        AppLogger.d('Loaded: ${image.name} (${bytes.length} bytes)');
+        var bytes = await image.readAsBytes();
+
+        // Compress image if enabled
+        if (compress) {
+          bytes = await _compressImage(bytes);
+        }
+
+        AppLogger.d(
+            'Loaded: ${image.name} (${(bytes.length / 1024).toStringAsFixed(1)} KB)');
         results.add(PickedImageData(
           bytes: bytes,
           name: image.name,
@@ -66,6 +120,42 @@ class ImageUploadService {
     } catch (e, stackTrace) {
       AppLogger.e('❌ Error picking images', e, stackTrace);
       return [];
+    }
+  }
+
+  /// Pick and compress avatar image (smaller size for avatars)
+  Future<PickedImageData?> pickAvatarImage() async {
+    try {
+      AppLogger.i('📷 Picking avatar image...');
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        var bytes = await image.readAsBytes();
+
+        // Compress avatar with smaller dimensions
+        bytes = await _compressImage(bytes,
+            quality: 75, minWidth: 256, minHeight: 256);
+
+        AppLogger.success('Avatar picked', {
+          'name': image.name,
+          'size': '${(bytes.length / 1024).toStringAsFixed(1)} KB',
+        });
+        return PickedImageData(
+          bytes: bytes,
+          name: image.name,
+          path: kIsWeb ? null : image.path,
+        );
+      }
+      AppLogger.w('No image selected');
+      return null;
+    } catch (e, stackTrace) {
+      AppLogger.e('❌ Error picking avatar', e, stackTrace);
+      return null;
     }
   }
 
@@ -142,6 +232,13 @@ class ImageUploadService {
     AppLogger.i('📁 Uploading CATEGORY image...');
     return uploadImageBytes(
         imageData.bytes, imageData.name, 'categories', 'images');
+  }
+
+  /// Upload avatar image
+  Future<String?> uploadAvatarImage(
+      PickedImageData imageData, String userId) async {
+    AppLogger.i('👤 Uploading AVATAR image...');
+    return uploadImageBytes(imageData.bytes, imageData.name, 'avatars', userId);
   }
 
   /// Delete image from storage

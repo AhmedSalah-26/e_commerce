@@ -25,6 +25,7 @@ import '../../features/notifications/presentation/cubit/notifications_cubit.dart
 import '../../features/notifications/presentation/pages/notifications_screen.dart';
 import '../../features/onboarding/presentation/pages/onboarding_screen.dart';
 import '../../features/orders/presentation/cubit/orders_cubit.dart';
+import '../../features/shipping/presentation/cubit/shipping_cubit.dart';
 import '../../features/orders/presentation/pages/orders_page.dart';
 import '../../features/orders/presentation/pages/parent_order_details_page.dart';
 import '../../features/products/domain/entities/product_entity.dart';
@@ -82,7 +83,10 @@ class AppRouter {
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const RegisterPage(),
+        builder: (context, state) => BlocProvider(
+          create: (_) => sl<ShippingCubit>()..loadGovernorates(),
+          child: const RegisterPage(),
+        ),
       ),
       GoRoute(
         path: '/merchant-dashboard',

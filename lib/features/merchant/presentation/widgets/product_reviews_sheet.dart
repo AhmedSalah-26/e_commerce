@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -284,6 +285,7 @@ class _ProductReviewsSheetState extends State<ProductReviewsSheet> {
     final profile = review['profiles'] as Map<String, dynamic>?;
     final userName = profile?['name'] ?? (widget.isRtl ? 'مستخدم' : 'User');
     final avatarUrl = profile?['avatar_url'] as String?;
+    final hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty;
     final rating = review['rating'] as int;
     final comment = review['comment'] as String?;
     final createdAt = review['created_at'] != null
@@ -302,14 +304,27 @@ class _ProductReviewsSheetState extends State<ProductReviewsSheet> {
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: theme.colorScheme.primary,
-                  backgroundImage:
-                      avatarUrl != null ? NetworkImage(avatarUrl) : null,
-                  child: avatarUrl == null
-                      ? Text(
+                  child: hasAvatar
+                      ? ClipOval(
+                          child: CachedNetworkImage(
+                            imageUrl: avatarUrl!,
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Text(
+                              userName[0].toUpperCase(),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            errorWidget: (context, url, error) => Text(
+                              userName[0].toUpperCase(),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        )
+                      : Text(
                           userName[0].toUpperCase(),
                           style: const TextStyle(color: Colors.white),
-                        )
-                      : null,
+                        ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

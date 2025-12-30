@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -19,6 +20,9 @@ class ReviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasAvatar =
+        review.userAvatarUrl != null && review.userAvatarUrl!.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -35,15 +39,42 @@ class ReviewCard extends StatelessWidget {
               CircleAvatar(
                 backgroundColor:
                     theme.colorScheme.primary.withValues(alpha: 0.2),
-                child: Text(
-                  review.userName.isNotEmpty
-                      ? review.userName[0].toUpperCase()
-                      : '?',
-                  style: TextStyle(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: hasAvatar
+                    ? ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: review.userAvatarUrl!,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Text(
+                            review.userName.isNotEmpty
+                                ? review.userName[0].toUpperCase()
+                                : '?',
+                            style: TextStyle(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Text(
+                            review.userName.isNotEmpty
+                                ? review.userName[0].toUpperCase()
+                                : '?',
+                            style: TextStyle(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Text(
+                        review.userName.isNotEmpty
+                            ? review.userName[0].toUpperCase()
+                            : '?',
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(

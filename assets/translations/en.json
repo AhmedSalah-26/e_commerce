@@ -431,5 +431,8 @@
   "error_favorite_failed": "Failed to update favorites, try again",
 
   "switch_to_merchant_mode": "Switch to Merchant Mode",
-  "switch_to_user_mode": "Switch to User Mode"
+  "switch_to_user_mode": "Switch to User Mode",
+
+  "tap_to_change_photo": "Tap to change photo",
+  "remove_photo": "Remove photo"
 }

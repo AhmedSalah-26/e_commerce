@@ -1,12 +1,16 @@
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/image_upload_service.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../auth/presentation/widgets/avatar_picker.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -20,10 +24,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   bool _isLoading = false;
-
-  String _getInitial(String text) {
-    return text.isNotEmpty ? text[0].toUpperCase() : '?';
-  }
+  bool _isUploadingAvatar = false;
+  Uint8List? _selectedAvatarBytes;
+  String? _selectedAvatarName;
+  String? _currentAvatarUrl;
 
   @override
   void initState() {
@@ -36,6 +40,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (user != null) {
       _nameController.text = user.name ?? '';
       _phoneController.text = user.phone ?? '';
+      _currentAvatarUrl = user.avatarUrl;
     }
   }
 
@@ -51,11 +56,29 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     setState(() => _isLoading = true);
 
+    String? newAvatarUrl;
+    final user = context.read<AuthCubit>().currentUser;
+
+    // Upload new avatar if selected
+    if (_selectedAvatarBytes != null &&
+        _selectedAvatarName != null &&
+        user != null) {
+      setState(() => _isUploadingAvatar = true);
+      final imageService = sl<ImageUploadService>();
+      final imageData = PickedImageData(
+        bytes: _selectedAvatarBytes!,
+        name: _selectedAvatarName!,
+      );
+      newAvatarUrl = await imageService.uploadAvatarImage(imageData, user.id);
+      setState(() => _isUploadingAvatar = false);
+    }
+
     final success = await context.read<AuthCubit>().updateProfile(
           name: _nameController.text.trim(),
           phone: _phoneController.text.trim().isEmpty
               ? null
               : _phoneController.text.trim(),
+          avatarUrl: newAvatarUrl,
         );
 
     setState(() => _isLoading = false);
@@ -78,6 +101,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         );
       }
     }
+  }
+
+  Future<void> _pickAvatar() async {
+    final imageService = sl<ImageUploadService>();
+    final pickedImage = await imageService.pickAvatarImage();
+    if (pickedImage != null) {
+      setState(() {
+        _selectedAvatarBytes = pickedImage.bytes;
+        _selectedAvatarName = pickedImage.name;
+      });
+    }
+  }
+
+  void _removeAvatar() {
+    setState(() {
+      _selectedAvatarBytes = null;
+      _selectedAvatarName = null;
+      _currentAvatarUrl = null;
+    });
   }
 
   @override
@@ -118,17 +160,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   children: [
                     // Avatar
                     Center(
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: theme.colorScheme.primary,
-                        child: Text(
-                          _getInitial(state.user.name ?? state.user.email),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      child: AvatarPicker(
+                        currentAvatarUrl: _currentAvatarUrl,
+                        selectedImageBytes: _selectedAvatarBytes,
+                        userName: state.user.name ?? state.user.email,
+                        onPickImage: _pickAvatar,
+                        onRemoveImage: (_currentAvatarUrl != null ||
+                                _selectedAvatarBytes != null)
+                            ? _removeAvatar
+                            : null,
+                        isLoading: _isUploadingAvatar,
                       ),
                     ),
                     const SizedBox(height: 32),

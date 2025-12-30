@@ -66,6 +66,9 @@ class ReviewRemoteDataSourceImpl implements ReviewRemoteDataSource {
         'rating': rating,
         'comment': comment,
       });
+
+      // Update product rating and rating_count
+      await _updateProductRating(productId);
     } catch (e) {
       throw ServerException('فشل في إضافة التقييم: ${e.toString()}');
     }
@@ -75,11 +78,21 @@ class ReviewRemoteDataSourceImpl implements ReviewRemoteDataSource {
   Future<void> updateReview(
       String reviewId, int rating, String? comment) async {
     try {
+      // Get product_id before update
+      final review = await _client
+          .from('reviews')
+          .select('product_id')
+          .eq('id', reviewId)
+          .single();
+
       await _client.from('reviews').update({
         'rating': rating,
         'comment': comment,
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', reviewId);
+
+      // Update product rating
+      await _updateProductRating(review['product_id']);
     } catch (e) {
       throw ServerException('فشل في تحديث التقييم: ${e.toString()}');
     }
@@ -88,9 +101,50 @@ class ReviewRemoteDataSourceImpl implements ReviewRemoteDataSource {
   @override
   Future<void> deleteReview(String reviewId) async {
     try {
+      // Get product_id before delete
+      final review = await _client
+          .from('reviews')
+          .select('product_id')
+          .eq('id', reviewId)
+          .single();
+
       await _client.from('reviews').delete().eq('id', reviewId);
+
+      // Update product rating
+      await _updateProductRating(review['product_id']);
     } catch (e) {
       throw ServerException('فشل في حذف التقييم: ${e.toString()}');
+    }
+  }
+
+  Future<void> _updateProductRating(String productId) async {
+    try {
+      // Calculate average rating and count
+      final result = await _client
+          .from('reviews')
+          .select('rating')
+          .eq('product_id', productId);
+
+      final reviews = List<Map<String, dynamic>>.from(result);
+
+      if (reviews.isEmpty) {
+        await _client.from('products').update({
+          'rating': 0.0,
+          'rating_count': 0,
+        }).eq('id', productId);
+      } else {
+        final totalRating =
+            reviews.fold<int>(0, (sum, r) => sum + (r['rating'] as int));
+        final avgRating = totalRating / reviews.length;
+
+        await _client.from('products').update({
+          'rating': double.parse(avgRating.toStringAsFixed(1)),
+          'rating_count': reviews.length,
+        }).eq('id', productId);
+      }
+    } catch (e) {
+      // Log error but don't throw - review was already added
+      print('Failed to update product rating: $e');
     }
   }
 }

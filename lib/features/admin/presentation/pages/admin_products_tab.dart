@@ -17,17 +17,25 @@ class _AdminProductsTabState extends State<AdminProductsTab>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
-  final _scrollController = ScrollController();
+  final List<ScrollController> _scrollControllers = [];
   String? _currentSearch;
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+
+    // إنشاء scroll controller منفصل لكل tab
+    for (int i = 0; i < 4; i++) {
+      final controller = ScrollController();
+      controller.addListener(() => _onScroll(i));
+      _scrollControllers.add(controller);
+    }
+
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) _loadProducts();
     });
-    _scrollController.addListener(_onScroll);
     _loadProducts();
   }
 
@@ -35,13 +43,22 @@ class _AdminProductsTabState extends State<AdminProductsTab>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
-    _scrollController.dispose();
+    for (final controller in _scrollControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+  void _onScroll(int tabIndex) {
+    // تأكد إن الـ tab الحالي هو اللي بيعمل scroll
+    if (_tabController.index != tabIndex) return;
+
+    // تاب "موقوف" (index 3) - الفلترة محلية فمش محتاجين load more
+    if (tabIndex == 3) return;
+
+    final controller = _scrollControllers[tabIndex];
+    if (controller.position.pixels >=
+        controller.position.maxScrollExtent - 200) {
       _loadMoreProducts();
     }
   }
@@ -64,11 +81,20 @@ class _AdminProductsTabState extends State<AdminProductsTab>
   }
 
   void _loadMoreProducts() {
-    context.read<AdminCubit>().loadProducts(
+    // منع التحميل المتكرر
+    if (_isLoadingMore) return;
+    _isLoadingMore = true;
+
+    context
+        .read<AdminCubit>()
+        .loadProducts(
           isActive: _currentFilter,
           search: _currentSearch,
           loadMore: true,
-        );
+        )
+        .then((_) {
+      _isLoadingMore = false;
+    });
   }
 
   @override
@@ -103,7 +129,8 @@ class _AdminProductsTabState extends State<AdminProductsTab>
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: List.generate(4, (_) => _buildProductsList(isMobile)),
+            children: List.generate(
+                4, (index) => _buildProductsList(isMobile, index)),
           ),
         ),
       ],
@@ -127,7 +154,7 @@ class _AdminProductsTabState extends State<AdminProductsTab>
     );
   }
 
-  Widget _buildProductsList(bool isMobile) {
+  Widget _buildProductsList(bool isMobile, int tabIndex) {
     return BlocBuilder<AdminCubit, AdminState>(
       builder: (context, state) {
         if (state is AdminProductsLoading) {
@@ -141,17 +168,22 @@ class _AdminProductsTabState extends State<AdminProductsTab>
           );
         }
         if (state is AdminProductsLoaded) {
-          var products = _filterProducts(state.products);
+          var products = _filterProducts(state.products, tabIndex);
           if (products.isEmpty) {
             return Center(
                 child: Text(widget.isRtl ? 'لا توجد منتجات' : 'No products'));
           }
+
+          // للتاب "موقوف" (index 3) - لا نعرض loading لأن الفلترة محلية
+          // للتابات الأخرى - نعرض loading فقط لو hasMore و مش بنفلتر محلياً
+          final showLoadingIndicator = tabIndex != 3 && state.hasMore;
+
           return RefreshIndicator(
             onRefresh: () async => _loadProducts(),
             child: ListView.builder(
-              controller: _scrollController,
+              controller: _scrollControllers[tabIndex],
               padding: EdgeInsets.all(isMobile ? 12 : 16),
-              itemCount: products.length + (state.hasMore ? 1 : 0),
+              itemCount: products.length + (showLoadingIndicator ? 1 : 0),
               itemBuilder: (_, i) {
                 if (i >= products.length) {
                   return const Padding(
@@ -175,10 +207,10 @@ class _AdminProductsTabState extends State<AdminProductsTab>
   }
 
   List<Map<String, dynamic>> _filterProducts(
-      List<Map<String, dynamic>> products) {
-    if (_tabController.index == 3) {
+      List<Map<String, dynamic>> products, int tabIndex) {
+    if (tabIndex == 3) {
       return products.where((p) => p['is_suspended'] == true).toList();
-    } else if (_tabController.index != 0) {
+    } else if (tabIndex != 0) {
       return products.where((p) => p['is_suspended'] != true).toList();
     }
     return products;
@@ -190,11 +222,15 @@ class _AdminProductsTabState extends State<AdminProductsTab>
     final productId = product['id'];
     final isActive = product['is_active'] ?? true;
 
+    debugPrint('📦 Admin Product Action: $action for product: $productId');
+
     switch (action) {
       case 'suspend':
         final reason = await _showSuspendDialog();
+        debugPrint('📦 Suspend reason: $reason');
         if (reason != null && mounted) {
           final ok = await cubit.suspendProduct(productId, reason);
+          debugPrint('📦 Suspend result: $ok');
           if (ok && mounted) {
             _showSnack(widget.isRtl ? 'تم إيقاف المنتج' : 'Product suspended');
             _loadProducts();
@@ -203,6 +239,7 @@ class _AdminProductsTabState extends State<AdminProductsTab>
         break;
       case 'unsuspend':
         final ok = await cubit.unsuspendProduct(productId);
+        debugPrint('📦 Unsuspend result: $ok');
         if (ok && mounted) {
           _showSnack(widget.isRtl ? 'تم إلغاء الإيقاف' : 'Product unsuspended');
           _loadProducts();
@@ -210,12 +247,15 @@ class _AdminProductsTabState extends State<AdminProductsTab>
         break;
       case 'toggle':
         final ok = await cubit.toggleProductStatus(productId, !isActive);
+        debugPrint('📦 Toggle result: $ok');
         if (ok && mounted) _loadProducts();
         break;
       case 'delete':
         final confirm = await _showDeleteDialog();
+        debugPrint('📦 Delete confirmed: $confirm');
         if (confirm == true && mounted) {
           final ok = await cubit.deleteProduct(productId);
+          debugPrint('📦 Delete result: $ok');
           if (ok && mounted) {
             _showSnack(widget.isRtl ? 'تم الحذف' : 'Deleted');
             _loadProducts();

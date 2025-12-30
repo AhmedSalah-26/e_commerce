@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../widgets/merchant_coupon_card.dart';
+import '../widgets/coupon_details_sheet.dart';
+import '../widgets/coupon_stat_chip.dart';
+import '../widgets/suspend_coupon_dialog.dart';
 
 class AdminMerchantCouponsPage extends StatefulWidget {
   const AdminMerchantCouponsPage({super.key});
@@ -42,14 +46,12 @@ class _AdminMerchantCouponsPageState extends State<AdminMerchantCouponsPage> {
 
   Future<void> _loadCoupons() async {
     if (_isLoading || !_hasMore) return;
-
     setState(() => _isLoading = true);
 
     try {
       var query = Supabase.instance.client.from('coupons').select('''
-        *,
-        profiles:merchant_id(id, name, email)
-      ''').not('merchant_id', 'is', null);
+        *, stores!inner(id, name, merchant_id, profiles!stores_merchant_id_fkey(id, name, email))
+      ''');
 
       if (_searchQuery.isNotEmpty) {
         query = query.or('code.ilike.%$_searchQuery%');
@@ -59,21 +61,15 @@ class _AdminMerchantCouponsPageState extends State<AdminMerchantCouponsPage> {
           .order('created_at', ascending: false)
           .range(_page * _pageSize, (_page + 1) * _pageSize - 1);
 
-      final coupons = List<Map<String, dynamic>>.from(response);
-
       setState(() {
-        _coupons.addAll(coupons);
+        _coupons.addAll(List<Map<String, dynamic>>.from(response));
         _page++;
-        _hasMore = coupons.length == _pageSize;
+        _hasMore = response.length == _pageSize;
         _isLoading = false;
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
+      _showError('Error: $e');
     }
   }
 
@@ -99,328 +95,312 @@ class _AdminMerchantCouponsPageState extends State<AdminMerchantCouponsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final isRtl = Localizations.localeOf(context).languageCode == 'ar';
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isRtl ? 'كوبونات التجار' : 'Merchant Coupons'),
-        backgroundColor: theme.colorScheme.surface,
-      ),
+      backgroundColor: isDark ? theme.colorScheme.surface : Colors.grey[50],
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSearchBar(theme, isRtl),
+          _Header(isRtl: isRtl, isDark: isDark),
+          _SearchBar(
+            controller: _searchController,
+            searchQuery: _searchQuery,
+            isRtl: isRtl,
+            isDark: isDark,
+            onSearch: _search,
+            onClear: () {
+              _searchController.clear();
+              _search('');
+            },
+          ),
+          _StatsRow(coupons: _coupons, isRtl: isRtl, isDark: isDark),
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: _refresh,
-              child: _coupons.isEmpty && _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _coupons.isEmpty
-                      ? _buildEmptyState(isRtl)
-                      : ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _coupons.length + (_hasMore ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index == _coupons.length) {
-                              return const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: CircularProgressIndicator(),
-                                ),
-                              );
-                            }
-                            return _CouponCard(
-                              coupon: _coupons[index],
-                              isRtl: isRtl,
-                              onToggle: () => _toggleCoupon(_coupons[index]),
-                              onSuspend: () =>
-                                  _showSuspendDialog(_coupons[index]),
-                            );
-                          },
-                        ),
-            ),
+            child: _coupons.isEmpty && _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _coupons.isEmpty
+                    ? _EmptyState(isRtl: isRtl, isDark: isDark)
+                    : _CouponsList(
+                        coupons: _coupons,
+                        hasMore: _hasMore,
+                        scrollController: _scrollController,
+                        isRtl: isRtl,
+                        onRefresh: _refresh,
+                        onToggle: _toggleCoupon,
+                        onSuspend: _handleSuspend,
+                        onTap: (c) => _showDetails(c, isRtl),
+                      ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSearchBar(ThemeData theme, bool isRtl) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          hintText: isRtl ? 'بحث بكود الكوبون...' : 'Search by coupon code...',
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    _search('');
-                  },
-                )
-              : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        onSubmitted: _search,
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(bool isRtl) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.local_offer_outlined, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            isRtl ? 'لا توجد كوبونات' : 'No coupons found',
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-          ),
-        ],
-      ),
+  void _showDetails(Map<String, dynamic> coupon, bool isRtl) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => CouponDetailsSheet(coupon: coupon, isRtl: isRtl),
     );
   }
 
   Future<void> _toggleCoupon(Map<String, dynamic> coupon) async {
-    final isActive = coupon['is_active'] ?? true;
     try {
-      await Supabase.instance.client
-          .from('coupons')
-          .update({'is_active': !isActive}).eq('id', coupon['id']);
+      await Supabase.instance.client.from('coupons').update(
+          {'is_active': !(coupon['is_active'] ?? true)}).eq('id', coupon['id']);
       _refresh();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
+      _showError('Error: $e');
     }
   }
 
-  Future<void> _showSuspendDialog(Map<String, dynamic> coupon) async {
+  Future<void> _handleSuspend(Map<String, dynamic> coupon) async {
     final isRtl = Localizations.localeOf(context).languageCode == 'ar';
     final isSuspended = coupon['is_suspended'] ?? false;
 
     if (isSuspended) {
-      // Unsuspend
-      try {
-        await Supabase.instance.client.from('coupons').update({
-          'is_suspended': false,
-          'suspension_reason': null,
-        }).eq('id', coupon['id']);
-        _refresh();
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-          );
-        }
+      await _unsuspendCoupon(coupon['id']);
+    } else {
+      final reason = await SuspendCouponDialog.show(context, isRtl: isRtl);
+      if (reason != null && reason.isNotEmpty) {
+        await _suspendCoupon(coupon['id'], reason);
       }
-      return;
     }
+  }
 
-    final reasonController = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(isRtl ? 'إيقاف الكوبون' : 'Suspend Coupon'),
-        content: TextField(
-          controller: reasonController,
-          decoration: InputDecoration(
-            labelText: isRtl ? 'سبب الإيقاف' : 'Suspension Reason',
-            border: const OutlineInputBorder(),
-          ),
-          maxLines: 3,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(isRtl ? 'إلغاء' : 'Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, reasonController.text),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text(isRtl ? 'إيقاف' : 'Suspend'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _suspendCoupon(String id, String reason) async {
+    try {
+      await Supabase.instance.client.from('coupons').update({
+        'is_suspended': true,
+        'suspension_reason': reason,
+      }).eq('id', id);
+      _refresh();
+    } catch (e) {
+      _showError('Error: $e');
+    }
+  }
 
-    if (result != null && result.isNotEmpty) {
-      try {
-        await Supabase.instance.client.from('coupons').update({
-          'is_suspended': true,
-          'suspension_reason': result,
-        }).eq('id', coupon['id']);
-        _refresh();
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-          );
-        }
-      }
+  Future<void> _unsuspendCoupon(String id) async {
+    try {
+      await Supabase.instance.client.from('coupons').update({
+        'is_suspended': false,
+        'suspension_reason': null,
+      }).eq('id', id);
+      _refresh();
+    } catch (e) {
+      _showError('Error: $e');
+    }
+  }
+
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
     }
   }
 }
 
-class _CouponCard extends StatelessWidget {
-  final Map<String, dynamic> coupon;
+// Private Widgets
+class _Header extends StatelessWidget {
   final bool isRtl;
-  final VoidCallback onToggle;
-  final VoidCallback onSuspend;
+  final bool isDark;
 
-  const _CouponCard({
-    required this.coupon,
+  const _Header({required this.isRtl, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      child: Text(
+        isRtl ? 'كوبونات التجار' : 'Merchant Coupons',
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: isDark ? Colors.white : Colors.black87,
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchBar extends StatelessWidget {
+  final TextEditingController controller;
+  final String searchQuery;
+  final bool isRtl;
+  final bool isDark;
+  final ValueChanged<String> onSearch;
+  final VoidCallback onClear;
+
+  const _SearchBar({
+    required this.controller,
+    required this.searchQuery,
     required this.isRtl,
-    required this.onToggle,
-    required this.onSuspend,
+    required this.isDark,
+    required this.onSearch,
+    required this.onClear,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final code = coupon['code'] ?? '';
-    final discountType = coupon['discount_type'] ?? 'percentage';
-    final discountValue = (coupon['discount_value'] ?? 0).toDouble();
-    final isActive = coupon['is_active'] ?? true;
-    final isSuspended = coupon['is_suspended'] ?? false;
-    final suspensionReason = coupon['suspension_reason'];
-    final merchant = coupon['profiles'] as Map<String, dynamic>?;
-    final merchantName = merchant?['name'] ?? '';
-    final usageCount = coupon['usage_count'] ?? 0;
-    final usageLimit = coupon['usage_limit'];
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.06),
+        ),
+      ),
+      child: TextField(
+        controller: controller,
+        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+        decoration: InputDecoration(
+          hintText: isRtl ? 'بحث بكود الكوبون...' : 'Search by coupon code...',
+          hintStyle: TextStyle(color: isDark ? Colors.white54 : Colors.black45),
+          prefixIcon: Icon(Icons.search,
+              color: isDark ? Colors.white54 : Colors.black45),
+          suffixIcon: searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: Icon(Icons.clear,
+                      color: isDark ? Colors.white54 : Colors.black45),
+                  onPressed: onClear,
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+        onSubmitted: onSearch,
+      ),
+    );
+  }
+}
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      color: isSuspended ? Colors.red.withValues(alpha: 0.05) : null,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
+class _StatsRow extends StatelessWidget {
+  final List<Map<String, dynamic>> coupons;
+  final bool isRtl;
+  final bool isDark;
+
+  const _StatsRow(
+      {required this.coupons, required this.isRtl, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final activeCount = coupons
+        .where((c) => c['is_active'] == true && c['is_suspended'] != true)
+        .length;
+    final suspendedCount =
+        coupons.where((c) => c['is_suspended'] == true).length;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: Wrap(
+        spacing: 8,
         children: [
-          ListTile(
-            leading: CircleAvatar(
-              backgroundColor: isSuspended
-                  ? Colors.red
-                  : (isActive ? Colors.green : Colors.orange),
-              child: Icon(
-                isSuspended
-                    ? Icons.block
-                    : (isActive
-                        ? Icons.local_offer
-                        : Icons.local_offer_outlined),
-                color: Colors.white,
-              ),
-            ),
-            title: Text(
-              code,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                decoration: isSuspended ? TextDecoration.lineThrough : null,
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  discountType == 'percentage'
-                      ? '${discountValue.toStringAsFixed(0)}%'
-                      : '${discountValue.toStringAsFixed(0)} ${isRtl ? 'ج.م' : 'EGP'}',
-                  style: TextStyle(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                if (merchantName.isNotEmpty)
-                  Text(
-                    '${isRtl ? 'التاجر:' : 'Merchant:'} $merchantName',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: theme.colorScheme.outline,
-                    ),
-                  ),
-                Text(
-                  '${isRtl ? 'الاستخدام:' : 'Usage:'} $usageCount${usageLimit != null ? '/$usageLimit' : ''}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: theme.colorScheme.outline,
-                  ),
-                ),
-              ],
-            ),
-            trailing: PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == 'toggle') onToggle();
-                if (value == 'suspend') onSuspend();
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  value: 'toggle',
-                  child: Row(
-                    children: [
-                      Icon(
-                        isActive ? Icons.visibility_off : Icons.visibility,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(isActive
-                          ? (isRtl ? 'تعطيل' : 'Deactivate')
-                          : (isRtl ? 'تفعيل' : 'Activate')),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'suspend',
-                  child: Row(
-                    children: [
-                      Icon(
-                        isSuspended ? Icons.check_circle : Icons.block,
-                        size: 18,
-                        color: isSuspended ? Colors.green : Colors.red,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        isSuspended
-                            ? (isRtl ? 'إلغاء الإيقاف' : 'Unsuspend')
-                            : (isRtl ? 'إيقاف' : 'Suspend'),
-                        style: TextStyle(
-                          color: isSuspended ? Colors.green : Colors.red,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (isSuspended && suspensionReason != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius:
-                    const BorderRadius.vertical(bottom: Radius.circular(12)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning, size: 16, color: Colors.red),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${isRtl ? 'سبب الإيقاف:' : 'Reason:'} $suspensionReason',
-                      style: const TextStyle(fontSize: 12, color: Colors.red),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          CouponStatChip(
+              label: isRtl ? 'الكل' : 'All',
+              count: coupons.length,
+              color: Colors.blue,
+              isDark: isDark),
+          CouponStatChip(
+              label: isRtl ? 'نشط' : 'Active',
+              count: activeCount,
+              color: Colors.green,
+              isDark: isDark),
+          CouponStatChip(
+              label: isRtl ? 'موقوف' : 'Suspended',
+              count: suspendedCount,
+              color: Colors.red,
+              isDark: isDark),
         ],
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  final bool isRtl;
+  final bool isDark;
+
+  const _EmptyState({required this.isRtl, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color:
+                  (isDark ? Colors.white : Colors.grey).withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.local_offer_outlined,
+                size: 48, color: isDark ? Colors.white38 : Colors.grey[400]),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            isRtl ? 'لا توجد كوبونات' : 'No coupons found',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white70 : Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CouponsList extends StatelessWidget {
+  final List<Map<String, dynamic>> coupons;
+  final bool hasMore;
+  final ScrollController scrollController;
+  final bool isRtl;
+  final Future<void> Function() onRefresh;
+  final Future<void> Function(Map<String, dynamic>) onToggle;
+  final Future<void> Function(Map<String, dynamic>) onSuspend;
+  final void Function(Map<String, dynamic>) onTap;
+
+  const _CouponsList({
+    required this.coupons,
+    required this.hasMore,
+    required this.scrollController,
+    required this.isRtl,
+    required this.onRefresh,
+    required this.onToggle,
+    required this.onSuspend,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView.builder(
+        controller: scrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: coupons.length + (hasMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == coupons.length) {
+            return const Center(
+                child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator()));
+          }
+          return MerchantCouponCard(
+            coupon: coupons[index],
+            isRtl: isRtl,
+            onToggle: () => onToggle(coupons[index]),
+            onSuspend: () => onSuspend(coupons[index]),
+            onTap: () => onTap(coupons[index]),
+          );
+        },
       ),
     );
   }

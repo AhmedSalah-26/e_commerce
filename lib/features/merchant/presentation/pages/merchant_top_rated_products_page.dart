@@ -55,11 +55,12 @@ class _MerchantTopRatedProductsPageState
     setState(() => _isLoading = true);
 
     try {
-      final response = await Supabase.instance.client
+      // First try to get products with ratings
+      var response = await Supabase.instance.client
           .from('products')
           .select('''
             id, name_ar, name_en, images, price, 
-            rating, rating_count
+            rating, rating_count, is_active
           ''')
           .eq('merchant_id', _merchantId!)
           .gt('rating_count', 0)
@@ -67,7 +68,24 @@ class _MerchantTopRatedProductsPageState
           .order('rating_count', ascending: false)
           .range(_page * _pageSize, (_page + 1) * _pageSize - 1);
 
-      final products = List<Map<String, dynamic>>.from(response);
+      var products = List<Map<String, dynamic>>.from(response);
+
+      // If no rated products found on first page, show all products sorted by rating
+      if (products.isEmpty && _page == 0) {
+        response = await Supabase.instance.client
+            .from('products')
+            .select('''
+              id, name_ar, name_en, images, price, 
+              rating, rating_count, is_active
+            ''')
+            .eq('merchant_id', _merchantId!)
+            .eq('is_active', true)
+            .order('rating', ascending: false)
+            .order('created_at', ascending: false)
+            .range(_page * _pageSize, (_page + 1) * _pageSize - 1);
+
+        products = List<Map<String, dynamic>>.from(response);
+      }
 
       setState(() {
         _products.addAll(products);
@@ -138,11 +156,21 @@ class _MerchantTopRatedProductsPageState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.star_border, size: 64, color: Colors.grey[400]),
+          Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            isRtl ? 'لا توجد منتجات مقيمة' : 'No rated products yet',
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            isRtl ? 'لا توجد منتجات' : 'No products found',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isRtl
+                ? 'أضف منتجات لمتجرك أولاً'
+                : 'Add products to your store first',
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
           ),
         ],
       ),

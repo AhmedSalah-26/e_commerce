@@ -15,6 +15,7 @@ import 'admin_orders_tab.dart';
 import 'admin_products_tab.dart';
 import 'admin_categories_tab.dart';
 import 'admin_coupons_tab.dart';
+import 'admin_merchant_coupons_page.dart';
 import 'admin_shipping_tab.dart';
 import 'admin_reports_tab.dart';
 import 'admin_settings_tab.dart';
@@ -165,10 +166,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       case 5:
         return AdminCouponsTab(isRtl: isRtl);
       case 6:
-        return AdminShippingTab(isRtl: isRtl);
+        return const AdminMerchantCouponsPage();
       case 7:
-        return AdminReportsTab(isRtl: isRtl);
+        return AdminShippingTab(isRtl: isRtl);
       case 8:
+        return AdminReportsTab(isRtl: isRtl);
+      case 9:
         return AdminSettingsTab(isRtl: isRtl);
       default:
         return AdminHomeTab(isRtl: isRtl);

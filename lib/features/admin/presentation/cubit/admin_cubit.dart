@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/admin_repository.dart';
 import 'admin_state.dart';
@@ -213,12 +214,16 @@ class AdminCubit extends Cubit<AdminState> {
 
   // Product Suspension (Admin only)
   Future<bool> suspendProduct(String productId, String reason) async {
+    debugPrint('🔴 AdminCubit.suspendProduct: $productId, reason: $reason');
     final result = await _repository.suspendProduct(productId, reason);
+    debugPrint('🔴 AdminCubit.suspendProduct result: ${result.isRight()}');
     return result.isRight();
   }
 
   Future<bool> unsuspendProduct(String productId) async {
+    debugPrint('🟢 AdminCubit.unsuspendProduct: $productId');
     final result = await _repository.unsuspendProduct(productId);
+    debugPrint('🟢 AdminCubit.unsuspendProduct result: ${result.isRight()}');
     return result.isRight();
   }
 

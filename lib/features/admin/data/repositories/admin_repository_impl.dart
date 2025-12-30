@@ -215,20 +215,26 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<Either<Failure, void>> suspendProduct(
       String productId, String reason) async {
+    print('🔴 Repository.suspendProduct CALLED: $productId');
     try {
       await _datasource.suspendProduct(productId, reason);
+      print('🔴 Repository.suspendProduct SUCCESS');
       return const Right(null);
     } on ServerException catch (e) {
+      print('🔴 Repository.suspendProduct ERROR: ${e.message}');
       return Left(ServerFailure(e.message));
     }
   }
 
   @override
   Future<Either<Failure, void>> unsuspendProduct(String productId) async {
+    print('🟢 Repository.unsuspendProduct CALLED: $productId');
     try {
       await _datasource.unsuspendProduct(productId);
+      print('🟢 Repository.unsuspendProduct SUCCESS');
       return const Right(null);
     } on ServerException catch (e) {
+      print('🟢 Repository.unsuspendProduct ERROR: ${e.message}');
       return Left(ServerFailure(e.message));
     }
   }

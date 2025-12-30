@@ -224,28 +224,29 @@ class _ProductActions extends StatelessWidget {
             label: isRtl ? 'إلغاء الإيقاف' : 'Unsuspend',
             icon: Icons.check_circle,
             color: Colors.green,
-            onTap: () => onAction('unsuspend'),
+            onTap: () {
+              debugPrint('🔓 Unsuspend product: ${product['id']}');
+              onAction('unsuspend');
+            },
           )
-        else ...[
+        else
           _ActionBtn(
             label: isRtl ? 'إيقاف' : 'Suspend',
             icon: Icons.block,
             color: Colors.red,
-            onTap: () => onAction('suspend'),
+            onTap: () {
+              debugPrint('🚫 Suspend product: ${product['id']}');
+              onAction('suspend');
+            },
           ),
-          _ActionBtn(
-            label: isActive
-                ? (isRtl ? 'تعطيل' : 'Deactivate')
-                : (isRtl ? 'تفعيل' : 'Activate'),
-            icon: isActive ? Icons.visibility_off : Icons.visibility,
-            onTap: () => onAction('toggle'),
-          ),
-        ],
         _ActionBtn(
           label: isRtl ? 'حذف' : 'Delete',
           icon: Icons.delete,
           color: Colors.red,
-          onTap: () => onAction('delete'),
+          onTap: () {
+            debugPrint('🗑️ Delete product: ${product['id']}');
+            onAction('delete');
+          },
         ),
       ],
     );

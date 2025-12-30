@@ -1,5 +1,10 @@
+import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../../core/errors/exceptions.dart';
+
+final _log = Logger(
+  printer: PrettyPrinter(methodCount: 0, printEmojis: false),
+);
 
 mixin AdminProductsMixin {
   SupabaseClient get client;
@@ -27,9 +32,8 @@ mixin AdminProductsMixin {
       }
 
       if (search != null && search.isNotEmpty) {
-        // Check if search is UUID format
         final isUuidSearch = RegExp(
-          r'^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$',
+          r'^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}',
         ).hasMatch(search);
 
         if (isUuidSearch) {
@@ -69,28 +73,59 @@ mixin AdminProductsMixin {
   }
 
   Future<void> suspendProductImpl(String productId, String reason) async {
+    final adminId = client.auth.currentUser?.id;
+
+    print('========================================');
+    print('SUSPEND REQUEST');
+    print('productId: $productId');
+    print('reason: $reason');
+    print('adminId: $adminId');
+    print('========================================');
+
     try {
-      final adminId = client.auth.currentUser?.id;
-      await client.from('products').update({
-        'is_suspended': true,
-        'suspension_reason': reason,
-        'suspended_at': DateTime.now().toIso8601String(),
-        'suspended_by': adminId,
-      }).eq('id', productId);
+      final result = await client
+          .from('products')
+          .update({
+            'is_suspended': true,
+            'suspension_reason': reason,
+            'suspended_at': DateTime.now().toIso8601String(),
+            'suspended_by': adminId,
+          })
+          .eq('id', productId)
+          .select();
+
+      print('SUSPEND RESPONSE: $result');
+
+      if (result.isEmpty) {
+        print(
+            'SUSPEND FAILED: Empty response - product not found or RLS blocked');
+      } else {
+        print('SUSPEND SUCCESS: ${result[0]}');
+      }
     } catch (e) {
+      print('SUSPEND ERROR: $e');
       throw ServerException('Failed to suspend product: $e');
     }
   }
 
   Future<void> unsuspendProductImpl(String productId) async {
+    _log.i('UNSUSPEND REQUEST: productId=$productId');
+
     try {
-      await client.from('products').update({
-        'is_suspended': false,
-        'suspension_reason': null,
-        'suspended_at': null,
-        'suspended_by': null,
-      }).eq('id', productId);
+      final result = await client
+          .from('products')
+          .update({
+            'is_suspended': false,
+            'suspension_reason': null,
+            'suspended_at': null,
+            'suspended_by': null,
+          })
+          .eq('id', productId)
+          .select();
+
+      _log.i('UNSUSPEND RESPONSE: $result');
     } catch (e) {
+      _log.e('UNSUSPEND ERROR: $e');
       throw ServerException('Failed to unsuspend product: $e');
     }
   }

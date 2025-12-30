@@ -20,6 +20,7 @@ mixin ProductQueryMixin {
           .select()
           .eq('is_active', true)
           .eq('is_suspended', false)
+          .gt('stock', 0)
           .order('created_at', ascending: false)
           .range(from, to);
 
@@ -47,6 +48,7 @@ mixin ProductQueryMixin {
           .eq('category_id', categoryId)
           .eq('is_active', true)
           .eq('is_suspended', false)
+          .gt('stock', 0)
           .order('created_at', ascending: false)
           .range(from, to);
 
@@ -76,7 +78,8 @@ mixin ProductQueryMixin {
           .from('products')
           .select()
           .eq('is_active', true)
-          .eq('is_suspended', false);
+          .eq('is_suspended', false)
+          .gt('stock', 0);
 
       // Apply search filter only if query is not empty
       if (query.isNotEmpty) {
@@ -118,6 +121,7 @@ mixin ProductQueryMixin {
           .eq('is_featured', true)
           .eq('is_active', true)
           .eq('is_suspended', false)
+          .gt('stock', 0)
           .order('created_at', ascending: false);
 
       return (response as List)
@@ -203,6 +207,7 @@ mixin ProductQueryMixin {
           .select()
           .eq('is_active', true)
           .eq('is_suspended', false)
+          .gt('stock', 0)
           .order('created_at', ascending: false)
           .limit(limit);
 

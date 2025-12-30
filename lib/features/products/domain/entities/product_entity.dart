@@ -26,6 +26,9 @@ class ProductEntity extends Equatable {
   final bool isFlashSale;
   final DateTime? flashSaleStart;
   final DateTime? flashSaleEnd;
+  // Suspension info
+  final bool isSuspended;
+  final String? suspensionReason;
 
   const ProductEntity({
     required this.id,
@@ -50,6 +53,8 @@ class ProductEntity extends Equatable {
     this.isFlashSale = false,
     this.flashSaleStart,
     this.flashSaleEnd,
+    this.isSuspended = false,
+    this.suspensionReason,
   });
 
   /// Check if product is out of stock
@@ -72,6 +77,9 @@ class ProductEntity extends Equatable {
 
   /// Check if store info is available
   bool get hasStoreInfo => storeName != null && storeName!.isNotEmpty;
+
+  /// Check if product is available for purchase (not inactive and not suspended)
+  bool get isAvailable => isActive && !isSuspended;
 
   /// Check if flash sale is currently active
   bool get isFlashSaleActive {
@@ -111,5 +119,7 @@ class ProductEntity extends Equatable {
         isFlashSale,
         flashSaleStart,
         flashSaleEnd,
+        isSuspended,
+        suspensionReason,
       ];
 }

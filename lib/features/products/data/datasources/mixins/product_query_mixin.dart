@@ -19,6 +19,7 @@ mixin ProductQueryMixin {
           .from('products')
           .select()
           .eq('is_active', true)
+          .eq('is_suspended', false)
           .order('created_at', ascending: false)
           .range(from, to);
 
@@ -45,6 +46,7 @@ mixin ProductQueryMixin {
           .select()
           .eq('category_id', categoryId)
           .eq('is_active', true)
+          .eq('is_suspended', false)
           .order('created_at', ascending: false)
           .range(from, to);
 
@@ -70,7 +72,11 @@ mixin ProductQueryMixin {
       final from = page * limit;
       final to = from + limit - 1;
 
-      var queryBuilder = client.from('products').select().eq('is_active', true);
+      var queryBuilder = client
+          .from('products')
+          .select()
+          .eq('is_active', true)
+          .eq('is_suspended', false);
 
       // Apply search filter only if query is not empty
       if (query.isNotEmpty) {
@@ -111,6 +117,7 @@ mixin ProductQueryMixin {
           .select()
           .eq('is_featured', true)
           .eq('is_active', true)
+          .eq('is_suspended', false)
           .order('created_at', ascending: false);
 
       return (response as List)
@@ -195,6 +202,7 @@ mixin ProductQueryMixin {
           .from('products')
           .select()
           .eq('is_active', true)
+          .eq('is_suspended', false)
           .order('created_at', ascending: false)
           .limit(limit);
 

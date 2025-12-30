@@ -84,6 +84,77 @@ class _ProductScreenState extends State<ProductScreen> {
     double totalPrice = _quantity * _product.effectivePrice;
     double screenWidth = MediaQuery.of(context).size.width;
     final isArabic = context.locale.languageCode == 'ar';
+
+    // Check if suspended by admin (show blocked page)
+    if (_product.isSuspended && !_isLoading) {
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios, color: theme.colorScheme.primary),
+            onPressed: () => _handleBack(context),
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.block,
+                    size: 64,
+                    color: Colors.red,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  isArabic ? 'منتج محظور' : 'Product Blocked',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _product.suspensionReason ??
+                      (isArabic
+                          ? 'هذا المنتج محظور من الإدارة'
+                          : 'This product is blocked by admin'),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton.icon(
+                  onPressed: () => _handleBack(context),
+                  icon: const Icon(Icons.arrow_back),
+                  label: Text(isArabic ? 'العودة' : 'Go Back'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Check if inactive by merchant (show details with unavailable badge)
     final isInactive = !_product.isActive;
 
     return MultiBlocProvider(
@@ -116,7 +187,7 @@ class _ProductScreenState extends State<ProductScreen> {
                         ),
                         SizedBox(height: screenWidth * 0.05),
                         if (isInactive) ...[
-                          _buildUnavailableBadge(screenWidth),
+                          _buildUnavailableBadge(screenWidth, isArabic),
                           SizedBox(height: screenWidth * 0.03),
                         ],
                         ProductInfoSection(
@@ -188,7 +259,7 @@ class _ProductScreenState extends State<ProductScreen> {
     );
   }
 
-  Widget _buildUnavailableBadge(double screenWidth) {
+  Widget _buildUnavailableBadge(double screenWidth, bool isArabic) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: screenWidth * 0.04,
@@ -209,7 +280,7 @@ class _ProductScreenState extends State<ProductScreen> {
           ),
           SizedBox(width: screenWidth * 0.02),
           Text(
-            'product_unavailable'.tr(),
+            isArabic ? 'غير متوفر حالياً' : 'Currently Unavailable',
             style: TextStyle(
               fontSize: screenWidth * 0.04,
               color: Colors.orange[700],
@@ -313,10 +384,24 @@ class _ProductScreenState extends State<ProductScreen> {
 
   Widget _buildAddToCartButton(BuildContext context, bool isInactive) {
     final theme = Theme.of(context);
-    final isOutOfStock = _product.isOutOfStock || isInactive;
-    final buttonLabel = isInactive
-        ? 'product_unavailable'.tr()
-        : (isOutOfStock ? 'out_of_stock'.tr() : 'add_to_cart'.tr());
+    final isArabic = context.locale.languageCode == 'ar';
+
+    // If inactive, show unavailable button
+    if (isInactive) {
+      return Positioned(
+        bottom: 16,
+        left: 16,
+        right: 16,
+        child: CustomButton(
+          color: Colors.grey,
+          onPressed: () {},
+          label: isArabic ? 'غير متوفر' : 'Unavailable',
+        ),
+      );
+    }
+
+    final isOutOfStock = _product.isOutOfStock;
+    final buttonLabel = isOutOfStock ? 'out_of_stock'.tr() : 'add_to_cart'.tr();
 
     return Positioned(
       bottom: 16,

@@ -116,9 +116,10 @@ class ProductRemoteDataSourceImpl
     return client
         .from('products')
         .stream(primaryKey: ['id'])
-        .eq('is_active', true)
         .order('created_at', ascending: false)
         .map((data) => data
+            .where((json) =>
+                json['is_active'] == true && json['is_suspended'] != true)
             .map((json) => ProductModel.fromJson(json, locale: locale))
             .toList());
   }

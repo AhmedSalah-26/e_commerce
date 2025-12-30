@@ -11,6 +11,7 @@ import '../../../../core/shared_widgets/skeleton_widgets.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../domain/entities/cart_item_entity.dart';
 import '../cubit/cart_cubit.dart';
 import '../cubit/cart_state.dart';
 import '../widgets/cart_item_card.dart';
@@ -49,7 +50,7 @@ class _CartScreenState extends State<CartScreen> {
 
     final cartCubit = context.read<CartCubit>();
 
-    // Try to reload cart to check network connectivity
+    // Try to reload cart to check network connectivity and get fresh product status
     await cartCubit.loadCart(authState.user.id);
 
     if (!mounted) return;
@@ -58,12 +59,124 @@ class _CartScreenState extends State<CartScreen> {
 
     final state = cartCubit.state;
     if (state is CartLoaded && state.items.isNotEmpty) {
-      // Network is working, go to checkout
+      // Check for unavailable products
+      final unavailableItems = _getUnavailableItems(state.items);
+
+      if (unavailableItems.isNotEmpty) {
+        _showUnavailableProductsDialog(unavailableItems);
+        return;
+      }
+
+      // All products are available, go to checkout
       context.push('/checkout');
     } else if (state is CartError) {
       // Network error - show full screen error
       _showNetworkErrorDialog();
     }
+  }
+
+  List<_UnavailableItem> _getUnavailableItems(List<CartItemEntity> items) {
+    final unavailable = <_UnavailableItem>[];
+
+    for (final item in items) {
+      if (item.product == null) continue;
+
+      final product = item.product!;
+
+      if (product.isSuspended) {
+        unavailable.add(_UnavailableItem(
+          name: product.name,
+          reason: _UnavailableReason.suspended,
+        ));
+      } else if (!product.isActive) {
+        unavailable.add(_UnavailableItem(
+          name: product.name,
+          reason: _UnavailableReason.inactive,
+        ));
+      } else if (product.isOutOfStock) {
+        unavailable.add(_UnavailableItem(
+          name: product.name,
+          reason: _UnavailableReason.outOfStock,
+        ));
+      }
+    }
+
+    return unavailable;
+  }
+
+  void _showUnavailableProductsDialog(List<_UnavailableItem> items) {
+    final isArabic = context.locale.languageCode == 'ar';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange[700]),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                isArabic ? 'منتجات غير متاحة' : 'Unavailable Products',
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isArabic
+                    ? 'يرجى إزالة المنتجات التالية من السلة قبل إتمام الطلب:'
+                    : 'Please remove the following products from cart before checkout:',
+                style: TextStyle(color: Colors.grey[700]),
+              ),
+              const SizedBox(height: 16),
+              ...items.map((item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: item.reason.color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            item.reason.getLabel(isArabic),
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: item.reason.color,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            item.name,
+                            style: const TextStyle(fontSize: 13),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(isArabic ? 'حسناً' : 'OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showNetworkErrorDialog() {
@@ -280,4 +393,41 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
+}
+
+enum _UnavailableReason {
+  suspended,
+  inactive,
+  outOfStock,
+}
+
+extension _UnavailableReasonExtension on _UnavailableReason {
+  String getLabel(bool isArabic) {
+    switch (this) {
+      case _UnavailableReason.suspended:
+        return isArabic ? 'محظور' : 'Blocked';
+      case _UnavailableReason.inactive:
+        return isArabic ? 'موقوف' : 'Inactive';
+      case _UnavailableReason.outOfStock:
+        return isArabic ? 'نفذ' : 'Out of Stock';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case _UnavailableReason.suspended:
+        return Colors.red;
+      case _UnavailableReason.inactive:
+        return Colors.orange;
+      case _UnavailableReason.outOfStock:
+        return Colors.grey;
+    }
+  }
+}
+
+class _UnavailableItem {
+  final String name;
+  final _UnavailableReason reason;
+
+  _UnavailableItem({required this.name, required this.reason});
 }

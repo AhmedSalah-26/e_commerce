@@ -2,7 +2,7 @@ import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-enum CartItemBadgeType { flashSale, inactive, discount }
+enum CartItemBadgeType { flashSale, inactive, discount, suspended }
 
 class CartItemBadge extends StatelessWidget {
   final CartItemBadgeType type;
@@ -21,6 +21,7 @@ class CartItemBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isArabic = context.locale.languageCode == 'ar';
 
     Color bgColor;
     Widget child;
@@ -46,12 +47,30 @@ class CartItemBadge extends StatelessWidget {
       case CartItemBadgeType.inactive:
         bgColor = Colors.orange[700]!;
         child = Text(
-          'shipping_unavailable'.tr(),
+          isArabic ? 'موقوف' : 'Inactive',
           style: const TextStyle(
             color: Colors.white,
             fontSize: 10,
             fontWeight: FontWeight.bold,
           ),
+        );
+        break;
+      case CartItemBadgeType.suspended:
+        bgColor = Colors.red[700]!;
+        child = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.block, color: Colors.white, size: 12),
+            const SizedBox(width: 2),
+            Text(
+              isArabic ? 'محظور' : 'Blocked',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         );
         break;
       case CartItemBadgeType.discount:

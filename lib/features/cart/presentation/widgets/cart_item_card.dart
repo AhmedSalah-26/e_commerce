@@ -94,6 +94,7 @@ class _CartItemCardState extends State<CartItemCard> {
     final isFlashSale = product?.isFlashSaleActive ?? false;
     final discountPercent = product?.discountPercentage ?? 0;
     final isInactive = product != null && !product.isActive;
+    final isSuspended = product?.isSuspended ?? false;
 
     return Slidable(
       key: ValueKey(widget.cartItem.id),
@@ -169,6 +170,7 @@ class _CartItemCardState extends State<CartItemCard> {
             ),
             _buildBadge(
               isFlashSale: isFlashSale,
+              isSuspended: isSuspended,
               isInactive: isInactive,
               hasDiscount: hasDiscount,
               discountPercent: discountPercent,
@@ -241,21 +243,29 @@ class _CartItemCardState extends State<CartItemCard> {
 
   Widget _buildBadge({
     required bool isFlashSale,
+    required bool isSuspended,
     required bool isInactive,
     required bool hasDiscount,
     required int discountPercent,
     required bool isRtl,
     required double topOffset,
   }) {
-    if (isFlashSale) {
+    // Priority: suspended > inactive > flash sale > discount
+    if (isSuspended) {
       return CartItemBadge(
-        type: CartItemBadgeType.flashSale,
+        type: CartItemBadgeType.suspended,
         isRtl: isRtl,
         topOffset: topOffset,
       );
     } else if (isInactive) {
       return CartItemBadge(
         type: CartItemBadgeType.inactive,
+        isRtl: isRtl,
+        topOffset: topOffset,
+      );
+    } else if (isFlashSale) {
+      return CartItemBadge(
+        type: CartItemBadgeType.flashSale,
         isRtl: isRtl,
         topOffset: topOffset,
       );

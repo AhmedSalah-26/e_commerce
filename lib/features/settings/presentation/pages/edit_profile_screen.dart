@@ -69,7 +69,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         bytes: _selectedAvatarBytes!,
         name: _selectedAvatarName!,
       );
-      newAvatarUrl = await imageService.uploadAvatarImage(imageData, user.id);
+      // Pass old avatar URL to delete it after uploading new one
+      newAvatarUrl = await imageService.uploadAvatarImage(
+        imageData,
+        user.id,
+        oldAvatarUrl: user.avatarUrl,
+      );
       setState(() => _isUploadingAvatar = false);
     }
 

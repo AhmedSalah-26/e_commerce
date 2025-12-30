@@ -234,11 +234,37 @@ class ImageUploadService {
         imageData.bytes, imageData.name, 'categories', 'images');
   }
 
-  /// Upload avatar image
-  Future<String?> uploadAvatarImage(
-      PickedImageData imageData, String userId) async {
+  /// Upload avatar image (deletes old avatar first)
+  Future<String?> uploadAvatarImage(PickedImageData imageData, String userId,
+      {String? oldAvatarUrl}) async {
     AppLogger.i('👤 Uploading AVATAR image...');
+
+    // Delete old avatar if exists
+    if (oldAvatarUrl != null && oldAvatarUrl.isNotEmpty) {
+      AppLogger.i('🗑️ Deleting old avatar...');
+      await deleteImage(oldAvatarUrl, 'avatars');
+    }
+
     return uploadImageBytes(imageData.bytes, imageData.name, 'avatars', userId);
+  }
+
+  /// Delete multiple images from storage
+  Future<void> deleteImages(List<String> imageUrls, String bucket) async {
+    for (final url in imageUrls) {
+      await deleteImage(url, bucket);
+    }
+  }
+
+  /// Delete old product images that were removed
+  Future<void> deleteRemovedProductImages(
+      List<String> oldImages, List<String> newImages) async {
+    final removedImages =
+        oldImages.where((url) => !newImages.contains(url)).toList();
+    if (removedImages.isNotEmpty) {
+      AppLogger.i(
+          '🗑️ Deleting ${removedImages.length} removed product images');
+      await deleteImages(removedImages, 'products');
+    }
   }
 
   /// Delete image from storage

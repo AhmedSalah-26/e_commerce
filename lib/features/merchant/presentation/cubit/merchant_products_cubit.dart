@@ -184,6 +184,18 @@ class MerchantProductsCubit extends Cubit<MerchantProductsState> {
     try {
       AppLogger.i('🗑️ DELETE PRODUCT: $productId');
 
+      // Get product images before deletion to clean up storage
+      List<String> imagesToDelete = [];
+      if (state is MerchantProductsLoaded) {
+        final product = (state as MerchantProductsLoaded)
+            .products
+            .where((p) => p.id == productId)
+            .firstOrNull;
+        if (product != null) {
+          imagesToDelete = product.images;
+        }
+      }
+
       final result = await _productRepository.deleteProduct(productId);
 
       return result.fold(
@@ -192,8 +204,16 @@ class MerchantProductsCubit extends Cubit<MerchantProductsState> {
           emit(MerchantProductsError(failure.message));
           return false;
         },
-        (_) {
+        (_) async {
           AppLogger.success('Product deleted');
+
+          // Delete product images from storage
+          if (imagesToDelete.isNotEmpty) {
+            AppLogger.i(
+                '🗑️ Deleting ${imagesToDelete.length} product images from storage');
+            await _imageUploadService.deleteImages(imagesToDelete, 'products');
+          }
+
           if (state is MerchantProductsLoaded) {
             final currentProducts = (state as MerchantProductsLoaded).products;
             final updatedProducts =
@@ -220,6 +240,8 @@ class MerchantProductsCubit extends Cubit<MerchantProductsState> {
       // Get existing images and new images
       List<String> imageUrls = List<String>.from(productData['images'] ?? []);
       final newImages = productData['new_images'] as List<PickedImageData>?;
+      final originalImages =
+          List<String>.from(productData['original_images'] ?? []);
 
       AppLogger.d('Input Data:', {
         'product_id': productId,
@@ -228,8 +250,15 @@ class MerchantProductsCubit extends Cubit<MerchantProductsState> {
         'price': productData['price'],
         'category_id': productData['category_id'],
         'existing_images': imageUrls.length,
+        'original_images': originalImages.length,
         'new_images': newImages?.length ?? 0,
       });
+
+      // Step 0: Delete removed images from storage
+      if (originalImages.isNotEmpty) {
+        await _imageUploadService.deleteRemovedProductImages(
+            originalImages, imageUrls);
+      }
 
       // Step 1: Upload new images if any
       if (newImages != null && newImages.isNotEmpty) {

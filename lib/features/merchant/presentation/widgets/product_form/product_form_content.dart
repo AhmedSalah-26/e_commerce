@@ -198,6 +198,8 @@ class _ProductFormContentState extends State<ProductFormContent> {
         'flash_sale_end': AppDateUtils.toEgyptIsoString(_flashSaleEnd),
         'images': _existingImages,
         'new_images': _selectedImages,
+        // Original images for deletion comparison (only for edit mode)
+        'original_images': widget.product?.images ?? [],
       };
 
       final success = await widget.onSave(productData);

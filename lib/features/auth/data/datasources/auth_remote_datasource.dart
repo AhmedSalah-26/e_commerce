@@ -50,8 +50,23 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       logger.i('✅ Sign in successful for user: ${response.user!.id}');
 
-      // Fetch user profile
+      // Fetch user profile and check status
       final profile = await _fetchUserProfile(response.user!.id);
+
+      // Check if user is banned
+      if (profile.isBanned) {
+        logger.w('⚠️ User is banned: ${response.user!.id}');
+        await _client.auth.signOut(); // Sign out banned user
+        throw AuthException.userBanned(profile.banReason, profile.bannedUntil);
+      }
+
+      // Check if user is inactive
+      if (!profile.isActive) {
+        logger.w('⚠️ User is inactive: ${response.user!.id}');
+        await _client.auth.signOut(); // Sign out inactive user
+        throw AuthException.userInactive();
+      }
+
       return profile;
     } on AuthApiException catch (e) {
       logger.e('❌ Auth API Exception during sign in', error: e);

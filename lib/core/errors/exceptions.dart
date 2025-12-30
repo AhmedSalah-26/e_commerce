@@ -40,8 +40,33 @@ class AuthException implements Exception {
 
   factory AuthException.userNotFound() {
     return const AuthException(
-      'المستخدم غير موجود',
+      'لا يوجد حساب بهذا البريد الإلكتروني',
       code: 'user_not_found',
+    );
+  }
+
+  factory AuthException.userBanned(String? reason, DateTime? until) {
+    String message = 'حسابك محظور';
+    if (until != null) {
+      final remaining = until.difference(DateTime.now());
+      if (remaining.inDays > 0) {
+        message += ' لمدة ${remaining.inDays} يوم';
+      } else if (remaining.inHours > 0) {
+        message += ' لمدة ${remaining.inHours} ساعة';
+      }
+    } else {
+      message += ' نهائياً';
+    }
+    if (reason != null && reason.isNotEmpty) {
+      message += '\nالسبب: $reason';
+    }
+    return AuthException(message, code: 'user_banned');
+  }
+
+  factory AuthException.userInactive() {
+    return const AuthException(
+      'حسابك غير مفعل. تواصل مع الدعم',
+      code: 'user_inactive',
     );
   }
 
@@ -59,6 +84,12 @@ class AuthException implements Exception {
     }
     if (message.contains('user not found')) {
       return AuthException.userNotFound();
+    }
+    if (message.contains('email not confirmed')) {
+      return const AuthException(
+        'يرجى تأكيد بريدك الإلكتروني أولاً',
+        code: 'email_not_confirmed',
+      );
     }
     return AuthException(error.message, code: 'auth_error');
   }

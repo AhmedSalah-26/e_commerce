@@ -194,16 +194,23 @@ class _RankingCard extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Column(
-              children: [
-                CopyableRow(label: isRtl ? 'الاسم' : 'Name', value: name),
-                CopyableRow(label: isRtl ? 'الإيميل' : 'Email', value: email),
-                if (phone.toString().isNotEmpty)
-                  CopyableRow(
-                      label: isRtl ? 'الهاتف' : 'Phone',
-                      value: phone.toString()),
-                CopyableRow(label: 'ID', value: id.toString()),
-              ],
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  CopyableRow(label: isRtl ? 'الاسم' : 'Name', value: name),
+                  CopyableRow(label: isRtl ? 'الإيميل' : 'Email', value: email),
+                  if (phone.toString().isNotEmpty)
+                    CopyableRow(
+                        label: isRtl ? 'الهاتف' : 'Phone',
+                        value: phone.toString()),
+                  CopyableRow(label: 'ID', value: id.toString()),
+                ],
+              ),
             ),
           ),
         ],

@@ -16,6 +16,10 @@ class CopyableRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textColor = theme.colorScheme.onSurface;
+    final iconColor = theme.colorScheme.onSurface.withValues(alpha: 0.6);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -23,16 +27,17 @@ class CopyableRow extends StatelessWidget {
           SizedBox(
             width: labelWidth,
             child: Text(label,
-                style: const TextStyle(color: Colors.white, fontSize: 12)),
+                style: TextStyle(
+                    color: textColor.withValues(alpha: 0.7), fontSize: 12)),
           ),
           Expanded(
             child: Text(value,
-                style: const TextStyle(fontSize: 13, color: Colors.white),
+                style: TextStyle(fontSize: 13, color: textColor),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis),
           ),
           IconButton(
-            icon: const Icon(Icons.copy, size: 16, color: Colors.white70),
+            icon: Icon(Icons.copy, size: 16, color: iconColor),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             onPressed: () {

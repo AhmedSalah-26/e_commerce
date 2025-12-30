@@ -60,6 +60,19 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Center(
+                  child: Text(
+                    widget.isRtl
+                        ? 'التقارير والإحصائيات'
+                        : 'Reports & Statistics',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 _buildDateFilter(context, theme, isMobile),
                 const SizedBox(height: 24),
                 _buildTitle(theme, widget.isRtl ? 'الإحصائيات' : 'Statistics'),

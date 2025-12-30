@@ -11,6 +11,9 @@ class UserModel extends UserEntity {
     super.avatarUrl,
     super.governorateId,
     super.createdAt,
+    super.isActive,
+    super.bannedUntil,
+    super.banReason,
   });
 
   /// Create UserModel from JSON (Supabase response)
@@ -26,6 +29,11 @@ class UserModel extends UserEntity {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : null,
+      isActive: json['is_active'] as bool? ?? true,
+      bannedUntil: json['banned_until'] != null
+          ? DateTime.parse(json['banned_until'] as String)
+          : null,
+      banReason: json['ban_reason'] as String?,
     );
   }
 
@@ -52,6 +60,9 @@ class UserModel extends UserEntity {
     String? avatarUrl,
     String? governorateId,
     DateTime? createdAt,
+    bool? isActive,
+    DateTime? bannedUntil,
+    String? banReason,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -62,6 +73,9 @@ class UserModel extends UserEntity {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       governorateId: governorateId ?? this.governorateId,
       createdAt: createdAt ?? this.createdAt,
+      isActive: isActive ?? this.isActive,
+      bannedUntil: bannedUntil ?? this.bannedUntil,
+      banReason: banReason ?? this.banReason,
     );
   }
 }

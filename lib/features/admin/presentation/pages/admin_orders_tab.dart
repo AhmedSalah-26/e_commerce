@@ -81,6 +81,19 @@ class _AdminOrdersTabState extends State<AdminOrdersTab>
 
     return Column(
       children: [
+        Padding(
+          padding: EdgeInsets.all(isMobile ? 12 : 16),
+          child: Center(
+            child: Text(
+              widget.isRtl ? 'إدارة الطلبات' : 'Orders Management',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        ),
         _buildSearchBar(isMobile),
         TabBar(
           controller: _tabController,

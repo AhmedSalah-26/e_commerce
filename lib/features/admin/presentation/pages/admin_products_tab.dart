@@ -104,6 +104,19 @@ class _AdminProductsTabState extends State<AdminProductsTab>
 
     return Column(
       children: [
+        Padding(
+          padding: EdgeInsets.all(isMobile ? 12 : 16),
+          child: Center(
+            child: Text(
+              widget.isRtl ? 'إدارة المنتجات' : 'Products Management',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        ),
         _buildSearchBar(isMobile),
         TabBar(
           controller: _tabController,

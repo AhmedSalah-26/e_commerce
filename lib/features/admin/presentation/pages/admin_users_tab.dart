@@ -74,6 +74,19 @@ class _AdminUsersTabState extends State<AdminUsersTab>
 
     return Column(
       children: [
+        Padding(
+          padding: EdgeInsets.all(isMobile ? 12 : 16),
+          child: Center(
+            child: Text(
+              widget.isRtl ? 'إدارة المستخدمين' : 'Users Management',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        ),
         _buildSearchBar(isMobile),
         TabBar(
           controller: _tabController,

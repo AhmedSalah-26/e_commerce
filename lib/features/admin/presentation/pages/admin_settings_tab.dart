@@ -65,26 +65,6 @@ class AdminSettingsTab extends StatelessWidget {
           _buildSection(
             theme,
             isMobile,
-            title: isRtl ? 'الإدارة' : 'Management',
-            children: [
-              _buildSettingItem(
-                theme,
-                icon: Icons.local_offer,
-                title: isRtl ? 'كوبونات التجار' : 'Merchant Coupons',
-                onTap: () => context.push('/admin-merchant-coupons'),
-              ),
-              _buildSettingItem(
-                theme,
-                icon: Icons.discount,
-                title: isRtl ? 'الكوبونات العامة' : 'Global Coupons',
-                onTap: () => context.push('/global-coupons'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildSection(
-            theme,
-            isMobile,
             title: isRtl ? 'أخرى' : 'Other',
             children: [
               _buildSettingItem(

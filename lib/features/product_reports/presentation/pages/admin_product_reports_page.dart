@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/toast.dart';
@@ -44,10 +43,7 @@ class _AdminReportsViewState extends State<_AdminReportsView> {
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
           backgroundColor: theme.scaffoldBackgroundColor,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
-            onPressed: () => context.pop(),
-          ),
+          automaticallyImplyLeading: false,
           title: Text(
             isArabic ? 'بلاغات المنتجات' : 'Product Reports',
             style: TextStyle(

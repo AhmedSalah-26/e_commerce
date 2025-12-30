@@ -192,21 +192,21 @@ class _ReviewReportCardState extends State<ReviewReportCard> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.grey.withValues(alpha: 0.1),
+              color: Colors.grey[700],
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               children: [
-                Icon(Icons.key, size: 16, color: Colors.grey[600]),
+                const Icon(Icons.key, size: 16, color: Colors.white70),
                 const SizedBox(width: 8),
                 Text(
                   widget.isArabic ? 'المعرفات (IDs)' : 'IDs',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                  style: const TextStyle(fontSize: 13, color: Colors.white),
                 ),
                 const Spacer(),
                 Icon(
                   _showIds ? Icons.expand_less : Icons.expand_more,
-                  color: Colors.grey[600],
+                  color: Colors.white70,
                 ),
               ],
             ),
@@ -214,19 +214,31 @@ class _ReviewReportCardState extends State<ReviewReportCard> {
         ),
         if (_showIds) ...[
           const SizedBox(height: 8),
-          _buildIdRow(widget.isArabic ? 'البلاغ' : 'Report', widget.report.id),
-          if (widget.report.reviewId != null)
-            _buildIdRow(widget.isArabic ? 'التعليق' : 'Review',
-                widget.report.reviewId!),
-          if (widget.report.reviewerId != null)
-            _buildIdRow(widget.isArabic ? 'صاحب التعليق' : 'Reviewer',
-                widget.report.reviewerId!),
-          if (widget.report.reporterId != null)
-            _buildIdRow(widget.isArabic ? 'صاحب البلاغ' : 'Reporter',
-                widget.report.reporterId!),
-          if (widget.report.productId != null)
-            _buildIdRow(widget.isArabic ? 'المنتج' : 'Product',
-                widget.report.productId!),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              children: [
+                _buildIdRow(
+                    widget.isArabic ? 'البلاغ' : 'Report', widget.report.id),
+                if (widget.report.reviewId != null)
+                  _buildIdRow(widget.isArabic ? 'التعليق' : 'Review',
+                      widget.report.reviewId!),
+                if (widget.report.reviewerId != null)
+                  _buildIdRow(widget.isArabic ? 'صاحب التعليق' : 'Reviewer',
+                      widget.report.reviewerId!),
+                if (widget.report.reporterId != null)
+                  _buildIdRow(widget.isArabic ? 'صاحب البلاغ' : 'Reporter',
+                      widget.report.reporterId!),
+                if (widget.report.productId != null)
+                  _buildIdRow(widget.isArabic ? 'المنتج' : 'Product',
+                      widget.report.productId!),
+              ],
+            ),
+          ),
         ],
       ],
     );
@@ -241,18 +253,22 @@ class _ReviewReportCardState extends State<ReviewReportCard> {
             width: 90,
             child: Text(
               '$label:',
-              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+              style: const TextStyle(fontSize: 11, color: Colors.white),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
+              style: const TextStyle(
+                fontSize: 11,
+                fontFamily: 'monospace',
+                color: Colors.white,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.copy, size: 14),
+            icon: const Icon(Icons.copy, size: 14, color: Colors.white70),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             onPressed: () => _copyToClipboard(value, label),

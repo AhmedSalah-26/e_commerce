@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../../core/errors/exceptions.dart';
 import '../../models/admin_stats_model.dart';
+import '../../../presentation/widgets/admin_charts.dart';
 
 mixin AdminStatsMixin {
   SupabaseClient get client;
@@ -34,6 +35,22 @@ mixin AdminStatsMixin {
       );
     } catch (e) {
       throw ServerException('Failed to get stats: $e');
+    }
+  }
+
+  Future<List<MonthlyData>> getMonthlyStatsImpl({int months = 6}) async {
+    try {
+      final response = await client.rpc('get_monthly_stats', params: {
+        'p_months': months,
+      });
+
+      return (response as List)
+          .map((json) => MonthlyData.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('❌ Failed to get monthly stats: $e');
+      // Return empty list on error - charts will show "no data"
+      return [];
     }
   }
 

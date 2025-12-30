@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 import '../../../products/domain/entities/product_entity.dart';
 import '../../domain/entities/admin_stats_entity.dart';
+import '../widgets/admin_charts.dart';
 
 abstract class AdminState extends Equatable {
   const AdminState();
@@ -21,6 +22,7 @@ class AdminLoaded extends AdminState {
   final AdminStatsEntity stats;
   final List<OrderEntity> recentOrders;
   final List<ProductEntity> topProducts;
+  final List<MonthlyData>? monthlyStats;
   final DateTime? fromDate;
   final DateTime? toDate;
 
@@ -28,13 +30,14 @@ class AdminLoaded extends AdminState {
     required this.stats,
     this.recentOrders = const [],
     this.topProducts = const [],
+    this.monthlyStats,
     this.fromDate,
     this.toDate,
   });
 
   @override
   List<Object?> get props =>
-      [stats, recentOrders, topProducts, fromDate, toDate];
+      [stats, recentOrders, topProducts, monthlyStats, fromDate, toDate];
 }
 
 class AdminError extends AdminState {

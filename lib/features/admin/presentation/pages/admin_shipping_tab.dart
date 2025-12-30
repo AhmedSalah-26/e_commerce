@@ -27,7 +27,9 @@ class _AdminShippingTabState extends State<AdminShippingTab> {
   @override
   void initState() {
     super.initState();
-    _loadMerchants();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadMerchants();
+    });
   }
 
   @override
@@ -37,6 +39,7 @@ class _AdminShippingTabState extends State<AdminShippingTab> {
   }
 
   void _loadMerchants({String? search}) {
+    if (!mounted) return;
     context.read<AdminCubit>().loadUsers(role: 'merchant', search: search);
   }
 
@@ -65,14 +68,15 @@ class _AdminShippingTabState extends State<AdminShippingTab> {
   Widget _buildHeader(ThemeData theme, bool isMobile) {
     return Padding(
       padding: EdgeInsets.all(isMobile ? 12 : 16),
-      child: Row(
-        children: [
-          Text(
-            widget.isRtl ? 'إدارة الشحن' : 'Shipping Management',
-            style: theme.textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
+      child: Center(
+        child: Text(
+          widget.isRtl ? 'إدارة الشحن' : 'Shipping Management',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.primary,
           ),
-        ],
+        ),
       ),
     );
   }

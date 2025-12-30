@@ -7,6 +7,7 @@ import 'mixins/admin_categories_mixin.dart';
 import 'mixins/admin_reports_mixin.dart';
 import 'mixins/admin_coupons_mixin.dart';
 import '../models/admin_stats_model.dart';
+import '../../presentation/widgets/admin_charts.dart';
 
 /// Admin remote datasource interface
 abstract class AdminRemoteDatasource {
@@ -14,6 +15,7 @@ abstract class AdminRemoteDatasource {
   Future<AdminStatsModel> getStats({DateTime? fromDate, DateTime? toDate});
   Future<List<Map<String, dynamic>>> getRecentOrders({int limit = 10});
   Future<List<Map<String, dynamic>>> getTopProducts({int limit = 5});
+  Future<List<MonthlyData>> getMonthlyStats({int months = 6});
 
   // Users
   Future<List<Map<String, dynamic>>> getUsers({
@@ -99,6 +101,10 @@ class AdminRemoteDatasourceImpl extends AdminRemoteDatasource
   @override
   Future<List<Map<String, dynamic>>> getTopProducts({int limit = 5}) =>
       getTopProductsImpl(limit: limit);
+
+  @override
+  Future<List<MonthlyData>> getMonthlyStats({int months = 6}) =>
+      getMonthlyStatsImpl(months: months);
 
   // Users
   @override

@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../data/models/review_report_model.dart';
 import '../../domain/entities/review_report_entity.dart';
@@ -43,10 +42,7 @@ class _AdminReportsViewState extends State<_AdminReportsView> {
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
           backgroundColor: theme.scaffoldBackgroundColor,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
-            onPressed: () => context.pop(),
-          ),
+          automaticallyImplyLeading: false,
           title: Text(
             isArabic ? 'بلاغات التعليقات' : 'Review Reports',
             style: TextStyle(

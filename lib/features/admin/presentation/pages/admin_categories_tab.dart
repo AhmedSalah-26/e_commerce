@@ -85,14 +85,15 @@ class _AdminCategoriesContentState extends State<_AdminCategoriesContent>
   Widget _buildHeader(ThemeData theme, bool isMobile) {
     return Padding(
       padding: EdgeInsets.all(isMobile ? 12 : 16),
-      child: Row(
-        children: [
-          Text(
-            widget.isRtl ? 'إدارة التصنيفات' : 'Manage Categories',
-            style: theme.textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
+      child: Center(
+        child: Text(
+          widget.isRtl ? 'إدارة التصنيفات' : 'Manage Categories',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.primary,
           ),
-        ],
+        ),
       ),
     );
   }

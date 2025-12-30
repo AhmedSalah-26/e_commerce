@@ -17,10 +17,15 @@ class AdminSettingsTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            isRtl ? 'الإعدادات' : 'Settings',
-            style: theme.textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
+          Center(
+            child: Text(
+              isRtl ? 'الإعدادات' : 'Settings',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
+              ),
+            ),
           ),
           const SizedBox(height: 24),
           _buildSection(

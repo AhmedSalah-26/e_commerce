@@ -73,14 +73,15 @@ class _AdminCouponsContentState extends State<_AdminCouponsContent>
             children: [
               Padding(
                 padding: EdgeInsets.all(isMobile ? 12 : 16),
-                child: Row(
-                  children: [
-                    Text(
-                      widget.isRtl ? 'الكوبونات العامة' : 'Global Coupons',
-                      style: theme.textTheme.titleLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                child: Center(
+                  child: Text(
+                    widget.isRtl ? 'الكوبونات العامة' : 'Global Coupons',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.primary,
                     ),
-                  ],
+                  ),
                 ),
               ),
               _buildTabBar(activeCoupons.length, inactiveCoupons.length, theme),

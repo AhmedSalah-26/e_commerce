@@ -296,6 +296,26 @@ class AdminRepositoryImpl implements AdminRepository {
     }
   }
 
+  // Monthly Stats for Charts
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> getMonthlyStats(
+      {int months = 6}) async {
+    try {
+      final result = await _datasource.getMonthlyStats(months: months);
+      return Right(result
+          .map((e) => {
+                'month_name': e.month,
+                'total_sales': e.sales,
+                'new_customers': e.customers,
+                'total_orders': e.orders,
+                'cancelled_orders': e.cancelled,
+              })
+          .toList());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
   // Coupons
   @override
   Future<Either<Failure, List<Map<String, dynamic>>>> getMerchantCoupons(

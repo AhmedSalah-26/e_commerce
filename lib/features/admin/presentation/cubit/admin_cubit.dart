@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/admin_repository.dart';
+import '../widgets/admin_charts.dart';
 import 'admin_state.dart';
 
 class AdminCubit extends Cubit<AdminState> {
@@ -25,11 +26,19 @@ class AdminCubit extends Cubit<AdminState> {
       (stats) async {
         final ordersResult = await _repository.getRecentOrders();
         final productsResult = await _repository.getTopProducts();
+        final monthlyStatsResult = await _repository.getMonthlyStats();
+
+        // Convert monthly stats to MonthlyData objects
+        final monthlyStats = monthlyStatsResult.fold(
+          (f) => <MonthlyData>[],
+          (data) => data.map((e) => MonthlyData.fromJson(e)).toList(),
+        );
 
         emit(AdminLoaded(
           stats: stats,
           recentOrders: ordersResult.fold((f) => [], (orders) => orders),
           topProducts: productsResult.fold((f) => [], (products) => products),
+          monthlyStats: monthlyStats,
           fromDate: fromDate,
           toDate: toDate,
         ));

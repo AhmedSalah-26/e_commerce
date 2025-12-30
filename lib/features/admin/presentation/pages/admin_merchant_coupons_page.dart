@@ -99,7 +99,7 @@ class _AdminMerchantCouponsPageState extends State<AdminMerchantCouponsPage> {
     final isRtl = Localizations.localeOf(context).languageCode == 'ar';
 
     return Scaffold(
-      backgroundColor: isDark ? theme.colorScheme.surface : Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -212,14 +212,17 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-      child: Text(
-        isRtl ? 'كوبونات التجار' : 'Merchant Coupons',
-        style: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: isDark ? Colors.white : Colors.black87,
+      child: Center(
+        child: Text(
+          isRtl ? 'كوبونات التجار' : 'Merchant Coupons',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.primary,
+          ),
         ),
       ),
     );

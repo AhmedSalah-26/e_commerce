@@ -23,16 +23,16 @@ class CopyableRow extends StatelessWidget {
           SizedBox(
             width: labelWidth,
             child: Text(label,
-                style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                style: const TextStyle(color: Colors.white, fontSize: 12)),
           ),
           Expanded(
             child: Text(value,
-                style: const TextStyle(fontSize: 13),
+                style: const TextStyle(fontSize: 13, color: Colors.white),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis),
           ),
           IconButton(
-            icon: const Icon(Icons.copy, size: 16),
+            icon: const Icon(Icons.copy, size: 16, color: Colors.white70),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             onPressed: () {

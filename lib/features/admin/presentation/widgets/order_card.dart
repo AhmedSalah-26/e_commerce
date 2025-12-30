@@ -114,7 +114,7 @@ class _OrderDetails extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: Colors.grey[800],
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(

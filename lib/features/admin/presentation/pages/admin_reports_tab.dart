@@ -20,6 +20,21 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
   String? _selectedQuickFilter;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInitialData();
+    });
+  }
+
+  void _loadInitialData() {
+    final state = context.read<AdminCubit>().state;
+    if (state is! AdminLoaded) {
+      context.read<AdminCubit>().loadDashboard();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isMobile = MediaQuery.of(context).size.width < 600;

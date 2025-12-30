@@ -80,6 +80,10 @@ abstract class AdminRepository {
   Future<Either<Failure, List<Map<String, dynamic>>>>
       getMerchantsCancellationStats({int limit = 20});
 
+  // Monthly Stats for Charts
+  Future<Either<Failure, List<Map<String, dynamic>>>> getMonthlyStats(
+      {int months = 6});
+
   // Coupons
   Future<Either<Failure, List<Map<String, dynamic>>>> getMerchantCoupons(
       String merchantId);

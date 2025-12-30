@@ -68,7 +68,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     final isDesktop = MediaQuery.of(context).size.width > 800;
 
     return BlocProvider(
-      create: (_) => sl<AdminCubit>()..loadDashboard(),
+      create: (_) => sl<AdminCubit>(),
       child: Builder(
         builder: (blocContext) => BlocListener<AuthCubit, AuthState>(
           listener: (context, state) {
@@ -139,8 +139,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     final cubit = blocContext.read<AdminCubit>();
     switch (index) {
       case 0:
-      case 7:
-        cubit.loadDashboard();
+        // AdminHomeTab handles its own loading
         break;
       case 1:
         cubit.loadUsers(role: 'customer');
@@ -154,6 +153,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       case 4:
         cubit.loadCategories();
         break;
+      // Other tabs handle their own loading or don't need cubit
     }
   }
 

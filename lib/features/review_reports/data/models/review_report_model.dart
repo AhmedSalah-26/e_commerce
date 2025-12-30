@@ -3,7 +3,7 @@ import '../../domain/entities/review_report_entity.dart';
 class ReviewReportModel extends ReviewReportEntity {
   const ReviewReportModel({
     required super.id,
-    required super.reviewId,
+    super.reviewId,
     super.reviewerId,
     super.reviewerName,
     super.reviewComment,
@@ -24,7 +24,7 @@ class ReviewReportModel extends ReviewReportEntity {
   factory ReviewReportModel.fromJson(Map<String, dynamic> json) {
     return ReviewReportModel(
       id: json['id'] as String,
-      reviewId: json['review_id'] as String,
+      reviewId: json['review_id'] as String?,
       reviewerId: json['reviewer_id'] as String?,
       reviewerName: json['reviewer_name'] as String?,
       reviewComment: json['review_comment'] as String?,

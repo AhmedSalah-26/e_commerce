@@ -1,6 +1,7 @@
 import 'package:app_links/app_links.dart';
 import 'package:chottu_link/chottu_link.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,29 +22,37 @@ import 'features/notifications/data/services/order_status_listener.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Lock orientation to portrait only
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // Lock orientation to portrait only (not supported on web)
+  if (!kIsWeb) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
 
   await EasyLocalization.ensureInitialized();
 
   // Initialize ChottuLink SDK (for analytics only, not for deep link handling)
-  await ChottuLink.init(apiKey: "c_app_aj45jOSPqhk4Ea4M2v9cY6k6a1CeSMgt");
+  // Only on mobile platforms, not on web
+  if (!kIsWeb) {
+    await ChottuLink.init(apiKey: "c_app_aj45jOSPqhk4Ea4M2v9cY6k6a1CeSMgt");
+  }
 
   // Initialize dependencies (Supabase, etc.)
   await di.initializeDependencies();
 
   // Get initial deep link BEFORE app starts (important for cold start)
-  final appLinks = AppLinks();
-  final initialUri = await appLinks.getInitialLink();
-  if (initialUri != null) {
-    debugPrint('═══════════════════════════════════════════════════════');
-    debugPrint('🔗 INITIAL DEEP LINK (in main, before app starts)');
-    debugPrint('URI: $initialUri');
-    debugPrint('═══════════════════════════════════════════════════════');
-    DeepLinkService().saveInitialDeepLink(initialUri);
+  // Only on mobile platforms
+  if (!kIsWeb) {
+    final appLinks = AppLinks();
+    final initialUri = await appLinks.getInitialLink();
+    if (initialUri != null) {
+      debugPrint('═══════════════════════════════════════════════════════');
+      debugPrint('🔗 INITIAL DEEP LINK (in main, before app starts)');
+      debugPrint('URI: $initialUri');
+      debugPrint('═══════════════════════════════════════════════════════');
+      DeepLinkService().saveInitialDeepLink(initialUri);
+    }
   }
 
   // Cleanup expired flash sales on app start
@@ -100,7 +109,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late AppLinks _appLinks;
+  AppLinks? _appLinks;
 
   @override
   void initState() {
@@ -113,11 +122,14 @@ class _MyAppState extends State<MyApp> {
 
   /// Initialize deep links listener for links while app is running
   void _initDeepLinks() {
+    // Skip deep links on web
+    if (kIsWeb) return;
+
     _appLinks = AppLinks();
 
     // Only listen for links while app is running (not initial launch)
     // Initial link is handled in main() before app starts
-    _appLinks.uriLinkStream.listen((Uri uri) {
+    _appLinks!.uriLinkStream.listen((Uri uri) {
       debugPrint('═══════════════════════════════════════════════════════');
       debugPrint('🔗 DEEP LINK RECEIVED (app running)');
       debugPrint('URI: $uri');

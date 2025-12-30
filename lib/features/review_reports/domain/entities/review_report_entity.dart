@@ -45,7 +45,7 @@ extension ReviewReportStatusX on ReviewReportStatus {
 
 class ReviewReportEntity extends Equatable {
   final String id;
-  final String reviewId;
+  final String? reviewId;
   final String? reviewerId;
   final String? reviewerName;
   final String? reviewComment;
@@ -64,7 +64,7 @@ class ReviewReportEntity extends Equatable {
 
   const ReviewReportEntity({
     required this.id,
-    required this.reviewId,
+    this.reviewId,
     this.reviewerId,
     this.reviewerName,
     this.reviewComment,

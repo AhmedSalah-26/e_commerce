@@ -95,6 +95,7 @@ class ReviewReportsCubit extends Cubit<ReviewReportsState> {
       );
       return true;
     } catch (e) {
+      print('❌ Error responding to review report: $e');
       return false;
     }
   }

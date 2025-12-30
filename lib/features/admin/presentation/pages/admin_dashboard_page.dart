@@ -37,10 +37,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   @override
   void initState() {
     super.initState();
-    _checkAdminAccess();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAdminAccess();
+    });
   }
 
   Future<void> _checkAdminAccess() async {
+    if (!mounted) return;
+
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
       final isAdmin = await sl<AdminCubit>().isAdmin(authState.user.id);
@@ -53,7 +57,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           ),
         );
       }
-    } else {
+    } else if (mounted) {
       context.go('/login');
     }
   }

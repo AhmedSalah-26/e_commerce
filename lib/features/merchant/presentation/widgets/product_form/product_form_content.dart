@@ -140,6 +140,7 @@ class _ProductFormContentState extends State<ProductFormContent> {
                 onCategoryChanged: (value) {
                   setState(() => _selectedCategoryId = value);
                 },
+                isSuspended: widget.product?.isSuspended ?? false,
                 onActiveChanged: (value) {
                   setState(() => _isActive = value);
                 },
@@ -176,6 +177,10 @@ class _ProductFormContentState extends State<ProductFormContent> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isSaving = true);
 
+      // Prevent activating suspended products
+      final isSuspended = widget.product?.isSuspended ?? false;
+      final finalIsActive = isSuspended ? false : _isActive;
+
       final productData = {
         'name_ar': _nameArController.text,
         'name_en': _nameEnController.text.isEmpty
@@ -191,7 +196,7 @@ class _ProductFormContentState extends State<ProductFormContent> {
             : double.parse(_discountPriceController.text),
         'stock': int.parse(_stockController.text),
         'category_id': _selectedCategoryId,
-        'is_active': _isActive,
+        'is_active': finalIsActive,
         'is_featured': _isFeatured,
         'is_flash_sale': _isFlashSale,
         'flash_sale_start': AppDateUtils.toEgyptIsoString(_flashSaleStart),

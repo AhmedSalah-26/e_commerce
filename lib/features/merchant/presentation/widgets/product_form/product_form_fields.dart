@@ -18,6 +18,7 @@ class ProductFormFields extends StatelessWidget {
   final bool isActive;
   final bool isFeatured;
   final bool isFlashSale;
+  final bool isSuspended;
   final DateTime? flashSaleStart;
   final DateTime? flashSaleEnd;
   final List<PickedImageData> selectedImages;
@@ -44,6 +45,7 @@ class ProductFormFields extends StatelessWidget {
     required this.isActive,
     required this.isFeatured,
     required this.isFlashSale,
+    this.isSuspended = false,
     this.flashSaleStart,
     this.flashSaleEnd,
     required this.selectedImages,
@@ -240,10 +242,34 @@ class ProductFormFields extends StatelessWidget {
   Widget _buildSwitches() {
     return Column(
       children: [
+        if (isSuspended)
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.block, color: Colors.red, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    isRtl
+                        ? 'هذا المنتج محظور من الإدارة. لا يمكن تفعيله.'
+                        : 'This product is suspended by admin. Cannot be activated.',
+                    style: const TextStyle(color: Colors.red, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
         SwitchListTile(
           title: Text(isRtl ? 'نشط' : 'Active'),
           value: isActive,
-          onChanged: onActiveChanged,
+          onChanged: isSuspended ? null : onActiveChanged,
         ),
         SwitchListTile(
           title: Text(isRtl ? 'مميز' : 'Featured'),

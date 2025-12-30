@@ -5,18 +5,23 @@
 -- Create review_reports table
 CREATE TABLE IF NOT EXISTS public.review_reports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  review_id UUID NOT NULL REFERENCES public.reviews(id) ON DELETE CASCADE,
+  review_id UUID REFERENCES public.reviews(id) ON DELETE SET NULL,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   reason TEXT NOT NULL,
   description TEXT,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'resolved', 'rejected')),
   admin_response TEXT,
   admin_id UUID REFERENCES auth.users(id),
+  -- Store review data for when review is deleted
+  cached_reviewer_id UUID,
+  cached_reviewer_name TEXT,
+  cached_review_comment TEXT,
+  cached_review_rating INTEGER,
+  cached_product_id UUID,
+  cached_product_name TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  resolved_at TIMESTAMPTZ,
-  -- Prevent duplicate reports from same user for same review
-  UNIQUE(review_id, user_id)
+  resolved_at TIMESTAMPTZ
 );
 
 -- Create indexes
@@ -131,10 +136,10 @@ BEGIN
     rr.id,
     rr.review_id,
     r.user_id as reviewer_id,
-    COALESCE(reviewer.name, 'مستخدم') as reviewer_name,
+    COALESCE(reviewer.name, 'مستخدم محذوف') as reviewer_name,
     reviewer.email as reviewer_email,
-    r.comment as review_comment,
-    r.rating as review_rating,
+    COALESCE(r.comment, 'تعليق محذوف') as review_comment,
+    COALESCE(r.rating, 0) as review_rating,
     r.product_id,
     COALESCE(p.name_ar, p.name_en, 'منتج محذوف') as product_name,
     rr.user_id as reporter_id,

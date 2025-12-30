@@ -108,7 +108,7 @@ class _AdminShippingTabState extends State<AdminShippingTab> {
   Widget _buildMerchantsContent(ThemeData theme, bool isMobile) {
     return BlocBuilder<AdminCubit, AdminState>(
       builder: (context, state) {
-        if (state is AdminUsersLoading) {
+        if (state is AdminInitial || state is AdminUsersLoading) {
           return const Center(child: CircularProgressIndicator());
         }
         if (state is AdminError) {

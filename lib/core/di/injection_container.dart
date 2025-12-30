@@ -13,6 +13,7 @@ import 'injections/reviews_injection.dart';
 import 'injections/shipping_injection.dart';
 import 'injections/coupons_injection.dart';
 import 'injections/admin_injection.dart';
+import 'injections/product_reports_injection.dart';
 
 final sl = GetIt.instance;
 
@@ -32,4 +33,5 @@ Future<void> initializeDependencies() async {
   registerShippingDependencies(sl);
   registerCouponsDependencies(sl);
   registerAdminDependencies(sl);
+  registerProductReportsDependencies(sl);
 }

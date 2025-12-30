@@ -37,6 +37,8 @@ import '../../features/settings/presentation/pages/language_settings_screen.dart
 import '../../features/settings/presentation/pages/settings_screen.dart';
 import '../../features/settings/presentation/pages/theme_settings_screen.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
+import '../../features/product_reports/presentation/pages/my_reports_page.dart';
+import '../../features/product_reports/presentation/pages/admin_product_reports_page.dart';
 
 class AppRouter {
   static bool? _onboardingCompleted;
@@ -243,6 +245,14 @@ class AppRouter {
       GoRoute(
         path: '/admin-merchant-coupons',
         builder: (context, state) => const AdminMerchantCouponsPage(),
+      ),
+      GoRoute(
+        path: '/my-reports',
+        builder: (context, state) => const MyReportsPage(),
+      ),
+      GoRoute(
+        path: '/admin-product-reports',
+        builder: (context, state) => const AdminProductReportsPage(),
       ),
     ],
   );

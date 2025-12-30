@@ -19,6 +19,7 @@ import '../../../favorites/presentation/cubit/favorites_cubit.dart';
 import '../../../favorites/presentation/cubit/favorites_state.dart';
 import '../../../reviews/presentation/cubit/reviews_cubit.dart';
 import '../../../reviews/presentation/widgets/review_widgets/reviews_section.dart';
+import '../../../product_reports/presentation/widgets/report_product_dialog.dart';
 import '../widgets/suggested_products_slider.dart';
 import '../widgets/product_image_slider.dart';
 import '../widgets/product_info_section.dart';
@@ -333,6 +334,10 @@ class _ProductScreenState extends State<ProductScreen> {
           onPressed: () => _shareProduct(locale),
           icon: Icon(Icons.share_outlined, color: theme.colorScheme.primary),
         ),
+        IconButton(
+          onPressed: () => _reportProduct(context),
+          icon: Icon(Icons.flag_outlined, color: theme.colorScheme.primary),
+        ),
         BlocSelector<CartCubit, CartState, int>(
           selector: (state) => state is CartLoaded
               ? state.items.fold<int>(0, (sum, item) => sum + item.quantity)
@@ -380,6 +385,14 @@ class _ProductScreenState extends State<ProductScreen> {
   void _shareProduct(String locale) {
     final shareText = ShareUtils.getProductShareText(_product, locale);
     Share.share(shareText);
+  }
+
+  void _reportProduct(BuildContext context) {
+    ReportProductDialog.show(
+      context,
+      productId: _product.id,
+      productName: _product.name,
+    );
   }
 
   Widget _buildAddToCartButton(BuildContext context, bool isInactive) {

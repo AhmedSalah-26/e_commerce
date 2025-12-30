@@ -127,6 +127,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             onTap: () => context.push('/orders'),
                             showDivider: false,
                           ),
+                          SettingsTile(
+                            icon: Icons.flag_outlined,
+                            title: isRtl ? 'بلاغاتي' : 'My Reports',
+                            onTap: () => context.push('/my-reports'),
+                            showDivider: false,
+                          ),
                           SettingsSwitchTile(
                             icon: Icons.notifications_outlined,
                             title: 'notifications'.tr(),

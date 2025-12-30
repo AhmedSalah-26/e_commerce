@@ -166,6 +166,7 @@ class AdminSidebar extends StatelessWidget {
         _MenuItem(
             Icons.storefront, isRtl ? 'كوبونات التجار' : 'Merchant Coupons'),
         _MenuItem(Icons.local_shipping, isRtl ? 'الشحن' : 'Shipping'),
+        _MenuItem(Icons.flag, isRtl ? 'بلاغات المنتجات' : 'Product Reports'),
         _MenuItem(Icons.analytics, isRtl ? 'التقارير' : 'Reports'),
         _MenuItem(Icons.settings, isRtl ? 'الإعدادات' : 'Settings'),
       ];

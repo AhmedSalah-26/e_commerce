@@ -72,7 +72,6 @@ flutter:
     - assets/translations/
     - assets/on_bording/
     - assets/slider/
-    - assets/product/
 
   fonts:
     - family: Changa

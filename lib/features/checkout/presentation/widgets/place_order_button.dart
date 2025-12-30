@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/shared_widgets/custom_button.dart';
+import '../../../../core/shared_widgets/animated_order_button.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../coupons/presentation/cubit/coupon_cubit.dart';
@@ -73,9 +73,9 @@ class PlaceOrderButton extends StatelessWidget {
 
             return SizedBox(
               width: double.infinity,
-              child: CustomButton(
+              child: AnimatedOrderButton(
                 onPressed: isLoading
-                    ? () {}
+                    ? null
                     : () {
                         // Check empty fields first
                         if (nameController.text.trim().isEmpty) {
@@ -165,7 +165,8 @@ class PlaceOrderButton extends StatelessWidget {
                           governorateName: selectedGovernorate!.getName(locale),
                         );
                       },
-                label: isLoading ? 'loading'.tr() : 'place_order'.tr(),
+                label: 'place_order'.tr(),
+                isLoading: isLoading,
                 color: theme.colorScheme.primary,
               ),
             );

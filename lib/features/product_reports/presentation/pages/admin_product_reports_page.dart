@@ -1,10 +1,12 @@
 import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/shared_widgets/toast.dart';
 import '../../domain/entities/product_report_entity.dart';
 import '../../data/models/product_report_model.dart';
 import '../cubit/product_reports_cubit.dart';
@@ -239,7 +241,7 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _AdminReportCard extends StatelessWidget {
+class _AdminReportCard extends StatefulWidget {
   final ProductReportModel report;
   final bool isArabic;
   final VoidCallback onRespond;
@@ -249,6 +251,23 @@ class _AdminReportCard extends StatelessWidget {
     required this.isArabic,
     required this.onRespond,
   });
+
+  @override
+  State<_AdminReportCard> createState() => _AdminReportCardState();
+}
+
+class _AdminReportCardState extends State<_AdminReportCard> {
+  bool _showIds = false;
+
+  void _copyToClipboard(String value, String label) {
+    Clipboard.setData(ClipboardData(text: value));
+    Tost.showCustomToast(
+      context,
+      widget.isArabic ? 'تم نسخ $label' : '$label copied',
+      backgroundColor: Colors.green,
+      textColor: Colors.white,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -267,9 +286,9 @@ class _AdminReportCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: report.productImage != null
+                  child: widget.report.productImage != null
                       ? CachedNetworkImage(
-                          imageUrl: report.productImage!,
+                          imageUrl: widget.report.productImage!,
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,
@@ -284,21 +303,22 @@ class _AdminReportCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        report.productName ??
-                            (isArabic ? 'منتج محذوف' : 'Deleted'),
+                        widget.report.productName ??
+                            (widget.isArabic ? 'منتج محذوف' : 'Deleted'),
                         style: const TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 14),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        '${isArabic ? 'التاجر:' : 'Merchant:'} ${report.merchantName ?? '-'}',
+                        '${widget.isArabic ? 'التاجر:' : 'Merchant:'} ${widget.report.merchantName ?? '-'}',
                         style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
                     ],
                   ),
                 ),
-                _StatusBadge(status: report.status, isArabic: isArabic),
+                _StatusBadge(
+                    status: widget.report.status, isArabic: widget.isArabic),
               ],
             ),
             const Divider(height: 20),
@@ -309,7 +329,7 @@ class _AdminReportCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '${report.userName ?? 'مستخدم'} (${report.userEmail ?? '-'})',
+                    '${widget.report.userName ?? 'مستخدم'} (${widget.report.userEmail ?? '-'})',
                     style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                   ),
                 ),
@@ -322,11 +342,52 @@ class _AdminReportCard extends StatelessWidget {
                 Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 8),
                 Text(
-                  dateFormat.format(report.createdAt),
+                  dateFormat.format(widget.report.createdAt),
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            // IDs Expandable Section
+            InkWell(
+              onTap: () => setState(() => _showIds = !_showIds),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.key, size: 16, color: Colors.grey[600]),
+                    const SizedBox(width: 8),
+                    Text(
+                      widget.isArabic ? 'المعرفات (IDs)' : 'IDs',
+                      style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                    ),
+                    const Spacer(),
+                    Icon(
+                      _showIds ? Icons.expand_less : Icons.expand_more,
+                      color: Colors.grey[600],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_showIds) ...[
+              const SizedBox(height: 8),
+              _buildIdRow(
+                  widget.isArabic ? 'البلاغ' : 'Report', widget.report.id),
+              _buildIdRow(widget.isArabic ? 'المنتج' : 'Product',
+                  widget.report.productId),
+              if (widget.report.merchantId != null)
+                _buildIdRow(widget.isArabic ? 'التاجر' : 'Merchant',
+                    widget.report.merchantId!),
+              _buildIdRow(widget.isArabic ? 'المُبلِّغ' : 'Reporter',
+                  widget.report.userId),
+            ],
             const SizedBox(height: 12),
             // Reason
             Container(
@@ -341,23 +402,23 @@ class _AdminReportCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      report.reason,
+                      widget.report.reason,
                       style: TextStyle(fontSize: 13, color: Colors.orange[800]),
                     ),
                   ),
                 ],
               ),
             ),
-            if (report.description != null &&
-                report.description!.isNotEmpty) ...[
+            if (widget.report.description != null &&
+                widget.report.description!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                report.description!,
+                widget.report.description!,
                 style: TextStyle(fontSize: 13, color: Colors.grey[700]),
               ),
             ],
             // Admin response
-            if (report.adminResponse != null) ...[
+            if (widget.report.adminResponse != null) ...[
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(10),
@@ -369,7 +430,7 @@ class _AdminReportCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${isArabic ? 'الرد:' : 'Response:'} ${report.adminName ?? 'Admin'}',
+                      '${widget.isArabic ? 'الرد:' : 'Response:'} ${widget.report.adminName ?? 'Admin'}',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -377,22 +438,22 @@ class _AdminReportCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(report.adminResponse!,
+                    Text(widget.report.adminResponse!,
                         style: const TextStyle(fontSize: 13)),
                   ],
                 ),
               ),
             ],
             // Respond button
-            if (report.status == ReportStatus.pending ||
-                report.status == ReportStatus.reviewed) ...[
+            if (widget.report.status == ReportStatus.pending ||
+                widget.report.status == ReportStatus.reviewed) ...[
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: onRespond,
+                  onPressed: widget.onRespond,
                   icon: const Icon(Icons.reply, size: 18),
-                  label: Text(isArabic ? 'الرد على البلاغ' : 'Respond'),
+                  label: Text(widget.isArabic ? 'الرد على البلاغ' : 'Respond'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
@@ -402,6 +463,36 @@ class _AdminReportCard extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildIdRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 70,
+            child: Text(
+              '$label:',
+              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.copy, size: 14),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+            onPressed: () => _copyToClipboard(value, label),
+          ),
+        ],
       ),
     );
   }
@@ -618,12 +709,11 @@ class _RespondSheetState extends State<_RespondSheet> {
 
   Future<void> _submit() async {
     if (_responseController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              widget.isArabic ? 'يرجى كتابة الرد' : 'Please write a response'),
-          backgroundColor: Colors.red,
-        ),
+      Tost.showCustomToast(
+        context,
+        widget.isArabic ? 'يرجى كتابة الرد' : 'Please write a response',
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
       );
       return;
     }
@@ -645,13 +735,13 @@ class _RespondSheetState extends State<_RespondSheet> {
     if (mounted) {
       Navigator.of(context).pop(success);
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.isArabic
-                ? 'تم إرسال الرد بنجاح'
-                : 'Response sent successfully'),
-            backgroundColor: Colors.green,
-          ),
+        Tost.showCustomToast(
+          context,
+          widget.isArabic
+              ? 'تم إرسال الرد بنجاح'
+              : 'Response sent successfully',
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
         );
       }
     }

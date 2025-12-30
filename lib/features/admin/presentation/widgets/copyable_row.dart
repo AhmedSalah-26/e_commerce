@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/shared_widgets/toast.dart';
 
 class CopyableRow extends StatelessWidget {
   final String label;
@@ -36,9 +37,11 @@ class CopyableRow extends StatelessWidget {
             constraints: const BoxConstraints(),
             onPressed: () {
               Clipboard.setData(ClipboardData(text: value));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Copied'), duration: Duration(seconds: 1)),
+              Tost.showCustomToast(
+                context,
+                'تم النسخ',
+                backgroundColor: Colors.green,
+                textColor: Colors.white,
               );
             },
           ),

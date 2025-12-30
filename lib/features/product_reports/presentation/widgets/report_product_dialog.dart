@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/shared_widgets/toast.dart';
 import '../../domain/entities/product_report_entity.dart';
 import '../cubit/product_reports_cubit.dart';
 
@@ -56,22 +57,21 @@ class _ReportProductDialogState extends State<ReportProductDialog> {
       listener: (context, state) {
         if (state is ReportSubmitted) {
           Navigator.of(context).pop(true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(isArabic
-                  ? 'تم إرسال البلاغ بنجاح'
-                  : 'Report submitted successfully'),
-              backgroundColor: Colors.green,
-            ),
+          Tost.showCustomToast(
+            context,
+            isArabic
+                ? 'تم إرسال البلاغ بنجاح'
+                : 'Report submitted successfully',
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
           );
         } else if (state is ReportSubmitError) {
           setState(() => _isSubmitting = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  isArabic ? 'فشل إرسال البلاغ' : 'Failed to submit report'),
-              backgroundColor: Colors.red,
-            ),
+          Tost.showCustomToast(
+            context,
+            isArabic ? 'فشل إرسال البلاغ' : 'Failed to submit report',
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
           );
         }
       },

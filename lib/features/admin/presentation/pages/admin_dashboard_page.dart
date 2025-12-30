@@ -20,6 +20,7 @@ import 'admin_shipping_tab.dart';
 import 'admin_reports_tab.dart';
 import 'admin_settings_tab.dart';
 import '../../../product_reports/presentation/pages/admin_product_reports_page.dart';
+import '../../../review_reports/presentation/pages/admin_review_reports_page.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -173,8 +174,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       case 8:
         return const AdminProductReportsPage();
       case 9:
-        return AdminReportsTab(isRtl: isRtl);
+        return const AdminReviewReportsPage();
       case 10:
+        return AdminReportsTab(isRtl: isRtl);
+      case 11:
         return AdminSettingsTab(isRtl: isRtl);
       default:
         return AdminHomeTab(isRtl: isRtl);

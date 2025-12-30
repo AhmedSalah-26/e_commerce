@@ -3,18 +3,21 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../../../../../core/theme/app_text_style.dart';
+import '../../../../review_reports/presentation/widgets/report_review_dialog.dart';
 import '../../../domain/entities/review_entity.dart';
 
 class ReviewCard extends StatelessWidget {
   final ReviewEntity review;
   final bool isOwner;
   final VoidCallback onDelete;
+  final bool showReportButton;
 
   const ReviewCard({
     super.key,
     required this.review,
     required this.isOwner,
     required this.onDelete,
+    this.showReportButton = true,
   });
 
   @override
@@ -135,6 +138,26 @@ class ReviewCard extends StatelessWidget {
                 ),
               ],
             ),
+          ] else if (showReportButton) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: () => _reportReview(context),
+                  icon: Icon(Icons.flag_outlined,
+                      size: 18,
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                  label: Text(
+                    context.locale.languageCode == 'ar' ? 'إبلاغ' : 'Report',
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ],
       ),
@@ -147,5 +170,14 @@ class ReviewCard extends StatelessWidget {
       return DateFormat('dd/MM/yyyy', 'ar').format(date);
     }
     return DateFormat('dd/MM/yyyy', 'en').format(date);
+  }
+
+  void _reportReview(BuildContext context) {
+    ReportReviewDialog.show(
+      context,
+      reviewId: review.id,
+      reviewerName: review.userName,
+      reviewComment: review.comment,
+    );
   }
 }

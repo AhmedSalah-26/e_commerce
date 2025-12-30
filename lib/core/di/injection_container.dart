@@ -14,6 +14,7 @@ import 'injections/shipping_injection.dart';
 import 'injections/coupons_injection.dart';
 import 'injections/admin_injection.dart';
 import 'injections/product_reports_injection.dart';
+import 'injections/review_reports_injection.dart';
 
 final sl = GetIt.instance;
 
@@ -34,4 +35,5 @@ Future<void> initializeDependencies() async {
   registerCouponsDependencies(sl);
   registerAdminDependencies(sl);
   registerProductReportsDependencies(sl);
+  registerReviewReportsDependencies(sl);
 }

@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/shared_widgets/app_dialog.dart';
+import '../../../../core/shared_widgets/toast.dart';
 import '../../../products/domain/entities/product_entity.dart';
 
 class MerchantProductCard extends StatelessWidget {
@@ -41,16 +42,20 @@ class MerchantProductCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 6),
             decoration: BoxDecoration(
-              color: product.isActive ? Colors.green : Colors.grey,
+              color: product.isSuspended
+                  ? Colors.red
+                  : (product.isActive ? Colors.green : Colors.grey),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
               ),
             ),
             child: Text(
-              product.isActive
-                  ? (isRtl ? 'نشط' : 'Active')
-                  : (isRtl ? 'غير نشط' : 'Inactive'),
+              product.isSuspended
+                  ? (isRtl ? 'محظور' : 'Suspended')
+                  : (product.isActive
+                      ? (isRtl ? 'نشط' : 'Active')
+                      : (isRtl ? 'غير نشط' : 'Inactive')),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
@@ -134,16 +139,22 @@ class MerchantProductCard extends StatelessWidget {
                     IconButton(
                       onPressed: () => _showToggleConfirmation(context, isRtl),
                       icon: Icon(
-                        product.isActive
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: product.isActive ? Colors.orange : Colors.green,
+                        product.isSuspended
+                            ? Icons.block
+                            : (product.isActive
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined),
+                        color: product.isSuspended
+                            ? Colors.red
+                            : (product.isActive ? Colors.orange : Colors.green),
                       ),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      tooltip: product.isActive
-                          ? (isRtl ? 'إلغاء التنشيط' : 'Deactivate')
-                          : (isRtl ? 'تنشيط' : 'Activate'),
+                      tooltip: product.isSuspended
+                          ? (isRtl ? 'محظور من الإدارة' : 'Suspended by admin')
+                          : (product.isActive
+                              ? (isRtl ? 'إلغاء التنشيط' : 'Deactivate')
+                              : (isRtl ? 'تنشيط' : 'Activate')),
                     ),
                   ],
                 ),
@@ -169,6 +180,18 @@ class MerchantProductCard extends StatelessWidget {
   }
 
   void _showToggleConfirmation(BuildContext context, bool isRtl) {
+    // If product is suspended, show message and don't allow activation
+    if (product.isSuspended) {
+      Tost.showCustomToast(
+        context,
+        isRtl
+            ? 'هذا المنتج محظور من الإدارة. تواصل مع الدعم لفك الحظر.'
+            : 'This product is suspended by admin. Contact support to unsuspend.',
+        backgroundColor: Colors.red,
+      );
+      return;
+    }
+
     final willDeactivate = product.isActive;
 
     AppDialog.showConfirmation(

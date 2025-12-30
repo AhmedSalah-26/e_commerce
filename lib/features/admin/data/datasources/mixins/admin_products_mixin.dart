@@ -87,6 +87,7 @@ mixin AdminProductsMixin {
           .from('products')
           .update({
             'is_suspended': true,
+            'is_active': false, // Also deactivate when suspended
             'suspension_reason': reason,
             'suspended_at': DateTime.now().toIso8601String(),
             'suspended_by': adminId,

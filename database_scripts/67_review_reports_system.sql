@@ -64,7 +64,7 @@ RETURNS TABLE (
   admin_response TEXT,
   created_at TIMESTAMPTZ,
   resolved_at TIMESTAMPTZ
-) AS $
+) AS $$
 BEGIN
   RETURN QUERY
   SELECT 
@@ -87,7 +87,7 @@ BEGIN
   WHERE rr.user_id = p_user_id
   ORDER BY rr.created_at DESC;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to get all review reports for admin
 CREATE OR REPLACE FUNCTION get_admin_review_reports(
@@ -117,7 +117,7 @@ RETURNS TABLE (
   created_at TIMESTAMPTZ,
   resolved_at TIMESTAMPTZ,
   total_count BIGINT
-) AS $
+) AS $$
 DECLARE
   v_total BIGINT;
 BEGIN
@@ -166,7 +166,7 @@ BEGIN
   LIMIT p_limit
   OFFSET p_offset;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to respond to a review report (admin only)
 CREATE OR REPLACE FUNCTION respond_to_review_report(
@@ -176,7 +176,7 @@ CREATE OR REPLACE FUNCTION respond_to_review_report(
   p_delete_review BOOLEAN DEFAULT FALSE,
   p_ban_reviewer BOOLEAN DEFAULT FALSE
 )
-RETURNS BOOLEAN AS $
+RETURNS BOOLEAN AS $$
 DECLARE
   v_review_id UUID;
   v_reviewer_id UUID;
@@ -218,7 +218,7 @@ BEGIN
 
   RETURN TRUE;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Grant permissions
 GRANT EXECUTE ON FUNCTION get_user_review_reports(UUID) TO authenticated;

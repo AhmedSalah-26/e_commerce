@@ -87,7 +87,6 @@ class AdminErrorWidget extends StatelessWidget {
   }
 
   _ErrorInfo _parseError(String message) {
-    // Extract error code if present
     String? code;
     String title;
     String description;
@@ -101,6 +100,12 @@ class AdminErrorWidget extends StatelessWidget {
     // Map common error codes to user-friendly messages
     if (code != null) {
       switch (code) {
+        case '42703':
+          title = isRtl ? 'خطأ في الاستعلام' : 'Query Error';
+          description = isRtl
+              ? 'عمود غير موجود في قاعدة البيانات'
+              : 'Column does not exist in database';
+          break;
         case '42883':
           title = isRtl ? 'خطأ في الاستعلام' : 'Query Error';
           description = isRtl
@@ -167,15 +172,14 @@ class AdminErrorWidget extends StatelessWidget {
   }
 
   String _getCleanDescription(String message) {
-    // Remove technical details and extract meaningful message
     var clean = message;
 
     // Remove "Failed to get X: " prefix
     clean = clean.replaceAll(RegExp(r'^Failed to \w+ \w+:\s*'), '');
 
     // Remove PostgrestException wrapper
-    clean = clean.replaceAll(RegExp(r'PostgrestException\(message:\s*'), '');
-    clean = clean.replaceAll(RegExp(r'\)$'), '');
+    clean = clean.replaceAll('PostgrestException(message: ', '');
+    clean = clean.replaceAll(')', '');
 
     // Extract just the message part
     final messageMatch = RegExp(r'message:\s*([^,]+)').firstMatch(clean);

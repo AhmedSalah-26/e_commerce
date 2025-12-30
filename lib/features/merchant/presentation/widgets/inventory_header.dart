@@ -50,16 +50,19 @@ class InventoryHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                  child: _buildStatCard(isRtl ? 'المنتجات' : 'Products',
-                      totalProducts.toString(), Icons.inventory_2)),
-              const SizedBox(width: 12),
-              Expanded(
-                  child: _buildStatCard(isRtl ? 'المنتجات النشطة' : 'Active',
-                      activeProducts.toString(), Icons.check_circle)),
-            ],
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                    child: _buildStatCard(isRtl ? 'المنتجات' : 'Products',
+                        totalProducts.toString(), Icons.inventory_2)),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: _buildStatCard(isRtl ? 'النشطة' : 'Active',
+                        activeProducts.toString(), Icons.check_circle)),
+              ],
+            ),
           ),
         ],
       ),
@@ -68,26 +71,30 @@ class InventoryHeader extends StatelessWidget {
 
   Widget _buildStatCard(String label, String value, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.white, size: 32),
-          const SizedBox(width: 12),
+          Icon(icon, color: Colors.white, size: 28),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(value,
                     style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold)),
+                const SizedBox(height: 2),
                 Text(label,
-                    style: const TextStyle(color: Colors.white, fontSize: 12)),
+                    style: const TextStyle(color: Colors.white, fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
               ],
             ),
           ),

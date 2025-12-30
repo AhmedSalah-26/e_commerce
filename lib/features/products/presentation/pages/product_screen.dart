@@ -388,6 +388,8 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   void _reportProduct(BuildContext context) {
+    if (!_actions.checkLoginForReport(context)) return;
+
     ReportProductDialog.show(
       context,
       productId: _product.id,

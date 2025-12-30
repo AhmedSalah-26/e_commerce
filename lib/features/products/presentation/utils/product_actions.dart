@@ -118,4 +118,14 @@ class ProductActions {
       textColor: Colors.white,
     );
   }
+
+  /// Check if user is logged in for reporting
+  bool checkLoginForReport(BuildContext context) {
+    final authState = context.read<AuthCubit>().state;
+    if (authState is! AuthAuthenticated) {
+      _showLoginRequired(context);
+      return false;
+    }
+    return true;
+  }
 }

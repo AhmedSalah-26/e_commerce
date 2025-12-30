@@ -1,10 +1,13 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/image_upload_service.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
-import 'profile_edit/profile_avatar_section.dart';
+import '../../../auth/presentation/widgets/avatar_picker.dart';
 import 'profile_edit/profile_form_fields.dart';
 
 class ProfileEditDialog extends StatefulWidget {
@@ -30,6 +33,10 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   bool _isLoading = false;
+  bool _isUploadingAvatar = false;
+  Uint8List? _selectedAvatarBytes;
+  String? _selectedAvatarName;
+  String? _currentAvatarUrl;
 
   @override
   void initState() {
@@ -39,6 +46,7 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
       _nameController = TextEditingController(text: authState.user.name ?? '');
       _phoneController =
           TextEditingController(text: authState.user.phone ?? '');
+      _currentAvatarUrl = authState.user.avatarUrl;
     } else {
       _nameController = TextEditingController();
       _phoneController = TextEditingController();
@@ -52,6 +60,25 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
     super.dispose();
   }
 
+  Future<void> _pickAvatar() async {
+    final imageService = sl<ImageUploadService>();
+    final pickedImage = await imageService.pickAvatarImage();
+    if (pickedImage != null) {
+      setState(() {
+        _selectedAvatarBytes = pickedImage.bytes;
+        _selectedAvatarName = pickedImage.name;
+      });
+    }
+  }
+
+  void _removeAvatar() {
+    setState(() {
+      _selectedAvatarBytes = null;
+      _selectedAvatarName = null;
+      _currentAvatarUrl = null;
+    });
+  }
+
   Future<void> _saveProfile() async {
     final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) return;
@@ -59,9 +86,25 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
     setState(() => _isLoading = true);
 
     try {
+      String? newAvatarUrl;
+      final user = authState.user;
+
+      // Upload new avatar if selected
+      if (_selectedAvatarBytes != null && _selectedAvatarName != null) {
+        setState(() => _isUploadingAvatar = true);
+        final imageService = sl<ImageUploadService>();
+        final imageData = PickedImageData(
+          bytes: _selectedAvatarBytes!,
+          name: _selectedAvatarName!,
+        );
+        newAvatarUrl = await imageService.uploadAvatarImage(imageData, user.id);
+        setState(() => _isUploadingAvatar = false);
+      }
+
       final success = await context.read<AuthCubit>().updateProfile(
             name: _nameController.text.trim(),
             phone: _phoneController.text.trim(),
+            avatarUrl: newAvatarUrl,
           );
 
       if (mounted) {
@@ -81,7 +124,12 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
         );
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isUploadingAvatar = false;
+        });
+      }
     }
   }
 
@@ -101,7 +149,17 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ProfileAvatarSection(userName: user.name),
+            AvatarPicker(
+              currentAvatarUrl: _currentAvatarUrl,
+              selectedImageBytes: _selectedAvatarBytes,
+              userName: user.name ?? user.email,
+              onPickImage: _pickAvatar,
+              onRemoveImage:
+                  (_currentAvatarUrl != null || _selectedAvatarBytes != null)
+                      ? _removeAvatar
+                      : null,
+              isLoading: _isUploadingAvatar,
+            ),
             const SizedBox(height: 16),
             ProfileFormFields(
               email: user.email,

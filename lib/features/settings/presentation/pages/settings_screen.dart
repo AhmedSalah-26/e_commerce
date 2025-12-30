@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/shared_widgets/app_dialog.dart';
+import '../../../../core/shared_widgets/empty_states/empty_state_widget.dart';
 import '../../../../core/theme/theme_cubit.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -71,7 +72,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 centerTitle: true,
               ),
-              body: _buildLoginRequired(context, isRtl),
+              body: EmptyStates.loginRequired(
+                context,
+                message: 'login_to_access_settings'.tr(),
+              ),
             ),
           );
         }
@@ -222,76 +226,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildLoginRequired(BuildContext context, bool isRtl) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.settings_outlined,
-                size: 64,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'login_required'.tr(),
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'login_to_access_settings'.tr(),
-              style: TextStyle(
-                fontSize: 14,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  AppRouter.setAuthenticated(false);
-                  context.go('/login');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'login',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ).tr(),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

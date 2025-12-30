@@ -68,16 +68,34 @@ class ProductRemoteDataSourceImpl
   @override
   Future<ProductModel> getProductById(String id, {String locale = 'ar'}) async {
     try {
-      // Optimized: Single query with store JOIN instead of 2 queries
-      final response = await client
-          .from('products')
-          .select(
-              '*, stores:merchant_id(name, description, phone, address, logo_url)')
-          .eq('id', id)
-          .single();
+      final response =
+          await client.from('products').select().eq('id', id).single();
 
-      return ProductModel.fromJson(response, locale: locale);
+      // Fetch store info separately if merchant_id exists
+      Map<String, dynamic>? storeInfo;
+      if (response['merchant_id'] != null) {
+        try {
+          final storeResponse = await client
+              .from('stores')
+              .select('name, description, phone, address, logo_url')
+              .eq('merchant_id', response['merchant_id'])
+              .maybeSingle();
+          storeInfo = storeResponse;
+        } catch (e) {
+          // Log but don't fail - store info is optional
+          print('⚠️ Failed to fetch store info: $e');
+        }
+      }
+
+      return ProductModel.fromJson({
+        ...response,
+        if (storeInfo != null) 'stores': storeInfo,
+      }, locale: locale);
+    } on PostgrestException catch (e) {
+      print('❌ PostgrestException in getProductById: ${e.message}');
+      throw ServerException('فشل في جلب المنتج: ${e.message}');
     } catch (e) {
+      print('❌ Error in getProductById: $e');
       throw ServerException('فشل في جلب المنتج: ${e.toString()}');
     }
   }

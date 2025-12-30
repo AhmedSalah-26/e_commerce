@@ -250,10 +250,17 @@ class ProductsCubit extends Cubit<ProductsState> {
 
   /// Get a single product by ID with full details (including store info)
   Future<ProductEntity?> getProductById(String productId) async {
+    print('🔍 ProductsCubit.getProductById: $productId');
     final result = await _repository.getProductById(productId);
     return result.fold(
-      (failure) => null,
-      (product) => product,
+      (failure) {
+        print('❌ getProductById failed: ${failure.message}');
+        return null;
+      },
+      (product) {
+        print('✅ getProductById success: ${product.name}');
+        return product;
+      },
     );
   }
 

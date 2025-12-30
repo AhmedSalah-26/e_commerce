@@ -121,10 +121,10 @@ class _AnimatedOrderButtonState extends State<AnimatedOrderButton>
   }
 
   Widget _buildLoadingIndicator() {
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(
+        SizedBox(
           width: 24,
           height: 24,
           child: CircularProgressIndicator(
@@ -132,10 +132,10 @@ class _AnimatedOrderButtonState extends State<AnimatedOrderButton>
             color: Colors.white,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Text(
           'جاري التحميل...',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.w600,

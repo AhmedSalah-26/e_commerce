@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/shared_widgets/custom_button.dart';
+import '../../../../core/shared_widgets/animated_order_button.dart';
 import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../core/shared_widgets/empty_states/empty_state_widget.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -296,7 +295,7 @@ class _CartScreenState extends State<CartScreen> {
                               const SizedBox(height: 16),
                               SizedBox(
                                 width: double.infinity,
-                                child: CustomButton(
+                                child: AnimatedOrderButton(
                                   onPressed:
                                       _isCheckingOut ? null : _handleCheckout,
                                   isLoading: _isCheckingOut,

@@ -53,7 +53,7 @@ class _InventoryInsightsViewState extends State<_InventoryInsightsView> {
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          title: Text(isRtl ? 'ذكاء المخزون' : 'Inventory Insights'),
+          title: Text(isRtl ? 'تحليلات المخزون' : 'Inventory Analytics'),
           centerTitle: true,
         ),
         body: BlocBuilder<InventoryInsightsCubit, InventoryInsightsState>(

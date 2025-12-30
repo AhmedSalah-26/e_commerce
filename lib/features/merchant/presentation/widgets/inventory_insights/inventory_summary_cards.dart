@@ -105,7 +105,8 @@ class _SummaryCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Card(
-      color: color.withValues(alpha: 0.1),
+      color: theme.colorScheme.surface,
+      elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

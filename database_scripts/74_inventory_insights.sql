@@ -107,13 +107,15 @@ BEGIN
 END;
 $$;
 
--- Function to get detailed product inventory data
+-- Function to get detailed product inventory data with pagination
 CREATE OR REPLACE FUNCTION get_merchant_inventory_details(
   p_merchant_id UUID,
   p_filter TEXT DEFAULT 'all', -- 'all', 'low_stock', 'out_of_stock', 'overstock', 'dead_stock'
   p_days_for_analysis INTEGER DEFAULT 30,
   p_low_stock_threshold INTEGER DEFAULT 10,
-  p_high_stock_threshold INTEGER DEFAULT 100
+  p_high_stock_threshold INTEGER DEFAULT 100,
+  p_page INTEGER DEFAULT 0,
+  p_limit INTEGER DEFAULT 20
 )
 RETURNS JSON
 LANGUAGE plpgsql

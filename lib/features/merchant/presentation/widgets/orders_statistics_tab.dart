@@ -250,7 +250,8 @@ class _OrdersStatisticsTabState extends State<OrdersStatisticsTab> {
   Widget _buildSummaryCard(
       String label, String value, Color color, IconData icon, ThemeData theme) {
     return Card(
-      color: color.withValues(alpha: 0.1),
+      color: theme.colorScheme.surface,
+      elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

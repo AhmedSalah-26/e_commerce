@@ -23,6 +23,7 @@ class SettingsSwitchTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final effectiveIconColor = iconColor ?? theme.colorScheme.primary;
 
     return Column(
@@ -59,7 +60,10 @@ class SettingsSwitchTile extends StatelessWidget {
               : null,
           value: value,
           onChanged: onChanged,
+          activeColor: Colors.white,
           activeTrackColor: theme.colorScheme.primary,
+          inactiveThumbColor: isDark ? Colors.grey[400] : Colors.grey[50],
+          inactiveTrackColor: isDark ? Colors.grey[700] : Colors.grey[300],
         ),
         if (showDivider)
           Divider(

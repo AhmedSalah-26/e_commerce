@@ -77,10 +77,10 @@ class OrdersCubit extends Cubit<OrdersState> {
     emit(const OrdersLoading());
     _ordersSubscription = _repository.watchMerchantOrders(merchantId).listen(
       (orders) {
-        emit(OrdersLoaded(orders));
+        if (!isClosed) emit(OrdersLoaded(orders));
       },
       onError: (error) {
-        emit(OrdersError(error.toString()));
+        if (!isClosed) emit(OrdersError(error.toString()));
       },
     );
   }
@@ -92,10 +92,10 @@ class OrdersCubit extends Cubit<OrdersState> {
     _ordersSubscription =
         _repository.watchMerchantOrdersByStatus(merchantId, status).listen(
       (orders) {
-        emit(OrdersLoaded(orders, currentStatus: status));
+        if (!isClosed) emit(OrdersLoaded(orders, currentStatus: status));
       },
       onError: (error) {
-        emit(OrdersError(error.toString()));
+        if (!isClosed) emit(OrdersError(error.toString()));
       },
     );
   }
@@ -165,10 +165,10 @@ class OrdersCubit extends Cubit<OrdersState> {
     _ordersSubscription?.cancel();
     _ordersSubscription = _repository.watchOrders().listen(
       (orders) {
-        emit(OrdersLoaded(orders));
+        if (!isClosed) emit(OrdersLoaded(orders));
       },
       onError: (error) {
-        emit(OrdersError(error.toString()));
+        if (!isClosed) emit(OrdersError(error.toString()));
       },
     );
   }
@@ -179,10 +179,10 @@ class OrdersCubit extends Cubit<OrdersState> {
     emit(const OrdersLoading());
     _ordersSubscription = _repository.watchUserOrders(userId).listen(
       (orders) {
-        emit(OrdersLoaded(orders));
+        if (!isClosed) emit(OrdersLoaded(orders));
       },
       onError: (error) {
-        emit(OrdersError(error.toString()));
+        if (!isClosed) emit(OrdersError(error.toString()));
       },
     );
   }
@@ -281,24 +281,26 @@ class OrdersCubit extends Cubit<OrdersState> {
 
     // Refresh token before starting stream
     _refreshTokenIfNeeded().then((_) {
+      if (isClosed) return;
       _parentOrdersSubscription =
           _repository.watchUserParentOrders(userId).listen(
         (parentOrders) {
-          emit(ParentOrdersLoaded(parentOrders));
+          if (!isClosed) emit(ParentOrdersLoaded(parentOrders));
         },
         onError: (error) async {
+          if (isClosed) return;
           final errorStr = error.toString();
           // Handle JWT errors by refreshing and retrying
           if (errorStr.contains('JWT') || errorStr.contains('token')) {
             try {
               await Supabase.instance.client.auth.refreshSession();
               // Retry watching after refresh
-              watchUserParentOrders(userId);
+              if (!isClosed) watchUserParentOrders(userId);
             } catch (_) {
-              emit(OrdersError(errorStr));
+              if (!isClosed) emit(OrdersError(errorStr));
             }
           } else {
-            emit(OrdersError(errorStr));
+            if (!isClosed) emit(OrdersError(errorStr));
           }
         },
       );

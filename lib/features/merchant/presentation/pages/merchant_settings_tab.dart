@@ -7,6 +7,7 @@ import '../../../../core/routing/app_router.dart';
 import '../../../../Core/Theme/app_text_style.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../settings/presentation/widgets/user_profile_card.dart';
 import '../widgets/profile_edit_dialog.dart';
 import '../widgets/store_info_dialog.dart';
 import '../widgets/settings_dialogs.dart';
@@ -20,151 +21,168 @@ class MerchantSettingsTab extends StatelessWidget {
     final theme = Theme.of(context);
     final isRtl = context.locale.languageCode == 'ar';
 
-    return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state) {
-        if (state is AuthUnauthenticated) {
-          AppRouter.setAuthenticated(false);
-          context.go('/login');
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, authState) {
+        if (authState is! AuthAuthenticated) {
+          return const Center(child: CircularProgressIndicator());
         }
-      },
-      child: Directionality(
-        textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-        child: Scaffold(
-          backgroundColor: theme.scaffoldBackgroundColor,
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
-                  Text(
-                    isRtl ? 'الإعدادات' : 'Settings',
-                    style: AppTextStyle.semiBold_20_dark_brown.copyWith(
-                      fontSize: 24,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _SettingsSection(
-                    title: isRtl ? 'الحساب' : 'Account',
-                    items: [
-                      _SettingsItem(
-                        title: isRtl ? 'الملف الشخصي' : 'Profile',
-                        icon: Icons.person_outline,
-                        onTap: () => ProfileEditDialog.show(context, isRtl),
-                      ),
-                      _SettingsItem(
-                        title: isRtl ? 'معلومات المتجر' : 'Store Information',
-                        icon: Icons.store_outlined,
-                        onTap: () => StoreInfoDialog.show(context, isRtl),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _SettingsSection(
-                    title: isRtl ? 'الشحن' : 'Shipping',
-                    items: [
-                      _SettingsItem(
-                        title: 'shipping_prices'.tr(),
-                        icon: Icons.local_shipping_outlined,
-                        onTap: () => ShippingPricesDialog.show(context, isRtl),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _SettingsSection(
-                    title: isRtl ? 'التقييمات' : 'Reviews',
-                    items: [
-                      _SettingsItem(
-                        title: isRtl
-                            ? 'المنتجات الأعلى تقييماً'
-                            : 'Top Rated Products',
-                        icon: Icons.star_outline,
-                        onTap: () => context.push('/merchant-top-rated'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _SettingsSection(
-                    title: isRtl ? 'التسويق' : 'Marketing',
-                    items: [
-                      _SettingsItem(
-                        title: 'coupons'.tr(),
-                        icon: Icons.local_offer_outlined,
-                        onTap: () => context.push('/merchant-coupons'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _SettingsSection(
-                    title: isRtl ? 'التفضيلات' : 'Preferences',
-                    items: [
-                      _SettingsItem(
-                        title: isRtl ? 'اللغة' : 'Language',
-                        icon: Icons.language,
-                        onTap: () => context.push('/language-settings'),
-                      ),
-                      _SettingsItem(
-                        title: isRtl ? 'المظهر' : 'Theme',
-                        icon: Icons.palette_outlined,
-                        onTap: () => context.push('/theme-settings'),
-                      ),
-                      _SettingsItem(
-                        title: isRtl ? 'الإشعارات' : 'Notifications',
-                        icon: Icons.notifications_outlined,
-                        onTap: () => NotificationsDialog.show(context, isRtl),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _SettingsSection(
-                    title: isRtl ? 'المساعدة' : 'Help',
-                    items: [
-                      _SettingsItem(
-                        title: isRtl ? 'مساعدة' : 'Help',
-                        icon: Icons.help_outline,
-                        onTap: () => context.push('/help'),
-                      ),
-                      _SettingsItem(
-                        title: isRtl ? 'عن التطبيق' : 'About',
-                        icon: Icons.info_outline,
-                        onTap: () => context.push('/about'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _SettingsSection(
-                    items: [
-                      _SettingsItem(
-                        title: 'switch_to_user_mode'.tr(),
-                        icon: Icons.person,
-                        onTap: () => context.go('/home'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _SettingsSection(
-                    items: [
-                      _SettingsItem(
-                        title: isRtl ? 'تسجيل الخروج' : 'Logout',
-                        icon: Icons.logout,
-                        isDestructive: true,
-                        onTap: () => LogoutDialog.show(
-                          context,
-                          isRtl,
-                          () => context.read<AuthCubit>().signOut(),
+
+        return BlocListener<AuthCubit, AuthState>(
+          listener: (context, state) {
+            if (state is AuthUnauthenticated) {
+              AppRouter.setAuthenticated(false);
+              context.go('/login');
+            }
+          },
+          child: Directionality(
+            textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+            child: Scaffold(
+              backgroundColor: theme.scaffoldBackgroundColor,
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
+                      Text(
+                        isRtl ? 'الإعدادات' : 'Settings',
+                        style: AppTextStyle.semiBold_20_dark_brown.copyWith(
+                          fontSize: 24,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
+                      const SizedBox(height: 24),
+                      // Profile Card
+                      GestureDetector(
+                        onTap: () => ProfileEditDialog.show(context, isRtl),
+                        child: UserProfileCard(user: authState.user),
+                      ),
+                      const SizedBox(height: 24),
+                      _SettingsSection(
+                        title: isRtl ? 'الحساب' : 'Account',
+                        items: [
+                          _SettingsItem(
+                            title: isRtl ? 'الملف الشخصي' : 'Profile',
+                            icon: Icons.person_outline,
+                            onTap: () => ProfileEditDialog.show(context, isRtl),
+                          ),
+                          _SettingsItem(
+                            title:
+                                isRtl ? 'معلومات المتجر' : 'Store Information',
+                            icon: Icons.store_outlined,
+                            onTap: () => StoreInfoDialog.show(context, isRtl),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _SettingsSection(
+                        title: isRtl ? 'الشحن' : 'Shipping',
+                        items: [
+                          _SettingsItem(
+                            title: 'shipping_prices'.tr(),
+                            icon: Icons.local_shipping_outlined,
+                            onTap: () =>
+                                ShippingPricesDialog.show(context, isRtl),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _SettingsSection(
+                        title: isRtl ? 'التقييمات' : 'Reviews',
+                        items: [
+                          _SettingsItem(
+                            title: isRtl
+                                ? 'المنتجات الأعلى تقييماً'
+                                : 'Top Rated Products',
+                            icon: Icons.star_outline,
+                            onTap: () => context.push('/merchant-top-rated'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _SettingsSection(
+                        title: isRtl ? 'التسويق' : 'Marketing',
+                        items: [
+                          _SettingsItem(
+                            title: 'coupons'.tr(),
+                            icon: Icons.local_offer_outlined,
+                            onTap: () => context.push('/merchant-coupons'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _SettingsSection(
+                        title: isRtl ? 'التفضيلات' : 'Preferences',
+                        items: [
+                          _SettingsItem(
+                            title: isRtl ? 'اللغة' : 'Language',
+                            icon: Icons.language,
+                            onTap: () => context.push('/language-settings'),
+                          ),
+                          _SettingsItem(
+                            title: isRtl ? 'المظهر' : 'Theme',
+                            icon: Icons.palette_outlined,
+                            onTap: () => context.push('/theme-settings'),
+                          ),
+                          _SettingsItem(
+                            title: isRtl ? 'الإشعارات' : 'Notifications',
+                            icon: Icons.notifications_outlined,
+                            onTap: () =>
+                                NotificationsDialog.show(context, isRtl),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _SettingsSection(
+                        title: isRtl ? 'المساعدة' : 'Help',
+                        items: [
+                          _SettingsItem(
+                            title: isRtl ? 'مساعدة' : 'Help',
+                            icon: Icons.help_outline,
+                            onTap: () => context.push('/help'),
+                          ),
+                          _SettingsItem(
+                            title: isRtl ? 'عن التطبيق' : 'About',
+                            icon: Icons.info_outline,
+                            onTap: () => context.push('/about'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _SettingsSection(
+                        items: [
+                          _SettingsItem(
+                            title: 'switch_to_user_mode'.tr(),
+                            icon: Icons.person,
+                            onTap: () => context.go('/home'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _SettingsSection(
+                        items: [
+                          _SettingsItem(
+                            title: isRtl ? 'تسجيل الخروج' : 'Logout',
+                            icon: Icons.logout,
+                            isDestructive: true,
+                            onTap: () => LogoutDialog.show(
+                              context,
+                              isRtl,
+                              () => context.read<AuthCubit>().signOut(),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
                     ],
                   ),
-                  const SizedBox(height: 32),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

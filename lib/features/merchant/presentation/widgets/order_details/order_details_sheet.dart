@@ -234,6 +234,7 @@ class OrderDetailsSheet extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
@@ -248,18 +249,22 @@ class OrderDetailsSheet extends StatelessWidget {
                     color: theme.colorScheme.onSurface,
                   ),
           ),
-          Text(
-            value,
-            style: isBold
-                ? TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  )
-                : TextStyle(
-                    fontSize: 14,
-                    color: valueColor ?? theme.colorScheme.onSurface,
-                  ),
+          const SizedBox(width: 16),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: isBold
+                  ? TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface,
+                    )
+                  : TextStyle(
+                      fontSize: 14,
+                      color: valueColor ?? theme.colorScheme.onSurface,
+                    ),
+            ),
           ),
         ],
       ),

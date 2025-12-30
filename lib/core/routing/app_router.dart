@@ -39,6 +39,7 @@ import '../../features/settings/presentation/pages/theme_settings_screen.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../../features/product_reports/presentation/pages/my_reports_page.dart';
 import '../../features/product_reports/presentation/pages/admin_product_reports_page.dart';
+import '../../features/merchant/presentation/pages/merchant_inventory_insights_page.dart';
 
 class AppRouter {
   static bool? _onboardingCompleted;
@@ -253,6 +254,10 @@ class AppRouter {
       GoRoute(
         path: '/admin-product-reports',
         builder: (context, state) => const AdminProductReportsPage(),
+      ),
+      GoRoute(
+        path: '/merchant-inventory-insights',
+        builder: (context, state) => const MerchantInventoryInsightsPage(),
       ),
     ],
   );

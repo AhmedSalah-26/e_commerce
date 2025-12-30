@@ -102,6 +102,20 @@ class MerchantSettingsTab extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       _SettingsSection(
+                        title: isRtl ? 'ذكاء المخزون' : 'Inventory Insights',
+                        items: [
+                          _SettingsItem(
+                            title: isRtl
+                                ? 'تحليلات المخزون'
+                                : 'Inventory Analytics',
+                            icon: Icons.analytics_outlined,
+                            onTap: () =>
+                                context.push('/merchant-inventory-insights'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _SettingsSection(
                         title: isRtl ? 'التسويق' : 'Marketing',
                         items: [
                           _SettingsItem(

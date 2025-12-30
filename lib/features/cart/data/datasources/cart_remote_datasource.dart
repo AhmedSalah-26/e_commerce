@@ -26,38 +26,20 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
       {String locale = 'ar'}) async {
     logger.d('🛒 Getting cart items for user: $userId');
     try {
-      final response = await _client
-          .from('cart_items')
-          .select('*, products(*)')
-          .eq('user_id', userId)
-          .order('created_at', ascending: false);
+      // Optimized: Single query with JOIN instead of N+1 queries
+      final response = await _client.from('cart_items').select('''
+            *, 
+            products(
+              *,
+              stores:merchant_id(name, phone)
+            )
+          ''').eq('user_id', userId).order('created_at', ascending: false);
 
       logger.d('✅ Got ${(response as List).length} cart items');
 
-      // Fetch store names for each product's merchant
-      final items = <CartItemModel>[];
-      for (final json in response) {
-        final productData = json['products'] as Map<String, dynamic>?;
-        if (productData != null && productData['merchant_id'] != null) {
-          // Try to get store name
-          try {
-            final storeResponse = await _client
-                .from('stores')
-                .select('name, phone')
-                .eq('merchant_id', productData['merchant_id'])
-                .maybeSingle();
-
-            if (storeResponse != null) {
-              productData['stores'] = storeResponse;
-            }
-          } catch (_) {
-            // Ignore store fetch errors
-          }
-        }
-        items.add(CartItemModel.fromJson(json, locale: locale));
-      }
-
-      return items;
+      return response
+          .map((json) => CartItemModel.fromJson(json, locale: locale))
+          .toList();
     } catch (e, stackTrace) {
       logger.e('❌ Error getting cart items', error: e, stackTrace: stackTrace);
       throw ServerException('فشل في جلب السلة: ${e.toString()}');
@@ -162,38 +144,29 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
         .eq('user_id', userId)
         .order('created_at', ascending: false)
         .asyncMap((data) async {
-          // Fetch products with store info for each cart item
-          final items = <CartItemModel>[];
-          for (final item in data) {
-            final productResponse = await _client
-                .from('products')
-                .select('*')
-                .eq('id', item['product_id'])
-                .single();
+          if (data.isEmpty) return <CartItemModel>[];
 
-            // Try to get store name
-            if (productResponse['merchant_id'] != null) {
-              try {
-                final storeResponse = await _client
-                    .from('stores')
-                    .select('name, phone')
-                    .eq('merchant_id', productResponse['merchant_id'])
-                    .maybeSingle();
+          // Optimized: Batch fetch all products with stores in one query
+          final productIds =
+              data.map((item) => item['product_id'] as String).toSet().toList();
 
-                if (storeResponse != null) {
-                  productResponse['stores'] = storeResponse;
-                }
-              } catch (_) {
-                // Ignore store fetch errors
-              }
-            }
+          final productsResponse = await _client
+              .from('products')
+              .select('*, stores:merchant_id(name, phone)')
+              .inFilter('id', productIds);
 
-            items.add(CartItemModel.fromJson({
+          // Create lookup map for O(1) access
+          final productsMap = {
+            for (final p in productsResponse) p['id'] as String: p
+          };
+
+          return data.map((item) {
+            final product = productsMap[item['product_id']];
+            return CartItemModel.fromJson({
               ...item,
-              'products': productResponse,
-            }, locale: locale));
-          }
-          return items;
+              'products': product,
+            }, locale: locale);
+          }).toList();
         });
   }
 }

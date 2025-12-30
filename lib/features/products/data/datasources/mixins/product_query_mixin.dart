@@ -131,29 +131,17 @@ mixin ProductQueryMixin {
       final from = page * limit;
       final to = from + limit - 1;
 
+      // Optimized: Single query with store JOIN instead of 2 queries
       final response = await client
           .from('products')
-          .select()
+          .select(
+              '*, stores:merchant_id(name, description, phone, address, logo_url)')
           .eq('merchant_id', merchantId)
           .order('created_at', ascending: false)
           .range(from, to);
 
-      // Fetch store info once for all products
-      Map<String, dynamic>? storeInfo;
-      try {
-        final storeResponse = await client
-            .from('stores')
-            .select('name, description, phone, address, logo_url')
-            .eq('merchant_id', merchantId)
-            .maybeSingle();
-        storeInfo = storeResponse;
-      } catch (_) {}
-
       return (response as List)
-          .map((json) => ProductModel.fromJson({
-                ...json,
-                if (storeInfo != null) 'stores': storeInfo,
-              }, locale: locale))
+          .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
     } catch (e) {
       throw ServerException('فشل في جلب منتجات التاجر: ${e.toString()}');

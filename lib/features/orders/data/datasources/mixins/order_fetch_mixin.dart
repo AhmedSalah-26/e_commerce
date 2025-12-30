@@ -18,37 +18,32 @@ mixin OrderFetchMixin {
   Future<List<OrderModel>> getOrders(String userId) async {
     logger.i('📦 Getting orders for user: $userId');
     try {
+      // Optimized: Single query with store JOIN instead of N+1 queries
       final response = await client
           .from('orders')
-          .select('*, $_orderItemsWithProduct')
+          .select(
+              '*, $_orderItemsWithProduct, stores:merchant_id(name, phone, address)')
           .eq('user_id', userId)
           .order('created_at', ascending: false);
 
       logger.d('✅ Got ${(response as List).length} orders');
 
-      return await _mapOrdersWithStoreInfo(response);
+      return (response as List)
+          .map((json) => OrderModel.fromJson(json))
+          .toList();
     } catch (e, stackTrace) {
       logger.e('❌ Error getting orders', error: e, stackTrace: stackTrace);
       throw ServerException('فشل في جلب الطلبات: ${e.toString()}');
     }
   }
 
-  Future<List<OrderModel>> _mapOrdersWithStoreInfo(
-      List<dynamic> response) async {
-    final orders = <OrderModel>[];
-    for (final order in response) {
-      final storeInfo =
-          await _mapper.fetchStoreInfo(order['merchant_id'] as String?);
-      orders.add(_mapper.mapOrderWithStore(order, storeInfo));
-    }
-    return orders;
-  }
-
   Future<List<OrderModel>> getAllOrders() async {
     try {
+      // Optimized: Include store info in single query
       final response = await client
           .from('orders')
-          .select('*, $_orderItemsWithProduct')
+          .select(
+              '*, $_orderItemsWithProduct, stores:merchant_id(name, phone, address)')
           .order('created_at', ascending: false);
 
       return (response as List)
@@ -61,9 +56,11 @@ mixin OrderFetchMixin {
 
   Future<OrderModel> getOrderById(String orderId) async {
     try {
+      // Optimized: Include store info in single query
       final response = await client
           .from('orders')
-          .select('*, $_orderItemsWithProduct')
+          .select(
+              '*, $_orderItemsWithProduct, stores:merchant_id(name, phone, address)')
           .eq('id', orderId)
           .single();
 
@@ -79,12 +76,28 @@ mixin OrderFetchMixin {
         .stream(primaryKey: ['id'])
         .order('created_at', ascending: false)
         .asyncMap((data) async {
-          final orders = <OrderModel>[];
-          for (final order in data) {
-            final items = await _mapper.fetchOrderItems(order['id'] as String);
-            orders.add(_mapper.mapOrderWithItems(order, items));
+          if (data.isEmpty) return <OrderModel>[];
+
+          // Optimized: Batch fetch all order items in one query
+          final orderIds = data.map((o) => o['id'] as String).toList();
+
+          final itemsResponse = await client
+              .from('order_items')
+              .select(
+                  '*, products(name_ar, name_en, description_ar, description_en, images)')
+              .inFilter('order_id', orderIds);
+
+          // Group items by order_id for O(1) lookup
+          final itemsByOrder = <String, List<Map<String, dynamic>>>{};
+          for (final item in itemsResponse) {
+            final orderId = item['order_id'] as String;
+            itemsByOrder.putIfAbsent(orderId, () => []).add(item);
           }
-          return orders;
+
+          return data.map((order) {
+            final items = itemsByOrder[order['id']] ?? [];
+            return _mapper.mapOrderWithItems(order, items);
+          }).toList();
         });
   }
 
@@ -95,14 +108,55 @@ mixin OrderFetchMixin {
         .eq('user_id', userId)
         .order('created_at', ascending: false)
         .asyncMap((data) async {
-          final orders = <OrderModel>[];
-          for (final order in data) {
-            final items = await _mapper.fetchOrderItems(order['id'] as String);
-            final storeInfo =
-                await _mapper.fetchStoreInfo(order['merchant_id'] as String?);
-            orders.add(_mapper.mapOrderWithItems(order, items, storeInfo));
+          if (data.isEmpty) return <OrderModel>[];
+
+          // Optimized: Batch fetch all data in parallel
+          final orderIds = data.map((o) => o['id'] as String).toList();
+          final merchantIds = data
+              .map((o) => o['merchant_id'] as String?)
+              .where((id) => id != null)
+              .cast<String>()
+              .toSet()
+              .toList();
+
+          // Parallel fetch: items and stores
+          final futures = await Future.wait([
+            client
+                .from('order_items')
+                .select(
+                    '*, products(name_ar, name_en, description_ar, description_en, images)')
+                .inFilter('order_id', orderIds),
+            if (merchantIds.isNotEmpty)
+              client
+                  .from('stores')
+                  .select('merchant_id, name, phone, address')
+                  .inFilter('merchant_id', merchantIds)
+            else
+              Future.value(<Map<String, dynamic>>[]),
+          ]);
+
+          final itemsResponse = futures[0] as List;
+          final storesResponse = futures[1] as List;
+
+          // Create lookup maps for O(1) access
+          final itemsByOrder = <String, List<Map<String, dynamic>>>{};
+          for (final item in itemsResponse) {
+            final orderId = item['order_id'] as String;
+            itemsByOrder.putIfAbsent(orderId, () => []).add(item);
           }
-          return orders;
+
+          final storesByMerchant = <String, Map<String, dynamic>>{};
+          for (final store in storesResponse) {
+            storesByMerchant[store['merchant_id'] as String] = store;
+          }
+
+          return data.map((order) {
+            final items = itemsByOrder[order['id']] ?? [];
+            final storeInfo = order['merchant_id'] != null
+                ? storesByMerchant[order['merchant_id']]
+                : null;
+            return _mapper.mapOrderWithItems(order, items, storeInfo);
+          }).toList();
         });
   }
 

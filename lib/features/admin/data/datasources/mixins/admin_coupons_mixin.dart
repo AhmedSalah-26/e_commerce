@@ -7,22 +7,11 @@ mixin AdminCouponsMixin {
   Future<List<Map<String, dynamic>>> getMerchantCouponsImpl(
       String merchantId) async {
     try {
-      // Get merchant's store first
-      final storeResponse = await client
-          .from('stores')
-          .select('id')
-          .eq('merchant_id', merchantId)
-          .maybeSingle();
-
-      if (storeResponse == null) return [];
-
-      final storeId = storeResponse['id'];
-
-      final response = await client
-          .from('coupons')
-          .select('*')
-          .eq('store_id', storeId)
-          .order('created_at', ascending: false);
+      // Optimized: Single RPC call instead of 2 queries
+      final response =
+          await client.rpc('get_merchant_coupons_by_merchant_id', params: {
+        'p_merchant_id': merchantId,
+      });
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {

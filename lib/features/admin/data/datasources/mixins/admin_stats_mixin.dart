@@ -10,77 +10,27 @@ mixin AdminStatsMixin {
     DateTime? toDate,
   }) async {
     try {
-      final today = DateTime.now();
-      final startOfDay = DateTime(today.year, today.month, today.day);
+      // Optimized: Single RPC call instead of 9 queries
+      final response = await client.rpc('get_admin_stats', params: {
+        'p_from_date': fromDate?.toIso8601String(),
+        'p_to_date': toDate != null
+            ? DateTime(toDate.year, toDate.month, toDate.day, 23, 59, 59)
+                .toIso8601String()
+            : null,
+      });
 
-      // Base queries for counts (not affected by date filter)
-      final baseResults = await Future.wait([
-        client.from('profiles').select().eq('role', 'customer').count(),
-        client.from('profiles').select().eq('role', 'merchant').count(),
-        client.from('products').select().count(),
-        client.from('products').select().eq('is_active', true).count(),
-      ]);
-
-      // Orders queries with optional date filter
-      var ordersQuery = client.from('orders').select();
-      var pendingQuery = client.from('orders').select().eq('status', 'pending');
-      var todayQuery = client
-          .from('orders')
-          .select()
-          .gte('created_at', startOfDay.toIso8601String());
-      var revenueQuery =
-          client.from('orders').select('total').eq('status', 'delivered');
-      var todayRevenueQuery = client
-          .from('orders')
-          .select('total')
-          .eq('status', 'delivered')
-          .gte('created_at', startOfDay.toIso8601String());
-
-      // Apply date filters if provided
-      if (fromDate != null) {
-        final fromStr = fromDate.toIso8601String();
-        ordersQuery = ordersQuery.gte('created_at', fromStr);
-        pendingQuery = pendingQuery.gte('created_at', fromStr);
-        revenueQuery = revenueQuery.gte('created_at', fromStr);
-      }
-      if (toDate != null) {
-        final toStr =
-            DateTime(toDate.year, toDate.month, toDate.day, 23, 59, 59)
-                .toIso8601String();
-        ordersQuery = ordersQuery.lte('created_at', toStr);
-        pendingQuery = pendingQuery.lte('created_at', toStr);
-        revenueQuery = revenueQuery.lte('created_at', toStr);
-      }
-
-      final orderResults = await Future.wait([
-        ordersQuery.count(),
-        pendingQuery.count(),
-        todayQuery.count(),
-      ]);
-
-      final revenueResult = await revenueQuery;
-      final todayRevenueResult = await todayRevenueQuery;
-
-      double totalRevenue = 0;
-      for (final row in revenueResult) {
-        totalRevenue += (row['total'] ?? 0).toDouble();
-      }
-
-      double todayRevenue = 0;
-      for (final row in todayRevenueResult) {
-        todayRevenue += (row['total'] ?? 0).toDouble();
-      }
+      final data = response as Map<String, dynamic>;
 
       return AdminStatsModel(
-        totalCustomers: baseResults[0].count,
-        totalMerchants: baseResults[1].count,
-        totalProducts: baseResults[2].count,
-        activeProducts: baseResults[3].count,
-        totalOrders: orderResults[0].count,
-        pendingOrders: orderResults[1].count,
-        todayOrders: orderResults[2].count,
-        totalRevenue: totalRevenue,
-        todayRevenue: todayRevenue,
+        totalCustomers: data['total_customers'] ?? 0,
+        totalMerchants: data['total_merchants'] ?? 0,
+        totalProducts: data['total_products'] ?? 0,
+        activeProducts: data['active_products'] ?? 0,
+        totalOrders: data['total_orders'] ?? 0,
+        pendingOrders: data['pending_orders'] ?? 0,
+        todayOrders: data['today_orders'] ?? 0,
+        totalRevenue: (data['total_revenue'] ?? 0).toDouble(),
+        todayRevenue: (data['today_revenue'] ?? 0).toDouble(),
       );
     } catch (e) {
       throw ServerException('Failed to get stats: $e');

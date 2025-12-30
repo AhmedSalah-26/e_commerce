@@ -68,25 +68,15 @@ class ProductRemoteDataSourceImpl
   @override
   Future<ProductModel> getProductById(String id, {String locale = 'ar'}) async {
     try {
-      final response =
-          await client.from('products').select().eq('id', id).single();
+      // Optimized: Single query with store JOIN instead of 2 queries
+      final response = await client
+          .from('products')
+          .select(
+              '*, stores:merchant_id(name, description, phone, address, logo_url)')
+          .eq('id', id)
+          .single();
 
-      Map<String, dynamic>? storeInfo;
-      if (response['merchant_id'] != null) {
-        try {
-          final storeResponse = await client
-              .from('stores')
-              .select('name, description, phone, address, logo_url')
-              .eq('merchant_id', response['merchant_id'])
-              .maybeSingle();
-          storeInfo = storeResponse;
-        } catch (_) {}
-      }
-
-      return ProductModel.fromJson({
-        ...response,
-        if (storeInfo != null) 'stores': storeInfo,
-      }, locale: locale);
+      return ProductModel.fromJson(response, locale: locale);
     } catch (e) {
       throw ServerException('فشل في جلب المنتج: ${e.toString()}');
     }

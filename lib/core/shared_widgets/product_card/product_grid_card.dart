@@ -1,15 +1,55 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../features/products/domain/entities/product_entity.dart';
 import 'product_image_section.dart';
 import 'product_info_section.dart';
 
-class ProductGridCard extends StatelessWidget {
+class ProductGridCard extends StatefulWidget {
   final ProductEntity product;
 
   const ProductGridCard({super.key, required this.product});
+
+  @override
+  State<ProductGridCard> createState() => _ProductGridCardState();
+}
+
+class _ProductGridCardState extends State<ProductGridCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    _controller.forward();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    _controller.reverse();
+  }
+
+  void _onTapCancel() {
+    _controller.reverse();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,55 +57,72 @@ class ProductGridCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return GestureDetector(
-      onTap: () => _navigateToProduct(context),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: theme.colorScheme.surface,
-              border: Border.all(
-                color: theme.colorScheme.outline.withValues(alpha: 0.3),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  spreadRadius: 0,
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        _navigateToProduct(context);
+      },
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: child,
+          );
+        },
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: theme.colorScheme.surface,
+                border: Border.all(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3),
                 ),
-              ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    spreadRadius: 0,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: ProductImageSection(product: widget.product)),
+                  ProductInfoSection(
+                      product: widget.product, isArabic: isArabic),
+                ],
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(child: ProductImageSection(product: product)),
-                ProductInfoSection(product: product, isArabic: isArabic),
-              ],
-            ),
-          ),
-          if (product.isFlashSaleActive)
-            Positioned(
-              top: 8,
-              right: isArabic ? null : 8,
-              left: isArabic ? 8 : null,
-              child: _FlashSaleBadge(),
-            )
-          else if (product.hasDiscount)
-            Positioned(
-              top: 8,
-              right: isArabic ? null : 8,
-              left: isArabic ? 8 : null,
-              child: _DiscountBadge(percentage: product.discountPercentage),
-            ),
-        ],
+            if (widget.product.isFlashSaleActive)
+              Positioned(
+                top: 8,
+                right: isArabic ? null : 8,
+                left: isArabic ? 8 : null,
+                child: _FlashSaleBadge(),
+              )
+            else if (widget.product.hasDiscount)
+              Positioned(
+                top: 8,
+                right: isArabic ? null : 8,
+                left: isArabic ? 8 : null,
+                child: _DiscountBadge(
+                    percentage: widget.product.discountPercentage),
+              ),
+          ],
+        ),
       ),
     );
   }
 
   void _navigateToProduct(BuildContext context) {
-    context.push('/product/${product.id}');
+    context.push('/product/${widget.product.id}');
   }
 }
 

@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
+import '../../../../core/shared_widgets/empty_states/empty_state_widget.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -149,7 +150,7 @@ class _OrdersPageState extends State<OrdersPage> {
 
             if (state is OrdersLoaded) {
               if (state.orders.isEmpty) {
-                return _buildEmptyOrders();
+                return EmptyStates.noOrders(context);
               }
 
               final parentOrders = state.orders
@@ -176,7 +177,7 @@ class _OrdersPageState extends State<OrdersPage> {
               _cachedParentOrders = state.parentOrders;
 
               if (state.parentOrders.isEmpty) {
-                return _buildEmptyOrders();
+                return EmptyStates.noOrders(context);
               }
 
               return _buildOrdersList(state.parentOrders);
@@ -196,42 +197,6 @@ class _OrdersPageState extends State<OrdersPage> {
             );
           },
         ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyOrders() {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 80,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'no_orders'.tr(),
-            style: TextStyle(
-              fontSize: 18,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => context.go('/home'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.primary,
-            ),
-            child: Text(
-              'start_shopping'.tr(),
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
       ),
     );
   }

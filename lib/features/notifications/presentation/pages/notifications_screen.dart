@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
+import '../../../../core/shared_widgets/empty_states/empty_state_widget.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../cubit/notifications_cubit.dart';
 import '../../domain/entities/notification_entity.dart';
@@ -110,7 +111,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             }
 
             if (state is NotificationsLoaded) {
-              if (state.notifications.isEmpty) return _buildEmptyState(theme);
+              if (state.notifications.isEmpty)
+                return EmptyStates.noNotifications();
 
               return RefreshIndicator(
                 onRefresh: () async =>
@@ -124,29 +126,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               );
             }
 
-            return _buildEmptyState(theme);
+            return EmptyStates.noNotifications();
           },
         ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(ThemeData theme) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.notifications_off_outlined,
-              size: 80,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
-          const SizedBox(height: 16),
-          Text(
-            'no_notifications'.tr(),
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ),
-        ],
       ),
     );
   }

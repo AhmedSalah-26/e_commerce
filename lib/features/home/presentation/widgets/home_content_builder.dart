@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
+import '../../../../core/shared_widgets/empty_states/empty_state_widget.dart';
+import '../../../../core/shared_widgets/loading/progressive_skeleton_loader.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../categories/presentation/cubit/categories_state.dart';
@@ -128,15 +130,9 @@ class HomeContentBuilder {
           }
           if (state is ProductsLoaded) {
             if (state.products.isEmpty) {
-              return SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 200,
-                  child: Center(
-                    child: Text('no_products'.tr(),
-                        style:
-                            const TextStyle(fontSize: 18, color: Colors.grey)),
-                  ),
-                ),
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: EmptyStates.noProducts(context),
               );
             }
             return SliverToBoxAdapter(
@@ -146,7 +142,10 @@ class HomeContentBuilder {
                   if (state.isLoadingMore)
                     const Padding(
                       padding: EdgeInsets.all(16),
-                      child: Center(child: CircularProgressIndicator()),
+                      child: PaginationLoadingIndicator(
+                        isLoading: true,
+                        message: 'جاري تحميل المزيد...',
+                      ),
                     ),
                   if (!state.hasMore && state.products.isNotEmpty)
                     Padding(

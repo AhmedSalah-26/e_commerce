@@ -10,6 +10,7 @@ import 'package:toastification/toastification.dart';
 import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/services/deep_link_service.dart';
+import 'core/services/performance_service.dart';
 import 'core/theme/theme_cubit.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/auth/presentation/cubit/auth_state.dart';
@@ -40,6 +41,9 @@ void main() async {
 
   // Initialize dependencies (Supabase, etc.)
   await di.initializeDependencies();
+
+  // Initialize performance service
+  PerformanceService().initialize();
 
   // Get initial deep link BEFORE app starts (important for cold start)
   // Only on mobile platforms

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../review_reports/presentation/widgets/report_review_dialog.dart';
 
 class ProductReviewsSheet extends StatefulWidget {
   final String productId;
@@ -288,6 +289,7 @@ class _ProductReviewsSheetState extends State<ProductReviewsSheet> {
     final hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty;
     final rating = review['rating'] as int;
     final comment = review['comment'] as String?;
+    final reviewId = review['id'] as String;
     final createdAt = review['created_at'] != null
         ? DateTime.parse(review['created_at'])
         : null;
@@ -307,7 +309,7 @@ class _ProductReviewsSheetState extends State<ProductReviewsSheet> {
                   child: hasAvatar
                       ? ClipOval(
                           child: CachedNetworkImage(
-                            imageUrl: avatarUrl!,
+                            imageUrl: avatarUrl,
                             width: 40,
                             height: 40,
                             fit: BoxFit.cover,
@@ -360,6 +362,18 @@ class _ProductReviewsSheetState extends State<ProductReviewsSheet> {
                     ],
                   ),
                 ),
+                // Report button
+                IconButton(
+                  icon: Icon(
+                    Icons.flag_outlined,
+                    size: 20,
+                    color: theme.colorScheme.outline,
+                  ),
+                  onPressed: () => _reportReview(reviewId, userName, comment),
+                  tooltip: widget.isRtl ? 'إبلاغ' : 'Report',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               ],
             ),
             if (comment != null && comment.isNotEmpty) ...[
@@ -369,6 +383,15 @@ class _ProductReviewsSheetState extends State<ProductReviewsSheet> {
           ],
         ),
       ),
+    );
+  }
+
+  void _reportReview(String reviewId, String reviewerName, String? comment) {
+    ReportReviewDialog.show(
+      context,
+      reviewId: reviewId,
+      reviewerName: reviewerName,
+      reviewComment: comment,
     );
   }
 

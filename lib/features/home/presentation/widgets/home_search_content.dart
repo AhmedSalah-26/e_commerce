@@ -33,12 +33,6 @@ class HomeSearchContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    // Text colors for dark background in light mode
-    final textColor = isDark ? theme.colorScheme.onSurface : Colors.white;
-    final subtitleColor = isDark
-        ? theme.colorScheme.onSurface.withValues(alpha: 0.5)
-        : Colors.white70;
 
     if (isSearching) return const ProductsGridSkeleton(itemCount: 4);
 
@@ -53,14 +47,16 @@ class HomeSearchContent extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.search_off, size: 80, color: subtitleColor),
+              Icon(Icons.search_off,
+                  size: 80,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
               const SizedBox(height: 16),
               Text(
                 currentQuery.isNotEmpty
                     ? '${'no_results_for'.tr()} "$currentQuery"'
                     : 'no_products'.tr(),
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: subtitleColor,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -78,7 +74,6 @@ class HomeSearchContent extends StatelessWidget {
             '${'search_results'.tr()} (${searchResults.length})',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
-              color: textColor,
             ),
           ),
         ),
@@ -114,7 +109,7 @@ class HomeSearchContent extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Center(
                 child: Text('no_more_results'.tr(),
-                    style: TextStyle(color: subtitleColor))),
+                    style: const TextStyle(color: Colors.grey))),
           ),
       ],
     );
@@ -129,9 +124,6 @@ class _CategoriesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final titleColor =
-        isDark ? theme.colorScheme.primary : const Color(0xFFD4A574);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,7 +134,7 @@ class _CategoriesGrid extends StatelessWidget {
             'categories'.tr(),
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
-              color: titleColor,
+              color: theme.colorScheme.primary,
             ),
           ),
         ),
@@ -166,8 +158,7 @@ class _CategoriesGrid extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: Text('no_categories'.tr(),
-                        style: TextStyle(
-                            color: isDark ? Colors.grey[500] : Colors.white70)),
+                        style: TextStyle(color: Colors.grey[500])),
                   ),
                 );
               }

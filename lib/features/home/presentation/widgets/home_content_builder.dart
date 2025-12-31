@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -46,6 +47,7 @@ class HomeContentBuilder {
     required VoidCallback onOffersSelected,
     required VoidCallback onBestSellersSelected,
     required VoidCallback onTopRatedSelected,
+    required VoidCallback onAllProductsSelected,
     required bool isOffersSelected,
     required bool isBestSellersSelected,
     required bool isTopRatedSelected,
@@ -132,6 +134,7 @@ class HomeContentBuilder {
                         onOffersSelected: onOffersSelected,
                         onBestSellersSelected: onBestSellersSelected,
                         onTopRatedSelected: onTopRatedSelected,
+                        onAllProductsSelected: onAllProductsSelected,
                       );
                     }
                     if (catState is CategoriesError) {
@@ -153,16 +156,20 @@ class HomeContentBuilder {
       ),
       // Products grid - only show when no error
       BlocBuilder<ProductsCubit, ProductsState>(
+        buildWhen: (previous, current) => previous != current,
         builder: (context, state) {
+          debugPrint('🔄 Products state: ${state.runtimeType}');
           // Don't show anything if there's an error (handled above)
           if (state is ProductsError) {
             return const SliverToBoxAdapter(child: SizedBox.shrink());
           }
-          if (state is ProductsLoading) {
+          if (state is ProductsLoading || state is ProductsInitial) {
+            debugPrint('📦 Showing shimmer skeleton');
             return const SliverToBoxAdapter(
                 child: ProductsGridSkeleton(itemCount: 6));
           }
           if (state is ProductsLoaded) {
+            debugPrint('📦 Products loaded: ${state.products.length}');
             if (state.products.isEmpty) {
               return SliverFillRemaining(
                 hasScrollBody: false,
@@ -193,7 +200,8 @@ class HomeContentBuilder {
               ),
             );
           }
-          return const SliverToBoxAdapter(child: SizedBox.shrink());
+          return const SliverToBoxAdapter(
+              child: ProductsGridSkeleton(itemCount: 6));
         },
       ),
     ];

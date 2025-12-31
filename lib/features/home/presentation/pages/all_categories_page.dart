@@ -29,6 +29,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   String? _selectedCategoryId;
   SortOption _sortOption = SortOption.newest;
   final ScrollController _scrollController = ScrollController();
+  bool _isLoadingProducts = false; // Local loading state for immediate shimmer
 
   // Price filter
   static const double _minPrice = 0;
@@ -64,13 +65,19 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   }
 
   void _loadProducts() {
-    if (_selectedCategoryId != null) {
-      context
-          .read<ProductsCubit>()
-          .loadProductsByCategory(_selectedCategoryId!);
-    } else {
-      context.read<ProductsCubit>().loadProducts(forceReload: true);
-    }
+    setState(() => _isLoadingProducts = true);
+
+    // Use post frame callback to ensure shimmer shows first
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (_selectedCategoryId != null) {
+        await context
+            .read<ProductsCubit>()
+            .loadProductsByCategory(_selectedCategoryId!);
+      } else {
+        await context.read<ProductsCubit>().loadProducts(forceReload: true);
+      }
+      if (mounted) setState(() => _isLoadingProducts = false);
+    });
   }
 
   void _onCategorySelected(String? categoryId) {
@@ -187,36 +194,40 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
 
           // Products grid
           Expanded(
-            child: BlocBuilder<ProductsCubit, ProductsState>(
-              builder: (context, state) {
-                if (state is ProductsLoading) {
-                  return const ProductsGridSkeleton(itemCount: 6);
-                }
+            child: _isLoadingProducts
+                ? const ProductsGridSkeleton(itemCount: 6)
+                : BlocBuilder<ProductsCubit, ProductsState>(
+                    builder: (context, state) {
+                      if (state is ProductsLoading ||
+                          state is ProductsInitial) {
+                        return const ProductsGridSkeleton(itemCount: 6);
+                      }
 
-                if (state is ProductsError) {
-                  return NetworkErrorWidget(
-                    message: ErrorHelper.getUserFriendlyMessage(state.message),
-                    onRetry: _loadProducts,
-                  );
-                }
+                      if (state is ProductsError) {
+                        return NetworkErrorWidget(
+                          message:
+                              ErrorHelper.getUserFriendlyMessage(state.message),
+                          onRetry: _loadProducts,
+                        );
+                      }
 
-                if (state is ProductsLoaded) {
-                  final sortedProducts = _sortProducts(state.products);
+                      if (state is ProductsLoaded) {
+                        final sortedProducts = _sortProducts(state.products);
 
-                  if (sortedProducts.isEmpty) {
-                    return EmptyStates.noProducts(context);
-                  }
+                        if (sortedProducts.isEmpty) {
+                          return EmptyStates.noProducts(context);
+                        }
 
-                  return CategoryProductsGrid(
-                    products: sortedProducts,
-                    scrollController: _scrollController,
-                    isLoadingMore: state.isLoadingMore,
-                  );
-                }
+                        return CategoryProductsGrid(
+                          products: sortedProducts,
+                          scrollController: _scrollController,
+                          isLoadingMore: state.isLoadingMore,
+                        );
+                      }
 
-                return const SizedBox.shrink();
-              },
-            ),
+                      return const ProductsGridSkeleton(itemCount: 6);
+                    },
+                  ),
           ),
         ],
       ),

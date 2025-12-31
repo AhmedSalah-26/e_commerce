@@ -10,7 +10,6 @@ class ProductsCubit extends Cubit<ProductsState> {
   final ProductRepository _repository;
   static const int _pageSize = 10;
   Timer? _debounceTimer;
-  bool _isLoading = false;
 
   ProductsCubit({required ProductRepository repository})
       : _repository = repository,
@@ -23,27 +22,40 @@ class ProductsCubit extends Cubit<ProductsState> {
     }
   }
 
+  /// Minimum loading duration for shimmer visibility
+  static const Duration _minLoadingDuration = Duration(milliseconds: 400);
+
+  /// Helper to ensure minimum loading time for shimmer visibility
+  Future<T> _withMinLoadingTime<T>(Future<T> Function() operation) async {
+    final stopwatch = Stopwatch()..start();
+    final result = await operation();
+    final elapsed = stopwatch.elapsed;
+    if (elapsed < _minLoadingDuration) {
+      await Future.delayed(_minLoadingDuration - elapsed);
+    }
+    return result;
+  }
+
   /// Load all products (first page)
   Future<void> loadProducts({bool forceReload = false}) async {
-    // Prevent duplicate loading
-    if (_isLoading) return;
-
     // Skip if already loaded and not forcing reload
     if (!forceReload && state is ProductsLoaded) {
       final loaded = state as ProductsLoaded;
       if (loaded.selectedCategoryId == null &&
           loaded.searchQuery == null &&
-          !loaded.isOffersMode) {
+          !loaded.isOffersMode &&
+          !loaded.isBestSellersMode &&
+          !loaded.isTopRatedMode) {
         return;
       }
     }
 
-    _isLoading = true;
     emit(const ProductsLoading());
 
-    final result = await _repository.getProducts(page: 0, limit: _pageSize);
+    final result = await _withMinLoadingTime(
+      () => _repository.getProducts(page: 0, limit: _pageSize),
+    );
 
-    _isLoading = false;
     result.fold(
       (failure) => emit(ProductsError(failure.message)),
       (products) => emit(ProductsLoaded(
@@ -94,10 +106,12 @@ class ProductsCubit extends Cubit<ProductsState> {
   Future<void> loadProductsByCategory(String categoryId) async {
     emit(const ProductsLoading());
 
-    final result = await _repository.getProductsByCategory(
-      categoryId,
-      page: 0,
-      limit: _pageSize,
+    final result = await _withMinLoadingTime(
+      () => _repository.getProductsByCategory(
+        categoryId,
+        page: 0,
+        limit: _pageSize,
+      ),
     );
 
     result.fold(
@@ -142,11 +156,13 @@ class ProductsCubit extends Cubit<ProductsState> {
 
     emit(const ProductsLoading());
 
-    final result = await _repository.searchProducts(
-      query,
-      page: 0,
-      limit: _pageSize,
-      categoryId: categoryId,
+    final result = await _withMinLoadingTime(
+      () => _repository.searchProducts(
+        query,
+        page: 0,
+        limit: _pageSize,
+        categoryId: categoryId,
+      ),
     );
 
     result.fold(
@@ -182,9 +198,11 @@ class ProductsCubit extends Cubit<ProductsState> {
   Future<void> loadDiscountedProducts() async {
     emit(const ProductsLoading());
 
-    final result = await _repository.getDiscountedProducts(
-      page: 0,
-      limit: _pageSize,
+    final result = await _withMinLoadingTime(
+      () => _repository.getDiscountedProducts(
+        page: 0,
+        limit: _pageSize,
+      ),
     );
 
     result.fold(
@@ -202,8 +220,8 @@ class ProductsCubit extends Cubit<ProductsState> {
   Future<void> loadFlashSaleProducts() async {
     emit(const ProductsLoading());
 
-    final result = await _repository.getFlashSaleProducts(
-      limit: _pageSize,
+    final result = await _withMinLoadingTime(
+      () => _repository.getFlashSaleProducts(limit: _pageSize),
     );
 
     result.fold(
@@ -248,9 +266,11 @@ class ProductsCubit extends Cubit<ProductsState> {
   Future<void> loadBestSellingProducts() async {
     emit(const ProductsLoading());
 
-    final result = await _repository.getBestSellingProducts(
-      page: 0,
-      limit: _pageSize,
+    final result = await _withMinLoadingTime(
+      () => _repository.getBestSellingProducts(
+        page: 0,
+        limit: _pageSize,
+      ),
     );
 
     result.fold(
@@ -295,9 +315,11 @@ class ProductsCubit extends Cubit<ProductsState> {
   Future<void> loadTopRatedProducts() async {
     emit(const ProductsLoading());
 
-    final result = await _repository.getTopRatedProducts(
-      page: 0,
-      limit: _pageSize,
+    final result = await _withMinLoadingTime(
+      () => _repository.getTopRatedProducts(
+        page: 0,
+        limit: _pageSize,
+      ),
     );
 
     result.fold(
@@ -356,7 +378,6 @@ class ProductsCubit extends Cubit<ProductsState> {
 
   /// Reset state and force reload - used when language changes
   Future<void> reset() async {
-    _isLoading = false;
     emit(const ProductsInitial());
     await loadProducts(forceReload: true);
   }

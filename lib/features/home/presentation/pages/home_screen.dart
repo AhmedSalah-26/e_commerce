@@ -2,12 +2,16 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/di/injection_container.dart';
 import '../../../notifications/data/services/local_notification_service.dart';
 import '../../../products/presentation/cubit/products_cubit.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../cubit/home_sliders_cubit.dart';
-import '../widgets/home_content_builder.dart';
+import '../widgets/home_search_bar.dart';
+import '../widgets/home_sliders.dart';
+import '../widgets/home_products_section.dart';
+import '../widgets/category_row.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,23 +24,24 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  String? selectedCategoryId;
-  bool isOffersSelected = false;
-  bool isBestSellersSelected = true; // Default to best sellers
-  bool isTopRatedSelected = false;
-  bool isAllProductsSelected = false;
+  // Tab selection state
+  String? _selectedCategoryId;
+  bool _isOffersSelected = false;
+  bool _isBestSellersSelected = true;
+  bool _isTopRatedSelected = false;
+  bool _isAllProductsSelected = false;
+
+  // Loading state for shimmer
+  bool _isLoadingProducts = true;
+
   final ScrollController _scrollController = ScrollController();
   int _unreadNotifications = 0;
   String? _lastLocale;
 
-  /// Scroll to top of the list
   void scrollToTop() {
     if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      _scrollController.animateTo(0,
+          duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     }
   }
 
@@ -51,41 +56,26 @@ class HomeScreenState extends State<HomeScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final currentLocale = context.locale.languageCode;
-
     if (_lastLocale == null || _lastLocale != currentLocale) {
       _lastLocale = currentLocale;
-      _loadAllData();
+      _initializeData();
     }
   }
 
-  void _loadAllData() {
+  void _initializeData() {
     final locale = context.locale.languageCode;
-
-    // Set locale for scoped cubits
     context.read<CategoriesCubit>().setLocale(locale);
     context.read<HomeSlidersCubit>().setLocale(locale);
-
-    // Load best sellers by default
-    context.read<ProductsCubit>().loadBestSellingProducts();
     context.read<CategoriesCubit>().loadCategories();
-
-    // Use reset to force reload with new locale
     context.read<HomeSlidersCubit>().reset();
 
-    setState(() {
-      selectedCategoryId = null;
-      isOffersSelected = false;
-      isBestSellersSelected = true;
-      isTopRatedSelected = false;
-      isAllProductsSelected = false;
-    });
+    // Load best sellers by default
+    _loadTab(TabType.bestSellers);
   }
 
   Future<void> _loadUnreadCount() async {
     final count = await sl<LocalNotificationService>().getUnreadCount();
-    if (mounted) {
-      setState(() => _unreadNotifications = count);
-    }
+    if (mounted) setState(() => _unreadNotifications = count);
   }
 
   @override
@@ -96,32 +86,69 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   void _onScroll() {
-    if (_isBottom) {
-      if (isOffersSelected) {
-        context.read<ProductsCubit>().loadMoreDiscountedProducts();
-      } else if (isBestSellersSelected) {
-        context.read<ProductsCubit>().loadMoreBestSellingProducts();
-      } else if (isTopRatedSelected) {
-        context.read<ProductsCubit>().loadMoreTopRatedProducts();
+    if (!_scrollController.hasClients) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+
+    if (currentScroll >= (maxScroll - 200)) {
+      final cubit = context.read<ProductsCubit>();
+      if (_isOffersSelected) {
+        cubit.loadMoreDiscountedProducts();
+      } else if (_isBestSellersSelected) {
+        cubit.loadMoreBestSellingProducts();
+      } else if (_isTopRatedSelected) {
+        cubit.loadMoreTopRatedProducts();
       } else {
-        context.read<ProductsCubit>().loadMoreProducts();
+        cubit.loadMoreProducts();
       }
     }
   }
 
-  bool get _isBottom {
-    if (!_scrollController.hasClients) return false;
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.offset;
-    return currentScroll >= (maxScroll - 200);
+  Future<void> _handleRefresh() async {
+    context.read<HomeSlidersCubit>().refreshSliders();
+    context.read<CategoriesCubit>().loadCategories();
+
+    if (_isOffersSelected) {
+      await _loadTab(TabType.offers);
+    } else if (_isBestSellersSelected) {
+      await _loadTab(TabType.bestSellers);
+    } else if (_isTopRatedSelected) {
+      await _loadTab(TabType.topRated);
+    } else {
+      await _loadTab(TabType.allProducts);
+    }
   }
 
-  final List<String> sliderImages = [
-    "assets/slider/V1.png",
-    "assets/slider/V2.png",
-    "assets/slider/V3.png",
-    "assets/slider/V4.png",
-  ];
+  /// Load products for a specific tab with shimmer
+  Future<void> _loadTab(TabType tab) async {
+    // Set loading state immediately
+    setState(() {
+      _isLoadingProducts = true;
+      _selectedCategoryId = null;
+      _isOffersSelected = tab == TabType.offers;
+      _isBestSellersSelected = tab == TabType.bestSellers;
+      _isTopRatedSelected = tab == TabType.topRated;
+      _isAllProductsSelected = tab == TabType.allProducts;
+    });
+
+    // Wait for next frame to ensure UI updates
+    await Future.delayed(const Duration(milliseconds: 50));
+
+    // Load data
+    final cubit = context.read<ProductsCubit>();
+    switch (tab) {
+      case TabType.offers:
+        await cubit.loadDiscountedProducts();
+      case TabType.bestSellers:
+        await cubit.loadBestSellingProducts();
+      case TabType.topRated:
+        await cubit.loadTopRatedProducts();
+      case TabType.allProducts:
+        await cubit.loadProducts(forceReload: true);
+    }
+
+    if (mounted) setState(() => _isLoadingProducts = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +159,15 @@ class HomeScreenState extends State<HomeScreen> {
         backgroundColor: theme.scaffoldBackgroundColor,
         body: Column(
           children: [
-            _buildSearchBar(context),
+            // Fixed search bar
+            HomeSearchBar(
+              unreadNotifications: _unreadNotifications,
+              onNotificationTap: () {
+                context.push('/notifications');
+                _loadUnreadCount();
+              },
+            ),
+            // Scrollable content
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _handleRefresh,
@@ -140,8 +175,22 @@ class HomeScreenState extends State<HomeScreen> {
                 child: CustomScrollView(
                   controller: _scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: <Widget>[
-                    ..._buildHomeContent(),
+                  slivers: [
+                    // Sliders
+                    const SliverToBoxAdapter(child: HomeSliders()),
+                    // Sticky tabs
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _StickyTabDelegate(
+                        backgroundColor: theme.scaffoldBackgroundColor,
+                        child: _buildTabs(theme),
+                      ),
+                    ),
+                    // Products grid
+                    HomeProductsSection(
+                      isLoading: _isLoadingProducts,
+                      onRetry: _handleRefresh,
+                    ),
                   ],
                 ),
               ),
@@ -152,180 +201,49 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
-    final theme = Theme.of(context);
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
+  Widget _buildTabs(ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () {
-              context.push('/notifications');
-              _loadUnreadCount();
-            },
-            child: Container(
-              width: screenWidth * 0.12,
-              height: screenHeight * 0.055,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: theme.colorScheme.surface,
-                border: Border.all(
-                  color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: Icon(
-                      Icons.notifications,
-                      size: screenWidth * 0.055,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                  if (_unreadNotifications > 0)
-                    Positioned(
-                      right: 6,
-                      top: 6,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          _unreadNotifications > 9
-                              ? '9+'
-                              : '$_unreadNotifications',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: GestureDetector(
-                onTap: () => context.go('/home/search'),
-                child: Container(
-                  height: 45,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        'search'.tr(),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.6),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(Icons.search, color: theme.colorScheme.primary),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+      color: theme.scaffoldBackgroundColor,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: HorizontalCategoriesView(
+        categories: const [],
+        selectedCategoryId: _selectedCategoryId,
+        isOffersSelected: _isOffersSelected,
+        isBestSellersSelected: _isBestSellersSelected,
+        isTopRatedSelected: _isTopRatedSelected,
+        isAllProductsSelected: _isAllProductsSelected,
+        onCategorySelected: (_) {},
+        onOffersSelected: () => _loadTab(TabType.offers),
+        onBestSellersSelected: () => _loadTab(TabType.bestSellers),
+        onTopRatedSelected: () => _loadTab(TabType.topRated),
+        onAllProductsSelected: () => _loadTab(TabType.allProducts),
       ),
     );
   }
+}
 
-  Future<void> _handleRefresh() async {
-    context.read<HomeSlidersCubit>().refreshSliders();
-    context.read<CategoriesCubit>().loadCategories();
+enum TabType { offers, bestSellers, topRated, allProducts }
 
-    if (isOffersSelected) {
-      context.read<ProductsCubit>().loadDiscountedProducts();
-    } else if (isBestSellersSelected) {
-      context.read<ProductsCubit>().loadBestSellingProducts();
-    } else if (isTopRatedSelected) {
-      context.read<ProductsCubit>().loadTopRatedProducts();
-    } else if (selectedCategoryId != null) {
-      context.read<ProductsCubit>().loadProductsByCategory(selectedCategoryId!);
-    } else {
-      context.read<ProductsCubit>().loadProducts(forceReload: true);
-    }
+class _StickyTabDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final Color backgroundColor;
+
+  _StickyTabDelegate({required this.child, required this.backgroundColor});
+
+  @override
+  double get minExtent => 66;
+  @override
+  double get maxExtent => 66;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(color: backgroundColor, child: child);
   }
 
-  List<Widget> _buildHomeContent() {
-    return HomeContentBuilder.buildHomeContent(
-      context: context,
-      sliderImages: sliderImages,
-      selectedCategoryId: selectedCategoryId,
-      isOffersSelected: isOffersSelected,
-      isBestSellersSelected: isBestSellersSelected,
-      isTopRatedSelected: isTopRatedSelected,
-      isAllProductsSelected: isAllProductsSelected,
-      onCategorySelected: (categoryId) {
-        setState(() {
-          selectedCategoryId = categoryId;
-          isOffersSelected = false;
-          isBestSellersSelected = false;
-          isTopRatedSelected = false;
-          isAllProductsSelected = categoryId == null;
-        });
-        if (categoryId == null) {
-          context.read<ProductsCubit>().loadProducts();
-        } else {
-          context.read<ProductsCubit>().loadProductsByCategory(categoryId);
-        }
-      },
-      onOffersSelected: () {
-        setState(() {
-          isOffersSelected = true;
-          isBestSellersSelected = false;
-          isTopRatedSelected = false;
-          isAllProductsSelected = false;
-          selectedCategoryId = null;
-        });
-        context.read<ProductsCubit>().loadDiscountedProducts();
-      },
-      onBestSellersSelected: () {
-        setState(() {
-          isBestSellersSelected = true;
-          isOffersSelected = false;
-          isTopRatedSelected = false;
-          isAllProductsSelected = false;
-          selectedCategoryId = null;
-        });
-        context.read<ProductsCubit>().loadBestSellingProducts();
-      },
-      onTopRatedSelected: () {
-        setState(() {
-          isTopRatedSelected = true;
-          isBestSellersSelected = false;
-          isOffersSelected = false;
-          isAllProductsSelected = false;
-          selectedCategoryId = null;
-        });
-        context.read<ProductsCubit>().loadTopRatedProducts();
-      },
-    );
+  @override
+  bool shouldRebuild(covariant _StickyTabDelegate oldDelegate) {
+    return child != oldDelegate.child ||
+        backgroundColor != oldDelegate.backgroundColor;
   }
 }

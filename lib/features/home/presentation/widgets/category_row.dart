@@ -18,6 +18,7 @@ class HorizontalCategoriesView extends StatelessWidget {
   final VoidCallback? onOffersSelected;
   final VoidCallback? onBestSellersSelected;
   final VoidCallback? onTopRatedSelected;
+  final VoidCallback? onAllProductsSelected;
   final List<CategoryEntity> categories;
   final String? selectedCategoryId;
   final bool isOffersSelected;
@@ -30,6 +31,7 @@ class HorizontalCategoriesView extends StatelessWidget {
     this.onOffersSelected,
     this.onBestSellersSelected,
     this.onTopRatedSelected,
+    this.onAllProductsSelected,
     required this.categories,
     this.selectedCategoryId,
     this.isOffersSelected = false,
@@ -64,7 +66,7 @@ class HorizontalCategoriesView extends StatelessWidget {
         title: 'all_products'.tr(),
         icon: Icons.grid_view,
         isSelected: isAllProductsSelected,
-        onTap: () => onCategorySelected(null),
+        onTap: () => onAllProductsSelected?.call(),
       ),
       _TabItem(
         type: HomeTabType.offers,

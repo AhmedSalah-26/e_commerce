@@ -2,27 +2,43 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/di/injection_container.dart';
+import '../../../banners/data/datasources/banner_remote_datasource.dart';
+import '../../../banners/presentation/cubit/banners_cubit.dart';
 import '../cubit/home_sliders_cubit.dart';
-import 'images_card_slider.dart';
+import 'dynamic_banner_slider.dart';
 import 'horizontal_products_slider.dart';
 import 'flash_sale_slider.dart';
 
 class HomeSliders extends StatelessWidget {
   const HomeSliders({super.key});
 
-  static const List<String> sliderImages = [
-    "assets/slider/V1.png",
-    "assets/slider/V2.png",
-    "assets/slider/V3.png",
-    "assets/slider/V4.png",
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ImagesCard(images: sliderImages),
+        BlocProvider(
+          create: (_) {
+            final cubit = BannersCubit(sl<BannerRemoteDatasource>());
+            cubit.setLocale(context.locale.languageCode);
+            cubit.loadActiveBanners();
+            return cubit;
+          },
+          child: BlocBuilder<BannersCubit, BannersState>(
+            builder: (context, state) {
+              if (state is BannersLoaded && state.banners.isNotEmpty) {
+                return DynamicBannerSlider(banners: state.banners);
+              }
+              if (state is BannersLoading) {
+                return _buildBannerShimmer();
+              }
+              // No banners available
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
         const SizedBox(height: 4),
         BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
           builder: (context, state) {
@@ -63,6 +79,23 @@ class HomeSliders extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildBannerShimmer() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey.shade300,
+        highlightColor: Colors.grey.shade100,
+        child: Container(
+          height: 170,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
     );
   }
 }

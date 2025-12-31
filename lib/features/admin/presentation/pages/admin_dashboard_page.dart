@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../banners/presentation/pages/admin_banners_page.dart';
 import '../cubit/admin_cubit.dart';
 import '../widgets/admin_sidebar.dart';
 import '../widgets/admin_header.dart';
@@ -170,18 +171,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       case 4:
         return AdminCategoriesTab(isRtl: isRtl);
       case 5:
-        return AdminCouponsTab(isRtl: isRtl);
+        return const AdminBannersPage();
       case 6:
-        return const AdminMerchantCouponsPage();
+        return AdminCouponsTab(isRtl: isRtl);
       case 7:
-        return AdminShippingTab(isRtl: isRtl);
+        return const AdminMerchantCouponsPage();
       case 8:
-        return const AdminProductReportsPage();
+        return AdminShippingTab(isRtl: isRtl);
       case 9:
-        return const AdminReviewReportsPage();
+        return const AdminProductReportsPage();
       case 10:
-        return AdminReportsTab(isRtl: isRtl);
+        return const AdminReviewReportsPage();
       case 11:
+        return AdminReportsTab(isRtl: isRtl);
+      case 12:
         return AdminSettingsTab(isRtl: isRtl);
       default:
         return AdminHomeTab(isRtl: isRtl);

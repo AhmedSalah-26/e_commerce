@@ -10,6 +10,7 @@ import '../../features/admin/presentation/pages/admin_merchant_coupons_page.dart
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/address_onboarding_page.dart';
+import '../../features/banners/presentation/pages/admin_banners_page.dart';
 import '../../features/cart/presentation/pages/cart_screen.dart';
 import '../../features/checkout/presentation/pages/checkout_page.dart';
 import '../../features/coupons/presentation/pages/merchant_coupons_page.dart';
@@ -282,6 +283,10 @@ class AppRouter {
       GoRoute(
         path: '/admin-product-reports',
         builder: (context, state) => const AdminProductReportsPage(),
+      ),
+      GoRoute(
+        path: '/admin-banners',
+        builder: (context, state) => const AdminBannersPage(),
       ),
       GoRoute(
         path: '/merchant-inventory-insights',

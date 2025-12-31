@@ -39,8 +39,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'description': isRtl
             ? 'اكتشفوا معنا أجود أنواع التمور والمنتجات الفريدة. نقدم لكم أفضل المنتجات الطبيعية بأعلى جودة.'
             : 'Discover the finest dates and unique products with us. We offer the best natural products with the highest quality.',
-        'imagePath':
-            'assets/on_bording/Tosca & Brown Retro Minimalist Ajwa Dates Badge Logo (2).png',
+        'imagePath': 'assets/on_bording/logo.png',
       },
       {
         'title': isRtl
@@ -56,7 +55,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'description': isRtl
             ? 'لنبدأ الآن واستكشفوا كل ما نقدمه لكم من منتجات مميزة.'
             : 'Let\'s start now and explore all the special products we offer.',
-        'imagePath': 'assets/on_bording/Picsart_24-09-15_19-19-18-148.png',
+        'imagePath': 'assets/on_bording/onboarding3.png',
       },
     ];
   }

@@ -101,7 +101,7 @@ class _SplashScreenState extends State<SplashScreen>
             );
           },
           child: Image.asset(
-            'assets/on_bording/logo-2.png',
+            'assets/on_bording/logo.png',
             width: 200,
             height: 200,
           ),

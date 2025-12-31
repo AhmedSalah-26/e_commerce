@@ -161,6 +161,7 @@ class AdminSidebar extends StatelessWidget {
         _MenuItem(Icons.receipt_long, isRtl ? 'الطلبات' : 'Orders'),
         _MenuItem(Icons.inventory, isRtl ? 'المنتجات' : 'Products'),
         _MenuItem(Icons.category, isRtl ? 'التصنيفات' : 'Categories'),
+        _MenuItem(Icons.image, isRtl ? 'البانرات' : 'Banners'),
         _MenuItem(
             Icons.local_offer, isRtl ? 'الكوبونات العامة' : 'Global Coupons'),
         _MenuItem(

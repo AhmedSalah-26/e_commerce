@@ -75,16 +75,19 @@ class MyAddressesPage extends StatelessWidget {
   }
 
   void _showAddAddressDialog(BuildContext context, bool isRtl) {
+    final shippingCubit = context.read<ShippingCubit>();
+    final authCubit = context.read<AuthCubit>();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => BlocProvider.value(
-        value: context.read<ShippingCubit>(),
-        child: BlocProvider.value(
-          value: context.read<AuthCubit>(),
-          child: _AddEditAddressSheet(isRtl: isRtl),
-        ),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: shippingCubit),
+          BlocProvider.value(value: authCubit),
+        ],
+        child: _AddEditAddressSheet(isRtl: isRtl),
       ),
     );
   }
@@ -232,21 +235,26 @@ class _AddressCard extends StatelessWidget {
   }
 
   void _editAddress(BuildContext context) {
+    final shippingCubit = context.read<ShippingCubit>();
+    final authCubit = context.read<AuthCubit>();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => BlocProvider.value(
-        value: context.read<ShippingCubit>(),
-        child: BlocProvider.value(
-          value: context.read<AuthCubit>(),
-          child: _AddEditAddressSheet(isRtl: isRtl, address: address),
-        ),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: shippingCubit),
+          BlocProvider.value(value: authCubit),
+        ],
+        child: _AddEditAddressSheet(isRtl: isRtl, address: address),
       ),
     );
   }
 
   void _deleteAddress(BuildContext context) {
+    final authCubit = context.read<AuthCubit>();
+
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -262,7 +270,7 @@ class _AddressCard extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              context.read<AuthCubit>().deleteAddress(address.id);
+              authCubit.deleteAddress(address.id);
             },
             child: Text(
               isRtl ? 'حذف' : 'Delete',

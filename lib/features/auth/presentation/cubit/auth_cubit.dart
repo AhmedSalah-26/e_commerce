@@ -67,7 +67,6 @@ class AuthCubit extends Cubit<AuthState> {
     required String name,
     String? phone,
     String? avatarUrl,
-    String? governorateId,
   }) async {
     emit(const AuthLoading());
 
@@ -78,7 +77,6 @@ class AuthCubit extends Cubit<AuthState> {
       name: name,
       phone: phone,
       avatarUrl: avatarUrl,
-      governorateId: governorateId,
     );
 
     result.fold(
@@ -119,7 +117,6 @@ class AuthCubit extends Cubit<AuthState> {
     String? name,
     String? phone,
     String? avatarUrl,
-    String? governorateId,
     List<UserAddress>? addresses,
   }) async {
     final user = currentUser;
@@ -130,7 +127,6 @@ class AuthCubit extends Cubit<AuthState> {
       name: name,
       phone: phone,
       avatarUrl: avatarUrl,
-      governorateId: governorateId,
       addresses: addresses,
     );
 

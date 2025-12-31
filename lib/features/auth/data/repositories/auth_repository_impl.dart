@@ -36,7 +36,6 @@ class AuthRepositoryImpl implements AuthRepository {
     required String name,
     String? phone,
     String? avatarUrl,
-    String? governorateId,
   }) async {
     try {
       final user = await _remoteDataSource.signUp(
@@ -46,7 +45,6 @@ class AuthRepositoryImpl implements AuthRepository {
         name: name,
         phone: phone,
         avatarUrl: avatarUrl,
-        governorateId: governorateId,
       );
       return Right(user);
     } on AuthException catch (e) {
@@ -92,7 +90,6 @@ class AuthRepositoryImpl implements AuthRepository {
     String? name,
     String? phone,
     String? avatarUrl,
-    String? governorateId,
     List<UserAddress>? addresses,
   }) async {
     try {
@@ -101,7 +98,6 @@ class AuthRepositoryImpl implements AuthRepository {
         name: name,
         phone: phone,
         avatarUrl: avatarUrl,
-        governorateId: governorateId,
         addresses: addresses,
       );
       return Right(user);

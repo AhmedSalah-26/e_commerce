@@ -15,7 +15,6 @@ abstract class AuthRepository {
     required String name,
     String? phone,
     String? avatarUrl,
-    String? governorateId,
   });
 
   /// Sign out current user
@@ -30,7 +29,6 @@ abstract class AuthRepository {
     String? name,
     String? phone,
     String? avatarUrl,
-    String? governorateId,
     List<UserAddress>? addresses,
   });
 

@@ -91,10 +91,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => BlocProvider(
-          create: (_) => sl<ShippingCubit>()..loadGovernorates(),
-          child: const RegisterPage(),
-        ),
+        builder: (context, state) => const RegisterPage(),
       ),
       GoRoute(
         path: '/merchant-dashboard',

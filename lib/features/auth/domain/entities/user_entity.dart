@@ -87,7 +87,6 @@ class UserEntity extends Equatable {
   final String? name;
   final String? phone;
   final String? avatarUrl;
-  final String? governorateId;
   final DateTime? createdAt;
   final bool isActive;
   final DateTime? bannedUntil;
@@ -101,7 +100,6 @@ class UserEntity extends Equatable {
     this.name,
     this.phone,
     this.avatarUrl,
-    this.governorateId,
     this.createdAt,
     this.isActive = true,
     this.bannedUntil,
@@ -138,7 +136,6 @@ class UserEntity extends Equatable {
         name,
         phone,
         avatarUrl,
-        governorateId,
         createdAt,
         isActive,
         bannedUntil,

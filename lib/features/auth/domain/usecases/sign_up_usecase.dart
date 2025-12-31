@@ -16,7 +16,6 @@ class SignUpUseCase {
     required String name,
     String? phone,
     String? avatarUrl,
-    String? governorateId,
   }) {
     return _repository.signUp(
       email: email,
@@ -25,7 +24,6 @@ class SignUpUseCase {
       name: name,
       phone: phone,
       avatarUrl: avatarUrl,
-      governorateId: governorateId,
     );
   }
 }

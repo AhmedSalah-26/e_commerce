@@ -14,7 +14,6 @@ abstract class AuthRemoteDataSource {
     required String name,
     String? phone,
     String? avatarUrl,
-    String? governorateId,
   });
   Future<void> signOut();
   Future<UserModel?> getCurrentUser();
@@ -23,7 +22,6 @@ abstract class AuthRemoteDataSource {
     String? name,
     String? phone,
     String? avatarUrl,
-    String? governorateId,
     List<UserAddress>? addresses,
   });
   Stream<UserModel?> get authStateChanges;
@@ -87,7 +85,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String name,
     String? phone,
     String? avatarUrl,
-    String? governorateId,
   }) async {
     logger.i(
         '📝 Attempting sign up for: $email, role: ${role.name}, name: $name');
@@ -102,7 +99,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'name': name,
           'phone': phone,
           'avatar_url': avatarUrl,
-          'governorate_id': governorateId,
         },
       );
 
@@ -133,7 +129,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         name: name,
         phone: phone,
         avatarUrl: avatarUrl,
-        governorateId: governorateId,
         createdAt: DateTime.now(),
       );
     } on AuthApiException catch (e, stackTrace) {
@@ -202,7 +197,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? name,
     String? phone,
     String? avatarUrl,
-    String? governorateId,
     List<UserAddress>? addresses,
   }) async {
     logger.i('📝 Updating profile for user: $userId');
@@ -211,7 +205,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (name != null) updateData['name'] = name;
       if (phone != null) updateData['phone'] = phone;
       if (avatarUrl != null) updateData['avatar_url'] = avatarUrl;
-      if (governorateId != null) updateData['governorate_id'] = governorateId;
       if (addresses != null) {
         updateData['addresses'] = addresses.map((a) => a.toJson()).toList();
       }

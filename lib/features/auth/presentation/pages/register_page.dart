@@ -131,7 +131,8 @@ class _RegisterPageState extends State<RegisterPage> {
             if (state.user.isMerchant) {
               context.pushReplacement('/merchant-dashboard');
             } else {
-              context.pushReplacement('/home');
+              // New customer - go to address onboarding
+              context.pushReplacement('/address-onboarding');
             }
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(

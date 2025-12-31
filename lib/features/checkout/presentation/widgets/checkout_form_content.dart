@@ -8,8 +8,8 @@ import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../shipping/domain/entities/governorate_entity.dart';
 import '../../../shipping/presentation/cubit/shipping_cubit.dart';
 import 'checkout_coupon_section.dart';
-import 'checkout_form_fields.dart';
-import 'governorate_dropdown.dart';
+import 'customer_info_fields.dart';
+import 'delivery_address_card.dart';
 import 'order_summary_card.dart';
 import 'payment_method_card.dart';
 import 'place_order_button.dart';
@@ -172,17 +172,19 @@ class _CheckoutFormContentState extends State<CheckoutFormContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GovernorateDropdown(
+                // Delivery Address Card (Governorate + Address combined)
+                DeliveryAddressCard(
                   governorates: governorates,
-                  selected: selectedGovernorate,
+                  selectedGovernorate: selectedGovernorate,
                   locale: widget.locale,
                   cartState: widget.cartState,
+                  addressController: widget.addressController,
                   merchantsShippingData: merchantsShippingData,
                   merchantsInfo: merchantsInfo,
                 ),
                 const SizedBox(height: 16),
-                CheckoutFormFields(
-                  addressController: widget.addressController,
+                // Customer Info Fields (Name, Phone, Notes)
+                CustomerInfoFields(
                   nameController: widget.nameController,
                   phoneController: widget.phoneController,
                   notesController: widget.notesController,

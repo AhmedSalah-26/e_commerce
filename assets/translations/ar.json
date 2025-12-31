@@ -137,6 +137,7 @@
   "checkout_title": "إتمام الطلب",
   "delivery_address": "عنوان التوصيل",
   "delivery_address_hint": "أدخل عنوان التوصيل الكامل",
+  "customer_info": "بيانات المستلم",
   "customer_name": "اسم المستلم",
   "customer_phone": "رقم هاتف المستلم",
   "order_notes": "ملاحظات الطلب",

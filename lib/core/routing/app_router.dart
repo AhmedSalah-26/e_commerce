@@ -9,6 +9,7 @@ import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 import '../../features/admin/presentation/pages/admin_merchant_coupons_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/auth/presentation/pages/address_onboarding_page.dart';
 import '../../features/cart/presentation/pages/cart_screen.dart';
 import '../../features/checkout/presentation/pages/checkout_page.dart';
 import '../../features/coupons/presentation/pages/merchant_coupons_page.dart';
@@ -92,6 +93,10 @@ class AppRouter {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterPage(),
+      ),
+      GoRoute(
+        path: '/address-onboarding',
+        builder: (context, state) => const AddressOnboardingPage(),
       ),
       GoRoute(
         path: '/merchant-dashboard',

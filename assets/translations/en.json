@@ -105,6 +105,7 @@
   "checkout_title": "Checkout",
   "delivery_address": "Delivery Address",
   "delivery_address_hint": "Enter your full delivery address",
+  "customer_info": "Customer Information",
   "customer_name": "Recipient Name",
   "customer_phone": "Recipient Phone",
   "order_notes": "Order Notes",

@@ -116,6 +116,13 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
     return filtered;
   }
 
+  int get _activeFilterCount {
+    int count = 0;
+    if (_selectedCategoryId != null) count++;
+    if (_priceRange.start > _minPrice || _priceRange.end < _maxPrice) count++;
+    return count;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -178,6 +185,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
             sortOption: _sortOption,
             onSortChanged: _onSortChanged,
             onFilterTap: () => _showFilterSheet(context),
+            activeFilterCount: _activeFilterCount,
           ),
 
           // Products grid

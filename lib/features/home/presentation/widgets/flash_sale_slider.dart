@@ -8,11 +8,13 @@ import '../../../products/domain/entities/product_entity.dart';
 class FlashSaleSlider extends StatefulWidget {
   final List<ProductEntity> products;
   final bool isLoading;
+  final VoidCallback? onViewAll;
 
   const FlashSaleSlider({
     super.key,
     required this.products,
     this.isLoading = false,
+    this.onViewAll,
   });
 
   @override
@@ -66,49 +68,57 @@ class _FlashSaleSliderState extends State<FlashSaleSlider>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header with animated flash icon
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
-            child: Row(
-              children: [
-                // Animated flash icon
-                AnimatedBuilder(
-                  animation: _pulseAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _pulseAnimation.value,
-                      child: const Icon(
-                        Icons.flash_on,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'flash_sale'.tr(),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+          InkWell(
+            onTap: widget.onViewAll,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
+              child: Row(
+                children: [
+                  // Animated flash icon
+                  AnimatedBuilder(
+                    animation: _pulseAnimation,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _pulseAnimation.value,
+                        child: const Icon(
+                          Icons.flash_on,
                           color: Colors.white,
+                          size: 28,
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'limited_time_offers'.tr(),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'flash_sale'.tr(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'limited_time_offers'.tr(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 18,
+                    color: Colors.white70,
+                  ),
+                ],
+              ),
             ),
           ),
           // Products list

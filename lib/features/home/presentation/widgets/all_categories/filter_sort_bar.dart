@@ -48,12 +48,14 @@ class FilterSortBar extends StatelessWidget {
   final SortOption sortOption;
   final Function(SortOption) onSortChanged;
   final VoidCallback onFilterTap;
+  final int activeFilterCount;
 
   const FilterSortBar({
     super.key,
     required this.sortOption,
     required this.onSortChanged,
     required this.onFilterTap,
+    this.activeFilterCount = 0,
   });
 
   @override
@@ -78,6 +80,7 @@ class FilterSortBar extends StatelessWidget {
               icon: Icons.tune,
               label: 'filter'.tr(),
               onTap: onFilterTap,
+              badgeCount: activeFilterCount,
             ),
           ),
 
@@ -167,11 +170,13 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final int badgeCount;
 
   const _ActionButton({
     required this.icon,
     required this.label,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   @override
@@ -185,10 +190,40 @@ class _ActionButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  icon,
+                  size: 20,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+                if (badgeCount > 0)
+                  Positioned(
+                    right: -8,
+                    top: -8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '$badgeCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(width: 8),
             Text(

@@ -41,6 +41,7 @@ import '../../features/product_reports/presentation/pages/my_reports_page.dart';
 import '../../features/product_reports/presentation/pages/admin_product_reports_page.dart';
 import '../../features/merchant/presentation/pages/merchant_inventory_insights_page.dart';
 import '../../features/home/presentation/pages/all_categories_page.dart';
+import '../../features/home/presentation/pages/offers_page.dart';
 import '../../features/categories/presentation/cubit/categories_cubit.dart';
 
 class AppRouter {
@@ -272,6 +273,30 @@ class AppRouter {
                   create: (_) => sl<CategoriesCubit>()..loadCategories()),
             ],
             child: AllCategoriesPage(initialCategoryId: categoryId),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/offers/:type',
+        builder: (context, state) {
+          final typeStr = state.pathParameters['type']!;
+          OfferType offerType;
+          switch (typeStr) {
+            case 'flash-sale':
+              offerType = OfferType.flashSale;
+              break;
+            case 'best-deals':
+              offerType = OfferType.bestDeals;
+              break;
+            case 'new-arrivals':
+              offerType = OfferType.newArrivals;
+              break;
+            default:
+              offerType = OfferType.bestDeals;
+          }
+          return BlocProvider(
+            create: (_) => sl<ProductsCubit>(),
+            child: OffersPage(offerType: offerType),
           );
         },
       ),

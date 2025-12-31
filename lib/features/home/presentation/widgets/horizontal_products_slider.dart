@@ -9,6 +9,7 @@ class HorizontalProductsSlider extends StatelessWidget {
   final List<ProductEntity> products;
   final bool isLoading;
   final Color? backgroundColor;
+  final VoidCallback? onViewAll;
 
   const HorizontalProductsSlider({
     super.key,
@@ -17,6 +18,7 @@ class HorizontalProductsSlider extends StatelessWidget {
     required this.products,
     this.isLoading = false,
     this.backgroundColor,
+    this.onViewAll,
   });
 
   @override
@@ -43,43 +45,46 @@ class HorizontalProductsSlider extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Section header with arrow
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 2),
+          InkWell(
+            onTap: onViewAll,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          subtitle!,
+                          title,
                           style: TextStyle(
-                            fontSize: 12,
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.7),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 18,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-              ],
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 18,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ],
+              ),
             ),
           ),
           SizedBox(

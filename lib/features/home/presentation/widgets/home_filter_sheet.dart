@@ -49,7 +49,7 @@ class _HomeFilterSheetState extends State<HomeFilterSheet> {
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: theme.scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Padding(

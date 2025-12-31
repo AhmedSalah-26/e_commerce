@@ -134,14 +134,14 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    // Use dark background for categories section in both modes
-    final categoriesBgColor =
-        isDark ? theme.colorScheme.surface : const Color(0xFF2D2D2D);
+    // Use dark background for entire page in light mode
+    final darkBgColor =
+        isDark ? theme.scaffoldBackgroundColor : const Color(0xFF2D2D2D);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: darkBgColor,
       appBar: AppBar(
-        backgroundColor: categoriesBgColor,
+        backgroundColor: darkBgColor,
         automaticallyImplyLeading: false,
         title: Text(
           'all_categories'.tr(),
@@ -157,7 +157,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
         children: [
           // Categories horizontal list with dark background
           Container(
-            color: categoriesBgColor,
+            color: darkBgColor,
             child: BlocBuilder<CategoriesCubit, CategoriesState>(
               builder: (context, state) {
                 if (state is CategoriesLoading) {
@@ -195,7 +195,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
 
           // Filter & Sort bar
           Container(
-            color: categoriesBgColor,
+            color: darkBgColor,
             child: FilterSortBar(
               sortOption: _sortOption,
               onSortChanged: _onSortChanged,
@@ -207,40 +207,43 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
 
           // Products grid
           Expanded(
-            child: _isLoadingProducts
-                ? const ProductsGridSkeleton(itemCount: 6)
-                : BlocBuilder<ProductsCubit, ProductsState>(
-                    builder: (context, state) {
-                      if (state is ProductsLoading ||
-                          state is ProductsInitial) {
-                        return const ProductsGridSkeleton(itemCount: 6);
-                      }
-
-                      if (state is ProductsError) {
-                        return NetworkErrorWidget(
-                          message:
-                              ErrorHelper.getUserFriendlyMessage(state.message),
-                          onRetry: _loadProducts,
-                        );
-                      }
-
-                      if (state is ProductsLoaded) {
-                        final sortedProducts = _sortProducts(state.products);
-
-                        if (sortedProducts.isEmpty) {
-                          return EmptyStates.noProducts(context);
+            child: Container(
+              color: darkBgColor,
+              child: _isLoadingProducts
+                  ? const ProductsGridSkeleton(itemCount: 6)
+                  : BlocBuilder<ProductsCubit, ProductsState>(
+                      builder: (context, state) {
+                        if (state is ProductsLoading ||
+                            state is ProductsInitial) {
+                          return const ProductsGridSkeleton(itemCount: 6);
                         }
 
-                        return CategoryProductsGrid(
-                          products: sortedProducts,
-                          scrollController: _scrollController,
-                          isLoadingMore: state.isLoadingMore,
-                        );
-                      }
+                        if (state is ProductsError) {
+                          return NetworkErrorWidget(
+                            message: ErrorHelper.getUserFriendlyMessage(
+                                state.message),
+                            onRetry: _loadProducts,
+                          );
+                        }
 
-                      return const ProductsGridSkeleton(itemCount: 6);
-                    },
-                  ),
+                        if (state is ProductsLoaded) {
+                          final sortedProducts = _sortProducts(state.products);
+
+                          if (sortedProducts.isEmpty) {
+                            return EmptyStates.noProducts(context);
+                          }
+
+                          return CategoryProductsGrid(
+                            products: sortedProducts,
+                            scrollController: _scrollController,
+                            isLoadingMore: state.isLoadingMore,
+                          );
+                        }
+
+                        return const ProductsGridSkeleton(itemCount: 6);
+                      },
+                    ),
+            ),
           ),
         ],
       ),

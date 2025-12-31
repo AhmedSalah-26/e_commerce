@@ -116,11 +116,15 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    // Use dark background in light mode like all_categories_page
+    final darkBgColor =
+        isDark ? theme.scaffoldBackgroundColor : const Color(0xFF2D2D2D);
 
     return BackButtonListener(
       onBackButtonPressed: _handleSystemBack,
       child: Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
+        backgroundColor: darkBgColor,
         resizeToAvoidBottomInset: false,
         body: SafeArea(
           bottom: false,
@@ -163,6 +167,14 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
 
   Widget _buildSearchBar() {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    // Dark mode colors for light theme
+    final textColor = isDark ? theme.colorScheme.onSurface : Colors.white;
+    final hintColor = isDark
+        ? theme.colorScheme.onSurface.withValues(alpha: 0.5)
+        : Colors.white70;
+    final searchBgColor =
+        isDark ? theme.colorScheme.surface : const Color(0xFF1A1A1A);
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -178,10 +190,12 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
               child: Container(
                 height: 45,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
+                  color: searchBgColor,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                    color: isDark
+                        ? theme.colorScheme.outline.withValues(alpha: 0.3)
+                        : Colors.white24,
                   ),
                 ),
                 child: TextField(
@@ -193,20 +207,19 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
                   textInputAction: TextInputAction.search,
                   style: TextStyle(
                     fontSize: 12,
-                    color: theme.colorScheme.onSurface,
+                    color: textColor,
                   ),
                   decoration: InputDecoration(
                     hintText: 'search'.tr(),
                     hintStyle: TextStyle(
                       fontSize: 12,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: hintColor,
                     ),
                     suffixIcon: searchController.text.isNotEmpty
                         ? IconButton(
                             icon: Icon(
                               Icons.clear,
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.5),
+                              color: hintColor,
                               size: 20,
                             ),
                             onPressed: () {

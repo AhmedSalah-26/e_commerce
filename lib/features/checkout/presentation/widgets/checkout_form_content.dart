@@ -143,18 +143,22 @@ class _CheckoutFormContentState extends State<CheckoutFormContent> {
             if (defaultAddress != null) {
               final govId = defaultAddress.governorateId;
               if (govId != null) {
-                final gov = governorates.firstWhere(
-                  (g) => g.id == govId,
-                  orElse: () => governorates.first,
-                );
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  context
-                      .read<ShippingCubit>()
-                      .selectGovernorateForMultipleMerchants(
-                        gov,
-                        merchantsInfo.keys.toList(),
-                      );
-                });
+                GovernorateEntity? gov;
+                try {
+                  gov = governorates.firstWhere((g) => g.id == govId);
+                } catch (_) {
+                  gov = governorates.isNotEmpty ? governorates.first : null;
+                }
+                if (gov != null) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    context
+                        .read<ShippingCubit>()
+                        .selectGovernorateForMultipleMerchants(
+                          gov!,
+                          merchantsInfo.keys.toList(),
+                        );
+                  });
+                }
               }
             }
           }

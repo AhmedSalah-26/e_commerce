@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../categories/domain/entities/category_entity.dart';
@@ -26,9 +27,19 @@ class CategoriesHeader extends StatelessWidget {
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          itemCount: categories.length,
+          itemCount: categories.length + 1, // +1 for "All" option
           itemBuilder: (context, index) {
-            final category = categories[index];
+            // First item is "All"
+            if (index == 0) {
+              final isSelected = selectedCategoryId == null;
+              return _AllCategoryItem(
+                isSelected: isSelected,
+                onTap: () => onCategorySelected(null),
+                darkMode: darkMode,
+              );
+            }
+
+            final category = categories[index - 1];
             final isSelected = selectedCategoryId == category.id;
 
             return _CategoryItem(
@@ -38,6 +49,78 @@ class CategoriesHeader extends StatelessWidget {
               darkMode: darkMode,
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _AllCategoryItem extends StatelessWidget {
+  final bool isSelected;
+  final VoidCallback onTap;
+  final bool darkMode;
+
+  const _AllCategoryItem({
+    required this.isSelected,
+    required this.onTap,
+    this.darkMode = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor =
+        darkMode ? const Color(0xFFD4A574) : theme.colorScheme.primary;
+    final textColor = darkMode ? Colors.white : theme.colorScheme.onSurface;
+    final containerBg =
+        darkMode ? const Color(0xFF1A1A1A) : theme.colorScheme.surface;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 80,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? primaryColor.withValues(alpha: 0.15)
+                    : containerBg,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected
+                      ? primaryColor
+                      : (darkMode
+                          ? Colors.white
+                          : theme.colorScheme.outline.withValues(alpha: 0.2)),
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
+              child: Icon(
+                Icons.apps_rounded,
+                size: 28,
+                color: isSelected
+                    ? primaryColor
+                    : textColor.withValues(alpha: 0.6),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'all'.tr(),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? primaryColor : textColor,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );

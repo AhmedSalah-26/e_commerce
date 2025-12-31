@@ -30,7 +30,7 @@ RETURNS TABLE (
   created_at TIMESTAMPTZ,
   is_suspended BOOLEAN,
   suspension_reason TEXT
-) AS $
+) AS $$
 BEGIN
   RETURN QUERY
   SELECT 
@@ -72,7 +72,7 @@ BEGIN
   LIMIT p_limit
   OFFSET p_offset;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 GRANT EXECUTE ON FUNCTION public.get_discounted_products_sorted(INTEGER, INTEGER) TO authenticated, anon;
 

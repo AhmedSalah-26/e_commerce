@@ -14,8 +14,8 @@ import '../../../products/presentation/cubit/products_state.dart';
 import '../widgets/all_categories/categories_header.dart';
 import '../widgets/all_categories/filter_sort_bar.dart';
 import '../widgets/all_categories/category_products_grid.dart';
+import '../widgets/all_categories/filter_sheet.dart';
 
-/// صفحة جميع الأقسام - مشابهة لتطبيق Kenzz
 class AllCategoriesPage extends StatefulWidget {
   final String? initialCategoryId;
 
@@ -29,9 +29,8 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   String? _selectedCategoryId;
   SortOption _sortOption = SortOption.newest;
   final ScrollController _scrollController = ScrollController();
-  bool _isLoadingProducts = false; // Local loading state for immediate shimmer
+  bool _isLoadingProducts = false;
 
-  // Price filter
   static const double _minPrice = 0;
   static const double _maxPrice = 10000;
   RangeValues _priceRange = const RangeValues(_minPrice, _maxPrice);
@@ -52,22 +51,17 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   }
 
   void _onScroll() {
-    if (_isBottom) {
-      context.read<ProductsCubit>().loadMoreProducts();
-    }
+    if (_isBottom) context.read<ProductsCubit>().loadMoreProducts();
   }
 
   bool get _isBottom {
     if (!_scrollController.hasClients) return false;
     final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.offset;
-    return currentScroll >= (maxScroll - 200);
+    return _scrollController.offset >= (maxScroll - 200);
   }
 
   void _loadProducts() {
     setState(() => _isLoadingProducts = true);
-
-    // Use post frame callback to ensure shimmer shows first
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (_selectedCategoryId != null) {
         await context
@@ -81,26 +75,20 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   }
 
   void _onCategorySelected(String? categoryId) {
-    setState(() {
-      _selectedCategoryId = categoryId;
-    });
+    setState(() => _selectedCategoryId = categoryId);
     _loadProducts();
   }
 
   void _onSortChanged(SortOption option) {
-    setState(() {
-      _sortOption = option;
-    });
+    setState(() => _sortOption = option);
   }
 
   List<ProductEntity> _sortProducts(List<ProductEntity> products) {
-    // First filter by price
     var filtered = products.where((p) {
       final price = p.effectivePrice;
       return price >= _priceRange.start && price <= _priceRange.end;
     }).toList();
 
-    // Then sort
     switch (_sortOption) {
       case SortOption.newest:
         filtered.sort((a, b) => (b.createdAt ?? DateTime.now())
@@ -116,7 +104,6 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
         filtered.sort((a, b) => b.rating.compareTo(a.rating));
         break;
       case SortOption.bestSelling:
-        // Sort by rating count as a proxy for best selling
         filtered.sort((a, b) => b.ratingCount.compareTo(a.ratingCount));
         break;
     }
@@ -152,46 +139,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
       ),
       body: Column(
         children: [
-          // Categories horizontal list
-          BlocBuilder<CategoriesCubit, CategoriesState>(
-            builder: (context, state) {
-              if (state is CategoriesLoading) {
-                return const SizedBox(
-                  height: 100,
-                  child: CategoriesRowSkeleton(),
-                );
-              }
-              if (state is CategoriesLoaded) {
-                return CategoriesHeader(
-                  categories: state.categories,
-                  selectedCategoryId: _selectedCategoryId,
-                  onCategorySelected: _onCategorySelected,
-                  darkMode: isDark,
-                );
-              }
-              if (state is CategoriesError) {
-                return SizedBox(
-                  height: 100,
-                  child: Center(
-                    child: TextButton.icon(
-                      onPressed: () =>
-                          context.read<CategoriesCubit>().loadCategories(),
-                      icon: Icon(Icons.refresh,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.7)),
-                      label: Text('retry'.tr(),
-                          style: TextStyle(
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.7))),
-                    ),
-                  ),
-                );
-              }
-              return const SizedBox(height: 100);
-            },
-          ),
-
-          // Filter & Sort bar
+          _buildCategoriesHeader(isDark),
           FilterSortBar(
             sortOption: _sortOption,
             onSortChanged: _onSortChanged,
@@ -199,51 +147,82 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
             activeFilterCount: _activeFilterCount,
             darkMode: isDark,
           ),
-
-          // Products grid
-          Expanded(
-            child: _isLoadingProducts
-                ? const ProductsGridSkeleton(itemCount: 6)
-                : BlocBuilder<ProductsCubit, ProductsState>(
-                    builder: (context, state) {
-                      if (state is ProductsLoading ||
-                          state is ProductsInitial) {
-                        return const ProductsGridSkeleton(itemCount: 6);
-                      }
-
-                      if (state is ProductsError) {
-                        return NetworkErrorWidget(
-                          message:
-                              ErrorHelper.getUserFriendlyMessage(state.message),
-                          onRetry: _loadProducts,
-                        );
-                      }
-
-                      if (state is ProductsLoaded) {
-                        final sortedProducts = _sortProducts(state.products);
-
-                        if (sortedProducts.isEmpty) {
-                          return EmptyStates.noProducts(context);
-                        }
-
-                        return CategoryProductsGrid(
-                          products: sortedProducts,
-                          scrollController: _scrollController,
-                          isLoadingMore: state.isLoadingMore,
-                        );
-                      }
-
-                      return const ProductsGridSkeleton(itemCount: 6);
-                    },
-                  ),
-          ),
+          Expanded(child: _buildProductsGrid()),
         ],
       ),
     );
   }
 
+  Widget _buildCategoriesHeader(bool isDark) {
+    return BlocBuilder<CategoriesCubit, CategoriesState>(
+      builder: (context, state) {
+        if (state is CategoriesLoading) {
+          return const SizedBox(height: 100, child: CategoriesRowSkeleton());
+        }
+        if (state is CategoriesLoaded) {
+          return CategoriesHeader(
+            categories: state.categories,
+            selectedCategoryId: _selectedCategoryId,
+            onCategorySelected: _onCategorySelected,
+            darkMode: isDark,
+          );
+        }
+        if (state is CategoriesError) {
+          return SizedBox(
+            height: 100,
+            child: Center(
+              child: TextButton.icon(
+                onPressed: () =>
+                    context.read<CategoriesCubit>().loadCategories(),
+                icon: const Icon(Icons.refresh),
+                label: Text('retry'.tr()),
+              ),
+            ),
+          );
+        }
+        return const SizedBox(height: 100);
+      },
+    );
+  }
+
+  Widget _buildProductsGrid() {
+    if (_isLoadingProducts) {
+      return const ProductsGridSkeleton(itemCount: 6);
+    }
+
+    return BlocBuilder<ProductsCubit, ProductsState>(
+      builder: (context, state) {
+        if (state is ProductsLoading || state is ProductsInitial) {
+          return const ProductsGridSkeleton(itemCount: 6);
+        }
+
+        if (state is ProductsError) {
+          return NetworkErrorWidget(
+            message: ErrorHelper.getUserFriendlyMessage(state.message),
+            onRetry: _loadProducts,
+          );
+        }
+
+        if (state is ProductsLoaded) {
+          final sortedProducts = _sortProducts(state.products);
+
+          if (sortedProducts.isEmpty) {
+            return EmptyStates.noProducts(context);
+          }
+
+          return CategoryProductsGrid(
+            products: sortedProducts,
+            scrollController: _scrollController,
+            isLoadingMore: state.isLoadingMore,
+          );
+        }
+
+        return const ProductsGridSkeleton(itemCount: 6);
+      },
+    );
+  }
+
   void _showFilterSheet(BuildContext context) {
-    // Get categories before opening the sheet
     final categoriesState = context.read<CategoriesCubit>().state;
     final categories = categoriesState is CategoriesLoaded
         ? categoriesState.categories
@@ -253,7 +232,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _FilterSheet(
+      builder: (_) => AllCategoriesFilterSheet(
         categories: categories,
         selectedCategoryId: _selectedCategoryId,
         priceRange: _priceRange,
@@ -261,242 +240,10 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
         maxPrice: _maxPrice,
         onApply: (categoryId, priceRange) {
           Navigator.pop(context);
-          setState(() {
-            _priceRange = priceRange;
-          });
+          setState(() => _priceRange = priceRange);
           _onCategorySelected(categoryId);
         },
       ),
-    );
-  }
-}
-
-/// Filter sheet widget - same style as search filter
-class _FilterSheet extends StatefulWidget {
-  final List<CategoryEntity> categories;
-  final String? selectedCategoryId;
-  final RangeValues priceRange;
-  final double minPrice;
-  final double maxPrice;
-  final Function(String?, RangeValues) onApply;
-
-  const _FilterSheet({
-    required this.categories,
-    this.selectedCategoryId,
-    required this.priceRange,
-    required this.minPrice,
-    required this.maxPrice,
-    required this.onApply,
-  });
-
-  @override
-  State<_FilterSheet> createState() => _FilterSheetState();
-}
-
-class _FilterSheetState extends State<_FilterSheet> {
-  late String? _selectedCategoryId;
-  late RangeValues _priceRange;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedCategoryId = widget.selectedCategoryId;
-    _priceRange = widget.priceRange;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding:
-          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHandle(theme),
-            const SizedBox(height: 20),
-            _buildHeader(theme),
-            const SizedBox(height: 20),
-            _buildCategoryFilter(theme),
-            const SizedBox(height: 24),
-            _buildPriceFilter(theme),
-            const SizedBox(height: 24),
-            _buildApplyButton(theme),
-            const SizedBox(height: 10),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHandle(ThemeData theme) {
-    return Center(
-      child: Container(
-        width: 40,
-        height: 4,
-        decoration: BoxDecoration(
-          color: theme.colorScheme.outline.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(2),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(ThemeData theme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'filters'.tr(),
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        TextButton(
-          onPressed: () => setState(() {
-            _selectedCategoryId = null;
-            _priceRange = RangeValues(widget.minPrice, widget.maxPrice);
-          }),
-          child: Text(
-            'clear_all'.tr(),
-            style: const TextStyle(color: Colors.red),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCategoryFilter(ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'categories'.tr(),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 50,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: widget.categories.length + 1,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return _buildCategoryChip(
-                  'all'.tr(),
-                  _selectedCategoryId == null,
-                  () => setState(() => _selectedCategoryId = null),
-                  theme,
-                );
-              }
-              final category = widget.categories[index - 1];
-              return _buildCategoryChip(
-                category.name,
-                _selectedCategoryId == category.id,
-                () => setState(() => _selectedCategoryId = category.id),
-                theme,
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCategoryChip(
-      String label, bool isSelected, VoidCallback onTap, ThemeData theme) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(left: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary
-              : theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(color: theme.colorScheme.primary),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.white : theme.colorScheme.primary,
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildApplyButton(ThemeData theme) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () => widget.onApply(_selectedCategoryId, _priceRange),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: theme.colorScheme.primary,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Text(
-          'apply'.tr(),
-          style: const TextStyle(color: Colors.white, fontSize: 16),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPriceFilter(ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'price'.tr(),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('${_priceRange.start.toInt()} ${'egp'.tr()}'),
-            Text('${_priceRange.end.toInt()} ${'egp'.tr()}'),
-          ],
-        ),
-        RangeSlider(
-          values: _priceRange,
-          min: widget.minPrice,
-          max: widget.maxPrice,
-          divisions: 100,
-          activeColor: theme.colorScheme.primary,
-          inactiveColor: theme.colorScheme.outline.withValues(alpha: 0.3),
-          onChanged: (values) {
-            setState(() => _priceRange = values);
-          },
-        ),
-      ],
     );
   }
 }

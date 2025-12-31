@@ -110,6 +110,10 @@
   "no_categories": "لا توجد تصنيفات",
   "all_products": "جميع المنتجات",
   "offers": "العروض",
+  "best_sellers": "الأكثر مبيعًا",
+  "top_rated": "أفضل التقييمات",
+  "more": "المزيد",
+  "all_categories": "جميع الأقسام",
   "no_products": "لا توجد منتجات",
   "sold_by": "يباع بواسطة",
 
@@ -466,5 +470,13 @@
   "switch_to_user_mode": "التبديل لوضع المستخدم",
 
   "tap_to_change_photo": "اضغط لتغيير الصورة",
-  "remove_photo": "إزالة الصورة"
+  "remove_photo": "إزالة الصورة",
+
+  "filter": "تصفية",
+  "sort": "ترتيب",
+  "clear": "مسح",
+  "newest": "الأحدث",
+  "price_low_to_high": "السعر: من الأقل للأعلى",
+  "price_high_to_low": "السعر: من الأعلى للأقل",
+  "limited_time_offers": "عروض لفترة محدودة"
 }

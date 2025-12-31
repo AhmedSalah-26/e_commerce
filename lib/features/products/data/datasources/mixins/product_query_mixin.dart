@@ -218,4 +218,64 @@ mixin ProductQueryMixin {
       throw ServerException('فشل في جلب المنتجات الجديدة: ${e.toString()}');
     }
   }
+
+  /// Get best selling products (sorted by rating count as proxy for popularity)
+  Future<List<ProductModel>> getBestSellingProducts({
+    String locale = 'ar',
+    int page = 0,
+    int limit = 10,
+  }) async {
+    try {
+      final from = page * limit;
+      final to = from + limit - 1;
+
+      final response = await client
+          .from('products')
+          .select()
+          .eq('is_active', true)
+          .eq('is_suspended', false)
+          .gt('stock', 0)
+          .order('rating_count', ascending: false)
+          .order('rating', ascending: false)
+          .order('created_at', ascending: false)
+          .range(from, to);
+
+      return (response as List)
+          .map((json) => ProductModel.fromJson(json, locale: locale))
+          .toList();
+    } catch (e) {
+      throw ServerException(
+          'فشل في جلب المنتجات الأكثر مبيعًا: ${e.toString()}');
+    }
+  }
+
+  /// Get top rated products (sorted by rating)
+  Future<List<ProductModel>> getTopRatedProducts({
+    String locale = 'ar',
+    int page = 0,
+    int limit = 10,
+  }) async {
+    try {
+      final from = page * limit;
+      final to = from + limit - 1;
+
+      final response = await client
+          .from('products')
+          .select()
+          .eq('is_active', true)
+          .eq('is_suspended', false)
+          .gt('stock', 0)
+          .gt('rating_count', 0)
+          .order('rating', ascending: false)
+          .order('rating_count', ascending: false)
+          .range(from, to);
+
+      return (response as List)
+          .map((json) => ProductModel.fromJson(json, locale: locale))
+          .toList();
+    } catch (e) {
+      throw ServerException(
+          'فشل في جلب المنتجات الأعلى تقييمًا: ${e.toString()}');
+    }
+  }
 }

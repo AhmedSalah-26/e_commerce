@@ -78,6 +78,10 @@
   "no_categories": "No categories found",
   "all_products": "All Products",
   "offers": "Offers",
+  "best_sellers": "Best Sellers",
+  "top_rated": "Top Rated",
+  "more": "More",
+  "all_categories": "All Categories",
   "no_products": "No products found",
   "sold_by": "Sold by",
 
@@ -434,5 +438,13 @@
   "switch_to_user_mode": "Switch to User Mode",
 
   "tap_to_change_photo": "Tap to change photo",
-  "remove_photo": "Remove photo"
+  "remove_photo": "Remove photo",
+
+  "filter": "Filter",
+  "sort": "Sort",
+  "clear": "Clear",
+  "newest": "Newest",
+  "price_low_to_high": "Price: Low to High",
+  "price_high_to_low": "Price: High to Low",
+  "limited_time_offers": "Limited Time Offers"
 }

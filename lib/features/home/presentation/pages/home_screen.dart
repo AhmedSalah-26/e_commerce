@@ -22,6 +22,9 @@ class HomeScreen extends StatefulWidget {
 class HomeScreenState extends State<HomeScreen> {
   String? selectedCategoryId;
   bool isOffersSelected = false;
+  bool isBestSellersSelected = true; // Default to best sellers
+  bool isTopRatedSelected = false;
+  bool isAllProductsSelected = false;
   final ScrollController _scrollController = ScrollController();
   int _unreadNotifications = 0;
   String? _lastLocale;
@@ -62,7 +65,8 @@ class HomeScreenState extends State<HomeScreen> {
     context.read<CategoriesCubit>().setLocale(locale);
     context.read<HomeSlidersCubit>().setLocale(locale);
 
-    context.read<ProductsCubit>().loadProducts();
+    // Load best sellers by default
+    context.read<ProductsCubit>().loadBestSellingProducts();
     context.read<CategoriesCubit>().loadCategories();
 
     // Use reset to force reload with new locale
@@ -71,6 +75,9 @@ class HomeScreenState extends State<HomeScreen> {
     setState(() {
       selectedCategoryId = null;
       isOffersSelected = false;
+      isBestSellersSelected = true;
+      isTopRatedSelected = false;
+      isAllProductsSelected = false;
     });
   }
 
@@ -92,6 +99,10 @@ class HomeScreenState extends State<HomeScreen> {
     if (_isBottom) {
       if (isOffersSelected) {
         context.read<ProductsCubit>().loadMoreDiscountedProducts();
+      } else if (isBestSellersSelected) {
+        context.read<ProductsCubit>().loadMoreBestSellingProducts();
+      } else if (isTopRatedSelected) {
+        context.read<ProductsCubit>().loadMoreTopRatedProducts();
       } else {
         context.read<ProductsCubit>().loadMoreProducts();
       }
@@ -251,6 +262,10 @@ class HomeScreenState extends State<HomeScreen> {
 
     if (isOffersSelected) {
       context.read<ProductsCubit>().loadDiscountedProducts();
+    } else if (isBestSellersSelected) {
+      context.read<ProductsCubit>().loadBestSellingProducts();
+    } else if (isTopRatedSelected) {
+      context.read<ProductsCubit>().loadTopRatedProducts();
     } else if (selectedCategoryId != null) {
       context.read<ProductsCubit>().loadProductsByCategory(selectedCategoryId!);
     } else {
@@ -264,10 +279,16 @@ class HomeScreenState extends State<HomeScreen> {
       sliderImages: sliderImages,
       selectedCategoryId: selectedCategoryId,
       isOffersSelected: isOffersSelected,
+      isBestSellersSelected: isBestSellersSelected,
+      isTopRatedSelected: isTopRatedSelected,
+      isAllProductsSelected: isAllProductsSelected,
       onCategorySelected: (categoryId) {
         setState(() {
           selectedCategoryId = categoryId;
           isOffersSelected = false;
+          isBestSellersSelected = false;
+          isTopRatedSelected = false;
+          isAllProductsSelected = categoryId == null;
         });
         if (categoryId == null) {
           context.read<ProductsCubit>().loadProducts();
@@ -278,9 +299,32 @@ class HomeScreenState extends State<HomeScreen> {
       onOffersSelected: () {
         setState(() {
           isOffersSelected = true;
+          isBestSellersSelected = false;
+          isTopRatedSelected = false;
+          isAllProductsSelected = false;
           selectedCategoryId = null;
         });
         context.read<ProductsCubit>().loadDiscountedProducts();
+      },
+      onBestSellersSelected: () {
+        setState(() {
+          isBestSellersSelected = true;
+          isOffersSelected = false;
+          isTopRatedSelected = false;
+          isAllProductsSelected = false;
+          selectedCategoryId = null;
+        });
+        context.read<ProductsCubit>().loadBestSellingProducts();
+      },
+      onTopRatedSelected: () {
+        setState(() {
+          isTopRatedSelected = true;
+          isBestSellersSelected = false;
+          isOffersSelected = false;
+          isAllProductsSelected = false;
+          selectedCategoryId = null;
+        });
+        context.read<ProductsCubit>().loadTopRatedProducts();
       },
     );
   }

@@ -75,4 +75,16 @@ abstract class ProductRepository {
   Future<Either<Failure, List<ProductEntity>>> getNewestProducts({
     int limit = 10,
   });
+
+  /// Get best selling products
+  Future<Either<Failure, List<ProductEntity>>> getBestSellingProducts({
+    int page = 0,
+    int limit = 10,
+  });
+
+  /// Get top rated products
+  Future<Either<Failure, List<ProductEntity>>> getTopRatedProducts({
+    int page = 0,
+    int limit = 10,
+  });
 }

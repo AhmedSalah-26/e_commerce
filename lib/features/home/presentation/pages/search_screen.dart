@@ -124,29 +124,37 @@ class _SearchScreenState extends State<SearchScreen> with HomeSearchLogic {
         resizeToAvoidBottomInset: false,
         body: SafeArea(
           bottom: false,
-          child: RefreshIndicator(
-            onRefresh: refreshSearch,
-            color: theme.colorScheme.primary,
-            child: CustomScrollView(
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                SliverToBoxAdapter(child: _buildSearchBar()),
-                SliverToBoxAdapter(
-                  child: HomeSearchContent(
-                    isSearching: searchState.isSearching,
-                    currentQuery: searchState.currentQuery,
-                    searchResults: searchState.searchResults,
-                    isLoadingMore: searchState.isLoadingMore,
-                    hasMore: searchState.hasMore,
-                    hasActiveFilters: filterState.hasActiveFilters,
-                    onCategoryTap: (categoryId, categoryName) {
-                      searchByCategory(categoryId, categoryName);
-                    },
+          child: Column(
+            children: [
+              // Fixed search bar at top
+              _buildSearchBar(),
+              // Scrollable content
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: refreshSearch,
+                  color: theme.colorScheme.primary,
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: HomeSearchContent(
+                          isSearching: searchState.isSearching,
+                          currentQuery: searchState.currentQuery,
+                          searchResults: searchState.searchResults,
+                          isLoadingMore: searchState.isLoadingMore,
+                          hasMore: searchState.hasMore,
+                          hasActiveFilters: filterState.hasActiveFilters,
+                          onCategoryTap: (categoryId, categoryName) {
+                            searchByCategory(categoryId, categoryName);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -225,6 +225,100 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
+  /// Load best selling products
+  Future<void> loadBestSellingProducts() async {
+    emit(const ProductsLoading());
+
+    final result = await _repository.getBestSellingProducts(
+      page: 0,
+      limit: _pageSize,
+    );
+
+    result.fold(
+      (failure) => emit(ProductsError(failure.message)),
+      (products) => emit(ProductsLoaded(
+        products: products,
+        hasMore: products.length >= _pageSize,
+        currentPage: 0,
+        isBestSellersMode: true,
+      )),
+    );
+  }
+
+  /// Load more best selling products (pagination)
+  Future<void> loadMoreBestSellingProducts() async {
+    final currentState = state;
+    if (currentState is! ProductsLoaded) return;
+    if (currentState.isLoadingMore || !currentState.hasMore) return;
+    if (!currentState.isBestSellersMode) return;
+
+    emit(currentState.copyWith(isLoadingMore: true));
+
+    final nextPage = currentState.currentPage + 1;
+
+    final result = await _repository.getBestSellingProducts(
+      page: nextPage,
+      limit: _pageSize,
+    );
+
+    result.fold(
+      (failure) => emit(currentState.copyWith(isLoadingMore: false)),
+      (newProducts) => emit(currentState.copyWith(
+        products: [...currentState.products, ...newProducts],
+        hasMore: newProducts.length >= _pageSize,
+        currentPage: nextPage,
+        isLoadingMore: false,
+      )),
+    );
+  }
+
+  /// Load top rated products
+  Future<void> loadTopRatedProducts() async {
+    emit(const ProductsLoading());
+
+    final result = await _repository.getTopRatedProducts(
+      page: 0,
+      limit: _pageSize,
+    );
+
+    result.fold(
+      (failure) => emit(ProductsError(failure.message)),
+      (products) => emit(ProductsLoaded(
+        products: products,
+        hasMore: products.length >= _pageSize,
+        currentPage: 0,
+        isTopRatedMode: true,
+      )),
+    );
+  }
+
+  /// Load more top rated products (pagination)
+  Future<void> loadMoreTopRatedProducts() async {
+    final currentState = state;
+    if (currentState is! ProductsLoaded) return;
+    if (currentState.isLoadingMore || !currentState.hasMore) return;
+    if (!currentState.isTopRatedMode) return;
+
+    emit(currentState.copyWith(isLoadingMore: true));
+
+    final nextPage = currentState.currentPage + 1;
+
+    final result = await _repository.getTopRatedProducts(
+      page: nextPage,
+      limit: _pageSize,
+    );
+
+    result.fold(
+      (failure) => emit(currentState.copyWith(isLoadingMore: false)),
+      (newProducts) => emit(currentState.copyWith(
+        products: [...currentState.products, ...newProducts],
+        hasMore: newProducts.length >= _pageSize,
+        currentPage: nextPage,
+        isLoadingMore: false,
+      )),
+    );
+  }
+
   /// Refresh products
   Future<void> refresh() async {
     final currentState = state;

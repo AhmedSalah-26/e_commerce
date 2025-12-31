@@ -40,6 +40,8 @@ import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../../features/product_reports/presentation/pages/my_reports_page.dart';
 import '../../features/product_reports/presentation/pages/admin_product_reports_page.dart';
 import '../../features/merchant/presentation/pages/merchant_inventory_insights_page.dart';
+import '../../features/home/presentation/pages/all_categories_page.dart';
+import '../../features/categories/presentation/cubit/categories_cubit.dart';
 
 class AppRouter {
   static bool? _onboardingCompleted;
@@ -258,6 +260,20 @@ class AppRouter {
       GoRoute(
         path: '/merchant-inventory-insights',
         builder: (context, state) => const MerchantInventoryInsightsPage(),
+      ),
+      GoRoute(
+        path: '/all-categories',
+        builder: (context, state) {
+          final categoryId = state.uri.queryParameters['categoryId'];
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (_) => sl<ProductsCubit>()),
+              BlocProvider(
+                  create: (_) => sl<CategoriesCubit>()..loadCategories()),
+            ],
+            child: AllCategoriesPage(initialCategoryId: categoryId),
+          );
+        },
       ),
     ],
   );

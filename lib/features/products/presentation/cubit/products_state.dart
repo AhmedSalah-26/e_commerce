@@ -28,6 +28,8 @@ class ProductsLoaded extends ProductsState {
   final int currentPage;
   final bool isLoadingMore;
   final bool isOffersMode;
+  final bool isBestSellersMode;
+  final bool isTopRatedMode;
 
   const ProductsLoaded({
     required this.products,
@@ -37,6 +39,8 @@ class ProductsLoaded extends ProductsState {
     this.currentPage = 0,
     this.isLoadingMore = false,
     this.isOffersMode = false,
+    this.isBestSellersMode = false,
+    this.isTopRatedMode = false,
   });
 
   @override
@@ -48,6 +52,8 @@ class ProductsLoaded extends ProductsState {
         currentPage,
         isLoadingMore,
         isOffersMode,
+        isBestSellersMode,
+        isTopRatedMode,
       ];
 
   ProductsLoaded copyWith({
@@ -58,6 +64,8 @@ class ProductsLoaded extends ProductsState {
     int? currentPage,
     bool? isLoadingMore,
     bool? isOffersMode,
+    bool? isBestSellersMode,
+    bool? isTopRatedMode,
   }) {
     return ProductsLoaded(
       products: products ?? this.products,
@@ -67,6 +75,8 @@ class ProductsLoaded extends ProductsState {
       currentPage: currentPage ?? this.currentPage,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       isOffersMode: isOffersMode ?? this.isOffersMode,
+      isBestSellersMode: isBestSellersMode ?? this.isBestSellersMode,
+      isTopRatedMode: isTopRatedMode ?? this.isTopRatedMode,
     );
   }
 
@@ -80,6 +90,8 @@ class ProductsLoaded extends ProductsState {
       currentPage: currentPage,
       isLoadingMore: isLoadingMore,
       isOffersMode: isOffersMode,
+      isBestSellersMode: isBestSellersMode,
+      isTopRatedMode: isTopRatedMode,
     );
   }
 }

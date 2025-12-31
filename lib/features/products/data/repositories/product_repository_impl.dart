@@ -144,6 +144,26 @@ class ProductRepositoryImpl implements ProductRepository {
         .toEither();
   }
 
+  @override
+  Future<Either<Failure, List<ProductEntity>>> getBestSellingProducts({
+    int page = 0,
+    int limit = 10,
+  }) {
+    return _remoteDataSource
+        .getBestSellingProducts(locale: _locale, page: page, limit: limit)
+        .toEither();
+  }
+
+  @override
+  Future<Either<Failure, List<ProductEntity>>> getTopRatedProducts({
+    int page = 0,
+    int limit = 10,
+  }) {
+    return _remoteDataSource
+        .getTopRatedProducts(locale: _locale, page: page, limit: limit)
+        .toEither();
+  }
+
   /// Convert entity to model
   ProductModel _toModel(ProductEntity product) {
     return ProductModel(

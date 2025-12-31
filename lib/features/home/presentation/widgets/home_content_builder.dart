@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../core/shared_widgets/empty_states/empty_state_widget.dart';
-import '../../../../core/shared_widgets/loading/progressive_skeleton_loader.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../../../categories/presentation/cubit/categories_cubit.dart';
 import '../../../categories/presentation/cubit/categories_state.dart';
@@ -15,6 +13,7 @@ import 'images_card_slider.dart';
 import 'category_row.dart';
 import 'products_grid.dart';
 import 'horizontal_products_slider.dart';
+import 'flash_sale_slider.dart';
 
 class HomeContentBuilder {
   /// Check if there's a network error in products state
@@ -44,7 +43,12 @@ class HomeContentBuilder {
     required String? selectedCategoryId,
     required Function(String?) onCategorySelected,
     required VoidCallback onOffersSelected,
+    required VoidCallback onBestSellersSelected,
+    required VoidCallback onTopRatedSelected,
     required bool isOffersSelected,
+    required bool isBestSellersSelected,
+    required bool isTopRatedSelected,
+    required bool isAllProductsSelected,
   }) {
     final theme = Theme.of(context);
 
@@ -66,12 +70,30 @@ class HomeContentBuilder {
               children: <Widget>[
                 ImagesCard(images: sliderImages),
                 const SizedBox(height: 10),
+                // Flash Sale Section - Red & Eye-catching
+                BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
+                  builder: (context, slidersState) {
+                    // Show flash sale only if there are discounted products
+                    if (slidersState.discountedProducts.isEmpty &&
+                        !slidersState.isLoadingDiscounted) {
+                      return const SizedBox.shrink();
+                    }
+                    return FlashSaleSlider(
+                      products:
+                          slidersState.discountedProducts.take(10).toList(),
+                      isLoading: slidersState.isLoadingDiscounted,
+                    );
+                  },
+                ),
+                const SizedBox(height: 10),
                 BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
                   builder: (context, slidersState) {
                     return HorizontalProductsSlider(
                       title: 'best_deals'.tr(),
                       products: slidersState.discountedProducts,
                       isLoading: slidersState.isLoadingDiscounted,
+                      backgroundColor: const Color(0xFF4FC3F7)
+                          .withValues(alpha: 0.15), // Light Blue
                     );
                   },
                 ),
@@ -82,6 +104,8 @@ class HomeContentBuilder {
                       title: 'new_arrivals'.tr(),
                       products: slidersState.newestProducts,
                       isLoading: slidersState.isLoadingNewest,
+                      backgroundColor: const Color(0xFFAED581)
+                          .withValues(alpha: 0.2), // Light Green
                     );
                   },
                 ),
@@ -96,8 +120,13 @@ class HomeContentBuilder {
                         categories: catState.categories,
                         selectedCategoryId: selectedCategoryId,
                         isOffersSelected: isOffersSelected,
+                        isBestSellersSelected: isBestSellersSelected,
+                        isTopRatedSelected: isTopRatedSelected,
+                        isAllProductsSelected: isAllProductsSelected,
                         onCategorySelected: onCategorySelected,
                         onOffersSelected: onOffersSelected,
+                        onBestSellersSelected: onBestSellersSelected,
+                        onTopRatedSelected: onTopRatedSelected,
                       );
                     }
                     if (catState is CategoriesError) {

@@ -118,9 +118,22 @@ class _MerchantTopRatedProductsPageState
     final isRtl = Localizations.localeOf(context).languageCode == 'ar';
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(isRtl ? 'المنتجات الأعلى تقييماً' : 'Top Rated Products'),
         backgroundColor: theme.colorScheme.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          isRtl ? 'المنتجات الأعلى تقييماً' : 'Top Rated Products',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.primary,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,

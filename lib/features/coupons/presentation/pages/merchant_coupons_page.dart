@@ -221,8 +221,7 @@ class _CouponsPageContentState extends State<_CouponsPageContent>
       ),
       title: Text(
         'coupons'.tr(),
-        style: TextStyle(
-          fontSize: 20,
+        style: theme.textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w600,
           color: theme.colorScheme.primary,
         ),

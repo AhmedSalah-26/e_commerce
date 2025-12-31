@@ -181,6 +181,8 @@ class _OffersPageState extends State<OffersPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
         ),
         title: Row(
           mainAxisSize: MainAxisSize.min,

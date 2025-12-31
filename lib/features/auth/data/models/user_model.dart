@@ -14,10 +14,21 @@ class UserModel extends UserEntity {
     super.isActive,
     super.bannedUntil,
     super.banReason,
+    super.addresses,
   });
 
   /// Create UserModel from JSON (Supabase response)
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    List<UserAddress> addresses = [];
+    if (json['addresses'] != null) {
+      final addressList = json['addresses'];
+      if (addressList is List) {
+        addresses = addressList
+            .map((a) => UserAddress.fromJson(a as Map<String, dynamic>))
+            .toList();
+      }
+    }
+
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String,
@@ -34,6 +45,7 @@ class UserModel extends UserEntity {
           ? DateTime.parse(json['banned_until'] as String)
           : null,
       banReason: json['ban_reason'] as String?,
+      addresses: addresses,
     );
   }
 
@@ -47,6 +59,7 @@ class UserModel extends UserEntity {
       'phone': phone,
       'avatar_url': avatarUrl,
       'governorate_id': governorateId,
+      'addresses': addresses.map((a) => a.toJson()).toList(),
     };
   }
 
@@ -63,6 +76,7 @@ class UserModel extends UserEntity {
     bool? isActive,
     DateTime? bannedUntil,
     String? banReason,
+    List<UserAddress>? addresses,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -76,6 +90,7 @@ class UserModel extends UserEntity {
       isActive: isActive ?? this.isActive,
       bannedUntil: bannedUntil ?? this.bannedUntil,
       banReason: banReason ?? this.banReason,
+      addresses: addresses ?? this.addresses,
     );
   }
 }

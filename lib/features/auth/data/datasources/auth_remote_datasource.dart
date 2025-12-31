@@ -24,6 +24,7 @@ abstract class AuthRemoteDataSource {
     String? phone,
     String? avatarUrl,
     String? governorateId,
+    List<UserAddress>? addresses,
   });
   Stream<UserModel?> get authStateChanges;
 }
@@ -202,6 +203,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? phone,
     String? avatarUrl,
     String? governorateId,
+    List<UserAddress>? addresses,
   }) async {
     logger.i('📝 Updating profile for user: $userId');
     try {
@@ -210,6 +212,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (phone != null) updateData['phone'] = phone;
       if (avatarUrl != null) updateData['avatar_url'] = avatarUrl;
       if (governorateId != null) updateData['governorate_id'] = governorateId;
+      if (addresses != null) {
+        updateData['addresses'] = addresses.map((a) => a.toJson()).toList();
+      }
 
       if (updateData.isEmpty) {
         logger.w('⚠️ No data to update');

@@ -131,10 +131,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
         title: Text(
           'all_categories'.tr(),
           style: theme.textTheme.titleLarge?.copyWith(

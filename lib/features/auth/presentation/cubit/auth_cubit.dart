@@ -120,6 +120,7 @@ class AuthCubit extends Cubit<AuthState> {
     String? phone,
     String? avatarUrl,
     String? governorateId,
+    List<UserAddress>? addresses,
   }) async {
     final user = currentUser;
     if (user == null) return false;
@@ -130,6 +131,7 @@ class AuthCubit extends Cubit<AuthState> {
       phone: phone,
       avatarUrl: avatarUrl,
       governorateId: governorateId,
+      addresses: addresses,
     );
 
     return result.fold(
@@ -139,5 +141,78 @@ class AuthCubit extends Cubit<AuthState> {
         return true;
       },
     );
+  }
+
+  /// Add new address
+  Future<bool> addAddress(UserAddress address) async {
+    final user = currentUser;
+    if (user == null) return false;
+
+    final newAddresses = List<UserAddress>.from(user.addresses);
+
+    // If this is the first address or marked as default, set it as default
+    if (newAddresses.isEmpty || address.isDefault) {
+      // Remove default from other addresses
+      for (int i = 0; i < newAddresses.length; i++) {
+        if (newAddresses[i].isDefault) {
+          newAddresses[i] = newAddresses[i].copyWith(isDefault: false);
+        }
+      }
+      newAddresses.add(address.copyWith(isDefault: true));
+    } else {
+      newAddresses.add(address);
+    }
+
+    return updateProfile(addresses: newAddresses);
+  }
+
+  /// Update existing address
+  Future<bool> updateAddress(UserAddress address) async {
+    final user = currentUser;
+    if (user == null) return false;
+
+    final newAddresses = List<UserAddress>.from(user.addresses);
+    final index = newAddresses.indexWhere((a) => a.id == address.id);
+    if (index == -1) return false;
+
+    // If setting as default, remove default from others
+    if (address.isDefault) {
+      for (int i = 0; i < newAddresses.length; i++) {
+        if (newAddresses[i].isDefault && newAddresses[i].id != address.id) {
+          newAddresses[i] = newAddresses[i].copyWith(isDefault: false);
+        }
+      }
+    }
+
+    newAddresses[index] = address;
+    return updateProfile(addresses: newAddresses);
+  }
+
+  /// Delete address
+  Future<bool> deleteAddress(String addressId) async {
+    final user = currentUser;
+    if (user == null) return false;
+
+    final newAddresses =
+        user.addresses.where((a) => a.id != addressId).toList();
+
+    // If deleted address was default, set first one as default
+    if (newAddresses.isNotEmpty && !newAddresses.any((a) => a.isDefault)) {
+      newAddresses[0] = newAddresses[0].copyWith(isDefault: true);
+    }
+
+    return updateProfile(addresses: newAddresses);
+  }
+
+  /// Set address as default
+  Future<bool> setDefaultAddress(String addressId) async {
+    final user = currentUser;
+    if (user == null) return false;
+
+    final newAddresses = user.addresses.map((a) {
+      return a.copyWith(isDefault: a.id == addressId);
+    }).toList();
+
+    return updateProfile(addresses: newAddresses);
   }
 }

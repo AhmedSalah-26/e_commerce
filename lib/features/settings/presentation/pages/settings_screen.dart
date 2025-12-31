@@ -126,6 +126,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             showDivider: false,
                           ),
                           SettingsTile(
+                            icon: Icons.location_on_outlined,
+                            title: isRtl ? 'عناويني' : 'My Addresses',
+                            onTap: () => context.push('/my-addresses'),
+                            showDivider: false,
+                          ),
+                          SettingsTile(
                             icon: Icons.receipt_long_outlined,
                             title: 'my_orders'.tr(),
                             onTap: () => context.push('/orders'),

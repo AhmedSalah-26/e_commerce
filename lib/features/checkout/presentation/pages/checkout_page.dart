@@ -44,6 +44,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
     if (authState is AuthAuthenticated) {
       _nameController.text = authState.user.name ?? '';
       _phoneController.text = authState.user.phone ?? '';
+
+      // Prefill default address if available
+      final defaultAddress = authState.user.defaultAddress;
+      if (defaultAddress != null) {
+        _addressController.text = defaultAddress.displayAddress;
+      }
     }
   }
 

@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../shipping/domain/entities/governorate_entity.dart';
@@ -66,7 +68,7 @@ class CheckoutBody extends StatelessWidget {
 }
 
 /// Form content with shipping state
-class CheckoutFormContent extends StatelessWidget {
+class CheckoutFormContent extends StatefulWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController addressController;
   final TextEditingController nameController;
@@ -93,6 +95,13 @@ class CheckoutFormContent extends StatelessWidget {
   });
 
   @override
+  State<CheckoutFormContent> createState() => _CheckoutFormContentState();
+}
+
+class _CheckoutFormContentState extends State<CheckoutFormContent> {
+  bool _hasSetDefaultGovernorate = false;
+
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<ShippingCubit, ShippingState>(
       builder: (context, shippingState) {
@@ -117,46 +126,75 @@ class CheckoutFormContent extends StatelessWidget {
 
         // Get merchant IDs and names from cart
         final merchantsInfo = <String, String>{};
-        for (final item in cartState.items) {
+        for (final item in widget.cartState.items) {
           if (item.product?.merchantId != null) {
             merchantsInfo[item.product!.merchantId!] =
                 item.product!.storeName ?? '';
           }
         }
 
+        // Auto-select default governorate from user's default address
+        if (!_hasSetDefaultGovernorate &&
+            governorates.isNotEmpty &&
+            selectedGovernorate == null) {
+          final authState = context.read<AuthCubit>().state;
+          if (authState is AuthAuthenticated) {
+            final defaultAddress = authState.user.defaultAddress;
+            if (defaultAddress != null) {
+              final govId = defaultAddress.governorateId;
+              if (govId != null) {
+                final gov = governorates.firstWhere(
+                  (g) => g.id == govId,
+                  orElse: () => governorates.first,
+                );
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  context
+                      .read<ShippingCubit>()
+                      .selectGovernorateForMultipleMerchants(
+                        gov,
+                        merchantsInfo.keys.toList(),
+                      );
+                });
+              }
+            }
+          }
+          _hasSetDefaultGovernorate = true;
+        }
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Form(
-            key: formKey,
+            key: widget.formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GovernorateDropdown(
                   governorates: governorates,
                   selected: selectedGovernorate,
-                  locale: locale,
-                  cartState: cartState,
+                  locale: widget.locale,
+                  cartState: widget.cartState,
                   merchantsShippingData: merchantsShippingData,
                   merchantsInfo: merchantsInfo,
                 ),
                 const SizedBox(height: 16),
                 CheckoutFormFields(
-                  addressController: addressController,
-                  nameController: nameController,
-                  phoneController: phoneController,
-                  notesController: notesController,
+                  addressController: widget.addressController,
+                  nameController: widget.nameController,
+                  phoneController: widget.phoneController,
+                  notesController: widget.notesController,
                 ),
                 const SizedBox(height: 24),
                 const PaymentMethodCard(),
                 const SizedBox(height: 16),
                 CheckoutCouponSection(
-                  orderAmount: cartState.total,
-                  productIds:
-                      cartState.items.map((item) => item.productId).toList(),
+                  orderAmount: widget.cartState.total,
+                  productIds: widget.cartState.items
+                      .map((item) => item.productId)
+                      .toList(),
                 ),
                 const SizedBox(height: 24),
                 OrderSummaryCard(
-                  cartState: cartState,
+                  cartState: widget.cartState,
                   shippingPrice: shippingPrice,
                   merchantShippingPrices: merchantShippingPrices,
                 ),
@@ -166,13 +204,13 @@ class CheckoutFormContent extends StatelessWidget {
                   totalShippingPrice: totalShippingPrice,
                   selectedGovernorate: selectedGovernorate,
                   merchantShippingPrices: merchantShippingPrices,
-                  cartState: cartState,
-                  locale: locale,
-                  formKey: formKey,
-                  nameController: nameController,
-                  phoneController: phoneController,
-                  addressController: addressController,
-                  onPlaceOrder: onPlaceOrder,
+                  cartState: widget.cartState,
+                  locale: widget.locale,
+                  formKey: widget.formKey,
+                  nameController: widget.nameController,
+                  phoneController: widget.phoneController,
+                  addressController: widget.addressController,
+                  onPlaceOrder: widget.onPlaceOrder,
                 ),
                 const SizedBox(height: 16),
               ],

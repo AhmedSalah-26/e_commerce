@@ -93,6 +93,7 @@ class AuthRepositoryImpl implements AuthRepository {
     String? phone,
     String? avatarUrl,
     String? governorateId,
+    List<UserAddress>? addresses,
   }) async {
     try {
       final user = await _remoteDataSource.updateProfile(
@@ -101,6 +102,7 @@ class AuthRepositoryImpl implements AuthRepository {
         phone: phone,
         avatarUrl: avatarUrl,
         governorateId: governorateId,
+        addresses: addresses,
       );
       return Right(user);
     } on ServerException catch (e) {

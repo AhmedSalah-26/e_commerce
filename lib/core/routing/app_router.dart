@@ -44,6 +44,8 @@ import '../../features/home/presentation/pages/all_categories_page.dart';
 import '../../features/home/presentation/pages/offers_page.dart';
 import '../../features/categories/presentation/cubit/categories_cubit.dart';
 
+import '../../features/settings/presentation/pages/my_addresses_page.dart';
+
 class AppRouter {
   static bool? _onboardingCompleted;
   static bool _isAuthenticated = false;
@@ -220,6 +222,10 @@ class AppRouter {
       GoRoute(
         path: '/theme-settings',
         builder: (context, state) => const ThemeSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/my-addresses',
+        builder: (context, state) => const MyAddressesPage(),
       ),
       GoRoute(
         path: '/product',

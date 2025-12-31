@@ -31,6 +31,7 @@ abstract class AuthRepository {
     String? phone,
     String? avatarUrl,
     String? governorateId,
+    List<UserAddress>? addresses,
   });
 
   /// Stream of auth state changes

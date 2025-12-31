@@ -278,4 +278,32 @@ mixin ProductQueryMixin {
           'فشل في جلب المنتجات الأعلى تقييمًا: ${e.toString()}');
     }
   }
+
+  /// Get flash sale products (is_flash_sale = true and currently active)
+  Future<List<ProductModel>> getFlashSaleProducts({
+    String locale = 'ar',
+    int limit = 10,
+  }) async {
+    try {
+      final now = DateTime.now().toIso8601String();
+
+      final response = await client
+          .from('products')
+          .select()
+          .eq('is_active', true)
+          .eq('is_suspended', false)
+          .eq('is_flash_sale', true)
+          .gt('stock', 0)
+          .lte('flash_sale_start', now)
+          .gt('flash_sale_end', now)
+          .order('flash_sale_end', ascending: true)
+          .limit(limit);
+
+      return (response as List)
+          .map((json) => ProductModel.fromJson(json, locale: locale))
+          .toList();
+    } catch (e) {
+      throw ServerException('فشل في جلب عروض الفلاش: ${e.toString()}');
+    }
+  }
 }

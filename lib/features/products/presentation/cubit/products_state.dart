@@ -30,6 +30,7 @@ class ProductsLoaded extends ProductsState {
   final bool isOffersMode;
   final bool isBestSellersMode;
   final bool isTopRatedMode;
+  final bool isFlashSaleMode;
 
   const ProductsLoaded({
     required this.products,
@@ -41,6 +42,7 @@ class ProductsLoaded extends ProductsState {
     this.isOffersMode = false,
     this.isBestSellersMode = false,
     this.isTopRatedMode = false,
+    this.isFlashSaleMode = false,
   });
 
   @override
@@ -54,6 +56,7 @@ class ProductsLoaded extends ProductsState {
         isOffersMode,
         isBestSellersMode,
         isTopRatedMode,
+        isFlashSaleMode,
       ];
 
   ProductsLoaded copyWith({
@@ -66,6 +69,7 @@ class ProductsLoaded extends ProductsState {
     bool? isOffersMode,
     bool? isBestSellersMode,
     bool? isTopRatedMode,
+    bool? isFlashSaleMode,
   }) {
     return ProductsLoaded(
       products: products ?? this.products,
@@ -77,6 +81,7 @@ class ProductsLoaded extends ProductsState {
       isOffersMode: isOffersMode ?? this.isOffersMode,
       isBestSellersMode: isBestSellersMode ?? this.isBestSellersMode,
       isTopRatedMode: isTopRatedMode ?? this.isTopRatedMode,
+      isFlashSaleMode: isFlashSaleMode ?? this.isFlashSaleMode,
     );
   }
 
@@ -92,6 +97,7 @@ class ProductsLoaded extends ProductsState {
       isOffersMode: isOffersMode,
       isBestSellersMode: isBestSellersMode,
       isTopRatedMode: isTopRatedMode,
+      isFlashSaleMode: isFlashSaleMode,
     );
   }
 }

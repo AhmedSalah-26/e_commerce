@@ -68,6 +68,8 @@ class _OffersPageState extends State<OffersPage> {
     final cubit = context.read<ProductsCubit>();
     switch (widget.offerType) {
       case OfferType.flashSale:
+        cubit.loadFlashSaleProducts();
+        break;
       case OfferType.bestDeals:
         cubit.loadDiscountedProducts();
         break;
@@ -81,6 +83,8 @@ class _OffersPageState extends State<OffersPage> {
     final cubit = context.read<ProductsCubit>();
     switch (widget.offerType) {
       case OfferType.flashSale:
+        // Flash sale doesn't have pagination
+        break;
       case OfferType.bestDeals:
         cubit.loadMoreDiscountedProducts();
         break;

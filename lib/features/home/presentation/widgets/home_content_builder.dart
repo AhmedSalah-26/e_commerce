@@ -74,15 +74,14 @@ class HomeContentBuilder {
                 // Flash Sale Section - Red & Eye-catching
                 BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
                   builder: (context, slidersState) {
-                    // Show flash sale only if there are discounted products
-                    if (slidersState.discountedProducts.isEmpty &&
-                        !slidersState.isLoadingDiscounted) {
+                    // Show flash sale only if there are flash sale products
+                    if (slidersState.flashSaleProducts.isEmpty &&
+                        !slidersState.isLoadingFlashSale) {
                       return const SizedBox.shrink();
                     }
                     return FlashSaleSlider(
-                      products:
-                          slidersState.discountedProducts.take(10).toList(),
-                      isLoading: slidersState.isLoadingDiscounted,
+                      products: slidersState.flashSaleProducts,
+                      isLoading: slidersState.isLoadingFlashSale,
                       onViewAll: () => context.push('/offers/flash-sale'),
                     );
                   },

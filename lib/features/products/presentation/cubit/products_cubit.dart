@@ -178,7 +178,7 @@ class ProductsCubit extends Cubit<ProductsState> {
     await loadProducts();
   }
 
-  /// Load products with discount (offers)
+  /// Load products with discount (offers) - sorted by highest discount
   Future<void> loadDiscountedProducts() async {
     emit(const ProductsLoading());
 
@@ -194,6 +194,25 @@ class ProductsCubit extends Cubit<ProductsState> {
         hasMore: products.length >= _pageSize,
         currentPage: 0,
         isOffersMode: true,
+      )),
+    );
+  }
+
+  /// Load flash sale products only (is_flash_sale = true)
+  Future<void> loadFlashSaleProducts() async {
+    emit(const ProductsLoading());
+
+    final result = await _repository.getFlashSaleProducts(
+      limit: _pageSize,
+    );
+
+    result.fold(
+      (failure) => emit(ProductsError(failure.message)),
+      (products) => emit(ProductsLoaded(
+        products: products,
+        hasMore: false, // Flash sale doesn't have pagination
+        currentPage: 0,
+        isFlashSaleMode: true,
       )),
     );
   }

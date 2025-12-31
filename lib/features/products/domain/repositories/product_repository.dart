@@ -87,4 +87,9 @@ abstract class ProductRepository {
     int page = 0,
     int limit = 10,
   });
+
+  /// Get flash sale products (is_flash_sale = true and active)
+  Future<Either<Failure, List<ProductEntity>>> getFlashSaleProducts({
+    int limit = 10,
+  });
 }

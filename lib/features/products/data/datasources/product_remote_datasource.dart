@@ -62,6 +62,10 @@ abstract class ProductRemoteDataSource {
     int page = 0,
     int limit = 10,
   });
+  Future<List<ProductModel>> getFlashSaleProducts({
+    String locale = 'ar',
+    int limit = 10,
+  });
   Future<void> cleanupExpiredFlashSales();
   Future<void> cleanupExpiredFlashSaleForProduct(String productId);
 }

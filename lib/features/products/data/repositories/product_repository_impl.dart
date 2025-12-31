@@ -164,6 +164,15 @@ class ProductRepositoryImpl implements ProductRepository {
         .toEither();
   }
 
+  @override
+  Future<Either<Failure, List<ProductEntity>>> getFlashSaleProducts({
+    int limit = 10,
+  }) {
+    return _remoteDataSource
+        .getFlashSaleProducts(locale: _locale, limit: limit)
+        .toEither();
+  }
+
   /// Convert entity to model
   ProductModel _toModel(ProductEntity product) {
     return ProductModel(

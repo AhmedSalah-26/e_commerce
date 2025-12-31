@@ -4,27 +4,35 @@ import '../../../products/domain/entities/product_entity.dart';
 import '../../../products/domain/repositories/product_repository.dart';
 
 class HomeSlidersState {
+  final List<ProductEntity> flashSaleProducts;
   final List<ProductEntity> discountedProducts;
   final List<ProductEntity> newestProducts;
+  final bool isLoadingFlashSale;
   final bool isLoadingDiscounted;
   final bool isLoadingNewest;
 
   const HomeSlidersState({
+    this.flashSaleProducts = const [],
     this.discountedProducts = const [],
     this.newestProducts = const [],
+    this.isLoadingFlashSale = false,
     this.isLoadingDiscounted = false,
     this.isLoadingNewest = false,
   });
 
   HomeSlidersState copyWith({
+    List<ProductEntity>? flashSaleProducts,
     List<ProductEntity>? discountedProducts,
     List<ProductEntity>? newestProducts,
+    bool? isLoadingFlashSale,
     bool? isLoadingDiscounted,
     bool? isLoadingNewest,
   }) {
     return HomeSlidersState(
+      flashSaleProducts: flashSaleProducts ?? this.flashSaleProducts,
       discountedProducts: discountedProducts ?? this.discountedProducts,
       newestProducts: newestProducts ?? this.newestProducts,
+      isLoadingFlashSale: isLoadingFlashSale ?? this.isLoadingFlashSale,
       isLoadingDiscounted: isLoadingDiscounted ?? this.isLoadingDiscounted,
       isLoadingNewest: isLoadingNewest ?? this.isLoadingNewest,
     );
@@ -71,21 +79,29 @@ class HomeSlidersCubit extends Cubit<HomeSlidersState> {
 
   Future<void> _fetchSliders() async {
     _isLoading = true;
-    emit(state.copyWith(isLoadingDiscounted: true, isLoadingNewest: true));
+    emit(state.copyWith(
+      isLoadingFlashSale: true,
+      isLoadingDiscounted: true,
+      isLoadingNewest: true,
+    ));
 
-    // Load both in parallel
+    // Load all in parallel
     final results = await Future.wait([
+      _repository.getFlashSaleProducts(limit: 10),
       _repository.getDiscountedProducts(limit: 20),
       _repository.getNewestProducts(limit: 10),
     ]);
 
-    final discountedResult = results[0];
-    final newestResult = results[1];
+    final flashSaleResult = results[0];
+    final discountedResult = results[1];
+    final newestResult = results[2];
 
     _isLoading = false;
     emit(state.copyWith(
+      flashSaleProducts: flashSaleResult.fold((_) => [], (p) => p),
       discountedProducts: discountedResult.fold((_) => [], (p) => p),
       newestProducts: newestResult.fold((_) => [], (p) => p),
+      isLoadingFlashSale: false,
       isLoadingDiscounted: false,
       isLoadingNewest: false,
     ));

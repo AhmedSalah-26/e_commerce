@@ -162,28 +162,6 @@ class _FavoriteButton extends StatelessWidget {
 
     final cubit = context.read<FavoritesCubit>();
     cubit.setUserId(authState.user.id);
-
-    // Await the result first
-    final willBeRemoved = isFavorite;
-    final success = await cubit.toggleFavorite(productId);
-
-    if (!context.mounted) return;
-
-    // Show appropriate toast based on result
-    if (success) {
-      Tost.showCustomToast(
-        context,
-        willBeRemoved
-            ? 'removed_from_favorites'.tr()
-            : 'added_to_favorites'.tr(),
-        backgroundColor: willBeRemoved ? Colors.grey : Colors.red,
-      );
-    } else {
-      Tost.showCustomToast(
-        context,
-        'error_favorite_failed'.tr(),
-        backgroundColor: Colors.red,
-      );
-    }
+    await cubit.toggleFavorite(productId);
   }
 }

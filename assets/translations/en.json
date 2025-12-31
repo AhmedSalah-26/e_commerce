@@ -20,6 +20,7 @@
   "done": "Done",
   "optional": "Optional",
   "required": "Required",
+  "off": "OFF",
 
   "onboarding_skip": "Skip",
   "onboarding_start": "Start",
@@ -446,5 +447,7 @@
   "newest": "Newest",
   "price_low_to_high": "Price: Low to High",
   "price_high_to_low": "Price: High to Low",
-  "limited_time_offers": "Limited Time Offers"
+  "limited_time_offers": "Limited Time Offers",
+  "best_deals_subtitle": "Exclusive discounts you can't miss",
+  "new_arrivals_subtitle": "Latest products in our store"
 }

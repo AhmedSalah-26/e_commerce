@@ -20,6 +20,7 @@
   "done": "تم",
   "optional": "اختياري",
   "required": "مطلوب",
+  "off": "خصم",
 
   "onboarding_skip": "تخطي",
   "onboarding_start": "ابدأ",
@@ -478,5 +479,7 @@
   "newest": "الأحدث",
   "price_low_to_high": "السعر: من الأقل للأعلى",
   "price_high_to_low": "السعر: من الأعلى للأقل",
-  "limited_time_offers": "عروض لفترة محدودة"
+  "limited_time_offers": "عروض لفترة محدودة",
+  "best_deals_subtitle": "خصومات حصرية لا تفوتك",
+  "new_arrivals_subtitle": "أحدث المنتجات في متجرنا"
 }

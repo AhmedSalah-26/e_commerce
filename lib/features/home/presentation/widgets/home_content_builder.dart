@@ -69,7 +69,7 @@ class HomeContentBuilder {
             child: Column(
               children: <Widget>[
                 ImagesCard(images: sliderImages),
-                const SizedBox(height: 10),
+                const SizedBox(height: 4),
                 // Flash Sale Section - Red & Eye-catching
                 BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
                   builder: (context, slidersState) {
@@ -85,11 +85,12 @@ class HomeContentBuilder {
                     );
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 4),
                 BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
                   builder: (context, slidersState) {
                     return HorizontalProductsSlider(
                       title: 'best_deals'.tr(),
+                      subtitle: 'best_deals_subtitle'.tr(),
                       products: slidersState.discountedProducts,
                       isLoading: slidersState.isLoadingDiscounted,
                       backgroundColor: const Color(0xFF4FC3F7)
@@ -97,11 +98,12 @@ class HomeContentBuilder {
                     );
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 4),
                 BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
                   builder: (context, slidersState) {
                     return HorizontalProductsSlider(
                       title: 'new_arrivals'.tr(),
+                      subtitle: 'new_arrivals_subtitle'.tr(),
                       products: slidersState.newestProducts,
                       isLoading: slidersState.isLoadingNewest,
                       backgroundColor: const Color(0xFFAED581)
@@ -109,7 +111,7 @@ class HomeContentBuilder {
                     );
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 4),
                 BlocBuilder<CategoriesCubit, CategoriesState>(
                   builder: (context, catState) {
                     if (catState is CategoriesLoading) {

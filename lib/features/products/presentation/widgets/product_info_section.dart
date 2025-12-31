@@ -48,7 +48,25 @@ class ProductInfoSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 if (!hidePrice) ...[
-                  if (product.hasDiscount)
+                  if (product.hasDiscount) ...[
+                    // Discount percentage badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '${product.discountPercentage}% ${'off'.tr()}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                     AutoSizeText(
                       "${product.price.toStringAsFixed(2)} ${'egp'.tr()}",
                       style: TextStyle(
@@ -60,6 +78,7 @@ class ProductInfoSection extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                  ],
                   AutoSizeText(
                     "${product.effectivePrice.toStringAsFixed(2)} ${'egp'.tr()}",
                     style: AppTextStyle.bold_18_medium_brown

@@ -10,7 +10,10 @@ import 'product_info_section.dart';
 class ProductGridCard extends StatefulWidget {
   final ProductEntity product;
 
-  const ProductGridCard({super.key, required this.product});
+  const ProductGridCard({
+    super.key,
+    required this.product,
+  });
 
   @override
   State<ProductGridCard> createState() => _ProductGridCardState();

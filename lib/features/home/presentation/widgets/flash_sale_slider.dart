@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/shared_widgets/product_card/product_grid_card.dart';
 import '../../../products/domain/entities/product_entity.dart';
 
-/// Flash Sale slider with eye-catching red design and animations
+/// Flash Sale slider with eye-catching red design
 class FlashSaleSlider extends StatefulWidget {
   final List<ProductEntity> products;
   final bool isLoading;
@@ -28,11 +28,11 @@ class _FlashSaleSliderState extends State<FlashSaleSlider>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     )..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
   }
@@ -56,27 +56,16 @@ class _FlashSaleSliderState extends State<FlashSaleSlider>
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFE53935), Color(0xFFFF5252), Color(0xFFE53935)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: const Color(0xFFE53935),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with flash icon and timer-like design
+          // Header with animated flash icon
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
             child: Row(
@@ -87,29 +76,15 @@ class _FlashSaleSliderState extends State<FlashSaleSlider>
                   builder: (context, child) {
                     return Transform.scale(
                       scale: _pulseAnimation.value,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.yellow,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.yellow.withValues(alpha: 0.5),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.flash_on,
-                          color: Colors.red,
-                          size: 24,
-                        ),
+                      child: const Icon(
+                        Icons.flash_on,
+                        color: Colors.white,
+                        size: 28,
                       ),
                     );
                   },
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,10 +92,9 @@ class _FlashSaleSliderState extends State<FlashSaleSlider>
                       Text(
                         'flash_sale'.tr(),
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          letterSpacing: 1,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -133,11 +107,6 @@ class _FlashSaleSliderState extends State<FlashSaleSlider>
                       ),
                     ],
                   ),
-                ),
-                // Fire emoji decoration
-                const Text(
-                  '🔥',
-                  style: TextStyle(fontSize: 28),
                 ),
               ],
             ),
@@ -170,17 +139,10 @@ class _FlashSaleSliderState extends State<FlashSaleSlider>
 
   Widget _buildSkeleton(ThemeData theme) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.red.withValues(alpha: 0.3),
-            Colors.red.withValues(alpha: 0.2),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.red.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -188,26 +150,13 @@ class _FlashSaleSliderState extends State<FlashSaleSlider>
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Container(
-                  width: 120,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ],
+            child: Container(
+              width: 120,
+              height: 40,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
           SizedBox(

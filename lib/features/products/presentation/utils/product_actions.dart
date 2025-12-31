@@ -70,25 +70,7 @@ class ProductActions {
 
     final favoritesCubit = context.read<FavoritesCubit>();
     favoritesCubit.setUserId(authState.user.id);
-
-    final wasFavorite = favoritesCubit.isFavorite(productId);
-
-    // Await the result first
-    final success = await favoritesCubit.toggleFavorite(productId);
-
-    if (!context.mounted) return;
-
-    // Show appropriate toast based on result
-    if (success) {
-      _showFavoriteToast(context, wasFavorite);
-    } else {
-      Tost.showCustomToast(
-        context,
-        'error_favorite_failed'.tr(),
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-      );
-    }
+    await favoritesCubit.toggleFavorite(productId);
   }
 
   void _showLoginRequired(BuildContext context) {
@@ -96,15 +78,6 @@ class ProductActions {
       context,
       'login_required'.tr(),
       backgroundColor: Colors.orange,
-      textColor: Colors.white,
-    );
-  }
-
-  void _showFavoriteToast(BuildContext context, bool willBeRemoved) {
-    Tost.showCustomToast(
-      context,
-      willBeRemoved ? 'removed_from_favorites'.tr() : 'added_to_favorites'.tr(),
-      backgroundColor: willBeRemoved ? Colors.grey : Colors.red,
       textColor: Colors.white,
     );
   }

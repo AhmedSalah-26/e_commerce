@@ -5,6 +5,7 @@ import '../../../products/domain/entities/product_entity.dart';
 
 class HorizontalProductsSlider extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final List<ProductEntity> products;
   final bool isLoading;
   final Color? backgroundColor;
@@ -12,6 +13,7 @@ class HorizontalProductsSlider extends StatelessWidget {
   const HorizontalProductsSlider({
     super.key,
     required this.title,
+    this.subtitle,
     required this.products,
     this.isLoading = false,
     this.backgroundColor,
@@ -30,7 +32,7 @@ class HorizontalProductsSlider extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color:
@@ -46,12 +48,30 @@ class HorizontalProductsSlider extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 Icon(
@@ -89,7 +109,7 @@ class HorizontalProductsSlider extends StatelessWidget {
 
   Widget _buildSkeleton(ThemeData theme) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: theme.colorScheme.outline.withValues(alpha: 0.1),

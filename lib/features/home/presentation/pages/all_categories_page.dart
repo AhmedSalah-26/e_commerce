@@ -12,6 +12,7 @@ import '../../../products/domain/entities/product_entity.dart';
 import '../../../products/presentation/cubit/products_cubit.dart';
 import '../../../products/presentation/cubit/products_state.dart';
 import '../widgets/all_categories/categories_header.dart';
+import '../widgets/all_categories/categories_search_bar.dart';
 import '../widgets/all_categories/filter_sort_bar.dart';
 import '../widgets/all_categories/category_products_grid.dart';
 import '../widgets/all_categories/filter_sheet.dart';
@@ -35,6 +36,9 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   static const double _maxPrice = 10000;
   RangeValues _priceRange = const RangeValues(_minPrice, _maxPrice);
 
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +51,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -84,9 +89,15 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   }
 
   List<ProductEntity> _sortProducts(List<ProductEntity> products) {
+    // Apply search filter first
     var filtered = products.where((p) {
       final price = p.effectivePrice;
-      return price >= _priceRange.start && price <= _priceRange.end;
+      final priceMatch = price >= _priceRange.start && price <= _priceRange.end;
+
+      if (_searchQuery.isEmpty) return priceMatch;
+
+      final searchLower = _searchQuery.toLowerCase();
+      return priceMatch && p.name.toLowerCase().contains(searchLower);
     }).toList();
 
     switch (_sortOption) {
@@ -139,6 +150,15 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
       ),
       body: Column(
         children: [
+          CategoriesSearchBar(
+            controller: _searchController,
+            searchQuery: _searchQuery,
+            onChanged: (value) => setState(() => _searchQuery = value),
+            onClear: () {
+              _searchController.clear();
+              setState(() => _searchQuery = '');
+            },
+          ),
           _buildCategoriesHeader(isDark),
           FilterSortBar(
             sortOption: _sortOption,

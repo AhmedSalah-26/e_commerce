@@ -124,7 +124,21 @@ class AppRouter {
               ),
             ],
           ),
-          // Cart tab
+          // Categories tab
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/categories',
+                pageBuilder: (context, state) => NoTransitionPage(
+                  child: BlocProvider(
+                    create: (_) => sl<CategoriesCubit>()..loadCategories(),
+                    child: const AllCategoriesPage(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Cart tab (in the middle)
           StatefulShellBranch(
             routes: [
               GoRoute(

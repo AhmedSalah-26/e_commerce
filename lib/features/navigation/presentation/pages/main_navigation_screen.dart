@@ -94,19 +94,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           _buildNavItem(0, Icons.home_outlined, Icons.home),
-                          _buildNavItemWithBadge(
+                          _buildNavItem(
                             1,
+                            Icons.category_outlined,
+                            Icons.category,
+                          ),
+                          _buildNavItemWithBadge(
+                            2,
                             Icons.shopping_cart_outlined,
                             Icons.shopping_cart,
                             cartItemCount,
                           ),
                           _buildNavItem(
-                            2,
+                            3,
                             Icons.favorite_border,
                             Icons.favorite,
                           ),
                           _buildNavItem(
-                            3,
+                            4,
                             Icons.settings_outlined,
                             Icons.settings,
                           ),

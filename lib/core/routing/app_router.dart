@@ -225,7 +225,10 @@ class AppRouter {
       ),
       GoRoute(
         path: '/my-addresses',
-        builder: (context, state) => const MyAddressesPage(),
+        builder: (context, state) => BlocProvider(
+          create: (_) => sl<ShippingCubit>()..loadGovernorates(),
+          child: const MyAddressesPage(),
+        ),
       ),
       GoRoute(
         path: '/product',

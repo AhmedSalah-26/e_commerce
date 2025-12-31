@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/toast.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
@@ -18,57 +17,54 @@ class MyAddressesPage extends StatelessWidget {
     final isRtl = context.locale.languageCode == 'ar';
     final theme = Theme.of(context);
 
-    return BlocProvider(
-      create: (_) => sl<ShippingCubit>()..loadGovernorates(),
-      child: Directionality(
-        textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
-        child: Scaffold(
-          backgroundColor: theme.scaffoldBackgroundColor,
-          appBar: AppBar(
-            backgroundColor: theme.colorScheme.surface,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
-              onPressed: () => Navigator.pop(context),
+    return Directionality(
+      textDirection: isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: theme.colorScheme.surface,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            isRtl ? 'عناويني' : 'My Addresses',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.primary,
             ),
-            title: Text(
-              isRtl ? 'عناويني' : 'My Addresses',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            centerTitle: true,
           ),
-          body: BlocBuilder<AuthCubit, AuthState>(
-            builder: (context, authState) {
-              if (authState is! AuthAuthenticated) {
-                return const Center(child: CircularProgressIndicator());
-              }
+          centerTitle: true,
+        ),
+        body: BlocBuilder<AuthCubit, AuthState>(
+          builder: (context, authState) {
+            if (authState is! AuthAuthenticated) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-              final addresses = authState.user.addresses;
+            final addresses = authState.user.addresses;
 
-              if (addresses.isEmpty) {
-                return _EmptyAddresses(isRtl: isRtl);
-              }
+            if (addresses.isEmpty) {
+              return _EmptyAddresses(isRtl: isRtl);
+            }
 
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: addresses.length,
-                itemBuilder: (context, index) {
-                  final address = addresses[index];
-                  return _AddressCard(
-                    address: address,
-                    isRtl: isRtl,
-                  );
-                },
-              );
-            },
-          ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showAddAddressDialog(context, isRtl),
-            icon: const Icon(Icons.add),
-            label: Text(isRtl ? 'إضافة عنوان' : 'Add Address'),
-          ),
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: addresses.length,
+              itemBuilder: (context, index) {
+                final address = addresses[index];
+                return _AddressCard(
+                  address: address,
+                  isRtl: isRtl,
+                );
+              },
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _showAddAddressDialog(context, isRtl),
+          icon: const Icon(Icons.add),
+          label: Text(isRtl ? 'إضافة عنوان' : 'Add Address'),
         ),
       ),
     );

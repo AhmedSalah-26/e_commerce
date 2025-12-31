@@ -96,9 +96,6 @@ class EmptyStates {
     return EmptyStateWidget(
       icon: Icons.inventory_2_outlined,
       title: 'no_products'.tr(),
-      subtitle: 'try_different_search'.tr(),
-      actionLabel: 'start_shopping'.tr(),
-      onAction: () => context.go('/home'),
     );
   }
 

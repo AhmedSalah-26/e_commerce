@@ -31,9 +31,6 @@ class HomeScreenState extends State<HomeScreen> {
   bool _isTopRatedSelected = false;
   bool _isAllProductsSelected = false;
 
-  // Loading state for shimmer
-  bool _isLoadingProducts = true;
-
   final ScrollController _scrollController = ScrollController();
   int _unreadNotifications = 0;
   String? _lastLocale;
@@ -108,22 +105,22 @@ class HomeScreenState extends State<HomeScreen> {
     context.read<HomeSlidersCubit>().refreshSliders();
     context.read<CategoriesCubit>().loadCategories();
 
+    final cubit = context.read<ProductsCubit>();
     if (_isOffersSelected) {
-      await _loadTab(TabType.offers);
+      await cubit.loadDiscountedProducts();
     } else if (_isBestSellersSelected) {
-      await _loadTab(TabType.bestSellers);
+      await cubit.loadBestSellingProducts();
     } else if (_isTopRatedSelected) {
-      await _loadTab(TabType.topRated);
+      await cubit.loadTopRatedProducts();
     } else {
-      await _loadTab(TabType.allProducts);
+      await cubit.loadProducts(forceReload: true);
     }
   }
 
   /// Load products for a specific tab with shimmer
-  Future<void> _loadTab(TabType tab) async {
-    // Set loading state immediately
+  void _loadTab(TabType tab) {
+    // Update tab selection state
     setState(() {
-      _isLoadingProducts = true;
       _selectedCategoryId = null;
       _isOffersSelected = tab == TabType.offers;
       _isBestSellersSelected = tab == TabType.bestSellers;
@@ -131,23 +128,18 @@ class HomeScreenState extends State<HomeScreen> {
       _isAllProductsSelected = tab == TabType.allProducts;
     });
 
-    // Wait for next frame to ensure UI updates
-    await Future.delayed(const Duration(milliseconds: 50));
-
-    // Load data
+    // Load data - cubit will emit ProductsLoading which triggers shimmer
     final cubit = context.read<ProductsCubit>();
     switch (tab) {
       case TabType.offers:
-        await cubit.loadDiscountedProducts();
+        cubit.loadDiscountedProducts();
       case TabType.bestSellers:
-        await cubit.loadBestSellingProducts();
+        cubit.loadBestSellingProducts();
       case TabType.topRated:
-        await cubit.loadTopRatedProducts();
+        cubit.loadTopRatedProducts();
       case TabType.allProducts:
-        await cubit.loadProducts(forceReload: true);
+        cubit.loadProducts(forceReload: true);
     }
-
-    if (mounted) setState(() => _isLoadingProducts = false);
   }
 
   @override
@@ -188,7 +180,6 @@ class HomeScreenState extends State<HomeScreen> {
                     ),
                     // Products grid
                     HomeProductsSection(
-                      isLoading: _isLoadingProducts,
                       onRetry: _handleRefresh,
                     ),
                   ],

@@ -2,25 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../../../../categories/domain/entities/category_entity.dart';
 
-/// Header widget showing horizontal scrollable categories
 class CategoriesHeader extends StatelessWidget {
   final List<CategoryEntity> categories;
   final String? selectedCategoryId;
   final Function(String?) onCategorySelected;
+  final bool darkMode;
 
   const CategoriesHeader({
     super.key,
     required this.categories,
     this.selectedCategoryId,
     required this.onCategorySelected,
+    this.darkMode = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Container(
-      color: theme.colorScheme.surface,
+      color: Colors.transparent,
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: SizedBox(
         height: 100,
@@ -36,6 +35,7 @@ class CategoriesHeader extends StatelessWidget {
               category: category,
               isSelected: isSelected,
               onTap: () => onCategorySelected(category.id),
+              darkMode: darkMode,
             );
           },
         ),
@@ -44,21 +44,28 @@ class CategoriesHeader extends StatelessWidget {
   }
 }
 
-/// Single category item widget
 class _CategoryItem extends StatelessWidget {
   final CategoryEntity category;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool darkMode;
 
   const _CategoryItem({
     required this.category,
     required this.isSelected,
     required this.onTap,
+    this.darkMode = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final primaryColor =
+        darkMode ? const Color(0xFFD4A574) : theme.colorScheme.primary;
+    final textColor = darkMode ? Colors.white : theme.colorScheme.onSurface;
+    // Use darker background for category containers in darkMode
+    final containerBg =
+        darkMode ? const Color(0xFF1A1A1A) : theme.colorScheme.surface;
 
     return GestureDetector(
       onTap: onTap,
@@ -68,19 +75,20 @@ class _CategoryItem extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Category image
             Container(
               width: 60,
               height: 60,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? theme.colorScheme.primary.withValues(alpha: 0.15)
-                    : theme.colorScheme.surface,
+                    ? primaryColor.withValues(alpha: 0.15)
+                    : containerBg,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isSelected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.outline.withValues(alpha: 0.2),
+                      ? primaryColor
+                      : (darkMode
+                          ? Colors.white
+                          : theme.colorScheme.outline.withValues(alpha: 0.2)),
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -94,31 +102,25 @@ class _CategoryItem extends StatelessWidget {
                             errorBuilder: (_, __, ___) => Icon(
                               Icons.category,
                               size: 28,
-                              color: theme.colorScheme.primary,
+                              color: primaryColor,
                             ),
                           )
                         : Icon(
                             Icons.category,
                             size: 28,
                             color: isSelected
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.6),
+                                ? primaryColor
+                                : textColor.withValues(alpha: 0.6),
                           ),
               ),
             ),
-
             const SizedBox(height: 6),
-
-            // Category name
             Text(
               category.name,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurface,
+                color: isSelected ? primaryColor : textColor,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,

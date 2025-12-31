@@ -133,17 +133,21 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    // Use dark background for categories section in both modes
+    final categoriesBgColor =
+        isDark ? theme.colorScheme.surface : const Color(0xFF2D2D2D);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: theme.colorScheme.surface,
+        backgroundColor: categoriesBgColor,
         automaticallyImplyLeading: false,
         title: Text(
           'all_categories'.tr(),
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w600,
-            color: theme.colorScheme.primary,
+            color: isDark ? theme.colorScheme.primary : const Color(0xFFD4A574),
           ),
         ),
         centerTitle: true,
@@ -151,45 +155,54 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
       ),
       body: Column(
         children: [
-          // Categories horizontal list
-          BlocBuilder<CategoriesCubit, CategoriesState>(
-            builder: (context, state) {
-              if (state is CategoriesLoading) {
-                return const SizedBox(
-                  height: 100,
-                  child: CategoriesRowSkeleton(),
-                );
-              }
-              if (state is CategoriesLoaded) {
-                return CategoriesHeader(
-                  categories: state.categories,
-                  selectedCategoryId: _selectedCategoryId,
-                  onCategorySelected: _onCategorySelected,
-                );
-              }
-              if (state is CategoriesError) {
-                return SizedBox(
-                  height: 100,
-                  child: Center(
-                    child: TextButton.icon(
-                      onPressed: () =>
-                          context.read<CategoriesCubit>().loadCategories(),
-                      icon: const Icon(Icons.refresh),
-                      label: Text('retry'.tr()),
+          // Categories horizontal list with dark background
+          Container(
+            color: categoriesBgColor,
+            child: BlocBuilder<CategoriesCubit, CategoriesState>(
+              builder: (context, state) {
+                if (state is CategoriesLoading) {
+                  return const SizedBox(
+                    height: 100,
+                    child: CategoriesRowSkeleton(),
+                  );
+                }
+                if (state is CategoriesLoaded) {
+                  return CategoriesHeader(
+                    categories: state.categories,
+                    selectedCategoryId: _selectedCategoryId,
+                    onCategorySelected: _onCategorySelected,
+                    darkMode: true,
+                  );
+                }
+                if (state is CategoriesError) {
+                  return SizedBox(
+                    height: 100,
+                    child: Center(
+                      child: TextButton.icon(
+                        onPressed: () =>
+                            context.read<CategoriesCubit>().loadCategories(),
+                        icon: const Icon(Icons.refresh, color: Colors.white70),
+                        label: Text('retry'.tr(),
+                            style: const TextStyle(color: Colors.white70)),
+                      ),
                     ),
-                  ),
-                );
-              }
-              return const SizedBox(height: 100);
-            },
+                  );
+                }
+                return const SizedBox(height: 100);
+              },
+            ),
           ),
 
           // Filter & Sort bar
-          FilterSortBar(
-            sortOption: _sortOption,
-            onSortChanged: _onSortChanged,
-            onFilterTap: () => _showFilterSheet(context),
-            activeFilterCount: _activeFilterCount,
+          Container(
+            color: categoriesBgColor,
+            child: FilterSortBar(
+              sortOption: _sortOption,
+              onSortChanged: _onSortChanged,
+              onFilterTap: () => _showFilterSheet(context),
+              activeFilterCount: _activeFilterCount,
+              darkMode: !isDark,
+            ),
           ),
 
           // Products grid
@@ -304,7 +317,7 @@ class _FilterSheetState extends State<_FilterSheet> {
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: theme.scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Padding(

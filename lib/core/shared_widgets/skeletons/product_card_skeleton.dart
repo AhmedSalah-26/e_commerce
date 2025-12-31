@@ -1,40 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-/// Skeleton for product grid card
 class ProductCardSkeleton extends StatelessWidget {
   const ProductCardSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final skeletonColor = theme.colorScheme.surfaceContainerHighest;
-    final highlightColor = theme.colorScheme.surface;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.grey.shade800 : Colors.grey.shade400;
+    final highlightColor = isDark ? Colors.grey.shade700 : Colors.grey.shade200;
 
     return Shimmer.fromColors(
-      baseColor: skeletonColor,
+      baseColor: baseColor,
       highlightColor: highlightColor,
       child: Container(
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
+          color: baseColor,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image placeholder
             Expanded(
               flex: 3,
               child: Container(
                 decoration: BoxDecoration(
-                  color: skeletonColor,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
-                  ),
+                  color: baseColor,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
                 ),
               ),
             ),
-            // Content placeholder
             Expanded(
               flex: 2,
               child: Padding(
@@ -47,7 +43,7 @@ class ProductCardSkeleton extends StatelessWidget {
                       height: 14,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: skeletonColor,
+                        color: baseColor,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -55,7 +51,7 @@ class ProductCardSkeleton extends StatelessWidget {
                       height: 12,
                       width: 80,
                       decoration: BoxDecoration(
-                        color: skeletonColor,
+                        color: baseColor,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -63,7 +59,7 @@ class ProductCardSkeleton extends StatelessWidget {
                       height: 16,
                       width: 60,
                       decoration: BoxDecoration(
-                        color: skeletonColor,
+                        color: baseColor,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),

@@ -5,7 +5,6 @@ import '../../domain/entities/product_entity.dart';
 import '../../domain/repositories/product_repository.dart';
 import 'products_state.dart';
 
-/// Cubit for managing products state
 class ProductsCubit extends Cubit<ProductsState> {
   final ProductRepository _repository;
   static const int _pageSize = 10;
@@ -15,30 +14,13 @@ class ProductsCubit extends Cubit<ProductsState> {
       : _repository = repository,
         super(const ProductsInitial());
 
-  /// Set the locale for fetching products
   void setLocale(String locale) {
     if (_repository is ProductRepositoryImpl) {
       _repository.setLocale(locale);
     }
   }
 
-  /// Minimum loading duration for shimmer visibility
-  static const Duration _minLoadingDuration = Duration(milliseconds: 400);
-
-  /// Helper to ensure minimum loading time for shimmer visibility
-  Future<T> _withMinLoadingTime<T>(Future<T> Function() operation) async {
-    final stopwatch = Stopwatch()..start();
-    final result = await operation();
-    final elapsed = stopwatch.elapsed;
-    if (elapsed < _minLoadingDuration) {
-      await Future.delayed(_minLoadingDuration - elapsed);
-    }
-    return result;
-  }
-
-  /// Load all products (first page)
   Future<void> loadProducts({bool forceReload = false}) async {
-    // Skip if already loaded and not forcing reload
     if (!forceReload && state is ProductsLoaded) {
       final loaded = state as ProductsLoaded;
       if (loaded.selectedCategoryId == null &&
@@ -52,9 +34,7 @@ class ProductsCubit extends Cubit<ProductsState> {
 
     emit(const ProductsLoading());
 
-    final result = await _withMinLoadingTime(
-      () => _repository.getProducts(page: 0, limit: _pageSize),
-    );
+    final result = await _repository.getProducts(page: 0, limit: _pageSize);
 
     result.fold(
       (failure) => emit(ProductsError(failure.message)),
@@ -66,7 +46,6 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
-  /// Load more products (pagination)
   Future<void> loadMoreProducts() async {
     final currentState = state;
     if (currentState is! ProductsLoaded) return;
@@ -102,16 +81,13 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
-  /// Load products by category
   Future<void> loadProductsByCategory(String categoryId) async {
     emit(const ProductsLoading());
 
-    final result = await _withMinLoadingTime(
-      () => _repository.getProductsByCategory(
-        categoryId,
-        page: 0,
-        limit: _pageSize,
-      ),
+    final result = await _repository.getProductsByCategory(
+      categoryId,
+      page: 0,
+      limit: _pageSize,
     );
 
     result.fold(
@@ -125,12 +101,10 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
-  /// Search products with debounce (1 second delay)
   void searchProducts(String query) {
     _debounceTimer?.cancel();
 
     if (query.isEmpty) {
-      // Clear search immediately
       final currentState = state;
       if (currentState is ProductsLoaded &&
           currentState.selectedCategoryId != null) {
@@ -146,7 +120,6 @@ class ProductsCubit extends Cubit<ProductsState> {
     });
   }
 
-  /// Execute search immediately (without debounce)
   Future<void> _executeSearch(String query) async {
     final currentState = state;
     String? categoryId;
@@ -156,13 +129,11 @@ class ProductsCubit extends Cubit<ProductsState> {
 
     emit(const ProductsLoading());
 
-    final result = await _withMinLoadingTime(
-      () => _repository.searchProducts(
-        query,
-        page: 0,
-        limit: _pageSize,
-        categoryId: categoryId,
-      ),
+    final result = await _repository.searchProducts(
+      query,
+      page: 0,
+      limit: _pageSize,
+      categoryId: categoryId,
     );
 
     result.fold(
@@ -177,7 +148,6 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
-  /// Clear search and reload products
   Future<void> clearSearch() async {
     _debounceTimer?.cancel();
     final currentState = state;
@@ -189,20 +159,16 @@ class ProductsCubit extends Cubit<ProductsState> {
     }
   }
 
-  /// Clear category filter and load all products
   Future<void> clearCategoryFilter() async {
     await loadProducts();
   }
 
-  /// Load products with discount (offers) - sorted by highest discount
   Future<void> loadDiscountedProducts() async {
     emit(const ProductsLoading());
 
-    final result = await _withMinLoadingTime(
-      () => _repository.getDiscountedProducts(
-        page: 0,
-        limit: _pageSize,
-      ),
+    final result = await _repository.getDiscountedProducts(
+      page: 0,
+      limit: _pageSize,
     );
 
     result.fold(
@@ -216,26 +182,22 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
-  /// Load flash sale products only (is_flash_sale = true)
   Future<void> loadFlashSaleProducts() async {
     emit(const ProductsLoading());
 
-    final result = await _withMinLoadingTime(
-      () => _repository.getFlashSaleProducts(limit: _pageSize),
-    );
+    final result = await _repository.getFlashSaleProducts(limit: _pageSize);
 
     result.fold(
       (failure) => emit(ProductsError(failure.message)),
       (products) => emit(ProductsLoaded(
         products: products,
-        hasMore: false, // Flash sale doesn't have pagination
+        hasMore: false,
         currentPage: 0,
         isFlashSaleMode: true,
       )),
     );
   }
 
-  /// Load more discounted products (pagination for offers)
   Future<void> loadMoreDiscountedProducts() async {
     final currentState = state;
     if (currentState is! ProductsLoaded) return;
@@ -262,15 +224,12 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
-  /// Load best selling products
   Future<void> loadBestSellingProducts() async {
     emit(const ProductsLoading());
 
-    final result = await _withMinLoadingTime(
-      () => _repository.getBestSellingProducts(
-        page: 0,
-        limit: _pageSize,
-      ),
+    final result = await _repository.getBestSellingProducts(
+      page: 0,
+      limit: _pageSize,
     );
 
     result.fold(
@@ -284,7 +243,6 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
-  /// Load more best selling products (pagination)
   Future<void> loadMoreBestSellingProducts() async {
     final currentState = state;
     if (currentState is! ProductsLoaded) return;
@@ -311,15 +269,12 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
-  /// Load top rated products
   Future<void> loadTopRatedProducts() async {
     emit(const ProductsLoading());
 
-    final result = await _withMinLoadingTime(
-      () => _repository.getTopRatedProducts(
-        page: 0,
-        limit: _pageSize,
-      ),
+    final result = await _repository.getTopRatedProducts(
+      page: 0,
+      limit: _pageSize,
     );
 
     result.fold(
@@ -333,7 +288,6 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
-  /// Load more top rated products (pagination)
   Future<void> loadMoreTopRatedProducts() async {
     final currentState = state;
     if (currentState is! ProductsLoaded) return;
@@ -360,7 +314,6 @@ class ProductsCubit extends Cubit<ProductsState> {
     );
   }
 
-  /// Refresh products
   Future<void> refresh() async {
     final currentState = state;
     if (currentState is ProductsLoaded) {
@@ -376,25 +329,16 @@ class ProductsCubit extends Cubit<ProductsState> {
     }
   }
 
-  /// Reset state and force reload - used when language changes
   Future<void> reset() async {
     emit(const ProductsInitial());
     await loadProducts(forceReload: true);
   }
 
-  /// Get a single product by ID with full details (including store info)
   Future<ProductEntity?> getProductById(String productId) async {
-    print('🔍 ProductsCubit.getProductById: $productId');
     final result = await _repository.getProductById(productId);
     return result.fold(
-      (failure) {
-        print('❌ getProductById failed: ${failure.message}');
-        return null;
-      },
-      (product) {
-        print('✅ getProductById success: ${product.name}');
-        return product;
-      },
+      (failure) => null,
+      (product) => product,
     );
   }
 

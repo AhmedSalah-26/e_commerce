@@ -8,26 +8,24 @@ import '../../../products/presentation/cubit/products_state.dart';
 import 'products_grid.dart';
 
 class HomeProductsSection extends StatelessWidget {
-  final bool isLoading;
   final VoidCallback onRetry;
 
   const HomeProductsSection({
     super.key,
-    required this.isLoading,
     required this.onRetry,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Show shimmer when loading
-    if (isLoading) {
-      return const SliverToBoxAdapter(
-        child: ProductsGridSkeleton(itemCount: 6),
-      );
-    }
-
     return BlocBuilder<ProductsCubit, ProductsState>(
       builder: (context, state) {
+        // Show shimmer when cubit is loading
+        if (state is ProductsLoading || state is ProductsInitial) {
+          return const SliverToBoxAdapter(
+            child: ProductsGridSkeleton(itemCount: 6),
+          );
+        }
+
         if (state is ProductsError) {
           return SliverFillRemaining(
             hasScrollBody: false,
@@ -46,12 +44,6 @@ class HomeProductsSection extends StatelessWidget {
                 ],
               ),
             ),
-          );
-        }
-
-        if (state is ProductsLoading || state is ProductsInitial) {
-          return const SliverToBoxAdapter(
-            child: ProductsGridSkeleton(itemCount: 6),
           );
         }
 

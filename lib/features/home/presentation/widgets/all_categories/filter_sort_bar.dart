@@ -49,6 +49,7 @@ class FilterSortBar extends StatelessWidget {
   final Function(SortOption) onSortChanged;
   final VoidCallback onFilterTap;
   final int activeFilterCount;
+  final bool darkMode;
 
   const FilterSortBar({
     super.key,
@@ -56,19 +57,26 @@ class FilterSortBar extends StatelessWidget {
     required this.onSortChanged,
     required this.onFilterTap,
     this.activeFilterCount = 0,
+    this.darkMode = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final textColor = darkMode
+        ? Colors.white70
+        : theme.colorScheme.onSurface.withValues(alpha: 0.8);
+    final dividerColor = darkMode
+        ? Colors.white24
+        : theme.colorScheme.outline.withValues(alpha: 0.2);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: Colors.transparent,
         border: Border(
           bottom: BorderSide(
-            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+            color: dividerColor,
           ),
         ),
       ),
@@ -81,6 +89,7 @@ class FilterSortBar extends StatelessWidget {
               label: 'filter'.tr(),
               onTap: onFilterTap,
               badgeCount: activeFilterCount,
+              textColor: textColor,
             ),
           ),
 
@@ -88,7 +97,7 @@ class FilterSortBar extends StatelessWidget {
           Container(
             height: 24,
             width: 1,
-            color: theme.colorScheme.outline.withValues(alpha: 0.2),
+            color: dividerColor,
           ),
 
           // Sort button
@@ -97,6 +106,7 @@ class FilterSortBar extends StatelessWidget {
               icon: Icons.swap_vert,
               label: 'sort'.tr(),
               onTap: () => _showSortSheet(context),
+              textColor: textColor,
             ),
           ),
         ],
@@ -171,17 +181,21 @@ class _ActionButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final int badgeCount;
+  final Color? textColor;
 
   const _ActionButton({
     required this.icon,
     required this.label,
     required this.onTap,
     this.badgeCount = 0,
+    this.textColor,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final color =
+        textColor ?? theme.colorScheme.onSurface.withValues(alpha: 0.7);
 
     return InkWell(
       onTap: onTap,
@@ -193,11 +207,7 @@ class _ActionButton extends StatelessWidget {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
+                Icon(icon, size: 20, color: color),
                 if (badgeCount > 0)
                   Positioned(
                     right: -8,
@@ -231,7 +241,7 @@ class _ActionButton extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                color: color,
               ),
             ),
           ],

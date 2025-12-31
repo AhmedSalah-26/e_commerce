@@ -9,10 +9,12 @@ import 'product_info_section.dart';
 
 class ProductGridCard extends StatefulWidget {
   final ProductEntity product;
+  final bool compact;
 
   const ProductGridCard({
     super.key,
     required this.product,
+    this.compact = false,
   });
 
   @override
@@ -99,24 +101,27 @@ class _ProductGridCardState extends State<ProductGridCard>
                 children: [
                   Expanded(child: ProductImageSection(product: widget.product)),
                   ProductInfoSection(
-                      product: widget.product, isArabic: isArabic),
+                      product: widget.product,
+                      isArabic: isArabic,
+                      compact: widget.compact),
                 ],
               ),
             ),
             if (widget.product.isFlashSaleActive)
               Positioned(
-                top: 8,
-                right: isArabic ? null : 8,
-                left: isArabic ? 8 : null,
-                child: _FlashSaleBadge(),
+                top: widget.compact ? 4 : 8,
+                right: isArabic ? null : (widget.compact ? 4 : 8),
+                left: isArabic ? (widget.compact ? 4 : 8) : null,
+                child: _FlashSaleBadge(compact: widget.compact),
               )
             else if (widget.product.hasDiscount)
               Positioned(
-                top: 8,
-                right: isArabic ? null : 8,
-                left: isArabic ? 8 : null,
+                top: widget.compact ? 4 : 8,
+                right: isArabic ? null : (widget.compact ? 4 : 8),
+                left: isArabic ? (widget.compact ? 4 : 8) : null,
                 child: _DiscountBadge(
-                    percentage: widget.product.discountPercentage),
+                    percentage: widget.product.discountPercentage,
+                    compact: widget.compact),
               ),
           ],
         ),
@@ -130,24 +135,31 @@ class _ProductGridCardState extends State<ProductGridCard>
 }
 
 class _FlashSaleBadge extends StatelessWidget {
+  final bool compact;
+
+  const _FlashSaleBadge({this.compact = false});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 4 : 6,
+        vertical: compact ? 2 : 3,
+      ),
       decoration: BoxDecoration(
         color: Colors.red,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(compact ? 3 : 4),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.flash_on, color: Colors.white, size: 10),
+          Icon(Icons.flash_on, color: Colors.white, size: compact ? 8 : 10),
           const SizedBox(width: 2),
           Text(
             'flash_sale_badge'.tr(),
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 9,
+              fontSize: compact ? 7 : 9,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -159,24 +171,28 @@ class _FlashSaleBadge extends StatelessWidget {
 
 class _DiscountBadge extends StatelessWidget {
   final int percentage;
+  final bool compact;
 
-  const _DiscountBadge({required this.percentage});
+  const _DiscountBadge({required this.percentage, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 4 : 6,
+        vertical: compact ? 2 : 3,
+      ),
       decoration: BoxDecoration(
         color: theme.colorScheme.primary,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(compact ? 3 : 4),
       ),
       child: Text(
         '-$percentage%',
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 10,
+          fontSize: compact ? 8 : 10,
           fontWeight: FontWeight.bold,
         ),
       ),

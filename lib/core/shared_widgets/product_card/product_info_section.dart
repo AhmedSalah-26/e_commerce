@@ -10,15 +10,21 @@ import 'product_cart_button.dart';
 class ProductInfoSection extends StatelessWidget {
   final ProductEntity product;
   final bool isArabic;
+  final bool compact;
 
   const ProductInfoSection({
     super.key,
     required this.product,
     required this.isArabic,
+    this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (compact) {
+      return _CompactInfoSection(product: product, isArabic: isArabic);
+    }
+
     return Directionality(
       textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: Padding(
@@ -37,6 +43,81 @@ class ProductInfoSection extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             ProductCartButton(product: product),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CompactInfoSection extends StatelessWidget {
+  final ProductEntity product;
+  final bool isArabic;
+
+  const _CompactInfoSection({required this.product, required this.isArabic});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Directionality(
+      textDirection: isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 24,
+              child: AutoSizeText(
+                product.name,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: theme.colorScheme.onSurface,
+                  height: 1.2,
+                ),
+                maxLines: 2,
+                minFontSize: 8,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(height: 3),
+            AutoSizeText(
+              "${product.effectivePrice.toStringAsFixed(0)} ${'egp'.tr()}",
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
+              maxLines: 1,
+              minFontSize: 9,
+            ),
+            if (product.hasDiscount)
+              AutoSizeText(
+                "${product.price.toStringAsFixed(0)} ${'egp'.tr()}",
+                style: TextStyle(
+                  fontSize: 9,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  decoration: TextDecoration.lineThrough,
+                ),
+                maxLines: 1,
+                minFontSize: 7,
+              ),
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                const Icon(Icons.star, color: Colors.amber, size: 10),
+                const SizedBox(width: 2),
+                Text(
+                  '${product.rating.toStringAsFixed(1)} (${product.ratingCount})',
+                  style: TextStyle(
+                    fontSize: 8,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

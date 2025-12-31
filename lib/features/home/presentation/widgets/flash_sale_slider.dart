@@ -123,20 +123,21 @@ class _FlashSaleSliderState extends State<FlashSaleSlider>
           ),
           // Products list
           SizedBox(
-            height: 290,
+            height: 195,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+              padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
               itemCount: widget.products.length,
               addAutomaticKeepAlives: false,
               addRepaintBoundaries: true,
               cacheExtent: 500,
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
                   child: SizedBox(
-                    width: 160,
-                    child: ProductGridCard(product: widget.products[index]),
+                    width: 88,
+                    child: ProductGridCard(
+                        product: widget.products[index], compact: true),
                   ),
                 );
               },
@@ -170,16 +171,16 @@ class _FlashSaleSliderState extends State<FlashSaleSlider>
             ),
           ),
           SizedBox(
-            height: 290,
+            height: 195,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+              padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
               itemCount: 4,
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
                   child: Container(
-                    width: 160,
+                    width: 88,
                     decoration: BoxDecoration(
                       color: theme.colorScheme.outline.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),

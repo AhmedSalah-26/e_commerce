@@ -88,20 +88,21 @@ class HorizontalProductsSlider extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 290,
+            height: 195,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
               itemCount: products.length,
               addAutomaticKeepAlives: false,
               addRepaintBoundaries: true,
               cacheExtent: 500,
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
                   child: SizedBox(
-                    width: 160,
-                    child: ProductGridCard(product: products[index]),
+                    width: 88,
+                    child: ProductGridCard(
+                        product: products[index], compact: true),
                   ),
                 );
               },
@@ -135,16 +136,16 @@ class HorizontalProductsSlider extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 290,
+            height: 195,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
               itemCount: 4,
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
                   child: Container(
-                    width: 160,
+                    width: 88,
                     decoration: BoxDecoration(
                       color: theme.colorScheme.outline.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),

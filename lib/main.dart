@@ -191,6 +191,18 @@ class _MyAppState extends State<MyApp> {
         } else if (state is AuthUnauthenticated) {
           // Stop listening when user logs out
           di.sl<OrderStatusListener>().stopListening();
+
+          // Navigate to login page when session expires
+          // Only if we're not already on auth pages
+          final currentPath =
+              AppRouter.router.routerDelegate.currentConfiguration.uri.path;
+          if (currentPath != '/login' &&
+              currentPath != '/register' &&
+              currentPath != '/splash' &&
+              currentPath != '/onboarding') {
+            debugPrint('🔐 Session expired - redirecting to login');
+            AppRouter.router.go('/login');
+          }
         }
       },
       child: BlocBuilder<ThemeCubit, ThemeState>(

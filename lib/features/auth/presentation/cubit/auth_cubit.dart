@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -6,15 +8,20 @@ import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/sign_in_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/sign_up_usecase.dart';
+import '../../data/datasources/auth_remote_datasource.dart';
 import 'auth_state.dart';
 
 /// Cubit for managing authentication state
-class AuthCubit extends Cubit<AuthState> {
+class AuthCubit extends Cubit<AuthState> with WidgetsBindingObserver {
   final SignInUseCase _signInUseCase;
   final SignUpUseCase _signUpUseCase;
   final SignOutUseCase _signOutUseCase;
   final GetCurrentUserUseCase _getCurrentUserUseCase;
   final AuthRepository _repository;
+  final AuthRemoteDataSource _dataSource;
+
+  StreamSubscription? _authStateSubscription;
+  bool _isRefreshing = false;
 
   AuthCubit({
     required SignInUseCase signInUseCase,
@@ -22,12 +29,96 @@ class AuthCubit extends Cubit<AuthState> {
     required SignOutUseCase signOutUseCase,
     required GetCurrentUserUseCase getCurrentUserUseCase,
     required AuthRepository repository,
+    required AuthRemoteDataSource dataSource,
   })  : _signInUseCase = signInUseCase,
         _signUpUseCase = signUpUseCase,
         _signOutUseCase = signOutUseCase,
         _getCurrentUserUseCase = getCurrentUserUseCase,
         _repository = repository,
-        super(const AuthInitial());
+        _dataSource = dataSource,
+        super(const AuthInitial()) {
+    // Register as app lifecycle observer
+    WidgetsBinding.instance.addObserver(this);
+    // Listen to auth state changes from Supabase
+    _listenToAuthStateChanges();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // App came back to foreground - refresh session
+      _refreshSessionIfNeeded();
+    }
+  }
+
+  /// Refresh session when app comes to foreground
+  Future<void> _refreshSessionIfNeeded() async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+
+    try {
+      debugPrint('🔄 App resumed - checking session...');
+      final result = await _getCurrentUserUseCase();
+      result.fold(
+        (failure) {
+          debugPrint('⚠️ Session check failed: ${failure.message}');
+          if (this.state is AuthAuthenticated) {
+            emit(const AuthUnauthenticated());
+          }
+        },
+        (user) {
+          if (user != null) {
+            debugPrint('✅ Session still valid for: ${user.id}');
+            // Update user data in case it changed
+            emit(AuthAuthenticated(user));
+          } else if (this.state is AuthAuthenticated) {
+            debugPrint('⚠️ Session expired');
+            emit(const AuthUnauthenticated());
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ Error refreshing session: $e');
+    } finally {
+      _isRefreshing = false;
+    }
+  }
+
+  /// Listen to Supabase auth state changes
+  void _listenToAuthStateChanges() {
+    _authStateSubscription = _dataSource.authStateChanges.listen(
+      (user) {
+        debugPrint('🔐 Auth state changed: ${user?.id ?? 'null'}');
+        if (user != null) {
+          // Check if user is banned
+          if (user.isBanned) {
+            debugPrint('⚠️ User is banned, signing out');
+            signOut();
+            return;
+          }
+          emit(AuthAuthenticated(user));
+        } else {
+          // Only emit unauthenticated if we were previously authenticated
+          if (state is AuthAuthenticated) {
+            debugPrint('⚠️ Session expired, user logged out');
+            emit(const AuthUnauthenticated());
+          }
+        }
+      },
+      onError: (error) {
+        debugPrint('❌ Auth state stream error: $error');
+        // Don't crash on stream errors - just log them
+      },
+    );
+  }
+
+  @override
+  Future<void> close() {
+    WidgetsBinding.instance.removeObserver(this);
+    _authStateSubscription?.cancel();
+    return super.close();
+  }
 
   /// Check if user is already authenticated
   Future<void> checkAuthStatus() async {

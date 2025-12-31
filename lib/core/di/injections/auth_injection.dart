@@ -34,5 +34,6 @@ void registerAuthDependencies(GetIt sl) {
         signOutUseCase: sl<SignOutUseCase>(),
         getCurrentUserUseCase: sl<GetCurrentUserUseCase>(),
         repository: sl<AuthRepository>(),
+        dataSource: sl<AuthRemoteDataSource>(),
       ));
 }

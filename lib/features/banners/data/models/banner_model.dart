@@ -18,7 +18,7 @@ class BannerModel extends BannerEntity {
 
   factory BannerModel.fromJson(Map<String, dynamic> json) {
     return BannerModel(
-      id: json['id'] as String,
+      id: (json['banner_id'] ?? json['id'] ?? '').toString(),
       titleAr: json['title_ar'] as String? ?? json['title'] as String? ?? '',
       titleEn: json['title_en'] as String?,
       imageUrl: json['image_url'] as String? ?? '',
@@ -44,7 +44,7 @@ class BannerModel extends BannerEntity {
   /// For simple banner display (from get_active_banners)
   factory BannerModel.fromSimpleJson(Map<String, dynamic> json) {
     return BannerModel(
-      id: json['id'] as String,
+      id: (json['banner_id'] ?? json['id'] ?? '').toString(),
       titleAr: json['title'] as String? ?? '',
       titleEn: null,
       imageUrl: json['image_url'] as String? ?? '',

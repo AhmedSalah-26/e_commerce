@@ -3,10 +3,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../domain/entities/banner_entity.dart';
 import '../cubit/admin_banners_cubit.dart';
+import 'banner_date_field.dart';
+import 'banner_image_picker.dart';
+import 'banner_link_type_selector.dart';
+import 'offers_type_dropdown.dart';
 
 class BannerFormSheet extends StatefulWidget {
   final BannerEntity? banner;
@@ -40,8 +43,9 @@ class _BannerFormSheetState extends State<BannerFormSheet> {
     _titleEnController = TextEditingController(text: widget.banner?.titleEn);
     _linkValueController =
         TextEditingController(text: widget.banner?.linkValue);
-    _sortOrderController =
-        TextEditingController(text: widget.banner?.sortOrder.toString() ?? '0');
+    _sortOrderController = TextEditingController(
+      text: widget.banner?.sortOrder.toString() ?? '0',
+    );
 
     if (widget.banner != null) {
       _linkType = widget.banner!.linkType;
@@ -69,7 +73,6 @@ class _BannerFormSheetState extends State<BannerFormSheet> {
       maxHeight: 1080,
       imageQuality: 85,
     );
-
     if (picked != null) {
       setState(() => _selectedImage = File(picked.path));
     }
@@ -82,7 +85,6 @@ class _BannerFormSheetState extends State<BannerFormSheet> {
       firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
     );
-
     if (date != null) {
       setState(() {
         if (isStart) {
@@ -173,202 +175,186 @@ class _BannerFormSheetState extends State<BannerFormSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Handle
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
+                  _buildHandle(theme),
                   const SizedBox(height: 20),
-
-                  // Title
-                  Text(
-                    isEditing ? 'edit_banner'.tr() : 'add_banner'.tr(),
-                    style: theme.textTheme.titleLarge
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
+                  _buildTitle(theme),
                   const SizedBox(height: 24),
-
-                  // Image picker
-                  Text('banner_image'.tr(), style: theme.textTheme.titleSmall),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: Container(
-                      height: 150,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color:
-                              theme.colorScheme.outline.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: _selectedImage != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.file(_selectedImage!,
-                                  fit: BoxFit.cover),
-                            )
-                          : _existingImageUrl != null &&
-                                  _existingImageUrl!.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: CachedNetworkImage(
-                                    imageUrl: _existingImageUrl!,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.add_photo_alternate,
-                                        size: 48,
-                                        color: theme.colorScheme.outline),
-                                    const SizedBox(height: 8),
-                                    Text('tap_to_select_image'.tr(),
-                                        style: TextStyle(
-                                            color: theme.colorScheme.outline)),
-                                  ],
-                                ),
-                    ),
-                  ),
+                  _buildImageSection(theme),
                   const SizedBox(height: 16),
-
-                  // Title AR
-                  TextFormField(
-                    controller: _titleArController,
-                    decoration: InputDecoration(
-                      labelText: 'title_ar'.tr(),
-                      border: const OutlineInputBorder(),
-                    ),
-                    validator: (v) =>
-                        v?.isEmpty == true ? 'required_field'.tr() : null,
-                  ),
+                  _buildTitleFields(),
                   const SizedBox(height: 16),
-
-                  // Title EN
-                  TextFormField(
-                    controller: _titleEnController,
-                    decoration: InputDecoration(
-                      labelText: 'title_en'.tr(),
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
+                  _buildLinkSection(theme),
                   const SizedBox(height: 16),
-
-                  // Link type
-                  Text('link_type'.tr(), style: theme.textTheme.titleSmall),
-                  const SizedBox(height: 8),
-                  SegmentedButton<BannerLinkType>(
-                    segments: [
-                      ButtonSegment(
-                        value: BannerLinkType.none,
-                        label: Text('none'.tr()),
-                      ),
-                      ButtonSegment(
-                        value: BannerLinkType.product,
-                        label: Text('product'.tr()),
-                      ),
-                      ButtonSegment(
-                        value: BannerLinkType.category,
-                        label: Text('category'.tr()),
-                      ),
-                      ButtonSegment(
-                        value: BannerLinkType.offers,
-                        label: Text('offers'.tr()),
-                      ),
-                    ],
-                    selected: {_linkType},
-                    onSelectionChanged: (set) =>
-                        setState(() => _linkType = set.first),
-                  ),
+                  _buildSortOrderField(),
                   const SizedBox(height: 16),
-
-                  // Link value
-                  if (_linkType != BannerLinkType.none)
-                    TextFormField(
-                      controller: _linkValueController,
-                      decoration: InputDecoration(
-                        labelText: _getLinkValueLabel(),
-                        border: const OutlineInputBorder(),
-                        hintText: _getLinkValueHint(),
-                      ),
-                    ),
+                  _buildDateRange(),
                   const SizedBox(height: 16),
-
-                  // Sort order
-                  TextFormField(
-                    controller: _sortOrderController,
-                    decoration: InputDecoration(
-                      labelText: 'sort_order'.tr(),
-                      border: const OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Date range
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _DateField(
-                          label: 'start_date'.tr(),
-                          date: _startDate,
-                          onTap: () => _selectDate(true),
-                          onClear: () => setState(() => _startDate = null),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _DateField(
-                          label: 'end_date'.tr(),
-                          date: _endDate,
-                          onTap: () => _selectDate(false),
-                          onClear: () => setState(() => _endDate = null),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Active switch
-                  SwitchListTile(
-                    title: Text('active'.tr()),
-                    value: _isActive,
-                    onChanged: (v) => setState(() => _isActive = v),
-                    contentPadding: EdgeInsets.zero,
-                  ),
+                  _buildActiveSwitch(),
                   const SizedBox(height: 24),
-
-                  // Submit button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _submit,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        backgroundColor: theme.colorScheme.primary,
-                      ),
-                      child: Text(
-                        isEditing ? 'save_changes'.tr() : 'add_banner'.tr(),
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ),
-                  ),
+                  _buildSubmitButton(theme),
                   const SizedBox(height: 20),
                 ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildHandle(ThemeData theme) {
+    return Center(
+      child: Container(
+        width: 40,
+        height: 4,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTitle(ThemeData theme) {
+    return Text(
+      isEditing ? 'edit_banner'.tr() : 'add_banner'.tr(),
+      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+    );
+  }
+
+  Widget _buildImageSection(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('banner_image'.tr(), style: theme.textTheme.titleSmall),
+        const SizedBox(height: 8),
+        BannerImagePicker(
+          selectedImage: _selectedImage,
+          existingImageUrl: _existingImageUrl,
+          onTap: _pickImage,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTitleFields() {
+    return Column(
+      children: [
+        TextFormField(
+          controller: _titleArController,
+          decoration: InputDecoration(
+            labelText: 'title_ar'.tr(),
+            border: const OutlineInputBorder(),
+          ),
+          validator: (v) => v?.isEmpty == true ? 'required_field'.tr() : null,
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _titleEnController,
+          decoration: InputDecoration(
+            labelText: 'title_en'.tr(),
+            border: const OutlineInputBorder(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLinkSection(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('link_type'.tr(), style: theme.textTheme.titleSmall),
+        const SizedBox(height: 8),
+        BannerLinkTypeSelector(
+          selectedType: _linkType,
+          onChanged: (type) => setState(() => _linkType = type),
+        ),
+        const SizedBox(height: 16),
+        if (_linkType != BannerLinkType.none) _buildLinkValueField(),
+      ],
+    );
+  }
+
+  Widget _buildLinkValueField() {
+    if (_linkType == BannerLinkType.offers) {
+      return OffersTypeDropdown(
+        value: _linkValueController.text.isEmpty
+            ? null
+            : _linkValueController.text,
+        onChanged: (value) {
+          setState(() => _linkValueController.text = value ?? '');
+        },
+      );
+    }
+
+    return TextFormField(
+      controller: _linkValueController,
+      decoration: InputDecoration(
+        labelText: _getLinkValueLabel(),
+        border: const OutlineInputBorder(),
+        hintText: _getLinkValueHint(),
+      ),
+    );
+  }
+
+  Widget _buildSortOrderField() {
+    return TextFormField(
+      controller: _sortOrderController,
+      decoration: InputDecoration(
+        labelText: 'sort_order'.tr(),
+        border: const OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.number,
+    );
+  }
+
+  Widget _buildDateRange() {
+    return Row(
+      children: [
+        Expanded(
+          child: BannerDateField(
+            label: 'start_date'.tr(),
+            date: _startDate,
+            onTap: () => _selectDate(true),
+            onClear: () => setState(() => _startDate = null),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: BannerDateField(
+            label: 'end_date'.tr(),
+            date: _endDate,
+            onTap: () => _selectDate(false),
+            onClear: () => setState(() => _endDate = null),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActiveSwitch() {
+    return SwitchListTile(
+      title: Text('active'.tr()),
+      value: _isActive,
+      onChanged: (v) => setState(() => _isActive = v),
+      contentPadding: EdgeInsets.zero,
+    );
+  }
+
+  Widget _buildSubmitButton(ThemeData theme) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _submit,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          backgroundColor: theme.colorScheme.primary,
+        ),
+        child: Text(
+          isEditing ? 'save_changes'.tr() : 'add_banner'.tr(),
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+        ),
       ),
     );
   }
@@ -381,8 +367,6 @@ class _BannerFormSheetState extends State<BannerFormSheet> {
         return 'category_id'.tr();
       case BannerLinkType.url:
         return 'url'.tr();
-      case BannerLinkType.offers:
-        return 'offer_type'.tr();
       default:
         return '';
     }
@@ -396,67 +380,8 @@ class _BannerFormSheetState extends State<BannerFormSheet> {
         return 'أدخل معرف القسم';
       case BannerLinkType.url:
         return 'https://...';
-      case BannerLinkType.offers:
-        return 'flash-sale, best-deals, new-arrivals';
       default:
         return '';
     }
-  }
-}
-
-class _DateField extends StatelessWidget {
-  final String label;
-  final DateTime? date;
-  final VoidCallback onTap;
-  final VoidCallback onClear;
-
-  const _DateField({
-    required this.label,
-    this.date,
-    required this.onTap,
-    required this.onClear,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        decoration: BoxDecoration(
-          border: Border.all(color: theme.colorScheme.outline),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.outline)),
-                  const SizedBox(height: 2),
-                  Text(
-                    date != null
-                        ? DateFormat('yyyy-MM-dd').format(date!)
-                        : 'not_set'.tr(),
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-            if (date != null)
-              GestureDetector(
-                onTap: onClear,
-                child: Icon(Icons.clear,
-                    size: 18, color: theme.colorScheme.outline),
-              ),
-          ],
-        ),
-      ),
-    );
   }
 }

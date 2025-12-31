@@ -54,7 +54,7 @@ CREATE POLICY "Admins can manage banners"
 -- Function to get active banners
 CREATE OR REPLACE FUNCTION public.get_active_banners(p_locale TEXT DEFAULT 'ar')
 RETURNS TABLE (
-    id UUID,
+    banner_id UUID,
     title TEXT,
     image_url TEXT,
     link_type TEXT,
@@ -68,7 +68,7 @@ AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        b.id,
+        b.id AS banner_id,
         CASE WHEN p_locale = 'en' AND b.title_en IS NOT NULL THEN b.title_en ELSE b.title_ar END AS title,
         b.image_url,
         b.link_type,
@@ -85,7 +85,7 @@ $$;
 -- Function to get all banners for admin
 CREATE OR REPLACE FUNCTION public.admin_get_all_banners()
 RETURNS TABLE (
-    id UUID,
+    banner_id UUID,
     title_ar TEXT,
     title_en TEXT,
     image_url TEXT,
@@ -113,7 +113,7 @@ BEGIN
 
     RETURN QUERY
     SELECT 
-        b.id,
+        b.id AS banner_id,
         b.title_ar,
         b.title_en,
         b.image_url,
@@ -129,6 +129,7 @@ BEGIN
     ORDER BY b.sort_order ASC, b.created_at DESC;
 END;
 $$;
+
 
 -- Function to create banner
 CREATE OR REPLACE FUNCTION public.admin_create_banner(

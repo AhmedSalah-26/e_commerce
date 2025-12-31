@@ -450,7 +450,9 @@
   "sort_price_high_low": "السعر: من الأعلى للأقل",
   "sort_highest_rated": "الأعلى تقييماً",
 
+  "error_search_failed": "فشل في البحث",
   "error_network": "خطأ في الاتصال بالإنترنت",
+  "error_loading_products": "فشل في تحميل المنتجات",
   "check_connection": "يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى",
   "retrying": "جاري إعادة المحاولة...",
   "error_invalid_credentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",

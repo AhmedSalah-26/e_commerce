@@ -171,6 +171,20 @@ class _SuggestedProductCard extends StatelessWidget {
                     ),
                     Row(
                       children: [
+                        const Icon(Icons.star, color: Colors.amber, size: 12),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${product.rating.toStringAsFixed(1)} (${product.ratingCount})',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
                         if (product.hasDiscount)
                           Text(
                             '${product.price.toStringAsFixed(0)} ',

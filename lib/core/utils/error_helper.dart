@@ -6,6 +6,25 @@ class ErrorHelper {
     final lowerError = error.toLowerCase();
     final isArabic = locale == 'ar';
 
+    // Generic loading errors
+    if (lowerError.contains('error_loading_products') ||
+        lowerError.contains('فشل في جلب المنتجات')) {
+      return 'error_loading_products'.tr();
+    }
+
+    // Search errors
+    if (lowerError.contains('error_search_failed') ||
+        lowerError.contains('فشل في البحث')) {
+      return 'error_search_failed'.tr();
+    }
+
+    // ClientException / Fetch errors
+    if (lowerError.contains('clientexception') ||
+        lowerError.contains('failed to fetch') ||
+        lowerError.contains('uri=http')) {
+      return 'error_network'.tr();
+    }
+
     // Shipping not supported error from database
     if (lowerError.contains('shipping_not_supported')) {
       // Parse: SHIPPING_NOT_SUPPORTED|merchant_name|governorate_ar|governorate_en

@@ -418,7 +418,9 @@
   "sort_price_high_low": "Price: High to Low",
   "sort_highest_rated": "Highest Rated",
 
+  "error_search_failed": "Search failed",
   "error_network": "Network connection error",
+  "error_loading_products": "Failed to load products",
   "check_connection": "Please check your internet connection and try again",
   "retrying": "Retrying...",
   "error_invalid_credentials": "Invalid email or password",

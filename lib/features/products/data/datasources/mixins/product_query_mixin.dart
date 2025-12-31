@@ -28,7 +28,7 @@ mixin ProductQueryMixin {
           .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
     } catch (e) {
-      throw ServerException('فشل في جلب المنتجات: ${e.toString()}');
+      throw const ServerException('error_loading_products');
     }
   }
 
@@ -56,7 +56,7 @@ mixin ProductQueryMixin {
           .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
     } catch (e) {
-      throw ServerException('فشل في جلب منتجات التصنيف: ${e.toString()}');
+      throw const ServerException('error_loading_products');
     }
   }
 
@@ -109,7 +109,7 @@ mixin ProductQueryMixin {
           .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
     } catch (e) {
-      throw ServerException('فشل في البحث: ${e.toString()}');
+      throw const ServerException('error_search_failed');
     }
   }
 
@@ -128,7 +128,7 @@ mixin ProductQueryMixin {
           .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
     } catch (e) {
-      throw ServerException('فشل في جلب المنتجات المميزة: ${e.toString()}');
+      throw const ServerException('error_loading_products');
     }
   }
 
@@ -168,7 +168,7 @@ mixin ProductQueryMixin {
               }, locale: locale))
           .toList();
     } catch (e) {
-      throw ServerException('فشل في جلب منتجات التاجر: ${e.toString()}');
+      throw const ServerException('error_loading_products');
     }
   }
 
@@ -193,7 +193,7 @@ mixin ProductQueryMixin {
           .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
     } catch (e) {
-      throw ServerException('فشل في جلب المنتجات المخفضة: ${e.toString()}');
+      throw const ServerException('error_loading_products');
     }
   }
 
@@ -215,7 +215,7 @@ mixin ProductQueryMixin {
           .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
     } catch (e) {
-      throw ServerException('فشل في جلب المنتجات الجديدة: ${e.toString()}');
+      throw const ServerException('error_loading_products');
     }
   }
 
@@ -244,8 +244,7 @@ mixin ProductQueryMixin {
           .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
     } catch (e) {
-      throw ServerException(
-          'فشل في جلب المنتجات الأكثر مبيعًا: ${e.toString()}');
+      throw const ServerException('error_loading_products');
     }
   }
 
@@ -261,21 +260,19 @@ mixin ProductQueryMixin {
 
       final response = await client
           .from('products')
-          .select()
+          .select('*')
           .eq('is_active', true)
           .eq('is_suspended', false)
           .gt('stock', 0)
-          .gt('rating_count', 0)
+          .gte('rating_count', 1)
           .order('rating', ascending: false)
-          .order('rating_count', ascending: false)
           .range(from, to);
 
       return (response as List)
           .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
     } catch (e) {
-      throw ServerException(
-          'فشل في جلب المنتجات الأعلى تقييمًا: ${e.toString()}');
+      throw const ServerException('error_loading_products');
     }
   }
 
@@ -303,7 +300,7 @@ mixin ProductQueryMixin {
           .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
     } catch (e) {
-      throw ServerException('فشل في جلب عروض الفلاش: ${e.toString()}');
+      throw const ServerException('error_loading_products');
     }
   }
 }

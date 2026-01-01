@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io' show Platform;
-import '../../data/services/paymob_service.dart';
 import '../../domain/entities/payment_method.dart';
 import 'payment_state.dart';
 
@@ -58,24 +57,10 @@ class PaymentCubit extends Cubit<PaymentState> {
   }
 
   Future<bool> _processCardPayment(BuildContext context, double amount) async {
-    emit(const PaymentProcessing());
-
-    final result = await PaymobService.instance.payWithCard(
-      context: context,
-      amount: amount,
-    );
-
-    if (result.success) {
-      emit(PaymentSuccess(result));
-      return true;
-    } else {
-      if (result.message == 'Payment cancelled by user') {
-        emit(const PaymentCancelled());
-      } else {
-        emit(PaymentFailure(result.message ?? 'فشل الدفع'));
-      }
-      return false;
-    }
+    // Card payment is now handled by checkout page with inline webview
+    // This method is kept for compatibility but shouldn't be called directly
+    emit(const PaymentFailure('استخدم صفحة الدفع المدمجة'));
+    return false;
   }
 
   Future<bool> _processWalletPayment(

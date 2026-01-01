@@ -10,7 +10,6 @@ import 'package:toastification/toastification.dart';
 import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/services/deep_link_service.dart';
-import 'core/services/performance_service.dart';
 import 'core/config/paymob_config.dart';
 import 'core/theme/theme_cubit.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
@@ -43,9 +42,6 @@ void main() async {
 
   // Initialize dependencies (Supabase, etc.)
   await di.initializeDependencies();
-
-  // Initialize performance service
-  PerformanceService().initialize();
 
   /// Initialize Paymob (only if configured)
   if (PaymobConfig.isConfigured) {

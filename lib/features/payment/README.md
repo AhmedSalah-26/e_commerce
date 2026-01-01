@@ -16,22 +16,31 @@ Edit `lib/core/config/paymob_config.dart` with your credentials.
 
 ### 3. Database Setup
 
-Run the SQL migration to add payment fields:
+Run these SQL scripts in Supabase SQL Editor:
+
+1. **Add payment fields** (run first):
 ```sql
--- Run database_scripts/add_payment_fields.sql in Supabase
+-- From database_scripts/add_payment_fields.sql
 ```
 
-### 4. Deploy Webhook (Edge Function)
-
-```bash
-supabase functions deploy paymob-webhook
+2. **Create webhook function** (run second):
+```sql
+-- From database_scripts/paymob_webhook_function.sql
 ```
 
-### 5. Configure Paymob Webhook
+### 4. Configure Paymob Webhook
 
 1. Go to Paymob Dashboard → Developers → Webhooks
-2. Add webhook URL: `https://YOUR_PROJECT.supabase.co/functions/v1/paymob-webhook`
-3. Select events: Transaction processed
+2. Add webhook URL:
+   ```
+   https://YOUR_PROJECT_ID.supabase.co/rest/v1/rpc/handle_paymob_payment
+   ```
+3. Add Headers:
+   ```
+   apikey: YOUR_SUPABASE_ANON_KEY
+   Content-Type: application/json
+   ```
+4. Select events: Transaction processed
 
 ## Payment Flow
 

@@ -11,6 +11,7 @@ import 'core/routing/app_router.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/services/deep_link_service.dart';
 import 'core/services/performance_service.dart';
+import 'core/config/paymob_config.dart';
 import 'core/theme/theme_cubit.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/auth/presentation/cubit/auth_state.dart';
@@ -19,6 +20,7 @@ import 'features/products/data/datasources/product_remote_datasource.dart';
 import 'features/cart/presentation/cubit/cart_cubit.dart';
 import 'features/favorites/presentation/cubit/favorites_cubit.dart';
 import 'features/notifications/data/services/order_status_listener.dart';
+import 'features/payment/data/services/paymob_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +46,16 @@ void main() async {
 
   // Initialize performance service
   PerformanceService().initialize();
+
+  // Initialize Paymob (only if configured)
+  if (PaymobConfig.isConfigured) {
+    await PaymobService.initialize(
+      apiKey: PaymobConfig.apiKey,
+      integrationId: PaymobConfig.integrationId,
+      walletIntegrationId: PaymobConfig.walletIntegrationId,
+      iFrameId: PaymobConfig.iFrameId,
+    );
+  }
 
   // Get initial deep link BEFORE app starts (important for cold start)
   // Only on mobile platforms

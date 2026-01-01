@@ -13,6 +13,7 @@ import '../../../coupons/presentation/cubit/coupon_cubit.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
 import '../../../orders/presentation/cubit/orders_state.dart';
 import '../../../shipping/presentation/cubit/shipping_cubit.dart';
+import '../../../payment/presentation/cubit/payment_cubit.dart';
 import '../../domain/checkout_validator.dart';
 import '../utils/order_state_handler.dart';
 import '../widgets/checkout_form_content.dart';
@@ -143,6 +144,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       providers: [
         BlocProvider(create: (context) => sl<ShippingCubit>()),
         BlocProvider(create: (context) => sl<CouponCubit>()),
+        BlocProvider(create: (context) => sl<PaymentCubit>()),
       ],
       child: _CheckoutPageContent(
         formKey: _formKey,

@@ -17,6 +17,7 @@ import 'injections/product_reports_injection.dart';
 import 'injections/review_reports_injection.dart';
 import 'injections/merchant_injection.dart';
 import 'injections/banners_injection.dart';
+import 'injections/payment_injection.dart';
 
 final sl = GetIt.instance;
 
@@ -40,4 +41,5 @@ Future<void> initializeDependencies() async {
   registerReviewReportsDependencies(sl);
   registerMerchantDependencies(sl);
   registerBannersDependencies(sl);
+  registerPaymentDependencies(sl);
 }

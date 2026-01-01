@@ -11,8 +11,8 @@ import 'checkout_coupon_section.dart';
 import 'customer_info_fields.dart';
 import 'delivery_address_card.dart';
 import 'order_summary_card.dart';
-import 'payment_method_card.dart';
 import 'place_order_button.dart';
+import '../../../payment/presentation/widgets/payment_method_selector.dart';
 
 /// Checkout body with cart state handling
 class CheckoutBody extends StatelessWidget {
@@ -190,7 +190,7 @@ class _CheckoutFormContentState extends State<CheckoutFormContent> {
                   notesController: widget.notesController,
                 ),
                 const SizedBox(height: 24),
-                const PaymentMethodCard(),
+                const PaymentMethodSelector(),
                 const SizedBox(height: 16),
                 CheckoutCouponSection(
                   orderAmount: widget.cartState.total,

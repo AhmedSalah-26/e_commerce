@@ -58,6 +58,8 @@ dependencies:
   connectivity_plus: ^7.0.0
   # Charts
   fl_chart: ^0.69.2
+  # Payment
+  flutter_paymob: ^1.0.3
 
 dev_dependencies:
   flutter_test:

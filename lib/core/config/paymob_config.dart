@@ -7,22 +7,20 @@
 class PaymobConfig {
   PaymobConfig._();
 
-  // TODO: Replace with your actual Paymob credentials
-  static const String apiKey = 'YOUR_PAYMOB_API_KEY';
+  static const String apiKey =
+      'ZXlKaGJHY2lPaUpJVXpVeE1pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmpiR0Z6Y3lJNklrMWxjbU5vWVc1MElpd2ljSEp2Wm1sc1pWOXdheUk2TVRFeE9UWXpNQ3dpYm1GdFpTSTZJbWx1YVhScFlXd2lmUS5RekdtaG1hQmxOWlFoZGpBYUt4aVJZcVpiQVlrNGc3T0x2OVlQMmZhR2JCanBaTk5XOUtxaTVfT1dtSWdXeHV4bkdOVlFKSjRqR1VxY3JhYTlMVm9wZw==';
 
   // Card payment integration ID
-  static const int integrationId = 0; // YOUR_CARD_INTEGRATION_ID
+  static const int integrationId = 5456758;
 
   // Wallet payment integration ID (Vodafone Cash, etc.)
-  static const int walletIntegrationId = 0; // YOUR_WALLET_INTEGRATION_ID
+  // TODO: Add wallet integration from Paymob dashboard if needed
+  static const int walletIntegrationId = 5456758;
 
   // iFrame ID for card payments
-  static const int iFrameId = 0; // YOUR_IFRAME_ID
+  static const int iFrameId = 993104;
 
   /// Check if Paymob is configured
   static bool get isConfigured =>
-      apiKey != 'YOUR_PAYMOB_API_KEY' &&
-      integrationId != 0 &&
-      walletIntegrationId != 0 &&
-      iFrameId != 0;
+      apiKey.isNotEmpty && integrationId != 0 && iFrameId != 0;
 }

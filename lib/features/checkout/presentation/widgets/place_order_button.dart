@@ -9,6 +9,9 @@ import '../../../coupons/presentation/cubit/coupon_state.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
 import '../../../orders/presentation/cubit/orders_state.dart';
 import '../../../shipping/domain/entities/governorate_entity.dart';
+import '../../../payment/presentation/cubit/payment_cubit.dart';
+import '../../../payment/presentation/cubit/payment_state.dart';
+import '../../../payment/domain/entities/payment_method.dart';
 
 /// Place order button with coupon support
 class PlaceOrderButton extends StatelessWidget {
@@ -153,16 +156,17 @@ class PlaceOrderButton extends StatelessWidget {
                           return;
                         }
 
-                        // All validations passed, place order
-                        onPlaceOrder(
-                          orderShippingCost,
-                          selectedGovernorate!.id,
-                          merchantShippingPrices,
-                          cartState,
+                        // All validations passed, process payment then place order
+                        _processPaymentAndOrder(
+                          context,
+                          orderShippingCost: orderShippingCost,
+                          governorateId: selectedGovernorate!.id,
+                          governorateName: selectedGovernorate!.getName(locale),
+                          merchantShippingPrices: merchantShippingPrices,
                           couponDiscount: couponDiscount,
                           couponId: appliedCoupon?.couponId,
                           couponCode: appliedCoupon?.code,
-                          governorateName: selectedGovernorate!.getName(locale),
+                          isRtl: isRtl,
                         );
                       },
                 label: 'place_order'.tr(),
@@ -174,5 +178,73 @@ class PlaceOrderButton extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _processPaymentAndOrder(
+    BuildContext context, {
+    required double orderShippingCost,
+    required String governorateId,
+    required String governorateName,
+    required Map<String, double> merchantShippingPrices,
+    required double couponDiscount,
+    String? couponId,
+    String? couponCode,
+    required bool isRtl,
+  }) async {
+    final paymentCubit = context.read<PaymentCubit>();
+    final selectedMethod = paymentCubit.selectedMethod;
+
+    // Calculate total amount for payment
+    final subtotal = cartState.total;
+    final totalAmount = subtotal + orderShippingCost - couponDiscount;
+
+    // If cash on delivery, place order directly
+    if (selectedMethod == PaymentMethodType.cashOnDelivery) {
+      onPlaceOrder(
+        orderShippingCost,
+        governorateId,
+        merchantShippingPrices,
+        cartState,
+        couponDiscount: couponDiscount,
+        couponId: couponId,
+        couponCode: couponCode,
+        governorateName: governorateName,
+      );
+      return;
+    }
+
+    // For card/wallet payment, process payment first
+    final paymentSuccess = await paymentCubit.processPayment(
+      context: context,
+      amount: totalAmount,
+      walletPhoneNumber: phoneController.text.trim(),
+    );
+
+    if (paymentSuccess && context.mounted) {
+      // Payment successful, place order
+      onPlaceOrder(
+        orderShippingCost,
+        governorateId,
+        merchantShippingPrices,
+        cartState,
+        couponDiscount: couponDiscount,
+        couponId: couponId,
+        couponCode: couponCode,
+        governorateName: governorateName,
+      );
+    } else if (context.mounted) {
+      // Payment failed or cancelled
+      final state = paymentCubit.state;
+      if (state is! PaymentCancelled) {
+        Tost.showCustomToast(
+          context,
+          isRtl
+              ? 'فشل الدفع، يرجى المحاولة مرة أخرى'
+              : 'Payment failed, please try again',
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    }
   }
 }

@@ -59,6 +59,10 @@ class AppRouter {
 
   static bool get isOnboardingCompleted => _onboardingCompleted ?? false;
 
+  static void setOnboardingCompleted(bool value) {
+    _onboardingCompleted = value;
+  }
+
   static void setAuthenticated(bool value) {
     _isAuthenticated = value;
   }

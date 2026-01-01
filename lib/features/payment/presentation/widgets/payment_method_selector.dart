@@ -6,17 +6,13 @@ import '../cubit/payment_cubit.dart';
 import '../cubit/payment_state.dart';
 
 class PaymentMethodSelector extends StatelessWidget {
-  final bool enableOnlinePayment;
-
-  const PaymentMethodSelector({
-    super.key,
-    this.enableOnlinePayment = true,
-  });
+  const PaymentMethodSelector({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final locale = context.locale.languageCode;
+    final isOnlinePaymentSupported = PaymentCubit.isOnlinePaymentSupported;
 
     return BlocBuilder<PaymentCubit, PaymentState>(
       builder: (context, state) {
@@ -45,10 +41,9 @@ class PaymentMethodSelector extends StatelessWidget {
                   .selectPaymentMethod(PaymentMethodType.cashOnDelivery),
             ),
 
-            if (enableOnlinePayment) ...[
+            // Credit Card - only show on mobile
+            if (isOnlinePaymentSupported) ...[
               const SizedBox(height: 8),
-
-              // Credit Card
               _PaymentMethodTile(
                 icon: Icons.credit_card,
                 title: PaymentMethodType.card.getName(locale),

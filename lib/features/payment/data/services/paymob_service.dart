@@ -29,6 +29,7 @@ class PaymobService {
   /// Get payment URL for card payment
   Future<String?> getPaymentUrl({
     required double amount,
+    required String orderId,
     String currency = 'EGP',
     String? customerName,
     String? customerPhone,
@@ -41,15 +42,20 @@ class PaymobService {
       final authToken = await _getAuthToken();
       if (authToken == null) return null;
 
-      // Step 2: Create order
+      // Step 2: Create order with our order ID as merchant_order_id
       final amountCents = (amount * 100).toInt();
-      final orderId = await _createOrder(authToken, amountCents, currency);
-      if (orderId == null) return null;
+      final paymobOrderId = await _createOrder(
+        authToken,
+        amountCents,
+        currency,
+        merchantOrderId: orderId,
+      );
+      if (paymobOrderId == null) return null;
 
       // Step 3: Get payment key
       final paymentKey = await _getPaymentKey(
         authToken: authToken,
-        orderId: orderId,
+        orderId: paymobOrderId,
         amountCents: amountCents,
         currency: currency,
         customerName: customerName,
@@ -82,7 +88,11 @@ class PaymobService {
   }
 
   Future<int?> _createOrder(
-      String authToken, int amountCents, String currency) async {
+    String authToken,
+    int amountCents,
+    String currency, {
+    String? merchantOrderId,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('https://accept.paymob.com/api/ecommerce/orders'),
@@ -92,6 +102,7 @@ class PaymobService {
           'delivery_needed': false,
           'amount_cents': amountCents.toString(),
           'currency': currency,
+          'merchant_order_id': merchantOrderId,
           'items': [],
         }),
       );

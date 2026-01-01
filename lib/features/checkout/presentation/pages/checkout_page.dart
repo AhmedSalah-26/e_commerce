@@ -17,6 +17,10 @@ import '../../../payment/presentation/cubit/payment_cubit.dart';
 import '../../domain/checkout_validator.dart';
 import '../utils/order_state_handler.dart';
 import '../widgets/checkout_form_content.dart';
+import '../../../payment/presentation/widgets/payment_webview.dart';
+import '../../../payment/data/services/paymob_service.dart';
+import '../../../payment/domain/entities/payment_result.dart';
+import '../../../payment/domain/entities/payment_method.dart';
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
@@ -192,10 +196,23 @@ class _CheckoutPageContent extends StatefulWidget {
 class _CheckoutPageContentState extends State<_CheckoutPageContent> {
   static const _stateHandler = OrderStateHandler();
 
+  // Payment state
+  bool _showPaymentWebView = false;
+  String? _paymentUrl;
+
+  // Store order data for after payment
+  double? _pendingShippingCost;
+  String? _pendingGovernorateId;
+  Map<String, double>? _pendingMerchantShippingPrices;
+  CartLoaded? _pendingCartState;
+  double _pendingCouponDiscount = 0;
+  String? _pendingCouponId;
+  String? _pendingCouponCode;
+  String? _pendingGovernorateName;
+
   @override
   void initState() {
     super.initState();
-    // Load shipping data after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadShippingData();
     });
@@ -224,6 +241,107 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
     }
   }
 
+  Future<void> _handlePlaceOrder(
+    double shippingCost,
+    String? governorateId,
+    Map<String, double>? merchantShippingPrices,
+    CartLoaded cartState, {
+    double couponDiscount = 0,
+    String? couponId,
+    String? couponCode,
+    String? governorateName,
+  }) async {
+    final paymentCubit = context.read<PaymentCubit>();
+    final selectedMethod = paymentCubit.selectedMethod;
+
+    // If cash on delivery, place order directly
+    if (selectedMethod == PaymentMethodType.cashOnDelivery) {
+      widget.onPlaceOrder(
+        shippingCost,
+        governorateId,
+        merchantShippingPrices,
+        cartState,
+        couponDiscount: couponDiscount,
+        couponId: couponId,
+        couponCode: couponCode,
+        governorateName: governorateName,
+      );
+      return;
+    }
+
+    // For card payment, get payment URL and show webview
+    final totalAmount = cartState.total + shippingCost - couponDiscount;
+
+    final paymentUrl = await PaymobService.instance.getPaymentUrl(
+      amount: totalAmount,
+      customerName: widget.nameController.text.trim(),
+      customerPhone: widget.phoneController.text.trim(),
+    );
+
+    if (paymentUrl == null) {
+      if (mounted) {
+        Tost.showCustomToast(
+          context,
+          widget.isRtl ? 'فشل في تحميل صفحة الدفع' : 'Failed to load payment',
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+      return;
+    }
+
+    // Store order data for after payment
+    _pendingShippingCost = shippingCost;
+    _pendingGovernorateId = governorateId;
+    _pendingMerchantShippingPrices = merchantShippingPrices;
+    _pendingCartState = cartState;
+    _pendingCouponDiscount = couponDiscount;
+    _pendingCouponId = couponId;
+    _pendingCouponCode = couponCode;
+    _pendingGovernorateName = governorateName;
+
+    setState(() {
+      _paymentUrl = paymentUrl;
+      _showPaymentWebView = true;
+    });
+  }
+
+  void _handlePaymentComplete(PaymentResult result) {
+    setState(() {
+      _showPaymentWebView = false;
+      _paymentUrl = null;
+    });
+
+    if (result.success && _pendingCartState != null) {
+      // Payment successful, place order
+      widget.onPlaceOrder(
+        _pendingShippingCost!,
+        _pendingGovernorateId,
+        _pendingMerchantShippingPrices,
+        _pendingCartState!,
+        couponDiscount: _pendingCouponDiscount,
+        couponId: _pendingCouponId,
+        couponCode: _pendingCouponCode,
+        governorateName: _pendingGovernorateName,
+      );
+    } else if (!result.success &&
+        result.message != 'Payment cancelled by user') {
+      Tost.showCustomToast(
+        context,
+        result.message ?? (widget.isRtl ? 'فشل الدفع' : 'Payment failed'),
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
+  }
+
+  void _handlePaymentCancel() {
+    setState(() {
+      _showPaymentWebView = false;
+      _paymentUrl = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -234,34 +352,42 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
         listener: (context, state) => _stateHandler.handleState(context, state),
         child: Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
-          appBar: AppBar(
-            backgroundColor: theme.scaffoldBackgroundColor,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: theme.colorScheme.primary,
-              ),
-              onPressed: () => context.pop(),
-            ),
-            title: Text(
-              'checkout_title'.tr(),
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            centerTitle: true,
-          ),
-          body: CheckoutBody(
-            formKey: widget.formKey,
-            addressController: widget.addressController,
-            nameController: widget.nameController,
-            phoneController: widget.phoneController,
-            notesController: widget.notesController,
-            locale: widget.locale,
-            onPlaceOrder: widget.onPlaceOrder,
-          ),
+          appBar: _showPaymentWebView
+              ? null
+              : AppBar(
+                  backgroundColor: theme.scaffoldBackgroundColor,
+                  leading: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: theme.colorScheme.primary,
+                    ),
+                    onPressed: () => context.pop(),
+                  ),
+                  title: Text(
+                    'checkout_title'.tr(),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  centerTitle: true,
+                ),
+          body: _showPaymentWebView && _paymentUrl != null
+              ? PaymentWebView(
+                  paymentUrl: _paymentUrl!,
+                  onPaymentComplete: _handlePaymentComplete,
+                  onCancel: _handlePaymentCancel,
+                )
+              : CheckoutBody(
+                  formKey: widget.formKey,
+                  addressController: widget.addressController,
+                  nameController: widget.nameController,
+                  phoneController: widget.phoneController,
+                  notesController: widget.notesController,
+                  locale: widget.locale,
+                  onPlaceOrder: _handlePlaceOrder,
+                ),
         ),
       ),
     );

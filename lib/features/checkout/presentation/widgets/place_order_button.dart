@@ -9,9 +9,6 @@ import '../../../coupons/presentation/cubit/coupon_state.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
 import '../../../orders/presentation/cubit/orders_state.dart';
 import '../../../shipping/domain/entities/governorate_entity.dart';
-import '../../../payment/presentation/cubit/payment_cubit.dart';
-import '../../../payment/presentation/cubit/payment_state.dart';
-import '../../../payment/domain/entities/payment_method.dart';
 
 /// Place order button with coupon support
 class PlaceOrderButton extends StatelessWidget {
@@ -48,7 +45,6 @@ class PlaceOrderButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if all merchants support shipping to selected governorate
     final merchantIds = <String>{};
     for (final item in cartState.items) {
       if (item.product?.merchantId != null) {
@@ -79,96 +75,15 @@ class PlaceOrderButton extends StatelessWidget {
               child: AnimatedOrderButton(
                 onPressed: isLoading
                     ? null
-                    : () {
-                        // Check empty fields first
-                        if (nameController.text.trim().isEmpty) {
-                          Tost.showCustomToast(
-                            context,
-                            isRtl
-                                ? 'يرجى إدخال الاسم'
-                                : 'Please enter your name',
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                          );
-                          return;
-                        }
-
-                        if (phoneController.text.trim().isEmpty) {
-                          Tost.showCustomToast(
-                            context,
-                            isRtl
-                                ? 'يرجى إدخال رقم الهاتف'
-                                : 'Please enter phone number',
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                          );
-                          return;
-                        }
-
-                        if (addressController.text.trim().isEmpty) {
-                          Tost.showCustomToast(
-                            context,
-                            isRtl
-                                ? 'يرجى إدخال العنوان'
-                                : 'Please enter address',
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                          );
-                          return;
-                        }
-
-                        // Check governorate selection
-                        if (selectedGovernorate == null) {
-                          Tost.showCustomToast(
-                            context,
-                            isRtl
-                                ? 'يرجى اختيار المحافظة'
-                                : 'Please select governorate',
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                          );
-                          return;
-                        }
-
-                        // Check shipping support
-                        if (!allMerchantsSupported) {
-                          Tost.showCustomToast(
-                            context,
-                            isRtl
-                                ? 'بعض التجار لا يدعمون التوصيل لهذه المحافظة'
-                                : 'Some merchants don\'t deliver to this governorate',
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                          );
-                          return;
-                        }
-
-                        // Validate form (for any other validation rules)
-                        if (!formKey.currentState!.validate()) {
-                          Tost.showCustomToast(
-                            context,
-                            isRtl
-                                ? 'يرجى إكمال البيانات المطلوبة'
-                                : 'Please complete required fields',
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                          );
-                          return;
-                        }
-
-                        // All validations passed, process payment then place order
-                        _processPaymentAndOrder(
+                    : () => _handlePress(
                           context,
+                          isRtl: isRtl,
+                          allMerchantsSupported: allMerchantsSupported,
                           orderShippingCost: orderShippingCost,
-                          governorateId: selectedGovernorate!.id,
-                          governorateName: selectedGovernorate!.getName(locale),
-                          merchantShippingPrices: merchantShippingPrices,
                           couponDiscount: couponDiscount,
                           couponId: appliedCoupon?.couponId,
                           couponCode: appliedCoupon?.code,
-                          isRtl: isRtl,
-                        );
-                      },
+                        ),
                 label: 'place_order'.tr(),
                 isLoading: isLoading,
                 color: theme.colorScheme.primary,
@@ -180,71 +95,75 @@ class PlaceOrderButton extends StatelessWidget {
     );
   }
 
-  Future<void> _processPaymentAndOrder(
+  void _handlePress(
     BuildContext context, {
+    required bool isRtl,
+    required bool allMerchantsSupported,
     required double orderShippingCost,
-    required String governorateId,
-    required String governorateName,
-    required Map<String, double> merchantShippingPrices,
     required double couponDiscount,
     String? couponId,
     String? couponCode,
-    required bool isRtl,
-  }) async {
-    final paymentCubit = context.read<PaymentCubit>();
-    final selectedMethod = paymentCubit.selectedMethod;
-
-    // Calculate total amount for payment
-    final subtotal = cartState.total;
-    final totalAmount = subtotal + orderShippingCost - couponDiscount;
-
-    // If cash on delivery, place order directly
-    if (selectedMethod == PaymentMethodType.cashOnDelivery) {
-      onPlaceOrder(
-        orderShippingCost,
-        governorateId,
-        merchantShippingPrices,
-        cartState,
-        couponDiscount: couponDiscount,
-        couponId: couponId,
-        couponCode: couponCode,
-        governorateName: governorateName,
-      );
+  }) {
+    if (nameController.text.trim().isEmpty) {
+      Tost.showCustomToast(
+          context, isRtl ? 'يرجى إدخال الاسم' : 'Please enter your name',
+          backgroundColor: Colors.red, textColor: Colors.white);
       return;
     }
 
-    // For card/wallet payment, process payment first
-    final paymentSuccess = await paymentCubit.processPayment(
-      context: context,
-      amount: totalAmount,
-      walletPhoneNumber: phoneController.text.trim(),
-    );
+    if (phoneController.text.trim().isEmpty) {
+      Tost.showCustomToast(context,
+          isRtl ? 'يرجى إدخال رقم الهاتف' : 'Please enter phone number',
+          backgroundColor: Colors.red, textColor: Colors.white);
+      return;
+    }
 
-    if (paymentSuccess && context.mounted) {
-      // Payment successful, place order
-      onPlaceOrder(
-        orderShippingCost,
-        governorateId,
-        merchantShippingPrices,
-        cartState,
-        couponDiscount: couponDiscount,
-        couponId: couponId,
-        couponCode: couponCode,
-        governorateName: governorateName,
-      );
-    } else if (context.mounted) {
-      // Payment failed or cancelled
-      final state = paymentCubit.state;
-      if (state is! PaymentCancelled) {
-        Tost.showCustomToast(
+    if (addressController.text.trim().isEmpty) {
+      Tost.showCustomToast(
+          context, isRtl ? 'يرجى إدخال العنوان' : 'Please enter address',
+          backgroundColor: Colors.red, textColor: Colors.white);
+      return;
+    }
+
+    if (selectedGovernorate == null) {
+      Tost.showCustomToast(
+          context, isRtl ? 'يرجى اختيار المحافظة' : 'Please select governorate',
+          backgroundColor: Colors.red, textColor: Colors.white);
+      return;
+    }
+
+    if (!allMerchantsSupported) {
+      Tost.showCustomToast(
           context,
           isRtl
-              ? 'فشل الدفع، يرجى المحاولة مرة أخرى'
-              : 'Payment failed, please try again',
+              ? 'بعض التجار لا يدعمون التوصيل لهذه المحافظة'
+              : 'Some merchants don\'t deliver to this governorate',
           backgroundColor: Colors.red,
-          textColor: Colors.white,
-        );
-      }
+          textColor: Colors.white);
+      return;
     }
+
+    if (!formKey.currentState!.validate()) {
+      Tost.showCustomToast(
+          context,
+          isRtl
+              ? 'يرجى إكمال البيانات المطلوبة'
+              : 'Please complete required fields',
+          backgroundColor: Colors.red,
+          textColor: Colors.white);
+      return;
+    }
+
+    // All validations passed, call onPlaceOrder
+    onPlaceOrder(
+      orderShippingCost,
+      selectedGovernorate!.id,
+      merchantShippingPrices,
+      cartState,
+      couponDiscount: couponDiscount,
+      couponId: couponId,
+      couponCode: couponCode,
+      governorateName: selectedGovernorate!.getName(locale),
+    );
   }
 }

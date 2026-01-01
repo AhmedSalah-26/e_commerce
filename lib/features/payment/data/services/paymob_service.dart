@@ -1,7 +1,5 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:paymob_payment/paymob_payment.dart';
-import '../../domain/entities/payment_result.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 /// Paymob payment service
 class PaymobService {
@@ -9,6 +7,9 @@ class PaymobService {
   static final PaymobService instance = PaymobService._();
 
   static bool _isInitialized = false;
+  static String _apiKey = '';
+  static int _integrationId = 0;
+  static int _iFrameId = 0;
 
   /// Initialize Paymob SDK
   static Future<void> initialize({
@@ -16,78 +17,141 @@ class PaymobService {
     required int integrationId,
     required int iFrameId,
   }) async {
-    PaymobPayment.instance.initialize(
-      apiKey: apiKey,
-      integrationID: integrationId,
-      iFrameID: iFrameId,
-    );
+    _apiKey = apiKey;
+    _integrationId = integrationId;
+    _iFrameId = iFrameId;
     _isInitialized = true;
   }
 
   /// Check if Paymob is initialized
   static bool get isInitialized => _isInitialized;
 
-  /// Pay with credit/debit card
-  Future<PaymentResult> payWithCard({
-    required BuildContext context,
+  /// Get payment URL for card payment
+  Future<String?> getPaymentUrl({
     required double amount,
     String currency = 'EGP',
+    String? customerName,
+    String? customerPhone,
+    String? customerEmail,
   }) async {
-    if (!_isInitialized) {
-      return PaymentResult.failure(message: 'Paymob not initialized');
-    }
-
-    final completer = Completer<PaymentResult>();
+    if (!_isInitialized) return null;
 
     try {
-      // Amount in cents (e.g., 100 EGP = 10000 cents)
-      final amountInCents = (amount * 100).toInt().toString();
+      // Step 1: Get auth token
+      final authToken = await _getAuthToken();
+      if (authToken == null) return null;
 
-      final response = await PaymobPayment.instance.pay(
-        context: context,
+      // Step 2: Create order
+      final amountCents = (amount * 100).toInt();
+      final orderId = await _createOrder(authToken, amountCents, currency);
+      if (orderId == null) return null;
+
+      // Step 3: Get payment key
+      final paymentKey = await _getPaymentKey(
+        authToken: authToken,
+        orderId: orderId,
+        amountCents: amountCents,
         currency: currency,
-        amountInCents: amountInCents,
-        onPayment: (response) {
-          if (!completer.isCompleted) {
-            if (response.success) {
-              completer.complete(PaymentResult.success(
-                transactionId: response.transactionID ?? '',
-                message: response.message,
-                responseCode: response.responseCode,
-              ));
-            } else {
-              completer.complete(PaymentResult.failure(
-                message: response.message,
-                responseCode: response.responseCode,
-              ));
-            }
-          }
-        },
+        customerName: customerName,
+        customerPhone: customerPhone,
+        customerEmail: customerEmail,
+      );
+      if (paymentKey == null) return null;
+
+      // Return iFrame URL
+      return 'https://accept.paymob.com/api/acceptance/iframes/$_iFrameId?payment_token=$paymentKey';
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<String?> _getAuthToken() async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://accept.paymob.com/api/auth/tokens'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'api_key': _apiKey}),
       );
 
-      // If response is returned directly (user cancelled or error)
-      if (!completer.isCompleted) {
-        if (response == null) {
-          completer.complete(PaymentResult.cancelled());
-        } else if (response.success) {
-          completer.complete(PaymentResult.success(
-            transactionId: response.transactionID ?? '',
-            message: response.message,
-            responseCode: response.responseCode,
-          ));
-        } else {
-          completer.complete(PaymentResult.failure(
-            message: response.message,
-            responseCode: response.responseCode,
-          ));
-        }
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data['token'];
       }
-    } catch (e) {
-      if (!completer.isCompleted) {
-        completer.complete(PaymentResult.failure(message: e.toString()));
-      }
-    }
+    } catch (_) {}
+    return null;
+  }
 
-    return completer.future;
+  Future<int?> _createOrder(
+      String authToken, int amountCents, String currency) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://accept.paymob.com/api/ecommerce/orders'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'auth_token': authToken,
+          'delivery_needed': false,
+          'amount_cents': amountCents.toString(),
+          'currency': currency,
+          'items': [],
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data['id'];
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  Future<String?> _getPaymentKey({
+    required String authToken,
+    required int orderId,
+    required int amountCents,
+    required String currency,
+    String? customerName,
+    String? customerPhone,
+    String? customerEmail,
+  }) async {
+    try {
+      final nameParts = (customerName ?? 'Customer').split(' ');
+      final firstName = nameParts.first;
+      final lastName =
+          nameParts.length > 1 ? nameParts.sublist(1).join(' ') : 'Name';
+
+      final response = await http.post(
+        Uri.parse('https://accept.paymob.com/api/acceptance/payment_keys'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'auth_token': authToken,
+          'amount_cents': amountCents.toString(),
+          'expiration': 3600,
+          'order_id': orderId.toString(),
+          'billing_data': {
+            'apartment': 'NA',
+            'email': customerEmail ?? 'customer@example.com',
+            'floor': 'NA',
+            'first_name': firstName,
+            'street': 'NA',
+            'building': 'NA',
+            'phone_number': customerPhone ?? '+201000000000',
+            'shipping_method': 'NA',
+            'postal_code': 'NA',
+            'city': 'NA',
+            'country': 'EG',
+            'last_name': lastName,
+            'state': 'NA',
+          },
+          'currency': currency,
+          'integration_id': _integrationId,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data['token'];
+      }
+    } catch (_) {}
+    return null;
   }
 }

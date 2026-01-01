@@ -86,82 +86,85 @@ class _PaymentWebViewState extends State<PaymentWebView> {
     final theme = Theme.of(context);
     final isRtl = context.locale.languageCode == 'ar';
 
-    return Column(
-      children: [
-        // Header
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: Icon(
-                  isRtl ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
-                  color: Colors.white,
-                  size: 20,
-                ),
-                onPressed: widget.onCancel,
-              ),
-              Expanded(
-                child: Text(
-                  isRtl ? 'الدفع بالبطاقة' : 'Card Payment',
-                  style: const TextStyle(
+    return SafeArea(
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    isRtl ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
                     color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+                    size: 20,
                   ),
-                  textAlign: TextAlign.center,
+                  onPressed: widget.onCancel,
                 ),
-              ),
-              const SizedBox(width: 48), // Balance the back button
-            ],
+                Expanded(
+                  child: Text(
+                    isRtl ? 'الدفع بالبطاقة' : 'Card Payment',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(width: 48), // Balance the back button
+              ],
+            ),
           ),
-        ),
 
-        // WebView
-        Expanded(
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(16),
-                ),
-                child: WebViewWidget(controller: _controller),
-              ),
-              if (_isLoading)
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.vertical(
-                      bottom: Radius.circular(16),
-                    ),
+          // WebView
+          Expanded(
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(16),
                   ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(
-                          color: theme.colorScheme.primary,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          isRtl ? 'جاري تحميل صفحة الدفع...' : 'Loading...',
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.6),
+                  child: WebViewWidget(controller: _controller),
+                ),
+                if (_isLoading)
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(16),
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            color: theme.colorScheme.primary,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 16),
+                          Text(
+                            isRtl ? 'جاري تحميل صفحة الدفع...' : 'Loading...',
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -20,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _hasNavigated = false; // Prevent multiple navigations
 
   @override
   void dispose() {
@@ -46,6 +47,10 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
+            // Prevent multiple navigations
+            if (_hasNavigated) return;
+            _hasNavigated = true;
+
             AppRouter.setAuthenticated(true);
             if (state.user.isAdmin) {
               context.pushReplacement('/admin');
@@ -81,9 +86,9 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 20),
                     Image.asset(
                       'assets/on_bording/logo.png',
-                      height: 120,
+                      height: 160,
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 32),
                     Text(
                       'login_title'.tr(),
                       style: TextStyle(

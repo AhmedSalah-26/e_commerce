@@ -187,7 +187,14 @@ class _MyAppState extends State<MyApp> {
               );
 
           // Navigate to pending deep link after login
-          DeepLinkService().navigateToPendingDeepLink();
+          // But NOT if user is on address-onboarding or register page
+          // (register page handles its own navigation)
+          final currentPath =
+              AppRouter.router.routerDelegate.currentConfiguration.uri.path;
+          if (currentPath != '/address-onboarding' &&
+              currentPath != '/register') {
+            DeepLinkService().navigateToPendingDeepLink();
+          }
         } else if (state is AuthUnauthenticated) {
           // Stop listening when user logs out
           di.sl<OrderStatusListener>().stopListening();

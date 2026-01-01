@@ -33,35 +33,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   List<Map<String, String>> _getPages(bool isRtl) {
     return [
       {
-        'title': isRtl
-            ? 'مرحباً بكم في متجر زهرة التمور'
-            : 'Welcome to Zahret Al-Tamoor',
+        'title': isRtl ? 'مرحباً بك في متجرنا' : 'Welcome to Our Store',
         'description': isRtl
-            ? 'اكتشفوا معنا أجود أنواع التمور والمنتجات الفريدة. نقدم لكم أفضل المنتجات الطبيعية بأعلى جودة.'
-            : 'Discover the finest dates and unique products with us. We offer the best natural products with the highest quality.',
+            ? 'اكتشف تشكيلة واسعة من المنتجات المميزة بأفضل الأسعار. تسوق بسهولة وأمان من أي مكان.'
+            : 'Discover a wide range of premium products at the best prices. Shop easily and securely from anywhere.',
         'imagePath': 'assets/on_bording/logo.png',
       },
       {
-        'title': isRtl
-            ? 'جودة وأصالة في كل تمرة'
-            : 'Quality & Authenticity in Every Date',
+        'title': isRtl ? 'ابدأ التسوق الآن' : 'Start Shopping Now',
         'description': isRtl
-            ? 'استمتعوا بمذاق لا مثيل له مع تشكيلة رائعة من أفخر أنواع التمور المختارة بعناية.'
-            : 'Enjoy an unmatched taste with a wonderful selection of the finest carefully selected dates.',
-        'imagePath': 'assets/on_bording/1726404072024.png',
-      },
-      {
-        'title': isRtl ? 'ابدأ الآن' : 'Get Started',
-        'description': isRtl
-            ? 'لنبدأ الآن واستكشفوا كل ما نقدمه لكم من منتجات مميزة.'
-            : 'Let\'s start now and explore all the special products we offer.',
-        'imagePath': 'assets/on_bording/onboarding3.png',
+            ? 'عروض حصرية، توصيل سريع، ودفع آمن عند الاستلام. سجّل الآن واستمتع بتجربة تسوق مميزة.'
+            : 'Exclusive offers, fast delivery, and secure cash on delivery. Register now and enjoy a unique shopping experience.',
+        'imagePath': 'assets/on_bording/on4.png',
       },
     ];
   }
 
   void _nextPage() {
-    if (_currentPage < 2) {
+    if (_currentPage < 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeIn,
@@ -127,7 +116,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     currentPage: _currentPage,
                     totalPages: pages.length,
                     onNextPage: _nextPage,
-                    onSkip: _completeOnboarding,
                     isRtl: isRtl,
                   ),
                 ],

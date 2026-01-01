@@ -68,11 +68,23 @@ class AppRouter {
     redirect: (context, state) {
       final path = state.uri.path;
 
+      // Don't redirect from splash - let it handle navigation
+      if (path == '/splash') {
+        return null;
+      }
+
+      // Don't redirect from address-onboarding - let user complete it
+      if (path == '/address-onboarding') {
+        return null;
+      }
+
+      // If onboarding not completed, redirect to onboarding (except from splash)
+      if (!isOnboardingCompleted && path != '/onboarding') {
+        return '/onboarding';
+      }
+
       if (_isAuthenticated) {
-        if (path == '/login' ||
-            path == '/splash' ||
-            path == '/onboarding' ||
-            path == '/register') {
+        if (path == '/login' || path == '/onboarding' || path == '/register') {
           return '/home';
         }
       }

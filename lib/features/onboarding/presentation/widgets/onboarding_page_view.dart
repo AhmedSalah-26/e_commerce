@@ -28,16 +28,21 @@ class OnboardingPageView extends StatelessWidget {
         clipBehavior: Clip.none,
         itemBuilder: (context, index) {
           final page = pages[index];
+          final imagePath = page['imagePath'];
+          final useIcon = imagePath == null || imagePath.isEmpty;
+
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
                 height: imageSize,
                 width: imageSize,
-                child: Image.asset(
-                  page['imagePath']!,
-                  fit: BoxFit.contain,
-                ),
+                child: useIcon
+                    ? _buildShoppingIcon(imageSize)
+                    : Image.asset(
+                        imagePath,
+                        fit: BoxFit.contain,
+                      ),
               ),
               const SizedBox(height: 20),
               Text(
@@ -58,6 +63,22 @@ class OnboardingPageView extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildShoppingIcon(double size) {
+    return Container(
+      width: size * 0.7,
+      height: size * 0.7,
+      decoration: BoxDecoration(
+        color: const Color(0xFF8B4513).withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        Icons.shopping_bag_outlined,
+        size: size * 0.4,
+        color: const Color(0xFF8B4513),
       ),
     );
   }

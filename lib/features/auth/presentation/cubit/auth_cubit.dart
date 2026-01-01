@@ -63,16 +63,23 @@ class AuthCubit extends Cubit<AuthState> with WidgetsBindingObserver {
       result.fold(
         (failure) {
           debugPrint('⚠️ Session check failed: ${failure.message}');
-          if (this.state is AuthAuthenticated) {
+          if (state is AuthAuthenticated) {
             emit(const AuthUnauthenticated());
           }
         },
         (user) {
           if (user != null) {
             debugPrint('✅ Session still valid for: ${user.id}');
-            // Update user data in case it changed
-            emit(AuthAuthenticated(user));
-          } else if (this.state is AuthAuthenticated) {
+            // Only emit if user data actually changed (not just on resume)
+            final currentState = state;
+            if (currentState is! AuthAuthenticated ||
+                currentState.user.id != user.id ||
+                currentState.user.name != user.name ||
+                currentState.user.avatarUrl != user.avatarUrl ||
+                currentState.user.addresses.length != user.addresses.length) {
+              emit(AuthAuthenticated(user));
+            }
+          } else if (state is AuthAuthenticated) {
             debugPrint('⚠️ Session expired');
             emit(const AuthUnauthenticated());
           }
@@ -97,7 +104,12 @@ class AuthCubit extends Cubit<AuthState> with WidgetsBindingObserver {
             signOut();
             return;
           }
-          emit(AuthAuthenticated(user));
+          // Only emit if user data actually changed
+          final currentState = state;
+          if (currentState is! AuthAuthenticated ||
+              currentState.user.id != user.id) {
+            emit(AuthAuthenticated(user));
+          }
         } else {
           // Only emit unauthenticated if we were previously authenticated
           if (state is AuthAuthenticated) {

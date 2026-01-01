@@ -35,6 +35,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Uint8List? _selectedAvatarBytes;
   String? _selectedAvatarName;
   bool _isUploadingAvatar = false;
+  bool _hasNavigated = false; // Prevent multiple navigations
 
   @override
   void dispose() {
@@ -127,6 +128,10 @@ class _RegisterPageState extends State<RegisterPage> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
+            // Prevent multiple navigations
+            if (_hasNavigated) return;
+            _hasNavigated = true;
+
             AppRouter.setAuthenticated(true);
             if (state.user.isMerchant) {
               context.pushReplacement('/merchant-dashboard');

@@ -18,7 +18,7 @@ mixin AdminStatsMixin {
             ? DateTime(toDate.year, toDate.month, toDate.day, 23, 59, 59)
                 .toIso8601String()
             : null,
-      });
+      }).timeout(const Duration(seconds: 15));
 
       final data = response as Map<String, dynamic>;
 
@@ -34,7 +34,104 @@ mixin AdminStatsMixin {
         todayRevenue: (data['today_revenue'] ?? 0).toDouble(),
       );
     } catch (e) {
-      throw ServerException('Failed to get stats: $e');
+      print('❌ Failed to get admin stats via RPC: $e');
+      // Fallback to individual queries if RPC fails
+      return _getStatsFallback(fromDate: fromDate, toDate: toDate);
+    }
+  }
+
+  Future<AdminStatsModel> _getStatsFallback({
+    DateTime? fromDate,
+    DateTime? toDate,
+  }) async {
+    try {
+      print('📊 Using fallback stats queries...');
+
+      // Get counts in parallel with timeout
+      final results = await Future.wait([
+        client
+            .from('profiles')
+            .select('id')
+            .eq('role', 'customer')
+            .count(CountOption.exact),
+        client
+            .from('profiles')
+            .select('id')
+            .eq('role', 'merchant')
+            .count(CountOption.exact),
+        client.from('products').select('id').count(CountOption.exact),
+        client
+            .from('products')
+            .select('id')
+            .eq('is_active', true)
+            .count(CountOption.exact),
+      ]).timeout(const Duration(seconds: 10));
+
+      final totalCustomers = results[0].count;
+      final totalMerchants = results[1].count;
+      final totalProducts = results[2].count;
+      final activeProducts = results[3].count;
+
+      // Get order stats with timeout
+      var ordersQuery =
+          client.from('orders').select('id, status, total, created_at');
+      if (fromDate != null) {
+        ordersQuery = ordersQuery.gte('created_at', fromDate.toIso8601String());
+      }
+      if (toDate != null) {
+        ordersQuery = ordersQuery.lte('created_at', toDate.toIso8601String());
+      }
+      final ordersData = await ordersQuery.timeout(const Duration(seconds: 10));
+
+      final orders = List<Map<String, dynamic>>.from(ordersData);
+      final totalOrders = orders.length;
+      final pendingOrders =
+          orders.where((o) => o['status'] == 'pending').length;
+
+      final now = DateTime.now();
+      final startOfDay = DateTime(now.year, now.month, now.day);
+      final todayOrders = orders.where((o) {
+        final createdAt = DateTime.tryParse(o['created_at'] ?? '');
+        return createdAt != null && createdAt.isAfter(startOfDay);
+      }).length;
+
+      final deliveredOrders = orders.where((o) => o['status'] == 'delivered');
+      final totalRevenue = deliveredOrders.fold<double>(
+          0, (sum, o) => sum + ((o['total'] as num?)?.toDouble() ?? 0));
+
+      final todayDelivered = deliveredOrders.where((o) {
+        final createdAt = DateTime.tryParse(o['created_at'] ?? '');
+        return createdAt != null && createdAt.isAfter(startOfDay);
+      });
+      final todayRevenue = todayDelivered.fold<double>(
+          0, (sum, o) => sum + ((o['total'] as num?)?.toDouble() ?? 0));
+
+      print('✅ Fallback stats loaded successfully');
+      return AdminStatsModel(
+        totalCustomers: totalCustomers,
+        totalMerchants: totalMerchants,
+        totalProducts: totalProducts,
+        activeProducts: activeProducts,
+        totalOrders: totalOrders,
+        pendingOrders: pendingOrders,
+        todayOrders: todayOrders,
+        totalRevenue: totalRevenue,
+        todayRevenue: todayRevenue,
+      );
+    } catch (e) {
+      print('❌ Fallback stats also failed: $e');
+      // Return empty stats instead of throwing
+      return AdminStatsModel(
+        totalCustomers: 0,
+        totalMerchants: 0,
+        totalProducts: 0,
+        activeProducts: 0,
+        totalOrders: 0,
+        pendingOrders: 0,
+        todayOrders: 0,
+        totalRevenue: 0,
+        todayRevenue: 0,
+      );
     }
   }
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
 import '../../cubit/admin_cubit.dart';
 import '../../cubit/admin_state.dart';
@@ -40,7 +39,6 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isMobile = MediaQuery.of(context).size.width < 600;
 
     return BlocConsumer<AdminCubit, AdminState>(

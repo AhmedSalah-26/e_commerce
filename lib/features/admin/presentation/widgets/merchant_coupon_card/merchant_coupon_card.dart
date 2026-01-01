@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import 'coupon_discount_badge.dart';
 import 'coupon_code_section.dart';

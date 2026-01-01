@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../domain/entities/review_report_entity.dart';
+import '../../../domain/entities/review_report_entity.dart';
 
 class ReviewReportRespondButton extends StatelessWidget {
   final ReviewReportStatus status;

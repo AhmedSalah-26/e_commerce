@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../domain/entities/inventory_insight_entity.dart';
+import '../../../../domain/entities/inventory_insight_entity.dart';
 import 'product_inventory_card.dart';
 
 class InventoryProductList extends StatelessWidget {

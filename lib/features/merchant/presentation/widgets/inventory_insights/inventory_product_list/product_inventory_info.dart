@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:toastification/toastification.dart';
 
-import '../../../domain/entities/inventory_insight_entity.dart';
+import '../../../../domain/entities/inventory_insight_entity.dart';
 import 'status_badge.dart';
 
 class ProductInventoryInfo extends StatelessWidget {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../core/shared_widgets/toast.dart';
-import '../../data/models/review_report_model.dart';
+import '../../../../../core/shared_widgets/toast.dart';
+import '../../../data/models/review_report_model.dart';
 
 class ReviewReportIds extends StatelessWidget {
   final ReviewReportModel report;

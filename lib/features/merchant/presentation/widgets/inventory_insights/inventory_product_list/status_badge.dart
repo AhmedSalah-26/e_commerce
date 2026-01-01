@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../domain/entities/inventory_insight_entity.dart';
+import '../../../../domain/entities/inventory_insight_entity.dart';
 
 class StatusBadge extends StatelessWidget {
   final StockStatus status;

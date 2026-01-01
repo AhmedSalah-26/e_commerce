@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../domain/entities/inventory_insight_entity.dart';
+import '../../../../domain/entities/inventory_insight_entity.dart';
 import 'stat_item.dart';
 
 class ProductInventoryStats extends StatelessWidget {

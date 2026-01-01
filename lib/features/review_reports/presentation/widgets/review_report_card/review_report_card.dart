@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../data/models/review_report_model.dart';
+import '../../../data/models/review_report_model.dart';
 import 'review_report_header.dart';
 import 'review_report_comment.dart';
 import 'review_report_info.dart';

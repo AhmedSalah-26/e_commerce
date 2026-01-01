@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/review_report_model.dart';
+import '../../../data/models/review_report_model.dart';
 import 'review_report_status_badge.dart';
 
 class ReviewReportHeader extends StatelessWidget {

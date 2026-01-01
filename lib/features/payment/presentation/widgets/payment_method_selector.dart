@@ -57,18 +57,6 @@ class PaymentMethodSelector extends StatelessWidget {
                     .read<PaymentCubit>()
                     .selectPaymentMethod(PaymentMethodType.card),
               ),
-
-              const SizedBox(height: 8),
-
-              // Mobile Wallet
-              _PaymentMethodTile(
-                icon: Icons.account_balance_wallet,
-                title: PaymentMethodType.wallet.getName(locale),
-                isSelected: selectedMethod == PaymentMethodType.wallet,
-                onTap: () => context
-                    .read<PaymentCubit>()
-                    .selectPaymentMethod(PaymentMethodType.wallet),
-              ),
             ],
           ],
         );

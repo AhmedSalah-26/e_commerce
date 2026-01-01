@@ -47,12 +47,11 @@ void main() async {
   // Initialize performance service
   PerformanceService().initialize();
 
-  // Initialize Paymob (only if configured)
+  /// Initialize Paymob (only if configured)
   if (PaymobConfig.isConfigured) {
     await PaymobService.initialize(
       apiKey: PaymobConfig.apiKey,
       integrationId: PaymobConfig.integrationId,
-      walletIntegrationId: PaymobConfig.walletIntegrationId,
       iFrameId: PaymobConfig.iFrameId,
     );
   }

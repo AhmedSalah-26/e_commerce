@@ -46,8 +46,6 @@ class PaymentCubit extends Cubit<PaymentState> {
     final result = await PaymobService.instance.payWithCard(
       context: context,
       amount: amount,
-      title: 'الدفع بالبطاقة',
-      appBarColor: Theme.of(context).colorScheme.primary,
     );
 
     if (result.success) {
@@ -68,27 +66,9 @@ class PaymentCubit extends Cubit<PaymentState> {
     double amount,
     String phoneNumber,
   ) async {
-    emit(const PaymentProcessing());
-
-    final result = await PaymobService.instance.payWithWallet(
-      context: context,
-      amount: amount,
-      phoneNumber: phoneNumber,
-      title: 'الدفع بالمحفظة',
-      appBarColor: Theme.of(context).colorScheme.primary,
-    );
-
-    if (result.success) {
-      emit(PaymentSuccess(result));
-      return true;
-    } else {
-      if (result.message == 'Payment cancelled by user') {
-        emit(const PaymentCancelled());
-      } else {
-        emit(PaymentFailure(result.message ?? 'فشل الدفع'));
-      }
-      return false;
-    }
+    // Wallet not supported in current package
+    emit(const PaymentFailure('الدفع بالمحفظة غير متاح حالياً'));
+    return false;
   }
 
   /// Reset to initial state

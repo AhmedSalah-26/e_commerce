@@ -204,6 +204,7 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
   // Payment state
   bool _showPaymentWebView = false;
   String? _paymentUrl;
+  bool _isLoadingPayment = false;
 
   // Store order data for card payment flow
   double? _pendingTotalAmount;
@@ -291,6 +292,10 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
   Future<void> _openPaymentPage(String orderId) async {
     if (_pendingTotalAmount == null) return;
 
+    setState(() {
+      _isLoadingPayment = true;
+    });
+
     final paymentUrl = await PaymobService.instance.getPaymentUrl(
       amount: _pendingTotalAmount!,
       orderId: orderId,
@@ -298,21 +303,25 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       customerPhone: widget.phoneController.text.trim(),
     );
 
+    if (!mounted) return;
+
     if (paymentUrl == null) {
-      if (mounted) {
-        Tost.showCustomToast(
-          context,
-          widget.isRtl ? 'فشل في تحميل صفحة الدفع' : 'Failed to load payment',
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-        );
-      }
+      setState(() {
+        _isLoadingPayment = false;
+      });
+      Tost.showCustomToast(
+        context,
+        widget.isRtl ? 'فشل في تحميل صفحة الدفع' : 'Failed to load payment',
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
       return;
     }
 
     setState(() {
       _paymentUrl = paymentUrl;
       _showPaymentWebView = true;
+      _isLoadingPayment = false;
     });
   }
 
@@ -414,14 +423,50 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
                   onPaymentComplete: _handlePaymentComplete,
                   onCancel: _handlePaymentCancel,
                 )
-              : CheckoutBody(
-                  formKey: widget.formKey,
-                  addressController: widget.addressController,
-                  nameController: widget.nameController,
-                  phoneController: widget.phoneController,
-                  notesController: widget.notesController,
-                  locale: widget.locale,
-                  onPlaceOrder: _handlePlaceOrder,
+              : Stack(
+                  children: [
+                    CheckoutBody(
+                      formKey: widget.formKey,
+                      addressController: widget.addressController,
+                      nameController: widget.nameController,
+                      phoneController: widget.phoneController,
+                      notesController: widget.notesController,
+                      locale: widget.locale,
+                      onPlaceOrder: _handlePlaceOrder,
+                    ),
+                    if (_isLoadingPayment)
+                      Container(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularProgressIndicator(
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  widget.isRtl
+                                      ? 'جاري تحميل صفحة الدفع...'
+                                      : 'Loading payment page...',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
         ),
       ),

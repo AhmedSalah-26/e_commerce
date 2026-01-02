@@ -30,6 +30,9 @@ class ReviewReportIds extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Column(
       children: [
         InkWell(
@@ -38,21 +41,24 @@ class ReviewReportIds extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.grey[700],
+              color: isDark ? Colors.grey[700] : Colors.grey[200],
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               children: [
-                const Icon(Icons.key, size: 16, color: Colors.white70),
+                Icon(Icons.key,
+                    size: 16,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                 const SizedBox(width: 8),
                 Text(
                   isArabic ? 'المعرفات (IDs)' : 'IDs',
-                  style: const TextStyle(fontSize: 13, color: Colors.white),
+                  style: TextStyle(
+                      fontSize: 13, color: theme.colorScheme.onSurface),
                 ),
                 const Spacer(),
                 Icon(
                   showIds ? Icons.expand_less : Icons.expand_more,
-                  color: Colors.white70,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ],
             ),
@@ -63,7 +69,7 @@ class ReviewReportIds extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.grey[800],
+              color: isDark ? Colors.grey[800] : Colors.grey[100],
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -90,6 +96,8 @@ class ReviewReportIds extends StatelessWidget {
   }
 
   Widget _buildIdRow(BuildContext context, String label, String value) {
+    final theme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -98,22 +106,25 @@ class ReviewReportIds extends StatelessWidget {
             width: 90,
             child: Text(
               '$label:',
-              style: const TextStyle(fontSize: 11, color: Colors.white),
+              style:
+                  TextStyle(fontSize: 11, color: theme.colorScheme.onSurface),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontFamily: 'monospace',
-                color: Colors.white,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.copy, size: 14, color: Colors.white70),
+            icon: Icon(Icons.copy,
+                size: 14,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             onPressed: () => _copyToClipboard(context, value, label),

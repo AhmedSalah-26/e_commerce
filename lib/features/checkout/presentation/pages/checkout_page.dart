@@ -206,8 +206,9 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
   String? _paymentUrl;
   bool _isLoadingPayment = false;
 
-  // Store order data for card payment flow
+  // Store order data for card/wallet payment flow
   double? _pendingTotalAmount;
+  String? _walletPhoneNumber;
 
   @override
   void initState() {
@@ -269,12 +270,31 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       return;
     }
 
-    // For card payment: store total amount for payment page
+    // For wallet payment: need phone number
+    if (selectedMethod == PaymentMethodType.wallet) {
+      final phoneNumber = widget.phoneController.text.trim();
+      if (phoneNumber.isEmpty) {
+        Tost.showCustomToast(
+          context,
+          widget.isRtl
+              ? 'يرجى إدخال رقم الهاتف للمحفظة'
+              : 'Please enter phone number for wallet',
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+        return;
+      }
+      _walletPhoneNumber = phoneNumber;
+    }
+
+    // For card/wallet payment: store total amount for payment page
     _pendingTotalAmount = cartState.total + shippingCost - couponDiscount;
 
     // Create order FIRST with pending payment status
     // The order will be created, then we open payment page
     // Webhook will update payment status to paid/failed
+    final paymentMethodStr =
+        selectedMethod == PaymentMethodType.wallet ? 'wallet' : 'card';
     widget.onPlaceOrder(
       shippingCost,
       governorateId,
@@ -284,24 +304,40 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       couponId: couponId,
       couponCode: couponCode,
       governorateName: governorateName,
-      paymentMethod: 'card', // Card payment
+      paymentMethod: paymentMethodStr,
     );
   }
 
-  /// Called when order is created successfully for card payment
-  Future<void> _openPaymentPage(String orderId) async {
+  /// Called when order is created successfully for card/wallet payment
+  Future<void> _openPaymentPage(
+      String orderId, PaymentMethodType paymentMethod) async {
     if (_pendingTotalAmount == null) return;
 
     setState(() {
       _isLoadingPayment = true;
     });
 
-    final paymentUrl = await PaymobService.instance.getPaymentUrl(
-      amount: _pendingTotalAmount!,
-      orderId: orderId,
-      customerName: widget.nameController.text.trim(),
-      customerPhone: widget.phoneController.text.trim(),
-    );
+    String? paymentUrl;
+
+    if (paymentMethod == PaymentMethodType.wallet &&
+        _walletPhoneNumber != null) {
+      // Wallet payment
+      paymentUrl = await PaymobService.instance.getWalletPaymentUrl(
+        amount: _pendingTotalAmount!,
+        orderId: orderId,
+        walletPhoneNumber: _walletPhoneNumber!,
+        customerName: widget.nameController.text.trim(),
+        customerEmail: null,
+      );
+    } else {
+      // Card payment
+      paymentUrl = await PaymobService.instance.getPaymentUrl(
+        amount: _pendingTotalAmount!,
+        orderId: orderId,
+        customerName: widget.nameController.text.trim(),
+        customerPhone: widget.phoneController.text.trim(),
+      );
+    }
 
     if (!mounted) return;
 
@@ -330,6 +366,7 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       _showPaymentWebView = false;
       _paymentUrl = null;
       _pendingTotalAmount = null;
+      _walletPhoneNumber = null;
     });
 
     if (result.success) {
@@ -358,6 +395,7 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       _showPaymentWebView = false;
       _paymentUrl = null;
       _pendingTotalAmount = null;
+      _walletPhoneNumber = null;
     });
 
     // Order remains with pending status - user can retry payment later
@@ -373,13 +411,15 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
 
   void _handleOrderState(BuildContext context, OrdersState state) {
     final paymentCubit = context.read<PaymentCubit>();
-    final isCardPayment = paymentCubit.selectedMethod == PaymentMethodType.card;
+    final selectedMethod = paymentCubit.selectedMethod;
+    final isOnlinePayment = selectedMethod == PaymentMethodType.card ||
+        selectedMethod == PaymentMethodType.wallet;
 
     if (state is MultiVendorOrderCreated &&
-        isCardPayment &&
+        isOnlinePayment &&
         _pendingTotalAmount != null) {
-      // Order created for card payment - open payment page
-      _openPaymentPage(state.parentOrderId);
+      // Order created for card/wallet payment - open payment page
+      _openPaymentPage(state.parentOrderId, selectedMethod);
     } else {
       // Cash on delivery or other states - use default handler
       _stateHandler.handleState(context, state);

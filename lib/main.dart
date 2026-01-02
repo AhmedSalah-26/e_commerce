@@ -49,6 +49,7 @@ void main() async {
       apiKey: PaymobConfig.apiKey,
       integrationId: PaymobConfig.integrationId,
       iFrameId: PaymobConfig.iFrameId,
+      walletIntegrationId: PaymobConfig.walletIntegrationId,
     );
   }
 

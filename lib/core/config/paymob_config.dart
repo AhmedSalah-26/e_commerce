@@ -14,8 +14,7 @@ class PaymobConfig {
   static const int integrationId = 5456758;
 
   // Wallet payment integration ID (Vodafone Cash, etc.)
-  // TODO: Add wallet integration from Paymob dashboard if needed
-  static const int walletIntegrationId = 5456758;
+  static const int walletIntegrationId = 5456894;
 
   // iFrame ID for card payments
   static const int iFrameId = 993104;

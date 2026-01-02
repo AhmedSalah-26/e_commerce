@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/payment_method.dart';
+import '../../data/services/paymob_service.dart';
 import '../cubit/payment_cubit.dart';
 import '../cubit/payment_state.dart';
 
@@ -13,6 +14,7 @@ class PaymentMethodSelector extends StatelessWidget {
     final theme = Theme.of(context);
     final locale = context.locale.languageCode;
     final isOnlinePaymentSupported = PaymentCubit.isOnlinePaymentSupported;
+    final isWalletAvailable = PaymobService.isWalletPaymentAvailable;
 
     return BlocBuilder<PaymentCubit, PaymentState>(
       builder: (context, state) {
@@ -53,6 +55,22 @@ class PaymentMethodSelector extends StatelessWidget {
                     .selectPaymentMethod(PaymentMethodType.card),
               ),
             ],
+
+            // Mobile Wallet - only show if available
+            if (isOnlinePaymentSupported && isWalletAvailable) ...[
+              const SizedBox(height: 8),
+              _PaymentMethodTile(
+                icon: Icons.account_balance_wallet,
+                title: PaymentMethodType.wallet.getName(locale),
+                subtitle: locale == 'ar'
+                    ? 'فودافون كاش، اتصالات كاش، أورانج كاش'
+                    : 'Vodafone Cash, Etisalat Cash, Orange Cash',
+                isSelected: selectedMethod == PaymentMethodType.wallet,
+                onTap: () => context
+                    .read<PaymentCubit>()
+                    .selectPaymentMethod(PaymentMethodType.wallet),
+              ),
+            ],
           ],
         );
       },
@@ -63,12 +81,14 @@ class PaymentMethodSelector extends StatelessWidget {
 class _PaymentMethodTile extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? subtitle;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _PaymentMethodTile({
     required this.icon,
     required this.title,
+    this.subtitle,
     required this.isSelected,
     required this.onTap,
   });
@@ -102,15 +122,32 @@ class _PaymentMethodTile extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.onSurface,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             if (isSelected)

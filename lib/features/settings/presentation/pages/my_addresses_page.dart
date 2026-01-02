@@ -29,7 +29,7 @@ class MyAddressesPage extends StatelessWidget {
 
   AppBar _buildAppBar(BuildContext context, ThemeData theme, bool isRtl) {
     return AppBar(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: theme.scaffoldBackgroundColor,
       leading: IconButton(
         icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
         onPressed: () => Navigator.pop(context),

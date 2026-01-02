@@ -7,12 +7,14 @@ class PaymentWebView extends StatefulWidget {
   final String paymentUrl;
   final Function(PaymentResult) onPaymentComplete;
   final VoidCallback onCancel;
+  final bool isWalletPayment;
 
   const PaymentWebView({
     super.key,
     required this.paymentUrl,
     required this.onPaymentComplete,
     required this.onCancel,
+    this.isWalletPayment = false,
   });
 
   @override
@@ -22,6 +24,7 @@ class PaymentWebView extends StatefulWidget {
 class _PaymentWebViewState extends State<PaymentWebView> {
   late final WebViewController _controller;
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -35,22 +38,35 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (url) {
-            setState(() => _isLoading = true);
+            setState(() {
+              _isLoading = true;
+              _errorMessage = null;
+            });
           },
           onPageFinished: (url) {
             setState(() => _isLoading = false);
           },
+          onWebResourceError: (error) {
+            setState(() {
+              _isLoading = false;
+              _errorMessage = error.description;
+            });
+          },
           onNavigationRequest: (request) {
             final url = request.url;
 
+            // Check for success indicators
             if (url.contains('success=true') ||
-                url.contains('txn_response_code=APPROVED')) {
+                url.contains('txn_response_code=APPROVED') ||
+                url.contains('pending=false&success=true')) {
               _handleSuccess(url);
               return NavigationDecision.prevent;
             }
 
+            // Check for failure indicators
             if (url.contains('success=false') ||
-                url.contains('txn_response_code=DECLINED')) {
+                url.contains('txn_response_code=DECLINED') ||
+                url.contains('pending=false&success=false')) {
               _handleFailure(url);
               return NavigationDecision.prevent;
             }
@@ -86,6 +102,11 @@ class _PaymentWebViewState extends State<PaymentWebView> {
     final theme = Theme.of(context);
     final isRtl = context.locale.languageCode == 'ar';
 
+    // Dynamic title based on payment type
+    final title = widget.isWalletPayment
+        ? (isRtl ? 'الدفع بالمحفظة' : 'Wallet Payment')
+        : (isRtl ? 'الدفع بالبطاقة' : 'Card Payment');
+
     return SafeArea(
       child: Column(
         children: [
@@ -93,7 +114,9 @@ class _PaymentWebViewState extends State<PaymentWebView> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary,
+              color: widget.isWalletPayment
+                  ? Colors.purple.shade600
+                  : theme.colorScheme.primary,
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(16)),
             ),
@@ -109,7 +132,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                 ),
                 Expanded(
                   child: Text(
-                    isRtl ? 'الدفع بالبطاقة' : 'Card Payment',
+                    title,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -146,7 +169,9 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           CircularProgressIndicator(
-                            color: theme.colorScheme.primary,
+                            color: widget.isWalletPayment
+                                ? Colors.purple.shade600
+                                : theme.colorScheme.primary,
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -155,6 +180,63 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                               color: theme.colorScheme.onSurface
                                   .withValues(alpha: 0.6),
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (_errorMessage != null && !_isLoading)
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(16),
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Colors.red.shade400,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            isRtl
+                                ? 'فشل في تحميل صفحة الدفع'
+                                : 'Failed to load payment page',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 32),
+                            child: Text(
+                              _errorMessage!,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _errorMessage = null;
+                                _isLoading = true;
+                              });
+                              _controller
+                                  .loadRequest(Uri.parse(widget.paymentUrl));
+                            },
+                            child: Text(isRtl ? 'إعادة المحاولة' : 'Retry'),
                           ),
                         ],
                       ),

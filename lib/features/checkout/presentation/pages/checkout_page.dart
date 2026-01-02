@@ -10,6 +10,7 @@ import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../coupons/presentation/cubit/coupon_cubit.dart';
+import '../../../orders/domain/entities/order_entity.dart';
 import '../../../orders/presentation/cubit/orders_cubit.dart';
 import '../../../orders/presentation/cubit/orders_state.dart';
 import '../../../shipping/presentation/cubit/shipping_cubit.dart';
@@ -205,10 +206,12 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
   bool _showPaymentWebView = false;
   String? _paymentUrl;
   bool _isLoadingPayment = false;
+  bool _isWalletPayment = false;
 
   // Store order data for card/wallet payment flow
   double? _pendingTotalAmount;
   String? _walletPhoneNumber;
+  String? _pendingOrderId;
 
   @override
   void initState() {
@@ -313,8 +316,12 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       String orderId, PaymentMethodType paymentMethod) async {
     if (_pendingTotalAmount == null) return;
 
+    // Store order ID for status update if payment fails
+    _pendingOrderId = orderId;
+
     setState(() {
       _isLoadingPayment = true;
+      _isWalletPayment = paymentMethod == PaymentMethodType.wallet;
     });
 
     String? paymentUrl;
@@ -344,6 +351,7 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
     if (paymentUrl == null) {
       setState(() {
         _isLoadingPayment = false;
+        _isWalletPayment = false;
       });
       Tost.showCustomToast(
         context,
@@ -362,11 +370,15 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
   }
 
   void _handlePaymentComplete(PaymentResult result) {
+    final orderId = _pendingOrderId;
+
     setState(() {
       _showPaymentWebView = false;
       _paymentUrl = null;
       _pendingTotalAmount = null;
       _walletPhoneNumber = null;
+      _isWalletPayment = false;
+      _pendingOrderId = null;
     });
 
     if (result.success) {
@@ -380,13 +392,21 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       );
       context.go('/orders');
     } else if (result.message != 'Payment cancelled by user') {
-      // Payment failed - order remains with pending status
+      // Payment failed - update order status to payment_failed
+      if (orderId != null) {
+        context.read<OrdersCubit>().updateOrderStatus(
+              orderId,
+              OrderStatus.paymentFailed,
+            );
+      }
       Tost.showCustomToast(
         context,
         result.message ?? (widget.isRtl ? 'فشل الدفع' : 'Payment failed'),
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
+      // Navigate to orders page to show failed order
+      context.go('/orders');
     }
   }
 
@@ -396,6 +416,8 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       _paymentUrl = null;
       _pendingTotalAmount = null;
       _walletPhoneNumber = null;
+      _isWalletPayment = false;
+      _pendingOrderId = null;
     });
 
     // Order remains with pending status - user can retry payment later
@@ -462,6 +484,7 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
                   paymentUrl: _paymentUrl!,
                   onPaymentComplete: _handlePaymentComplete,
                   onCancel: _handlePaymentCancel,
+                  isWalletPayment: _isWalletPayment,
                 )
               : Stack(
                   children: [

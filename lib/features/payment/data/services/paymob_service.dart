@@ -284,8 +284,13 @@ class PaymobService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // Return redirect URL for wallet payment
-        return data['redirect_url'] ?? data['iframe_redirection_url'];
+        // Wallet payment returns redirect_url for the wallet app
+        // This URL opens the wallet provider's payment page
+        final redirectUrl = data['redirect_url'] as String?;
+        final iframeUrl = data['iframe_redirection_url'] as String?;
+
+        // Prefer redirect_url for wallet payments
+        return redirectUrl ?? iframeUrl;
       }
     } catch (_) {}
     return null;

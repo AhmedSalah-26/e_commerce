@@ -75,8 +75,8 @@ mixin MerchantOrdersMixin {
               return true;
             }
 
-            // Card payment - only show if paid
-            if (paymentMethod == 'card') {
+            // Card or Wallet payment - only show if paid
+            if (paymentMethod == 'card' || paymentMethod == 'wallet') {
               return paymentStatus == 'paid';
             }
 
@@ -127,8 +127,8 @@ mixin MerchantOrdersMixin {
               return true;
             }
 
-            // Card payment - only show if paid
-            if (paymentMethod == 'card') {
+            // Card or Wallet payment - only show if paid
+            if (paymentMethod == 'card' || paymentMethod == 'wallet') {
               return paymentStatus == 'paid';
             }
 

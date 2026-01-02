@@ -484,6 +484,7 @@
   "save_changes": "Save Changes",
   "required_field": "This field is required",
   "card_payment": "Card Payment",
+  "wallet_payment": "Wallet Payment",
   "payment_paid": "Paid",
   "payment_pending": "Pending Payment",
   "payment_failed": "Payment Failed",

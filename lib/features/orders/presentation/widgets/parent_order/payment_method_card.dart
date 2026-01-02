@@ -11,9 +11,11 @@ class PaymentMethodCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final paymentMethod = parentOrder.paymentMethod ?? 'cash_on_delivery';
-    // For card payments, default status should be 'pending', not 'cash_on_delivery'
+    // For card/wallet payments, default status should be 'pending', not 'cash_on_delivery'
+    final isOnlinePayment =
+        paymentMethod == 'card' || paymentMethod == 'wallet';
     final paymentStatus = parentOrder.paymentStatus ??
-        (paymentMethod == 'card' ? 'pending' : 'cash_on_delivery');
+        (isOnlinePayment ? 'pending' : 'cash_on_delivery');
 
     IconData paymentIcon;
     String paymentLabel;
@@ -33,7 +35,7 @@ class PaymentMethodCard extends StatelessWidget {
         break;
       case 'wallet':
         paymentIcon = Icons.account_balance_wallet;
-        paymentLabel = 'wallet'.tr();
+        paymentLabel = 'wallet_payment'.tr();
         iconColor = Colors.purple.shade600;
         break;
       default:
@@ -114,7 +116,7 @@ class PaymentMethodCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    if (paymentMethod == 'card') ...[
+                    if (isOnlinePayment) ...[
                       const SizedBox(height: 4),
                       Row(
                         children: [

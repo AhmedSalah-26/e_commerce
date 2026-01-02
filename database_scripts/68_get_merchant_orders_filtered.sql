@@ -3,7 +3,7 @@ DROP FUNCTION IF EXISTS get_merchant_orders_filtered(UUID, TEXT, INT, INT);
 DROP FUNCTION IF EXISTS get_merchant_orders_count_filtered(UUID);
 
 -- Function to get merchant orders filtered by payment status
--- Only returns: cash_on_delivery OR card payments that are paid
+-- Only returns: cash_on_delivery OR (card/wallet payments that are paid)
 CREATE OR REPLACE FUNCTION get_merchant_orders_filtered(
   p_merchant_id UUID,
   p_status TEXT DEFAULT NULL,
@@ -19,12 +19,13 @@ BEGIN
   SELECT o.*
   FROM orders o
   WHERE o.merchant_id = p_merchant_id
-    -- Filter: show only cash_on_delivery OR paid card payments
+    -- Filter: show only cash_on_delivery OR paid card/wallet payments
     AND (
       o.payment_method IS NULL 
       OR o.payment_method = 'cash_on_delivery'
       OR o.payment_method = 'pending'
       OR (o.payment_method = 'card' AND o.payment_status = 'paid')
+      OR (o.payment_method = 'wallet' AND o.payment_status = 'paid')
     )
     -- Optional status filter
     AND (p_status IS NULL OR o.status = p_status)
@@ -65,6 +66,7 @@ BEGIN
       OR o.payment_method = 'cash_on_delivery'
       OR o.payment_method = 'pending'
       OR (o.payment_method = 'card' AND o.payment_status = 'paid')
+      OR (o.payment_method = 'wallet' AND o.payment_status = 'paid')
     );
 END;
 $$;

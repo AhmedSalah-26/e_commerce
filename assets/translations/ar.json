@@ -516,6 +516,7 @@
   "save_changes": "حفظ التغييرات",
   "required_field": "هذا الحقل مطلوب",
   "card_payment": "الدفع بالبطاقة",
+  "wallet_payment": "الدفع بالمحفظة",
   "payment_paid": "تم الدفع",
   "payment_pending": "في انتظار الدفع",
   "payment_failed": "فشل الدفع",

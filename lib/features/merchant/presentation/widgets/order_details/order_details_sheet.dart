@@ -193,21 +193,22 @@ class OrderDetailsSheet extends StatelessWidget {
       case 'credit_card':
         return 'credit_card'.tr();
       case 'wallet':
-        return 'wallet'.tr();
+        return 'wallet_payment'.tr();
       default:
         return 'cash_on_delivery'.tr();
     }
   }
 
   Widget _buildPaymentStatusRow(ThemeData theme) {
-    final isCardPayment = order.paymentMethod == 'card';
+    final isOnlinePayment =
+        order.paymentMethod == 'card' || order.paymentMethod == 'wallet';
     final paymentStatus = order.paymentStatus;
 
     String statusText;
     Color statusColor;
     IconData statusIcon;
 
-    if (isCardPayment) {
+    if (isOnlinePayment) {
       switch (paymentStatus) {
         case 'paid':
           statusText = isRtl ? 'تم الدفع ✓' : 'Paid ✓';

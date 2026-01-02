@@ -403,6 +403,9 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       _pendingOrderId = null;
     });
 
+    // Reload cart to reflect changes (items were removed when order was created)
+    _reloadCart();
+
     if (result.success) {
       // Payment successful - webhook will update order status
       // Navigate to order confirmation
@@ -442,6 +445,9 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       _pendingOrderId = null;
     });
 
+    // Reload cart to reflect changes (items were removed when order was created)
+    _reloadCart();
+
     // Order remains with pending status - user can retry payment later
     Tost.showCustomToast(
       context,
@@ -451,6 +457,13 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       backgroundColor: Colors.orange,
       textColor: Colors.white,
     );
+  }
+
+  void _reloadCart() {
+    final authState = context.read<AuthCubit>().state;
+    if (authState is AuthAuthenticated) {
+      context.read<CartCubit>().loadCart(authState.user.id);
+    }
   }
 
   void _handleOrderState(BuildContext context, OrdersState state) {

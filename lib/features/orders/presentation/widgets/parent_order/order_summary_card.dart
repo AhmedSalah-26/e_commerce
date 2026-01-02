@@ -95,6 +95,16 @@ class _OverallStatusBadge extends StatelessWidget {
         textColor = Colors.red.shade700;
         displayText = 'partially_cancelled'.tr();
         break;
+      case 'cancelled':
+        bgColor = Colors.red.shade100;
+        textColor = Colors.red.shade700;
+        displayText = 'status_cancelled'.tr();
+        break;
+      case 'payment_failed':
+        bgColor = Colors.red.shade100;
+        textColor = Colors.red.shade700;
+        displayText = 'status_payment_failed'.tr();
+        break;
       default:
         bgColor = Colors.grey.shade100;
         textColor = Colors.grey.shade700;

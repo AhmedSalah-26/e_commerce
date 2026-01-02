@@ -15,6 +15,7 @@ const _statusMap = <String, (Color, IconData, String)>{
   'processing': (Colors.orange, Icons.sync, 'processing'),
   'partially_cancelled': (Colors.red, Icons.warning, 'partially_cancelled'),
   'cancelled': (Colors.red, Icons.cancel, 'status_cancelled'),
+  'payment_failed': (Colors.red, Icons.payment, 'status_payment_failed'),
 };
 
 (Color, IconData, String) _getStatus(String s) =>

@@ -73,9 +73,20 @@ class ParentOrderEntity extends Equatable {
     return counts;
   }
 
+  /// Check if any sub-order has payment failed
+  bool get hasPaymentFailed =>
+      subOrders.any((o) => o.status == OrderStatus.paymentFailed);
+
+  /// Check if all sub-orders have payment failed
+  bool get isFullyPaymentFailed =>
+      subOrders.isNotEmpty &&
+      subOrders.every((o) => o.status == OrderStatus.paymentFailed);
+
   /// Get overall status based on sub-orders
   String get overallStatus {
     if (subOrders.isEmpty) return 'pending';
+    // Check payment failed first
+    if (isFullyPaymentFailed) return 'payment_failed';
     if (isFullyDelivered) return 'delivered';
     if (isFullyCancelled) return 'cancelled';
     if (hasAnyCancelled &&
@@ -90,6 +101,8 @@ class ParentOrderEntity extends Equatable {
     if (subOrders.any((o) => o.status == OrderStatus.processing)) {
       return 'processing';
     }
+    // If any has payment failed but not all, still show pending
+    if (hasPaymentFailed) return 'payment_failed';
     return 'pending';
   }
 

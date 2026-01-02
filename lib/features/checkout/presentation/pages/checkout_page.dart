@@ -19,6 +19,7 @@ import '../../domain/checkout_validator.dart';
 import '../utils/order_state_handler.dart';
 import '../widgets/checkout_form_content.dart';
 import '../../../payment/presentation/widgets/payment_webview.dart';
+import '../../../payment/presentation/widgets/wallet_phone_dialog.dart';
 import '../../../payment/data/services/paymob_service.dart';
 import '../../../payment/domain/entities/payment_result.dart';
 import '../../../payment/domain/entities/payment_method.dart';
@@ -273,21 +274,18 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       return;
     }
 
-    // For wallet payment: need phone number
+    // For wallet payment: show dialog to get wallet phone number
     if (selectedMethod == PaymentMethodType.wallet) {
-      final phoneNumber = widget.phoneController.text.trim();
-      if (phoneNumber.isEmpty) {
-        Tost.showCustomToast(
-          context,
-          widget.isRtl
-              ? 'يرجى إدخال رقم الهاتف للمحفظة'
-              : 'Please enter phone number for wallet',
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-        );
+      final walletPhone = await WalletPhoneDialog.show(
+        context,
+        initialPhone: widget.phoneController.text.trim(),
+      );
+
+      if (walletPhone == null || walletPhone.isEmpty) {
+        // User cancelled
         return;
       }
-      _walletPhoneNumber = phoneNumber;
+      _walletPhoneNumber = walletPhone;
     }
 
     // For card/wallet payment: store total amount for payment page
@@ -348,7 +346,7 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
 
     if (!mounted) return;
 
-    if (paymentUrl == null) {
+    if (paymentUrl == null || paymentUrl.isEmpty) {
       setState(() {
         _isLoadingPayment = false;
         _isWalletPayment = false;
@@ -356,6 +354,30 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       Tost.showCustomToast(
         context,
         widget.isRtl ? 'فشل في تحميل صفحة الدفع' : 'Failed to load payment',
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    // Check for wallet payment error
+    if (paymentUrl.startsWith('ERROR:')) {
+      setState(() {
+        _isLoadingPayment = false;
+        _isWalletPayment = false;
+      });
+      final errorMessage = paymentUrl.substring(6);
+      String displayMessage;
+      if (errorMessage.contains('not registered')) {
+        displayMessage = widget.isRtl
+            ? 'رقم الهاتف غير مسجل في أي محفظة إلكترونية'
+            : 'Phone number is not registered with any wallet';
+      } else {
+        displayMessage = errorMessage;
+      }
+      Tost.showCustomToast(
+        context,
+        displayMessage,
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );

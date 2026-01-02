@@ -178,12 +178,32 @@ class PaymobService {
     String? customerName,
     String? customerEmail,
   }) async {
-    if (!_isInitialized || _walletIntegrationId == 0) return null;
+    if (!_isInitialized || _walletIntegrationId == 0) {
+      print('❌ Wallet payment not initialized or integration ID is 0');
+      return null;
+    }
+
+    // Format phone number - remove any non-digit characters and ensure it starts with 01
+    String formattedPhone = walletPhoneNumber.replaceAll(RegExp(r'[^\d]'), '');
+    if (formattedPhone.startsWith('+20')) {
+      formattedPhone = formattedPhone.substring(3);
+    } else if (formattedPhone.startsWith('20')) {
+      formattedPhone = formattedPhone.substring(2);
+    }
+    // Ensure it starts with 01 (Egyptian mobile format)
+    if (!formattedPhone.startsWith('01')) {
+      formattedPhone = '01$formattedPhone';
+    }
+
+    print('🔵 Wallet Phone Number (formatted): $formattedPhone');
 
     try {
       // Step 1: Get auth token
       final authToken = await _getAuthToken();
-      if (authToken == null) return null;
+      if (authToken == null) {
+        print('❌ Failed to get auth token');
+        return null;
+      }
 
       // Step 2: Create order
       final amountCents = (amount * 100).toInt();
@@ -193,7 +213,12 @@ class PaymobService {
         currency,
         merchantOrderId: orderId,
       );
-      if (paymobOrderId == null) return null;
+      if (paymobOrderId == null) {
+        print('❌ Failed to create Paymob order');
+        return null;
+      }
+
+      print('🔵 Paymob Order ID: $paymobOrderId');
 
       // Step 3: Get payment key for wallet
       final paymentKey = await _getWalletPaymentKey(
@@ -201,17 +226,23 @@ class PaymobService {
         orderId: paymobOrderId,
         amountCents: amountCents,
         currency: currency,
-        walletPhoneNumber: walletPhoneNumber,
+        walletPhoneNumber: formattedPhone,
         customerName: customerName,
         customerEmail: customerEmail,
       );
-      if (paymentKey == null) return null;
+      if (paymentKey == null) {
+        print('❌ Failed to get wallet payment key');
+        return null;
+      }
+
+      print('🔵 Got wallet payment key');
 
       // Step 4: Request wallet payment
       final redirectUrl =
-          await _requestWalletPayment(paymentKey, walletPhoneNumber);
+          await _requestWalletPayment(paymentKey, formattedPhone);
       return redirectUrl;
-    } catch (_) {
+    } catch (e) {
+      print('❌ Wallet payment exception: $e');
       return null;
     }
   }
@@ -282,18 +313,46 @@ class PaymobService {
         }),
       );
 
+      print('🔵 Wallet Payment Response Status: ${response.statusCode}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // Wallet payment returns redirect_url for the wallet app
-        // This URL opens the wallet provider's payment page
+
+        // Check for error message first
+        final errorMessage = data['data.message'] as String?;
+        final success = data['success'] as bool? ?? false;
+
+        if (!success && errorMessage != null) {
+          print('❌ Wallet Payment Failed: $errorMessage');
+          // Return error message prefixed with ERROR: so caller can handle it
+          return 'ERROR:$errorMessage';
+        }
+
+        // Get redirect URL
         final redirectUrl = data['redirect_url'] as String?;
         final iframeUrl = data['iframe_redirection_url'] as String?;
+        final redirectionUrl = data['redirection_url'] as String?;
 
-        // Prefer redirect_url for wallet payments
-        return redirectUrl ?? iframeUrl;
+        print('🔵 redirect_url: $redirectUrl');
+        print('🔵 iframe_redirection_url: $iframeUrl');
+
+        // Return the first valid URL
+        final url = redirectUrl ?? iframeUrl ?? redirectionUrl;
+
+        if (url != null && url.isNotEmpty && !url.contains('success=false')) {
+          return url;
+        }
+
+        print('❌ No valid redirect URL found');
+        return null;
+      } else {
+        print('❌ Wallet Payment Error: ${response.body}');
+        return null;
       }
-    } catch (_) {}
-    return null;
+    } catch (e) {
+      print('❌ Wallet Payment Exception: $e');
+      return null;
+    }
   }
 
   /// Check if wallet payment is available

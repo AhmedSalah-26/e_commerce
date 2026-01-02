@@ -38,15 +38,18 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (url) {
+            debugPrint('🔵 WebView Page Started: $url');
             setState(() {
               _isLoading = true;
               _errorMessage = null;
             });
           },
           onPageFinished: (url) {
+            debugPrint('🔵 WebView Page Finished: $url');
             setState(() => _isLoading = false);
           },
           onWebResourceError: (error) {
+            debugPrint('❌ WebView Error: ${error.description}');
             setState(() {
               _isLoading = false;
               _errorMessage = error.description;
@@ -54,6 +57,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
           },
           onNavigationRequest: (request) {
             final url = request.url;
+            debugPrint('🔵 WebView Navigation: $url');
 
             // Check for success indicators
             if (url.contains('success=true') ||
@@ -71,11 +75,20 @@ class _PaymentWebViewState extends State<PaymentWebView> {
               return NavigationDecision.prevent;
             }
 
+            // For wallet payments, allow navigation to wallet provider pages
+            // These are external URLs that handle the actual payment
+            if (widget.isWalletPayment) {
+              // Allow all navigations for wallet - the wallet provider will redirect back
+              return NavigationDecision.navigate;
+            }
+
             return NavigationDecision.navigate;
           },
         ),
       )
       ..loadRequest(Uri.parse(widget.paymentUrl));
+
+    debugPrint('🔵 Loading payment URL: ${widget.paymentUrl}');
   }
 
   void _handleSuccess(String url) {
@@ -114,9 +127,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: widget.isWalletPayment
-                  ? Colors.purple.shade600
-                  : theme.colorScheme.primary,
+              color: theme.colorScheme.primary,
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(16)),
             ),
@@ -169,9 +180,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           CircularProgressIndicator(
-                            color: widget.isWalletPayment
-                                ? Colors.purple.shade600
-                                : theme.colorScheme.primary,
+                            color: theme.colorScheme.primary,
                           ),
                           const SizedBox(height: 16),
                           Text(

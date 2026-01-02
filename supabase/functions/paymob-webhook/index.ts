@@ -26,6 +26,7 @@ serve(async (req) => {
     const amountCents = obj.amount_cents || 0
 
     const paymentStatus = success ? 'paid' : 'failed'
+    const orderStatus = success ? 'pending' : 'payment_failed'
 
     console.log(`Parent Order: ${parentOrderId}, Success: ${success}, Status: ${paymentStatus}`)
 
@@ -52,10 +53,12 @@ serve(async (req) => {
       }
 
       // Update all child orders with this parent_order_id
+      // Also update order status based on payment result
       const { error: ordersError } = await supabase
         .from('orders')
         .update({
           payment_status: paymentStatus,
+          status: orderStatus,
           payment_transaction_id: transactionId,
           payment_amount: amountCents / 100,
           updated_at: new Date().toISOString()
@@ -66,7 +69,7 @@ serve(async (req) => {
         console.error('Error updating orders:', ordersError)
       }
 
-      console.log(`Updated payment status to ${paymentStatus} for parent order ${parentOrderId}`)
+      console.log(`Updated payment status to ${paymentStatus} and order status to ${orderStatus} for parent order ${parentOrderId}`)
     }
 
     return new Response(

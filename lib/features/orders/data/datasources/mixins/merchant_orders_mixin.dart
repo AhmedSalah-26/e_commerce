@@ -11,10 +11,6 @@ mixin MerchantOrdersMixin {
   String get _orderItemsWithProduct =>
       '*, products(name_ar, name_en, description_ar, description_en, images)';
 
-  /// Orders query with governorate JOIN
-  String get _ordersWithGovernorate =>
-      '*, governorates:governorate_id(id, name_ar, name_en)';
-
   /// Fetch parent order data for coupon/payment info
   Future<Map<String, dynamic>?> _fetchParentOrderData(
       String? parentOrderId) async {
@@ -26,7 +22,8 @@ mixin MerchantOrdersMixin {
       logger.d('Fetching parent order data for: $parentOrderId');
       final response = await client
           .from('parent_orders')
-          .select('payment_method, coupon_code, coupon_discount, subtotal')
+          .select(
+              'payment_method, payment_status, coupon_code, coupon_discount, subtotal')
           .eq('id', parentOrderId)
           .maybeSingle();
       logger.d('Parent order data: $response');
@@ -35,6 +32,27 @@ mixin MerchantOrdersMixin {
       logger.w('Could not fetch parent order data: $e');
       return null;
     }
+  }
+
+  /// Check if order should be visible to merchant
+  /// Only show: cash_on_delivery OR card payments that are paid
+  bool _shouldShowOrderToMerchant(Map<String, dynamic>? parentOrder) {
+    if (parentOrder == null) return true; // No parent = show order
+
+    final paymentMethod = parentOrder['payment_method'] as String?;
+    final paymentStatus = parentOrder['payment_status'] as String?;
+
+    // Cash on delivery - always show
+    if (paymentMethod == null || paymentMethod == 'cash_on_delivery') {
+      return true;
+    }
+
+    // Card payment - only show if paid
+    if (paymentMethod == 'card') {
+      return paymentStatus == 'paid';
+    }
+
+    return true;
   }
 
   /// Calculate merchant's share of coupon discount
@@ -73,15 +91,19 @@ mixin MerchantOrdersMixin {
 
   Future<List<OrderModel>> getOrdersByMerchant(String merchantId) async {
     try {
-      logger.i('📦 Getting orders for merchant: $merchantId');
+      logger.i('📦 Getting filtered orders for merchant: $merchantId');
 
-      final ordersResponse = await client
-          .from('orders')
-          .select(_ordersWithGovernorate)
-          .eq('merchant_id', merchantId)
-          .order('created_at', ascending: false);
+      // Use database function for filtered query - only returns valid payment orders
+      final ordersResponse = await client.rpc(
+        'get_merchant_orders_filtered',
+        params: {
+          'p_merchant_id': merchantId,
+          'p_limit': 100,
+          'p_offset': 0,
+        },
+      );
 
-      logger.d('Found ${(ordersResponse as List).length} orders');
+      logger.d('Found ${(ordersResponse as List).length} filtered orders');
 
       final orders = <OrderModel>[];
 
@@ -91,18 +113,12 @@ mixin MerchantOrdersMixin {
             .select(_orderItemsWithProduct)
             .eq('order_id', order['id']);
 
-        // Fetch parent order data for payment/coupon info
-        final parentOrderData =
-            await _fetchParentOrderData(order['parent_order_id'] as String?);
-        final discountInfo = _calculateMerchantDiscount(order, parentOrderData);
-
         logger.d(
             'Order ${order['id']} has ${(itemsResponse as List).length} items');
 
         orders.add(OrderModel.fromJson({
           ...order,
           'order_items': itemsResponse,
-          ...discountInfo,
         }));
       }
 
@@ -116,31 +132,48 @@ mixin MerchantOrdersMixin {
   }
 
   Stream<List<OrderModel>> watchMerchantOrders(String merchantId) {
-    logger.i('👀 Watching orders for merchant: $merchantId');
+    logger.i('👀 Watching filtered orders for merchant: $merchantId');
+
+    // Filter directly in database: cash_on_delivery OR (card AND paid)
     return client
         .from('orders')
         .stream(primaryKey: ['id'])
         .eq('merchant_id', merchantId)
         .order('created_at', ascending: false)
         .asyncMap((data) async {
-          logger.d('📦 Real-time update: ${data.length} orders');
+          // Filter: only show cash_on_delivery or paid card payments
+          final filteredData = data.where((order) {
+            final paymentMethod = order['payment_method'] as String?;
+            final paymentStatus = order['payment_status'] as String?;
+
+            // Cash on delivery - always show
+            if (paymentMethod == null ||
+                paymentMethod == 'cash_on_delivery' ||
+                paymentMethod == 'pending') {
+              return true;
+            }
+
+            // Card payment - only show if paid
+            if (paymentMethod == 'card') {
+              return paymentStatus == 'paid';
+            }
+
+            return true;
+          }).toList();
+
+          logger.d(
+              '📦 Real-time update: ${filteredData.length}/${data.length} orders after filter');
+
           final orders = <OrderModel>[];
-          for (final order in data) {
+          for (final order in filteredData) {
             final itemsResponse = await client
                 .from('order_items')
                 .select(_orderItemsWithProduct)
                 .eq('order_id', order['id']);
 
-            // Fetch parent order data for payment/coupon info
-            final parentOrderData = await _fetchParentOrderData(
-                order['parent_order_id'] as String?);
-            final discountInfo =
-                _calculateMerchantDiscount(order, parentOrderData);
-
             orders.add(OrderModel.fromJson({
               ...order,
               'order_items': itemsResponse,
-              ...discountInfo,
             }));
           }
           return orders;
@@ -156,10 +189,33 @@ mixin MerchantOrdersMixin {
         .eq('merchant_id', merchantId)
         .order('created_at', ascending: false)
         .asyncMap((data) async {
-          final filteredData =
-              data.where((order) => order['status'] == status).toList();
-          logger
-              .d('📦 Real-time update: ${filteredData.length} $status orders');
+          // Filter by status AND payment validity
+          final filteredData = data.where((order) {
+            // First check status
+            if (order['status'] != status) return false;
+
+            // Then check payment
+            final paymentMethod = order['payment_method'] as String?;
+            final paymentStatus = order['payment_status'] as String?;
+
+            // Cash on delivery - always show
+            if (paymentMethod == null ||
+                paymentMethod == 'cash_on_delivery' ||
+                paymentMethod == 'pending') {
+              return true;
+            }
+
+            // Card payment - only show if paid
+            if (paymentMethod == 'card') {
+              return paymentStatus == 'paid';
+            }
+
+            return true;
+          }).toList();
+
+          logger.d(
+              '📦 Real-time update: ${filteredData.length} $status orders after filter');
+
           final orders = <OrderModel>[];
           for (final order in filteredData) {
             final itemsResponse = await client
@@ -167,16 +223,9 @@ mixin MerchantOrdersMixin {
                 .select(_orderItemsWithProduct)
                 .eq('order_id', order['id']);
 
-            // Fetch parent order data for payment/coupon info
-            final parentOrderData = await _fetchParentOrderData(
-                order['parent_order_id'] as String?);
-            final discountInfo =
-                _calculateMerchantDiscount(order, parentOrderData);
-
             orders.add(OrderModel.fromJson({
               ...order,
               'order_items': itemsResponse,
-              ...discountInfo,
             }));
           }
           return orders;
@@ -185,27 +234,21 @@ mixin MerchantOrdersMixin {
 
   Future<Map<String, int>> getMerchantOrdersCount(String merchantId) async {
     try {
-      final today = DateTime.now();
-      final startOfDay = DateTime(today.year, today.month, today.day);
+      // Use database function for filtered count
+      final response = await client.rpc(
+        'get_merchant_orders_count_filtered',
+        params: {'p_merchant_id': merchantId},
+      );
 
-      final allPendingResponse = await client
-          .from('orders')
-          .select()
-          .eq('merchant_id', merchantId)
-          .eq('status', 'pending');
+      if (response != null && (response as List).isNotEmpty) {
+        final data = response[0];
+        return {
+          'todayPending': (data['total_pending'] as num?)?.toInt() ?? 0,
+          'todayDelivered': (data['today_delivered'] as num?)?.toInt() ?? 0,
+        };
+      }
 
-      // Use updated_at for delivered orders (when status changed to delivered)
-      final todayDeliveredResponse = await client
-          .from('orders')
-          .select()
-          .eq('merchant_id', merchantId)
-          .eq('status', 'delivered')
-          .gte('updated_at', startOfDay.toIso8601String());
-
-      return {
-        'todayPending': (allPendingResponse as List).length,
-        'todayDelivered': (todayDeliveredResponse as List).length,
-      };
+      return {'todayPending': 0, 'todayDelivered': 0};
     } catch (e) {
       logger.e('❌ Error getting order counts', error: e);
       return {'todayPending': 0, 'todayDelivered': 0};
@@ -215,19 +258,21 @@ mixin MerchantOrdersMixin {
   Future<List<OrderModel>> getMerchantOrdersByStatusPaginated(
       String merchantId, String status, int page, int pageSize) async {
     try {
-      final from = page * pageSize;
-      final to = from + pageSize - 1;
+      final offset = page * pageSize;
 
       logger
           .i('📦 Getting $status orders page $page for merchant: $merchantId');
 
-      final ordersResponse = await client
-          .from('orders')
-          .select()
-          .eq('merchant_id', merchantId)
-          .eq('status', status)
-          .order('created_at', ascending: false)
-          .range(from, to);
+      // Use database function for filtered query
+      final ordersResponse = await client.rpc(
+        'get_merchant_orders_filtered',
+        params: {
+          'p_merchant_id': merchantId,
+          'p_status': status,
+          'p_limit': pageSize,
+          'p_offset': offset,
+        },
+      );
 
       final orders = <OrderModel>[];
       for (final order in (ordersResponse as List)) {
@@ -236,15 +281,16 @@ mixin MerchantOrdersMixin {
             .select(_orderItemsWithProduct)
             .eq('order_id', order['id']);
 
-        // Fetch parent order data for payment/coupon info
-        final parentOrderData =
-            await _fetchParentOrderData(order['parent_order_id'] as String?);
-        final discountInfo = _calculateMerchantDiscount(order, parentOrderData);
-
         orders.add(OrderModel.fromJson({
           ...order,
           'order_items': itemsResponse,
-          ...discountInfo,
+          'governorates': order['governorate_id'] != null
+              ? {
+                  'id': order['governorate_id'],
+                  'name_ar': order['governorate_name_ar'],
+                  'name_en': order['governorate_name_en'],
+                }
+              : null,
         }));
       }
 

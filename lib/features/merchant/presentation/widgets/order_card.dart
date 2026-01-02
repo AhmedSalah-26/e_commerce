@@ -21,7 +21,9 @@ class OrderCard extends StatelessWidget {
 
     // Payment info
     final isCardPayment = order.paymentMethod == 'card';
-    final isPaid = order.paymentStatus == 'paid';
+    final paymentStatus = order.paymentStatus;
+    final isPaid = paymentStatus == 'paid';
+    final isFailed = paymentStatus == 'failed';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -75,7 +77,9 @@ class OrderCard extends StatelessWidget {
                       color: isCardPayment
                           ? (isPaid
                               ? Colors.green.withValues(alpha: 0.1)
-                              : Colors.orange.withValues(alpha: 0.1))
+                              : isFailed
+                                  ? Colors.red.withValues(alpha: 0.1)
+                                  : Colors.orange.withValues(alpha: 0.1))
                           : Colors.grey.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -84,11 +88,15 @@ class OrderCard extends StatelessWidget {
                       children: [
                         Icon(
                           isCardPayment
-                              ? Icons.credit_card
+                              ? (isFailed ? Icons.cancel : Icons.credit_card)
                               : Icons.payments_outlined,
                           size: 14,
                           color: isCardPayment
-                              ? (isPaid ? Colors.green : Colors.orange)
+                              ? (isPaid
+                                  ? Colors.green
+                                  : isFailed
+                                      ? Colors.red
+                                      : Colors.orange)
                               : Colors.grey.shade600,
                         ),
                         const SizedBox(width: 4),
@@ -96,9 +104,13 @@ class OrderCard extends StatelessWidget {
                           isCardPayment
                               ? (isPaid
                                   ? (isRtl ? 'مدفوع بالبطاقة' : 'Card Paid')
-                                  : (isRtl
-                                      ? 'بطاقة - في انتظار الدفع'
-                                      : 'Card - Pending'))
+                                  : isFailed
+                                      ? (isRtl
+                                          ? 'فشل الدفع ❌'
+                                          : 'Payment Failed ❌')
+                                      : (isRtl
+                                          ? 'بطاقة - في انتظار الدفع'
+                                          : 'Card - Pending'))
                               : (isRtl
                                   ? 'الدفع عند الاستلام'
                                   : 'Cash on Delivery'),
@@ -106,7 +118,11 @@ class OrderCard extends StatelessWidget {
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                             color: isCardPayment
-                                ? (isPaid ? Colors.green : Colors.orange)
+                                ? (isPaid
+                                    ? Colors.green
+                                    : isFailed
+                                        ? Colors.red
+                                        : Colors.orange)
                                 : Colors.grey.shade600,
                           ),
                         ),

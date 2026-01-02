@@ -279,11 +279,6 @@ class MerchantOrderCard extends StatelessWidget {
   }
 
   Widget _buildOrderSummary(ThemeData theme) {
-    // Check if order is paid by card
-    final isCardPayment = order.paymentMethod == 'card';
-    final isPaid = order.paymentStatus == 'paid';
-    final isPrepaid = isCardPayment && isPaid;
-
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -294,56 +289,6 @@ class MerchantOrderCard extends StatelessWidget {
           Divider(height: 16, color: theme.colorScheme.outline),
           _buildSummaryRow('merchant_total'.tr(), order.total, theme,
               isTotal: true),
-          const SizedBox(height: 8),
-          // Amount due to merchant
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: isPrepaid
-                  ? Colors.green.withValues(alpha: 0.1)
-                  : Colors.orange.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      isPrepaid
-                          ? Icons.check_circle
-                          : Icons.account_balance_wallet,
-                      size: 16,
-                      color: isPrepaid ? Colors.green : Colors.orange,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      isRtl ? 'المتبقي للتاجر' : 'Due to Merchant',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isPrepaid
-                            ? Colors.green.shade700
-                            : Colors.orange.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  isPrepaid
-                      ? (isRtl ? 'مدفوع ✓' : 'Paid ✓')
-                      : '${order.total.toStringAsFixed(2)} ${'egp'.tr()}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: isPrepaid
-                        ? Colors.green.shade700
-                        : Colors.orange.shade700,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );

@@ -169,8 +169,6 @@ class OrderDetailsSheet extends StatelessWidget {
           theme,
           isBold: true,
         ),
-        const SizedBox(height: 8),
-        _buildCollectionAmountRow(theme),
         const SizedBox(height: 24),
         if (order.status != OrderStatus.delivered &&
             order.status != OrderStatus.cancelled)
@@ -203,21 +201,33 @@ class OrderDetailsSheet extends StatelessWidget {
 
   Widget _buildPaymentStatusRow(ThemeData theme) {
     final isCardPayment = order.paymentMethod == 'card';
-    final isPaid = order.paymentStatus == 'paid';
+    final paymentStatus = order.paymentStatus;
 
     String statusText;
     Color statusColor;
     IconData statusIcon;
 
     if (isCardPayment) {
-      if (isPaid) {
-        statusText = isRtl ? 'تم الدفع ✓' : 'Paid ✓';
-        statusColor = Colors.green;
-        statusIcon = Icons.check_circle;
-      } else {
-        statusText = isRtl ? 'في انتظار الدفع' : 'Pending Payment';
-        statusColor = Colors.orange;
-        statusIcon = Icons.hourglass_empty;
+      switch (paymentStatus) {
+        case 'paid':
+          statusText = isRtl ? 'تم الدفع ✓' : 'Paid ✓';
+          statusColor = Colors.green;
+          statusIcon = Icons.check_circle;
+          break;
+        case 'failed':
+          statusText = isRtl ? 'فشل الدفع ❌' : 'Payment Failed ❌';
+          statusColor = Colors.red;
+          statusIcon = Icons.cancel;
+          break;
+        case 'refunded':
+          statusText = isRtl ? 'تم الاسترداد' : 'Refunded';
+          statusColor = Colors.blue;
+          statusIcon = Icons.replay;
+          break;
+        default:
+          statusText = isRtl ? 'في انتظار الدفع' : 'Pending Payment';
+          statusColor = Colors.orange;
+          statusIcon = Icons.hourglass_empty;
       }
     } else {
       statusText = isRtl ? 'الدفع عند الاستلام' : 'Cash on Delivery';
@@ -254,65 +264,6 @@ class OrderDetailsSheet extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCollectionAmountRow(ThemeData theme) {
-    final isCardPayment = order.paymentMethod == 'card';
-    final isPaid = order.paymentStatus == 'paid';
-
-    // If paid by card, merchant collects nothing
-    // If COD or card not paid yet, merchant collects full amount
-    final collectAmount = (isCardPayment && isPaid) ? 0.0 : _calculateTotal();
-    final isPrepaid = isCardPayment && isPaid;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isPrepaid
-            ? Colors.green.withValues(alpha: 0.1)
-            : Colors.orange.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isPrepaid ? Colors.green : Colors.orange,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Icon(
-                isPrepaid ? Icons.check_circle : Icons.account_balance_wallet,
-                color: isPrepaid ? Colors.green : Colors.orange,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                isRtl ? 'المبلغ المطلوب تحصيله' : 'Amount to Collect',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isPrepaid
-                      ? Colors.green.shade700
-                      : Colors.orange.shade700,
-                ),
-              ),
-            ],
-          ),
-          Text(
-            isPrepaid
-                ? (isRtl ? 'مدفوع مسبقاً' : 'Prepaid')
-                : '${collectAmount.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: isPrepaid ? Colors.green.shade700 : Colors.orange.shade700,
             ),
           ),
         ],

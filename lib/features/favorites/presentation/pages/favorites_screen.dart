@@ -144,6 +144,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                     onRefresh: () async => _loadFavorites(),
                     child: GridView.builder(
                       controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(

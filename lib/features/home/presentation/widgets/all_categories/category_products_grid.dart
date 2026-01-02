@@ -8,12 +8,14 @@ class CategoryProductsGrid extends StatelessWidget {
   final List<ProductEntity> products;
   final ScrollController scrollController;
   final bool isLoadingMore;
+  final Future<void> Function()? onRefresh;
 
   const CategoryProductsGrid({
     super.key,
     required this.products,
     required this.scrollController,
     this.isLoadingMore = false,
+    this.onRefresh,
   });
 
   static const double _itemHeight = 340.0;
@@ -23,9 +25,7 @@ class CategoryProductsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: () async {
-        // Handled by parent
-      },
+      onRefresh: onRefresh ?? () async {},
       child: CustomScrollView(
         controller: scrollController,
         physics: const AlwaysScrollableScrollPhysics(),

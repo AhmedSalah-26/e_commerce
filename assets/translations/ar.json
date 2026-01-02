@@ -148,6 +148,7 @@
   "order_failed": "فشل في إنشاء الطلب",
   "payment_method": "طريقة الدفع",
   "cash_on_delivery": "الدفع عند الاستلام",
+  "transaction_id": "رقم العملية",
 
   "my_orders": "طلباتي",
   "order_details": "تفاصيل الطلب",

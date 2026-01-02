@@ -27,13 +27,13 @@ class CartCubit extends Cubit<CartState> {
     }
   }
 
-  /// Load cart items for a user (silent reload if data exists)
+  /// Load cart items for a user
   Future<void> loadCart(String userId, {bool silent = false}) async {
     logger.i('🛒 Loading cart for user: $userId (silent: $silent)');
     _currentUserId = userId;
 
-    // Only show loading if no data exists and not silent
-    if (!silent && state is! CartLoaded) {
+    // Always show loading unless silent mode is requested
+    if (!silent) {
       emit(const CartLoading());
     }
 

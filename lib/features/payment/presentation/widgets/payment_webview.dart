@@ -35,6 +35,10 @@ class _PaymentWebViewState extends State<PaymentWebView> {
   void _initWebView() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.white)
+      ..enableZoom(true)
+      ..setUserAgent(
+          'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36')
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (url) {
@@ -46,6 +50,20 @@ class _PaymentWebViewState extends State<PaymentWebView> {
           },
           onPageFinished: (url) {
             debugPrint('🔵 WebView Page Finished: $url');
+            // Inject viewport meta tag for better mobile scaling
+            _controller.runJavaScript('''
+              var meta = document.querySelector('meta[name="viewport"]');
+              if (!meta) {
+                meta = document.createElement('meta');
+                meta.name = 'viewport';
+                document.head.appendChild(meta);
+              }
+              meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes';
+              
+              // Try to make content more mobile-friendly
+              document.body.style.minWidth = 'auto';
+              document.body.style.overflowX = 'hidden';
+            ''');
             setState(() => _isLoading = false);
           },
           onWebResourceError: (error) {

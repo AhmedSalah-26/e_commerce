@@ -123,6 +123,9 @@ class OrderDetailsSheet extends StatelessWidget {
           theme,
         ),
         _buildPaymentStatusRow(theme),
+        if (order.paymentTransactionId != null &&
+            order.paymentTransactionId!.isNotEmpty)
+          _buildTransactionIdRow(theme),
         if (order.hasCoupon)
           _buildDetailRow('coupon_code'.tr(), order.couponCode!, theme),
         const Divider(height: 32),
@@ -265,6 +268,41 @@ class OrderDetailsSheet extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionIdRow(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'transaction_id'.tr(),
+            style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
+          ),
+          const SizedBox(width: 16),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                order.paymentTransactionId!,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'monospace',
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
             ),
           ),
         ],

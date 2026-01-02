@@ -34,7 +34,7 @@ class OrderStateHandler {
   void _handleOrderCreated(BuildContext context, String orderId) {
     _showNotification(context, orderId);
     _showSuccessToast(context);
-    _reloadCart(context);
+    _clearCartImmediately(context);
     context.go('/orders');
   }
 
@@ -42,7 +42,7 @@ class OrderStateHandler {
       BuildContext context, String parentOrderId) {
     _showNotification(context, parentOrderId);
     _showSuccessToast(context);
-    _reloadCart(context);
+    _clearCartImmediately(context);
     context.go('/parent-order/$parentOrderId');
   }
 
@@ -102,11 +102,9 @@ class OrderStateHandler {
     );
   }
 
-  void _reloadCart(BuildContext context) {
-    final authState = context.read<AuthCubit>().state;
-    if (authState is AuthAuthenticated) {
-      context.read<CartCubit>().loadCart(authState.user.id);
-    }
+  void _clearCartImmediately(BuildContext context) {
+    // Clear cart immediately in UI without waiting for database
+    context.read<CartCubit>().clearCart();
   }
 }
 

@@ -110,6 +110,9 @@ class _OrderDetails extends StatelessWidget {
     final userEmail = profile?['email'] ?? '';
     final userId = profile?['id'] ?? order['user_id'] ?? '';
     final address = order['shipping_address'] ?? '';
+    final paymentMethod = order['payment_method'] as String?;
+    final paymentStatus = order['payment_status'] as String?;
+    final paymentTransactionId = order['payment_transaction_id'] as String?;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -144,6 +147,88 @@ class _OrderDetails extends StatelessWidget {
                 label: isRtl ? 'العنوان' : 'Address',
                 value: address,
                 labelWidth: 90),
+          if (paymentMethod != null && paymentMethod.isNotEmpty)
+            CopyableRow(
+                label: isRtl ? 'طريقة الدفع' : 'Payment',
+                value: _getPaymentMethodLabel(paymentMethod),
+                labelWidth: 90),
+          if (paymentStatus != null && paymentStatus.isNotEmpty)
+            _buildPaymentStatusRow(theme, paymentStatus),
+          if (paymentTransactionId != null && paymentTransactionId.isNotEmpty)
+            CopyableRow(
+                label: isRtl ? 'رقم العملية' : 'Transaction',
+                value: paymentTransactionId,
+                labelWidth: 90),
+        ],
+      ),
+    );
+  }
+
+  String _getPaymentMethodLabel(String method) {
+    switch (method) {
+      case 'card':
+        return isRtl ? 'بطاقة' : 'Card';
+      case 'wallet':
+        return isRtl ? 'محفظة' : 'Wallet';
+      case 'cash_on_delivery':
+        return isRtl ? 'عند الاستلام' : 'COD';
+      default:
+        return method;
+    }
+  }
+
+  Widget _buildPaymentStatusRow(ThemeData theme, String status) {
+    Color statusColor;
+    String statusLabel;
+
+    switch (status) {
+      case 'paid':
+        statusColor = Colors.green;
+        statusLabel = isRtl ? 'تم الدفع ✓' : 'Paid ✓';
+        break;
+      case 'failed':
+        statusColor = Colors.red;
+        statusLabel = isRtl ? 'فشل ❌' : 'Failed ❌';
+        break;
+      case 'pending':
+        statusColor = Colors.orange;
+        statusLabel = isRtl ? 'في الانتظار' : 'Pending';
+        break;
+      default:
+        statusColor = Colors.grey;
+        statusLabel = status;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(
+              isRtl ? 'حالة الدفع' : 'Pay Status',
+              style: TextStyle(
+                fontSize: 12,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              statusLabel,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: statusColor,
+              ),
+            ),
+          ),
         ],
       ),
     );

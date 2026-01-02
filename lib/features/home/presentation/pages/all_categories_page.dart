@@ -235,6 +235,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
             products: sortedProducts,
             scrollController: _scrollController,
             isLoadingMore: state.isLoadingMore,
+            onRefresh: () async => _loadProducts(),
           );
         }
 

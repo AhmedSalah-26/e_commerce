@@ -116,6 +116,7 @@
   "order_failed": "Failed to place order",
   "payment_method": "Payment Method",
   "cash_on_delivery": "Cash on Delivery",
+  "transaction_id": "Transaction ID",
 
   "my_orders": "My Orders",
   "order_details": "Order Details",

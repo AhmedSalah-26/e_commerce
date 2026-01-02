@@ -129,6 +129,7 @@
   "status_shipped": "Shipped",
   "status_delivered": "Delivered",
   "status_cancelled": "Cancelled",
+  "status_payment_failed": "Payment Failed",
   "track_order": "Track Order",
 
   "settings_title": "Settings",

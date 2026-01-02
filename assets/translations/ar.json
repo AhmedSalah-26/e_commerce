@@ -161,6 +161,7 @@
   "status_shipped": "تم الشحن",
   "status_delivered": "تم التوصيل",
   "status_cancelled": "ملغي",
+  "status_payment_failed": "فشل الدفع",
   "track_order": "تتبع الطلب",
 
   "settings_title": "الإعدادات",

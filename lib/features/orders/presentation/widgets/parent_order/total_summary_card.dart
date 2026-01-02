@@ -10,8 +10,6 @@ class TotalSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isPaid = parentOrder.paymentStatus == 'paid';
-    final isCardPayment = parentOrder.paymentMethod == 'card';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -39,62 +37,6 @@ class TotalSummaryCard extends StatelessWidget {
           const Divider(height: 24),
           _PriceRow(
               label: 'total'.tr(), amount: parentOrder.total, isTotal: true),
-          // Show amount due for merchant (0 if paid online)
-          if (isCardPayment) ...[
-            const SizedBox(height: 8),
-            _AmountDueRow(isPaid: isPaid, total: parentOrder.total),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _AmountDueRow extends StatelessWidget {
-  final bool isPaid;
-  final double total;
-
-  const _AmountDueRow({required this.isPaid, required this.total});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final amountDue = isPaid ? 0.0 : total;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isPaid ? Colors.green.shade50 : Colors.orange.shade50,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Icon(
-                isPaid ? Icons.check_circle : Icons.hourglass_empty,
-                size: 18,
-                color: isPaid ? Colors.green.shade600 : Colors.orange.shade600,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'amount_due'.tr(),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color:
-                      isPaid ? Colors.green.shade700 : Colors.orange.shade700,
-                ),
-              ),
-            ],
-          ),
-          Text(
-            '${amountDue.toStringAsFixed(2)} ${'egp'.tr()}',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: isPaid ? Colors.green.shade700 : Colors.orange.shade700,
-            ),
-          ),
         ],
       ),
     );

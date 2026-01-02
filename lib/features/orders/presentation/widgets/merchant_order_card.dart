@@ -144,6 +144,7 @@ class MerchantOrderCard extends StatelessWidget {
         textColor = Colors.orange.shade700;
         break;
       case OrderStatus.cancelled:
+      case OrderStatus.paymentFailed:
         bgColor = Colors.red.shade100;
         textColor = Colors.red.shade700;
         break;

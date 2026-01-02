@@ -7,13 +7,24 @@ enum OrderStatus {
   processing,
   shipped,
   delivered,
-  cancelled;
+  cancelled,
+  paymentFailed;
 
   static OrderStatus fromString(String value) {
+    // Handle snake_case from database
+    final normalized = value.toLowerCase().replaceAll('_', '');
+    if (normalized == 'paymentfailed') return OrderStatus.paymentFailed;
+
     return OrderStatus.values.firstWhere(
-      (e) => e.name == value.toLowerCase(),
+      (e) => e.name.toLowerCase() == value.toLowerCase(),
       orElse: () => OrderStatus.pending,
     );
+  }
+
+  /// Convert to database value (snake_case)
+  String get toDbValue {
+    if (this == OrderStatus.paymentFailed) return 'payment_failed';
+    return name;
   }
 
   String get displayName {
@@ -28,6 +39,8 @@ enum OrderStatus {
         return 'status_delivered'.tr();
       case OrderStatus.cancelled:
         return 'status_cancelled'.tr();
+      case OrderStatus.paymentFailed:
+        return 'status_payment_failed'.tr();
     }
   }
 }

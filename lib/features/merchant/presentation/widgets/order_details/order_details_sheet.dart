@@ -358,6 +358,8 @@ class OrderDetailsSheet extends StatelessWidget {
         return isRtl ? 'تم التوصيل' : 'Delivered';
       case OrderStatus.cancelled:
         return isRtl ? 'ملغي' : 'Cancelled';
+      case OrderStatus.paymentFailed:
+        return isRtl ? 'فشل الدفع' : 'Payment Failed';
     }
   }
 }

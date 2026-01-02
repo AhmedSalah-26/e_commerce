@@ -231,6 +231,8 @@ class OrderCard extends StatelessWidget {
         return isRtl ? 'تم التوصيل' : 'Delivered';
       case OrderStatus.cancelled:
         return isRtl ? 'ملغي' : 'Cancelled';
+      case OrderStatus.paymentFailed:
+        return isRtl ? 'فشل الدفع' : 'Payment Failed';
     }
   }
 
@@ -245,6 +247,7 @@ class OrderCard extends StatelessWidget {
       case OrderStatus.delivered:
         return Colors.green;
       case OrderStatus.cancelled:
+      case OrderStatus.paymentFailed:
         return Colors.red;
     }
   }

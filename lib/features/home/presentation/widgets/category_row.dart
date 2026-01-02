@@ -111,7 +111,8 @@ class HorizontalCategoriesView extends StatelessWidget {
   }
 
   void _openCategoriesPage(BuildContext context) {
-    context.push('/all-categories');
+    // Navigate to Categories tab in bottom nav (index 1)
+    StatefulNavigationShell.of(context).goBranch(1);
   }
 }
 

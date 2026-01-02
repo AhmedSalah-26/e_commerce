@@ -3,11 +3,12 @@ import 'package:go_router/go_router.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../../shipping/domain/entities/governorate_entity.dart';
 
-class AddressSelectorSheet extends StatelessWidget {
+class AddressSelectorSheet extends StatefulWidget {
   final List<UserAddress> addresses;
   final List<GovernorateEntity> governorates;
   final bool isRtl;
   final void Function(UserAddress) onSelect;
+  final UserAddress? currentAddress;
 
   const AddressSelectorSheet({
     super.key,
@@ -15,13 +16,28 @@ class AddressSelectorSheet extends StatelessWidget {
     required this.governorates,
     required this.isRtl,
     required this.onSelect,
+    this.currentAddress,
   });
+
+  @override
+  State<AddressSelectorSheet> createState() => _AddressSelectorSheetState();
+}
+
+class _AddressSelectorSheetState extends State<AddressSelectorSheet> {
+  UserAddress? _selectedAddress;
+
+  @override
+  void initState() {
+    super.initState();
+    // Don't pre-select any address - user must choose
+    _selectedAddress = null;
+  }
 
   String _getGovernorateName(String? govId) {
     if (govId == null) return '';
     try {
-      final gov = governorates.firstWhere((g) => g.id == govId);
-      return gov.getName(isRtl ? 'ar' : 'en');
+      final gov = widget.governorates.firstWhere((g) => g.id == govId);
+      return gov.getName(widget.isRtl ? 'ar' : 'en');
     } catch (_) {
       return '';
     }
@@ -52,6 +68,8 @@ class AddressSelectorSheet extends StatelessWidget {
           _buildHeader(context, theme),
           const SizedBox(height: 16),
           _buildAddressList(theme),
+          const SizedBox(height: 16),
+          _buildConfirmButton(context, theme),
           const SizedBox(height: 20),
         ],
       ),
@@ -67,7 +85,7 @@ class AddressSelectorSheet extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              isRtl ? 'اختر عنوان' : 'Select Address',
+              widget.isRtl ? 'اختر عنوان' : 'Select Address',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -91,7 +109,7 @@ class AddressSelectorSheet extends StatelessWidget {
                 size: 20,
               ),
             ),
-            tooltip: isRtl ? 'إضافة عنوان جديد' : 'Add new address',
+            tooltip: widget.isRtl ? 'إضافة عنوان جديد' : 'Add new address',
           ),
         ],
       ),
@@ -103,24 +121,64 @@ class AddressSelectorSheet extends StatelessWidget {
       child: ListView.builder(
         shrinkWrap: true,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: addresses.length,
+        itemCount: widget.addresses.length,
         itemBuilder: (context, index) {
-          final address = addresses[index];
+          final address = widget.addresses[index];
           final govName = _getGovernorateName(address.governorateId);
           final fullDisplay = govName.isNotEmpty
               ? '$govName - ${address.detailedAddress}'
               : address.detailedAddress;
+          final isSelected = _selectedAddress?.id == address.id;
 
           return _AddressItem(
             address: address,
             fullDisplay: fullDisplay,
-            isRtl: isRtl,
+            isRtl: widget.isRtl,
+            isSelected: isSelected,
             onTap: () {
-              Navigator.pop(context);
-              onSelect(address);
+              setState(() {
+                _selectedAddress = address;
+              });
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildConfirmButton(BuildContext context, ThemeData theme) {
+    final isEnabled = _selectedAddress != null;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: isEnabled
+              ? () {
+                  Navigator.pop(context);
+                  widget.onSelect(_selectedAddress!);
+                }
+              : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: theme.colorScheme.primary,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor:
+                theme.colorScheme.primary.withValues(alpha: 0.3),
+            disabledForegroundColor: Colors.white70,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: Text(
+            widget.isRtl ? 'تأكيد العنوان' : 'Confirm Address',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -130,12 +188,14 @@ class _AddressItem extends StatelessWidget {
   final UserAddress address;
   final String fullDisplay;
   final bool isRtl;
+  final bool isSelected;
   final VoidCallback onTap;
 
   const _AddressItem({
     required this.address,
     required this.fullDisplay,
     required this.isRtl,
+    required this.isSelected,
     required this.onTap,
   });
 
@@ -147,10 +207,16 @@ class _AddressItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: address.isDefault
+        side: isSelected
             ? BorderSide(color: theme.colorScheme.primary, width: 2)
-            : BorderSide.none,
+            : address.isDefault
+                ? BorderSide(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    width: 1)
+                : BorderSide.none,
       ),
+      color:
+          isSelected ? theme.colorScheme.primary.withValues(alpha: 0.05) : null,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -158,6 +224,25 @@ class _AddressItem extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
+              // Selection indicator
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.outline,
+                    width: 2,
+                  ),
+                  color: isSelected ? theme.colorScheme.primary : null,
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check, size: 16, color: Colors.white)
+                    : null,
+              ),
+              const SizedBox(width: 12),
               Icon(Icons.location_on_outlined,
                   color: theme.colorScheme.primary),
               const SizedBox(width: 12),
@@ -178,10 +263,6 @@ class _AddressItem extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
               ),
             ],
           ),

@@ -52,6 +52,14 @@ const _statusConfig = <OrderStatus,
     'Order has been cancelled',
     'تم إلغاء الطلب',
   ),
+  OrderStatus.paymentFailed: (
+    Colors.red,
+    Icons.payment,
+    'Payment Failed',
+    'فشل الدفع',
+    'Payment was not completed',
+    'لم يتم إكمال الدفع',
+  ),
 };
 
 class OrderStatusCard extends StatelessWidget {

@@ -192,6 +192,10 @@ class OrderItemCard extends StatelessWidget {
         color = Colors.red;
         icon = Icons.cancel;
         break;
+      case OrderStatus.paymentFailed:
+        color = Colors.red;
+        icon = Icons.payment;
+        break;
     }
 
     return Container(
@@ -229,6 +233,8 @@ class OrderItemCard extends StatelessWidget {
         return 'status_delivered'.tr();
       case OrderStatus.cancelled:
         return 'status_cancelled'.tr();
+      case OrderStatus.paymentFailed:
+        return 'status_payment_failed'.tr();
     }
   }
 

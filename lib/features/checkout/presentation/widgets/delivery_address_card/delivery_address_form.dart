@@ -1,8 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../shipping/domain/entities/governorate_entity.dart';
-import '../../../../shipping/presentation/cubit/shipping_cubit.dart';
 import 'governorate_dropdown.dart';
 import 'address_field.dart';
 import 'merchants_availability.dart';

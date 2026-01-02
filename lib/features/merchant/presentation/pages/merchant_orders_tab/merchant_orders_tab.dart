@@ -2,17 +2,10 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../core/shared_widgets/network_error_widget.dart';
-import '../../../../../core/utils/error_helper.dart';
 import '../../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../../auth/presentation/cubit/auth_state.dart';
 import '../../../../orders/presentation/cubit/orders_cubit.dart';
-import '../../../../orders/presentation/cubit/orders_state.dart';
-import '../../widgets/merchant_empty_state.dart';
-import '../../widgets/order_card.dart';
-import '../../widgets/order_details/order_details_sheet.dart';
 import '../../widgets/orders_header.dart';
-import '../../widgets/orders_filter_section.dart';
 import '../../widgets/orders_statistics_tab.dart';
 import 'merchant_orders_tab_bar.dart';
 import 'merchant_orders_list.dart';
@@ -42,11 +35,6 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
   final Map<String, int> _currentPage = {};
   final Map<String, ScrollController> _scrollControllers = {};
 
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-  String _deliveredPeriod = 'week';
-  String _cancelledPeriod = 'week';
-
   @override
   void initState() {
     super.initState();
@@ -66,7 +54,6 @@ class _MerchantOrdersTabState extends State<MerchantOrdersTab>
   void dispose() {
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
-    _searchController.dispose();
     for (final controller in _scrollControllers.values) {
       controller.dispose();
     }

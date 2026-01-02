@@ -100,78 +100,6 @@ class _AddressOnboardingPageState extends State<AddressOnboardingPage> {
     );
   }
 
-  Widget _buildIllustration(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildStep(theme, Icons.home_outlined, '1', true),
-          _buildArrow(theme),
-          _buildStep(theme, Icons.shopping_cart_outlined, '2', false),
-          _buildArrow(theme),
-          _buildStep(theme, Icons.local_shipping_outlined, '3', false),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStep(
-      ThemeData theme, IconData icon, String number, bool isActive) {
-    return Column(
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: isActive
-                ? theme.colorScheme.primary
-                : theme.colorScheme.outline.withValues(alpha: 0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            icon,
-            color: isActive ? Colors.white : theme.colorScheme.outline,
-            size: 28,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: isActive
-                ? theme.colorScheme.primary
-                : theme.colorScheme.outline.withValues(alpha: 0.3),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              number,
-              style: TextStyle(
-                color: isActive ? Colors.white : theme.colorScheme.outline,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildArrow(ThemeData theme) {
-    return Icon(
-      Icons.arrow_forward,
-      color: theme.colorScheme.outline.withValues(alpha: 0.4),
-      size: 20,
-    );
-  }
-
   Widget _buildForm(ThemeData theme, bool isRtl) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,6 +122,7 @@ class _AddressOnboardingPageState extends State<AddressOnboardingPage> {
             }
 
             return DropdownButtonFormField<GovernorateEntity>(
+              // ignore: deprecated_member_use
               value: _selectedGovernorate,
               decoration: InputDecoration(
                 labelText: isRtl ? 'المحافظة' : 'Governorate',

@@ -35,6 +35,7 @@ abstract class OrderRemoteDataSource {
     String? couponId,
     String? couponCode,
     double? couponDiscount,
+    String? paymentMethod,
   });
   Future<ParentOrderModel> getParentOrderDetails(String parentOrderId);
   Future<List<ParentOrderModel>> getUserParentOrders(String userId);

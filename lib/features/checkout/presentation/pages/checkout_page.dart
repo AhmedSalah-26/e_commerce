@@ -72,7 +72,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
       {double couponDiscount = 0,
       String? couponId,
       String? couponCode,
-      String? governorateName}) {
+      String? governorateName,
+      String? paymentMethod}) {
     if (!_formKey.currentState!.validate()) return;
 
     final validation = _validator.validate(
@@ -97,14 +98,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
         couponDiscount: couponDiscount,
         couponId: couponId,
         couponCode: couponCode,
-        governorateName: governorateName);
+        governorateName: governorateName,
+        paymentMethod: paymentMethod);
   }
 
   void _submitOrder(double shippingCost, String governorateId,
       {double couponDiscount = 0,
       String? couponId,
       String? couponCode,
-      String? governorateName}) {
+      String? governorateName,
+      String? paymentMethod}) {
     final authState = context.read<AuthCubit>().state;
     if (authState is! AuthAuthenticated) return;
 
@@ -126,6 +129,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           couponId: couponId,
           couponCode: couponCode,
           couponDiscount: couponDiscount,
+          paymentMethod: paymentMethod,
         );
   }
 
@@ -176,7 +180,8 @@ class _CheckoutPageContent extends StatefulWidget {
       {double couponDiscount,
       String? couponId,
       String? couponCode,
-      String? governorateName}) onPlaceOrder;
+      String? governorateName,
+      String? paymentMethod}) onPlaceOrder;
 
   const _CheckoutPageContent({
     required this.formKey,
@@ -200,15 +205,8 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
   bool _showPaymentWebView = false;
   String? _paymentUrl;
 
-  // Store order data for after payment
-  double? _pendingShippingCost;
-  String? _pendingGovernorateId;
-  Map<String, double>? _pendingMerchantShippingPrices;
-  CartLoaded? _pendingCartState;
-  double _pendingCouponDiscount = 0;
-  String? _pendingCouponId;
-  String? _pendingCouponCode;
-  String? _pendingGovernorateName;
+  // Store order data for card payment flow
+  double? _pendingTotalAmount;
 
   @override
   void initState() {
@@ -254,7 +252,7 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
     final paymentCubit = context.read<PaymentCubit>();
     final selectedMethod = paymentCubit.selectedMethod;
 
-    // If cash on delivery, place order directly
+    // If cash on delivery, place order directly with cash_on_delivery status
     if (selectedMethod == PaymentMethodType.cashOnDelivery) {
       widget.onPlaceOrder(
         shippingCost,
@@ -265,15 +263,37 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
         couponId: couponId,
         couponCode: couponCode,
         governorateName: governorateName,
+        paymentMethod: 'cash_on_delivery',
       );
       return;
     }
 
-    // For card payment, get payment URL and show webview
-    final totalAmount = cartState.total + shippingCost - couponDiscount;
+    // For card payment: store total amount for payment page
+    _pendingTotalAmount = cartState.total + shippingCost - couponDiscount;
+
+    // Create order FIRST with pending payment status
+    // The order will be created, then we open payment page
+    // Webhook will update payment status to paid/failed
+    widget.onPlaceOrder(
+      shippingCost,
+      governorateId,
+      merchantShippingPrices,
+      cartState,
+      couponDiscount: couponDiscount,
+      couponId: couponId,
+      couponCode: couponCode,
+      governorateName: governorateName,
+      paymentMethod: 'pending', // Card payment - pending until paid
+    );
+  }
+
+  /// Called when order is created successfully for card payment
+  Future<void> _openPaymentPage(String orderId) async {
+    if (_pendingTotalAmount == null) return;
 
     final paymentUrl = await PaymobService.instance.getPaymentUrl(
-      amount: totalAmount,
+      amount: _pendingTotalAmount!,
+      orderId: orderId,
       customerName: widget.nameController.text.trim(),
       customerPhone: widget.phoneController.text.trim(),
     );
@@ -290,16 +310,6 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       return;
     }
 
-    // Store order data for after payment
-    _pendingShippingCost = shippingCost;
-    _pendingGovernorateId = governorateId;
-    _pendingMerchantShippingPrices = merchantShippingPrices;
-    _pendingCartState = cartState;
-    _pendingCouponDiscount = couponDiscount;
-    _pendingCouponId = couponId;
-    _pendingCouponCode = couponCode;
-    _pendingGovernorateName = governorateName;
-
     setState(() {
       _paymentUrl = paymentUrl;
       _showPaymentWebView = true;
@@ -310,22 +320,21 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
     setState(() {
       _showPaymentWebView = false;
       _paymentUrl = null;
+      _pendingTotalAmount = null;
     });
 
-    if (result.success && _pendingCartState != null) {
-      // Payment successful, place order
-      widget.onPlaceOrder(
-        _pendingShippingCost!,
-        _pendingGovernorateId,
-        _pendingMerchantShippingPrices,
-        _pendingCartState!,
-        couponDiscount: _pendingCouponDiscount,
-        couponId: _pendingCouponId,
-        couponCode: _pendingCouponCode,
-        governorateName: _pendingGovernorateName,
+    if (result.success) {
+      // Payment successful - webhook will update order status
+      // Navigate to order confirmation
+      Tost.showCustomToast(
+        context,
+        widget.isRtl ? 'تم الدفع بنجاح!' : 'Payment successful!',
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
       );
-    } else if (!result.success &&
-        result.message != 'Payment cancelled by user') {
+      context.go('/orders');
+    } else if (result.message != 'Payment cancelled by user') {
+      // Payment failed - order remains with pending status
       Tost.showCustomToast(
         context,
         result.message ?? (widget.isRtl ? 'فشل الدفع' : 'Payment failed'),
@@ -339,7 +348,33 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
     setState(() {
       _showPaymentWebView = false;
       _paymentUrl = null;
+      _pendingTotalAmount = null;
     });
+
+    // Order remains with pending status - user can retry payment later
+    Tost.showCustomToast(
+      context,
+      widget.isRtl
+          ? 'تم إلغاء الدفع - يمكنك الدفع لاحقاً من صفحة الطلبات'
+          : 'Payment cancelled - you can pay later from orders page',
+      backgroundColor: Colors.orange,
+      textColor: Colors.white,
+    );
+  }
+
+  void _handleOrderState(BuildContext context, OrdersState state) {
+    final paymentCubit = context.read<PaymentCubit>();
+    final isCardPayment = paymentCubit.selectedMethod == PaymentMethodType.card;
+
+    if (state is MultiVendorOrderCreated &&
+        isCardPayment &&
+        _pendingTotalAmount != null) {
+      // Order created for card payment - open payment page
+      _openPaymentPage(state.parentOrderId);
+    } else {
+      // Cash on delivery or other states - use default handler
+      _stateHandler.handleState(context, state);
+    }
   }
 
   @override
@@ -349,7 +384,7 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
     return Directionality(
       textDirection: widget.isRtl ? ui.TextDirection.rtl : ui.TextDirection.ltr,
       child: BlocListener<OrdersCubit, OrdersState>(
-        listener: (context, state) => _stateHandler.handleState(context, state),
+        listener: _handleOrderState,
         child: Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
           appBar: _showPaymentWebView

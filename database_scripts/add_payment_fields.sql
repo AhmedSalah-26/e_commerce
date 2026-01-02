@@ -17,8 +17,7 @@ CREATE INDEX IF NOT EXISTS idx_orders_payment_status ON orders(payment_status);
 CREATE INDEX IF NOT EXISTS idx_parent_orders_payment_status ON parent_orders(payment_status);
 
 -- Comment: Payment status values
--- 'pending' - Waiting for online payment
+-- 'pending' - Waiting for online payment (card)
 -- 'paid' - Payment successful
 -- 'failed' - Payment failed
--- 'refunded' - Payment refunded
 -- 'cash_on_delivery' - No online payment, pay on delivery

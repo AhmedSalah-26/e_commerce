@@ -37,6 +37,7 @@ abstract class OrderRepository {
     String? couponId,
     String? couponCode,
     double? couponDiscount,
+    String? paymentMethod,
   });
 
   /// Get parent order details with sub-orders

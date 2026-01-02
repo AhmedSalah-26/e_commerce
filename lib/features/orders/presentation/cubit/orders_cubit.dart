@@ -216,6 +216,7 @@ class OrdersCubit extends Cubit<OrdersState> {
   }
 
   /// Create multi-vendor order from cart (splits by merchant)
+  /// [paymentMethod] can be 'cash_on_delivery' or 'card' (pending payment)
   Future<void> createMultiVendorOrder(
     String userId, {
     String? deliveryAddress,
@@ -227,6 +228,7 @@ class OrdersCubit extends Cubit<OrdersState> {
     String? couponId,
     String? couponCode,
     double? couponDiscount,
+    String? paymentMethod,
   }) async {
     emit(const OrderCreating());
 
@@ -241,6 +243,7 @@ class OrdersCubit extends Cubit<OrdersState> {
       couponId: couponId,
       couponCode: couponCode,
       couponDiscount: couponDiscount,
+      paymentMethod: paymentMethod,
     );
 
     result.fold(

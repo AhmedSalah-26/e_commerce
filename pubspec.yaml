@@ -48,6 +48,11 @@ dependencies:
   flutter_image_compress: ^2.3.0
   # Shared Preferences
   shared_preferences: ^2.3.3
+  # Date formatting
+  intl: any
+  # Image caching
+  flutter_cache_manager: any
+  path_provider: any
   # Cached Network Image for optimized image loading
   cached_network_image: ^3.4.1
   # Deep Links

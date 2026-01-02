@@ -113,7 +113,9 @@ class _ReportProductDialogState extends State<ReportProductDialog> {
                           style: const TextStyle(fontSize: 14),
                         ),
                         value: reason,
+                        // ignore: deprecated_member_use
                         groupValue: _selectedReason,
+                        // ignore: deprecated_member_use
                         onChanged: (value) =>
                             setState(() => _selectedReason = value),
                         dense: true,

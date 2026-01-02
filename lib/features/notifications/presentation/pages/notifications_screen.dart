@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../core/shared_widgets/empty_states/empty_state_widget.dart';
 import '../../../../core/utils/error_helper.dart';
 import '../cubit/notifications_cubit.dart';
 import '../../domain/entities/notification_entity.dart';
@@ -111,8 +110,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             }
 
             if (state is NotificationsLoaded) {
-              if (state.notifications.isEmpty)
+              if (state.notifications.isEmpty) {
                 return EmptyStates.noNotifications();
+              }
 
               return RefreshIndicator(
                 onRefresh: () async =>

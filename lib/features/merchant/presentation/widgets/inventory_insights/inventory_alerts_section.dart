@@ -24,7 +24,7 @@ class InventoryAlertsSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.warning_amber, color: Colors.orange, size: 20),
+            const Icon(Icons.warning_amber, color: Colors.orange, size: 20),
             const SizedBox(width: 8),
             Text(
               isRtl ? 'تنبيهات المخزون' : 'Stock Alerts',

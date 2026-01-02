@@ -182,19 +182,18 @@ class _AdminReportsViewState extends State<_AdminReportsView> {
 
   void _showRespondSheet(
       BuildContext context, ReviewReportEntity report, bool isArabic) {
+    final cubit = context.read<ReviewReportsCubit>();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => BlocProvider.value(
-        value: context.read<ReviewReportsCubit>(),
+        value: cubit,
         child: ReviewReportRespondSheet(report: report, isArabic: isArabic),
       ),
     ).then((responded) {
-      if (responded == true) {
-        context
-            .read<ReviewReportsCubit>()
-            .loadAdminReports(status: _selectedStatus);
+      if (responded == true && mounted) {
+        cubit.loadAdminReports(status: _selectedStatus);
       }
     });
   }

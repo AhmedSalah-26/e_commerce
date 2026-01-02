@@ -109,10 +109,11 @@ class _AdminReportsTabState extends State<AdminReportsTab> {
     );
     if (picked != null) {
       setState(() {
-        if (isFrom)
+        if (isFrom) {
           _fromDate = picked;
-        else
+        } else {
           _toDate = picked;
+        }
       });
     }
   }

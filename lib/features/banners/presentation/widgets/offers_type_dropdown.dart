@@ -23,6 +23,7 @@ class OffersTypeDropdown extends StatelessWidget {
         offerTypes.any((t) => t['value'] == value) ? value : null;
 
     return DropdownButtonFormField<String>(
+      // ignore: deprecated_member_use
       value: validValue,
       decoration: InputDecoration(
         labelText: 'offer_type'.tr(),

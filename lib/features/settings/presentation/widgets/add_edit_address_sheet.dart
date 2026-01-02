@@ -129,6 +129,7 @@ class _AddEditAddressSheetState extends State<AddEditAddressSheet> {
         }
 
         return DropdownButtonFormField<GovernorateEntity>(
+          // ignore: deprecated_member_use
           value: _selectedGovernorate,
           decoration: InputDecoration(
             labelText: widget.isRtl ? 'المحافظة' : 'Governorate',

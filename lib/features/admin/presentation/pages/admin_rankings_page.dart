@@ -87,7 +87,7 @@ class _AdminRankingsPageState extends State<AdminRankingsPage> {
   Future<List<Map<String, dynamic>>> _fetchData(int page) async {
     final cubit = context.read<AdminCubit>();
     final offset = page * _pageSize;
-    final limit = _pageSize;
+    const limit = _pageSize;
 
     List<Map<String, dynamic>> result;
     switch (widget.type) {

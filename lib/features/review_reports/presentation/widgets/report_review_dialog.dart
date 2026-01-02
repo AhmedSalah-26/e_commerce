@@ -117,7 +117,7 @@ class _ReportReviewDialogState extends State<ReportReviewDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Row(
         children: [
-          Icon(Icons.flag, color: Colors.orange, size: 24),
+          const Icon(Icons.flag, color: Colors.orange, size: 24),
           const SizedBox(width: 8),
           Text(isRtl ? 'الإبلاغ عن تعليق' : 'Report Review'),
         ],
@@ -171,7 +171,9 @@ class _ReportReviewDialogState extends State<ReportReviewDialog> {
                     style: const TextStyle(fontSize: 14),
                   ),
                   value: reason['key']!,
+                  // ignore: deprecated_member_use
                   groupValue: _selectedReason,
+                  // ignore: deprecated_member_use
                   onChanged: (value) => setState(() => _selectedReason = value),
                   contentPadding: EdgeInsets.zero,
                   dense: true,

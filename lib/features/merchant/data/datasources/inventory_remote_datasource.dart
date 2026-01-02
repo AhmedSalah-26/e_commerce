@@ -43,7 +43,7 @@ class InventoryRemoteDataSourceImpl implements InventoryRemoteDataSource {
       );
 
       if (response == null) {
-        throw ServerException('فشل في جلب إحصائيات المخزون');
+        throw const ServerException('فشل في جلب إحصائيات المخزون');
       }
 
       return InventoryInsightsSummaryModel.fromJson(response);

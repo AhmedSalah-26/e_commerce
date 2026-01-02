@@ -60,7 +60,7 @@ class AvatarPicker extends StatelessWidget {
                       width: 2,
                     ),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.camera_alt,
                     size: 18,
                     color: Colors.white,
@@ -71,7 +71,7 @@ class AvatarPicker extends StatelessWidget {
             if (isLoading)
               Positioned.fill(
                 child: Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.black38,
                     shape: BoxShape.circle,
                   ),

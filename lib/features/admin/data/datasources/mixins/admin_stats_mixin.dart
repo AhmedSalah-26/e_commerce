@@ -121,7 +121,7 @@ mixin AdminStatsMixin {
     } catch (e) {
       print('❌ Fallback stats also failed: $e');
       // Return empty stats instead of throwing
-      return AdminStatsModel(
+      return const AdminStatsModel(
         totalCustomers: 0,
         totalMerchants: 0,
         totalProducts: 0,

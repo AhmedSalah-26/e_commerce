@@ -288,7 +288,7 @@ class AdaptiveContainer extends StatelessWidget {
         boxShadow: elevation != null
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: elevation!,
                   offset: Offset(0, elevation! / 2),
                 ),

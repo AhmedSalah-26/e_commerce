@@ -80,7 +80,8 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
   }
 
   Future<void> _saveProfile() async {
-    final authState = context.read<AuthCubit>().state;
+    final authCubit = context.read<AuthCubit>();
+    final authState = authCubit.state;
     if (authState is! AuthAuthenticated) return;
 
     setState(() => _isLoading = true);
@@ -103,14 +104,15 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
           user.id,
           oldAvatarUrl: user.avatarUrl,
         );
+        if (!mounted) return;
         setState(() => _isUploadingAvatar = false);
       }
 
-      final success = await context.read<AuthCubit>().updateProfile(
-            name: _nameController.text.trim(),
-            phone: _phoneController.text.trim(),
-            avatarUrl: newAvatarUrl,
-          );
+      final success = await authCubit.updateProfile(
+        name: _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+        avatarUrl: newAvatarUrl,
+      );
 
       if (mounted) {
         Navigator.pop(context);

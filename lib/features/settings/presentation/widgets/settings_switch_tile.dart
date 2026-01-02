@@ -60,7 +60,7 @@ class SettingsSwitchTile extends StatelessWidget {
               : null,
           value: value,
           onChanged: onChanged,
-          activeColor: Colors.white,
+          activeThumbColor: Colors.white,
           activeTrackColor: theme.colorScheme.primary,
           inactiveThumbColor: isDark ? Colors.grey[400] : Colors.grey[50],
           inactiveTrackColor: isDark ? Colors.grey[700] : Colors.grey[300],

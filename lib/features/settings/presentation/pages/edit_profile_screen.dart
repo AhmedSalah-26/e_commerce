@@ -57,7 +57,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _isLoading = true);
 
     String? newAvatarUrl;
-    final user = context.read<AuthCubit>().currentUser;
+    final authCubit = context.read<AuthCubit>();
+    final user = authCubit.currentUser;
 
     // Upload new avatar if selected
     if (_selectedAvatarBytes != null &&
@@ -75,36 +76,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         user.id,
         oldAvatarUrl: user.avatarUrl,
       );
+      if (!mounted) return;
       setState(() => _isUploadingAvatar = false);
     }
 
-    final success = await context.read<AuthCubit>().updateProfile(
-          name: _nameController.text.trim(),
-          phone: _phoneController.text.trim().isEmpty
-              ? null
-              : _phoneController.text.trim(),
-          avatarUrl: newAvatarUrl,
-        );
+    final success = await authCubit.updateProfile(
+      name: _nameController.text.trim(),
+      phone: _phoneController.text.trim().isEmpty
+          ? null
+          : _phoneController.text.trim(),
+      avatarUrl: newAvatarUrl,
+    );
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (mounted) {
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('profile_updated'.tr()),
-            backgroundColor: Colors.green,
-          ),
-        );
-        context.pop();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('profile_update_failed'.tr()),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('profile_updated'.tr()),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('profile_update_failed'.tr()),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

@@ -11,12 +11,21 @@ class PaymentMethodCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final paymentMethod = parentOrder.paymentMethod ?? 'cash_on_delivery';
+    // For card payments, default status should be 'pending', not 'cash_on_delivery'
+    final paymentStatus = parentOrder.paymentStatus ??
+        (paymentMethod == 'card' ? 'pending' : 'cash_on_delivery');
 
     IconData paymentIcon;
     String paymentLabel;
     Color iconColor;
 
+    // Determine display based on payment method
     switch (paymentMethod) {
+      case 'card':
+        paymentIcon = Icons.credit_card;
+        paymentLabel = 'card_payment'.tr();
+        iconColor = Colors.blue.shade600;
+        break;
       case 'credit_card':
         paymentIcon = Icons.credit_card;
         paymentLabel = 'credit_card'.tr();
@@ -31,6 +40,33 @@ class PaymentMethodCard extends StatelessWidget {
         paymentIcon = Icons.payments_outlined;
         paymentLabel = 'cash_on_delivery'.tr();
         iconColor = Colors.green.shade600;
+    }
+
+    // Payment status info
+    String statusLabel;
+    Color statusColor;
+    IconData statusIcon;
+
+    switch (paymentStatus) {
+      case 'paid':
+        statusLabel = 'payment_paid'.tr();
+        statusColor = Colors.green;
+        statusIcon = Icons.check_circle;
+        break;
+      case 'pending':
+        statusLabel = 'payment_pending'.tr();
+        statusColor = Colors.orange;
+        statusIcon = Icons.hourglass_empty;
+        break;
+      case 'failed':
+        statusLabel = 'payment_failed'.tr();
+        statusColor = Colors.red;
+        statusIcon = Icons.cancel;
+        break;
+      default:
+        statusLabel = 'cash_on_delivery'.tr();
+        statusColor = Colors.green.shade600;
+        statusIcon = Icons.payments_outlined;
     }
 
     return Container(
@@ -68,10 +104,33 @@ class PaymentMethodCard extends StatelessWidget {
                 child: Icon(paymentIcon, size: 24, color: iconColor),
               ),
               const SizedBox(width: 12),
-              Text(
-                paymentLabel,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      paymentLabel,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (paymentMethod == 'card') ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(statusIcon, size: 16, color: statusColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            statusLabel,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: statusColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],

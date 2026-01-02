@@ -115,6 +115,7 @@ class OrderEntity extends Equatable {
   final String? merchantAddress;
   // Payment & Coupon info
   final String? paymentMethod;
+  final String? paymentStatus;
   final String? couponCode;
   final double couponDiscount;
   // Governorate info
@@ -141,6 +142,7 @@ class OrderEntity extends Equatable {
     this.merchantPhone,
     this.merchantAddress,
     this.paymentMethod,
+    this.paymentStatus,
     this.couponCode,
     this.couponDiscount = 0,
     this.governorateId,
@@ -178,6 +180,7 @@ class OrderEntity extends Equatable {
         merchantPhone,
         merchantAddress,
         paymentMethod,
+        paymentStatus,
         couponCode,
         couponDiscount,
         governorateId,

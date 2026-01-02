@@ -122,6 +122,7 @@ class OrderDetailsSheet extends StatelessWidget {
           _getPaymentMethodText(order.paymentMethod),
           theme,
         ),
+        _buildPaymentStatusRow(theme),
         if (order.hasCoupon)
           _buildDetailRow('coupon_code'.tr(), order.couponCode!, theme),
         const Divider(height: 32),
@@ -168,6 +169,8 @@ class OrderDetailsSheet extends StatelessWidget {
           theme,
           isBold: true,
         ),
+        const SizedBox(height: 8),
+        _buildCollectionAmountRow(theme),
         const SizedBox(height: 24),
         if (order.status != OrderStatus.delivered &&
             order.status != OrderStatus.cancelled)
@@ -185,6 +188,8 @@ class OrderDetailsSheet extends StatelessWidget {
 
   String _getPaymentMethodText(String? method) {
     switch (method) {
+      case 'card':
+        return 'card_payment'.tr();
       case 'cash_on_delivery':
         return 'cash_on_delivery'.tr();
       case 'credit_card':
@@ -194,6 +199,125 @@ class OrderDetailsSheet extends StatelessWidget {
       default:
         return 'cash_on_delivery'.tr();
     }
+  }
+
+  Widget _buildPaymentStatusRow(ThemeData theme) {
+    final isCardPayment = order.paymentMethod == 'card';
+    final isPaid = order.paymentStatus == 'paid';
+
+    String statusText;
+    Color statusColor;
+    IconData statusIcon;
+
+    if (isCardPayment) {
+      if (isPaid) {
+        statusText = isRtl ? 'تم الدفع ✓' : 'Paid ✓';
+        statusColor = Colors.green;
+        statusIcon = Icons.check_circle;
+      } else {
+        statusText = isRtl ? 'في انتظار الدفع' : 'Pending Payment';
+        statusColor = Colors.orange;
+        statusIcon = Icons.hourglass_empty;
+      }
+    } else {
+      statusText = isRtl ? 'الدفع عند الاستلام' : 'Cash on Delivery';
+      statusColor = Colors.grey.shade600;
+      statusIcon = Icons.payments_outlined;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            isRtl ? 'حالة الدفع' : 'Payment Status',
+            style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(statusIcon, size: 16, color: statusColor),
+                const SizedBox(width: 4),
+                Text(
+                  statusText,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: statusColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCollectionAmountRow(ThemeData theme) {
+    final isCardPayment = order.paymentMethod == 'card';
+    final isPaid = order.paymentStatus == 'paid';
+
+    // If paid by card, merchant collects nothing
+    // If COD or card not paid yet, merchant collects full amount
+    final collectAmount = (isCardPayment && isPaid) ? 0.0 : _calculateTotal();
+    final isPrepaid = isCardPayment && isPaid;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isPrepaid
+            ? Colors.green.withValues(alpha: 0.1)
+            : Colors.orange.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isPrepaid ? Colors.green : Colors.orange,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(
+                isPrepaid ? Icons.check_circle : Icons.account_balance_wallet,
+                color: isPrepaid ? Colors.green : Colors.orange,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                isRtl ? 'المبلغ المطلوب تحصيله' : 'Amount to Collect',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isPrepaid
+                      ? Colors.green.shade700
+                      : Colors.orange.shade700,
+                ),
+              ),
+            ],
+          ),
+          Text(
+            isPrepaid
+                ? (isRtl ? 'مدفوع مسبقاً' : 'Prepaid')
+                : '${collectAmount.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isPrepaid ? Colors.green.shade700 : Colors.orange.shade700,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildUpdateButton(BuildContext context, ThemeData theme) {

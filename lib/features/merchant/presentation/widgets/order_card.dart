@@ -19,6 +19,10 @@ class OrderCard extends StatelessWidget {
     final statusText = _getStatusText(order.status, isRtl);
     final statusColor = _getStatusColor(order.status);
 
+    // Payment info
+    final isCardPayment = order.paymentMethod == 'card';
+    final isPaid = order.paymentStatus == 'paid';
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: theme.colorScheme.surface,
@@ -61,6 +65,57 @@ class OrderCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
+              // Payment method badge
+              Row(
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isCardPayment
+                          ? (isPaid
+                              ? Colors.green.withValues(alpha: 0.1)
+                              : Colors.orange.withValues(alpha: 0.1))
+                          : Colors.grey.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isCardPayment
+                              ? Icons.credit_card
+                              : Icons.payments_outlined,
+                          size: 14,
+                          color: isCardPayment
+                              ? (isPaid ? Colors.green : Colors.orange)
+                              : Colors.grey.shade600,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isCardPayment
+                              ? (isPaid
+                                  ? (isRtl ? 'مدفوع بالبطاقة' : 'Card Paid')
+                                  : (isRtl
+                                      ? 'بطاقة - في انتظار الدفع'
+                                      : 'Card - Pending'))
+                              : (isRtl
+                                  ? 'الدفع عند الاستلام'
+                                  : 'Cash on Delivery'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: isCardPayment
+                                ? (isPaid ? Colors.green : Colors.orange)
+                                : Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Icon(Icons.person_outline,
@@ -92,12 +147,35 @@ class OrderCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Text(
-                    '${order.total.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.primary,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '${order.total.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      // Merchant collects: 0 if paid by card, full amount if COD
+                      if (!isCardPayment || !isPaid) ...[
+                        Text(
+                          '${isRtl ? 'تحصيل:' : 'Collect:'} ${order.total.toStringAsFixed(2)} ${isRtl ? 'ج.م' : 'EGP'}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.orange.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ] else ...[
+                        Text(
+                          isRtl ? 'مدفوع مسبقاً ✓' : 'Prepaid ✓',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.green.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),

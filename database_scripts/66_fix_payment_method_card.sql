@@ -1,30 +1,7 @@
 -- =====================================================
--- Add payment_status field to orders and parent_orders
--- This allows tracking payment state separately from payment_method
+-- Fix payment_method to use 'card' instead of 'pending'
 -- =====================================================
 
--- 1. Add payment_status to parent_orders
-ALTER TABLE public.parent_orders 
-ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'cash_on_delivery';
-
--- 2. Add payment_status to orders
-ALTER TABLE public.orders 
-ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'cash_on_delivery';
-
--- 3. Add payment transaction fields
-ALTER TABLE public.parent_orders 
-ADD COLUMN IF NOT EXISTS payment_transaction_id TEXT,
-ADD COLUMN IF NOT EXISTS payment_amount DECIMAL(10,2);
-
-ALTER TABLE public.orders 
-ADD COLUMN IF NOT EXISTS payment_transaction_id TEXT,
-ADD COLUMN IF NOT EXISTS payment_amount DECIMAL(10,2);
-
--- 4. Create indexes for payment status queries
-CREATE INDEX IF NOT EXISTS idx_parent_orders_payment_status ON public.parent_orders(payment_status);
-CREATE INDEX IF NOT EXISTS idx_orders_payment_status ON public.orders(payment_status);
-
--- 5. Update create_multi_vendor_order to use payment_status
 DROP FUNCTION IF EXISTS public.create_multi_vendor_order(UUID, TEXT, TEXT, TEXT, TEXT, NUMERIC, UUID, TEXT, UUID, TEXT, NUMERIC);
 
 CREATE OR REPLACE FUNCTION public.create_multi_vendor_order(
@@ -55,26 +32,23 @@ DECLARE
   merchant_rec RECORD;
 BEGIN
   -- Determine payment_status based on payment_method
-  -- 'card' means card payment waiting for confirmation (pending)
-  -- 'cash_on_delivery' means pay on delivery
+  -- 'card' = online card payment (pending until webhook confirms)
+  -- 'cash_on_delivery' = pay on delivery
   IF p_payment_method = 'card' THEN
     v_payment_status := 'pending';
   ELSE
     v_payment_status := 'cash_on_delivery';
   END IF;
 
-  -- Check if cart is empty
   IF NOT EXISTS (SELECT 1 FROM public.cart_items WHERE user_id = p_user_id) THEN
     RAISE EXCEPTION 'Cart is empty';
   END IF;
   
-  -- Calculate total subtotal first
   SELECT COALESCE(SUM(ci.quantity * COALESCE(p.discount_price, p.price)), 0) INTO v_total_subtotal
   FROM public.cart_items ci
   JOIN public.products p ON p.id = ci.product_id
   WHERE ci.user_id = p_user_id;
   
-  -- Calculate total shipping by summing each merchant's shipping price
   SELECT COALESCE(SUM(
     COALESCE(
       (SELECT msp.price FROM public.merchant_shipping_prices msp
@@ -91,7 +65,6 @@ BEGIN
     WHERE ci2.user_id = p_user_id
   ) sub;
   
-  -- Create parent order with payment_status
   INSERT INTO public.parent_orders (
     user_id, total, subtotal, shipping_cost,
     delivery_address, customer_name, customer_phone, notes, governorate_id,
@@ -107,26 +80,22 @@ BEGIN
   )
   RETURNING id INTO v_parent_order_id;
   
-  -- Apply coupon if provided
   IF p_coupon_id IS NOT NULL THEN
     PERFORM public.apply_coupon_to_order(p_coupon_id, p_user_id, v_parent_order_id, p_coupon_discount);
   END IF;
   
-  -- Create orders for each merchant
   FOR merchant_rec IN 
     SELECT DISTINCT pr.merchant_id
     FROM public.cart_items ci
     JOIN public.products pr ON pr.id = ci.product_id
     WHERE ci.user_id = p_user_id
   LOOP
-    -- Calculate subtotal for this merchant
     SELECT COALESCE(SUM(ci.quantity * COALESCE(pr.discount_price, pr.price)), 0) INTO v_merchant_subtotal
     FROM public.cart_items ci
     JOIN public.products pr ON pr.id = ci.product_id
     WHERE ci.user_id = p_user_id
     AND (pr.merchant_id = merchant_rec.merchant_id OR (pr.merchant_id IS NULL AND merchant_rec.merchant_id IS NULL));
     
-    -- Get shipping price for this merchant
     SELECT COALESCE(
       (SELECT msp.price FROM public.merchant_shipping_prices msp
        WHERE msp.merchant_id = merchant_rec.merchant_id 
@@ -135,7 +104,6 @@ BEGIN
       p_shipping_cost
     ) INTO v_merchant_shipping;
     
-    -- Create order for this merchant with payment_status
     INSERT INTO public.orders (
       user_id, merchant_id, parent_order_id,
       total, subtotal, shipping_cost,
@@ -154,7 +122,6 @@ BEGIN
     )
     RETURNING id INTO v_order_id;
     
-    -- Create order items for this merchant
     INSERT INTO public.order_items (order_id, product_id, product_name, product_name_en, product_image, quantity, price)
     SELECT 
       v_order_id,
@@ -170,20 +137,10 @@ BEGIN
     AND (pr.merchant_id = merchant_rec.merchant_id OR (pr.merchant_id IS NULL AND merchant_rec.merchant_id IS NULL));
   END LOOP;
   
-  -- Clear cart
   DELETE FROM public.cart_items WHERE user_id = p_user_id;
   
   RETURN v_parent_order_id;
 END;
 $$;
 
--- Grant permissions
 GRANT EXECUTE ON FUNCTION public.create_multi_vendor_order(UUID, TEXT, TEXT, TEXT, TEXT, NUMERIC, UUID, TEXT, UUID, TEXT, NUMERIC) TO authenticated;
-
--- =====================================================
--- Payment Status Values:
--- 'pending' - Waiting for online payment (card)
--- 'paid' - Payment successful
--- 'failed' - Payment failed
--- 'cash_on_delivery' - No online payment, pay on delivery
--- =====================================================

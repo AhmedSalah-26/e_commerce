@@ -283,7 +283,7 @@ class _CheckoutPageContentState extends State<_CheckoutPageContent> {
       couponId: couponId,
       couponCode: couponCode,
       governorateName: governorateName,
-      paymentMethod: 'pending', // Card payment - pending until paid
+      paymentMethod: 'card', // Card payment
     );
   }
 

@@ -78,6 +78,8 @@ class OrderMapper {
       subOrders: subOrders,
       paymentMethod:
           parentOrder['payment_method'] as String? ?? 'cash_on_delivery',
+      paymentStatus:
+          parentOrder['payment_status'] as String? ?? 'cash_on_delivery',
       couponId: parentOrder['coupon_id'] as String?,
       couponCode: parentOrder['coupon_code'] as String?,
       couponDiscount: (parentOrder['coupon_discount'] as num?)?.toDouble() ?? 0,

@@ -19,6 +19,7 @@ class ParentOrderEntity extends Equatable {
 
   // Payment & Coupon fields
   final String? paymentMethod;
+  final String? paymentStatus;
   final String? couponId;
   final String? couponCode;
   final double couponDiscount;
@@ -37,6 +38,7 @@ class ParentOrderEntity extends Equatable {
     this.createdAt,
     this.subOrders = const [],
     this.paymentMethod,
+    this.paymentStatus,
     this.couponId,
     this.couponCode,
     this.couponDiscount = 0,
@@ -143,6 +145,7 @@ class ParentOrderEntity extends Equatable {
         createdAt,
         subOrders,
         paymentMethod,
+        paymentStatus,
         couponId,
         couponCode,
         couponDiscount,

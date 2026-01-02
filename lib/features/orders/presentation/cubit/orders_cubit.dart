@@ -36,11 +36,14 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Load orders for a user
   Future<void> loadOrders(String userId) async {
+    if (isClosed) return;
     await _refreshTokenIfNeeded();
+    if (isClosed) return;
     emit(const OrdersLoading());
 
     final result = await _repository.getOrders(userId);
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(OrdersError(failure.message)),
       (orders) => emit(OrdersLoaded(orders)),
@@ -49,10 +52,12 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Load all orders (for merchant)
   Future<void> loadAllOrders() async {
+    if (isClosed) return;
     emit(const OrdersLoading());
 
     final result = await _repository.getAllOrders();
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(OrdersError(failure.message)),
       (orders) => emit(OrdersLoaded(orders)),
@@ -61,10 +66,12 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Load orders by merchant ID
   Future<void> loadMerchantOrders(String merchantId) async {
+    if (isClosed) return;
     emit(const OrdersLoading());
 
     final result = await _repository.getOrdersByMerchant(merchantId);
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(OrdersError(failure.message)),
       (orders) => emit(OrdersLoaded(orders)),
@@ -73,6 +80,7 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Watch merchant orders (real-time)
   void watchMerchantOrders(String merchantId) {
+    if (isClosed) return;
     _ordersSubscription?.cancel();
     emit(const OrdersLoading());
     _ordersSubscription = _repository.watchMerchantOrders(merchantId).listen(
@@ -87,6 +95,7 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Watch merchant orders by status (real-time)
   void watchMerchantOrdersByStatus(String merchantId, String status) {
+    if (isClosed) return;
     _ordersSubscription?.cancel();
     emit(const OrdersLoading());
     _ordersSubscription =
@@ -113,6 +122,7 @@ class OrdersCubit extends Cubit<OrdersState> {
   Future<void> loadMerchantOrdersByStatusPaginated(
       String merchantId, String status, int page, int pageSize,
       {bool append = false}) async {
+    if (isClosed) return;
     if (!append) {
       emit(const OrdersLoading());
     }
@@ -120,6 +130,7 @@ class OrdersCubit extends Cubit<OrdersState> {
     final result = await _repository.getMerchantOrdersByStatusPaginated(
         merchantId, status, page, pageSize);
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(OrdersError(failure.message)),
       (newOrders) {
@@ -162,6 +173,7 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Watch all orders (for merchant)
   void watchAllOrders() {
+    if (isClosed) return;
     _ordersSubscription?.cancel();
     _ordersSubscription = _repository.watchOrders().listen(
       (orders) {
@@ -175,6 +187,7 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Watch user orders
   void watchUserOrders(String userId) {
+    if (isClosed) return;
     _ordersSubscription?.cancel();
     emit(const OrdersLoading());
     _ordersSubscription = _repository.watchUserOrders(userId).listen(
@@ -197,6 +210,7 @@ class OrdersCubit extends Cubit<OrdersState> {
     double? shippingCost,
     String? governorateId,
   }) async {
+    if (isClosed) return;
     emit(const OrderCreating());
 
     final result = await _repository.createOrderFromCart(
@@ -209,6 +223,7 @@ class OrdersCubit extends Cubit<OrdersState> {
       governorateId: governorateId,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(OrdersError(failure.message)),
       (orderId) => emit(OrderCreated(orderId)),
@@ -230,6 +245,7 @@ class OrdersCubit extends Cubit<OrdersState> {
     double? couponDiscount,
     String? paymentMethod,
   }) async {
+    if (isClosed) return;
     emit(const OrderCreating());
 
     final result = await _repository.createMultiVendorOrder(
@@ -246,6 +262,7 @@ class OrdersCubit extends Cubit<OrdersState> {
       paymentMethod: paymentMethod,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(OrdersError(failure.message)),
       (parentOrderId) => emit(MultiVendorOrderCreated(parentOrderId)),
@@ -254,10 +271,12 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Load parent order details
   Future<void> loadParentOrderDetails(String parentOrderId) async {
+    if (isClosed) return;
     emit(const OrdersLoading());
 
     final result = await _repository.getParentOrderDetails(parentOrderId);
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(OrdersError(failure.message)),
       (parentOrder) => emit(ParentOrderLoaded(parentOrder)),
@@ -266,11 +285,14 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Load user's parent orders
   Future<void> loadUserParentOrders(String userId) async {
+    if (isClosed) return;
     await _refreshTokenIfNeeded();
+    if (isClosed) return;
     emit(const OrdersLoading());
 
     final result = await _repository.getUserParentOrders(userId);
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(OrdersError(failure.message)),
       (parentOrders) => emit(ParentOrdersLoaded(parentOrders)),
@@ -279,6 +301,7 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Watch user's parent orders (real-time)
   void watchUserParentOrders(String userId) {
+    if (isClosed) return;
     _parentOrdersSubscription?.cancel();
     emit(const OrdersLoading());
 
@@ -312,6 +335,7 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   /// Update order status
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
+    if (isClosed) return;
     final currentState = state;
 
     // Show updating state with shimmer
@@ -322,6 +346,7 @@ class OrdersCubit extends Cubit<OrdersState> {
 
     final result = await _repository.updateOrderStatus(orderId, status);
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(OrdersError(failure.message)),
       (_) {

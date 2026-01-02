@@ -513,5 +513,10 @@
   "activate": "تفعيل",
   "deactivate": "إلغاء التفعيل",
   "save_changes": "حفظ التغييرات",
-  "required_field": "هذا الحقل مطلوب"
+  "required_field": "هذا الحقل مطلوب",
+  "card_payment": "الدفع بالبطاقة",
+  "payment_paid": "تم الدفع",
+  "payment_pending": "في انتظار الدفع",
+  "payment_failed": "فشل الدفع",
+  "amount_due": "المستحق للتاجر"
 }

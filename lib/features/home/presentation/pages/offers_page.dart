@@ -105,6 +105,22 @@ class _OffersPageState extends State<OffersPage> {
     }
   }
 
+  String get _subtitle {
+    final isArabic = context.locale.languageCode == 'ar';
+    switch (widget.offerType) {
+      case OfferType.flashSale:
+        return isArabic ? 'عروض لفترة محدودة' : 'Limited time offers';
+      case OfferType.bestDeals:
+        return isArabic
+            ? 'خصومات مميزة على منتجات مختارة'
+            : 'Special discounts on selected products';
+      case OfferType.newArrivals:
+        return isArabic
+            ? 'أحدث المنتجات في متجرنا'
+            : 'Latest products in our store';
+    }
+  }
+
   Color get _headerColor {
     switch (widget.offerType) {
       case OfferType.flashSale:
@@ -184,20 +200,36 @@ class _OffersPageState extends State<OffersPage> {
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
         ),
-        title: Row(
+        title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(_headerIcon, color: Colors.white),
-            const SizedBox(width: 8),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(_headerIcon, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  _title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
             Text(
-              _title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+              _subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white.withValues(alpha: 0.9),
+                fontWeight: FontWeight.w400,
               ),
             ),
           ],
         ),
+        toolbarHeight: 70,
         centerTitle: true,
         elevation: 0,
       ),

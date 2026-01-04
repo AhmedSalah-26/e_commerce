@@ -60,86 +60,109 @@ class _FlashSaleBannerState extends State<FlashSaleBanner> {
     final hours = _remaining.inHours % 24;
     final minutes = _remaining.inMinutes % 60;
     final seconds = _remaining.inSeconds % 60;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.red.withValues(alpha: 0.3),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.flash_on, color: Colors.yellow, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                'flash_sale'.tr(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+          // Header - Red gradient (like web)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
               ),
-              const SizedBox(width: 8),
-              const Icon(Icons.flash_on, color: Colors.yellow, size: 24),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'ends_in'.tr(),
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 12,
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.flash_on, color: Colors.yellow, size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      'flash_sale'.tr(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.flash_on, color: Colors.yellow, size: 24),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'ends_in'.tr(),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (days > 0) ...[
-                _buildTimeBox(days.toString().padLeft(2, '0'), 'days'.tr()),
-                _buildSeparator(),
+
+          // Timer - White/Dark background (like web)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            color: isDark ? theme.colorScheme.surface : Colors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (days > 0) ...[
+                  _buildTimeBox(
+                      days.toString().padLeft(2, '0'), 'days'.tr(), isDark),
+                  _buildSeparator(isDark),
+                ],
+                _buildTimeBox(
+                    hours.toString().padLeft(2, '0'), 'hours'.tr(), isDark),
+                _buildSeparator(isDark),
+                _buildTimeBox(
+                    minutes.toString().padLeft(2, '0'), 'minutes'.tr(), isDark),
+                _buildSeparator(isDark),
+                _buildTimeBox(
+                    seconds.toString().padLeft(2, '0'), 'seconds'.tr(), isDark),
               ],
-              _buildTimeBox(hours.toString().padLeft(2, '0'), 'hours'.tr()),
-              _buildSeparator(),
-              _buildTimeBox(minutes.toString().padLeft(2, '0'), 'minutes'.tr()),
-              _buildSeparator(),
-              _buildTimeBox(seconds.toString().padLeft(2, '0'), 'seconds'.tr()),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTimeBox(String value, String label) {
+  Widget _buildTimeBox(String value, String label, bool isDark) {
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          constraints: const BoxConstraints(minWidth: 48),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? const Color(0xFF2D2D2D) : const Color(0xFFF5F5F5),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             value,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               color: Color(0xFFFF416C),
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -148,7 +171,7 @@ class _FlashSaleBannerState extends State<FlashSaleBanner> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.9),
+            color: isDark ? Colors.grey[400] : Colors.grey[600],
             fontSize: 10,
           ),
         ),
@@ -156,14 +179,14 @@ class _FlashSaleBannerState extends State<FlashSaleBanner> {
     );
   }
 
-  Widget _buildSeparator() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 4),
+  Widget _buildSeparator(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
         ':',
         style: TextStyle(
-          color: Colors.white,
-          fontSize: 24,
+          color: isDark ? Colors.white : Colors.grey[800],
+          fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
       ),

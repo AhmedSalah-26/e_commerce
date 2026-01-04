@@ -85,106 +85,21 @@ serve(async (req) => {
       console.log(`Updated payment status to ${paymentStatus} for order ${parentOrderId}`)
     }
 
-    // For GET requests (redirect callback from Paymob), return HTML that closes/notifies parent
+    // For GET requests (redirect callback from Paymob), redirect to webapp
     if (isRedirectCallback) {
-      const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${success ? 'Payment Successful' : 'Payment Failed'}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, ${success ? '#10b981' : '#ef4444'} 0%, ${success ? '#059669' : '#dc2626'} 100%);
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }
-    .container {
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 24px;
-      padding: 40px;
-      max-width: 400px;
-    }
-    .icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 20px;
-      background: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .icon svg { width: 48px; height: 48px; }
-    h1 { font-size: 24px; margin-bottom: 10px; }
-    p { opacity: 0.9; font-size: 16px; }
-    .loader {
-      margin-top: 20px;
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="icon">
-      ${success 
-        ? '<svg fill="#10b981" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>'
-        : '<svg fill="#ef4444" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>'
-      }
-    </div>
-    <h1>${success ? 'تم الدفع بنجاح!' : 'فشل الدفع'}</h1>
-    <p>${success ? 'Payment Successful' : 'Payment Failed'}</p>
-    <div class="loader"></div>
-    <p style="margin-top: 15px; font-size: 14px;">جاري التحويل...</p>
-  </div>
-  <script>
-    const result = {
-      success: ${success},
-      parentOrderId: "${parentOrderId || ''}",
-      transactionId: "${transactionId || ''}",
-      paymentStatus: "${paymentStatus}"
-    };
-    
-    // Try to notify parent window
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage(result, '*');
-    }
-    if (window.opener) {
-      window.opener.postMessage(result, '*');
-    }
-    
-    // Auto close/redirect after 2 seconds
-    setTimeout(() => {
-      if (window.opener) {
-        window.close();
-      } else if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ ...result, action: 'close' }, '*');
-      }
-    }, 2000);
-  </script>
-</body>
-</html>
-      `
-      return new Response(html, {
-        status: 200,
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      // Redirect to webapp orders page
+      // Use APP_BASE_URL env variable, fallback to localhost for testing
+      const webappUrl = Deno.env.get('APP_BASE_URL') || 'http://localhost:5173'
+      const redirectUrl = `${webappUrl}/orders?payment=${success ? 'success' : 'failed'}&order_id=${parentOrderId || ''}`
+      
+      console.log(`Redirecting to: ${redirectUrl}`)
+      
+      return new Response(null, {
+        status: 302,
+        headers: { 
+          'Location': redirectUrl,
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        }
       })
     }
 

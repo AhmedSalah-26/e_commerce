@@ -282,8 +282,7 @@ mixin ProductQueryMixin {
     int limit = 10,
   }) async {
     try {
-      final now = DateTime.now().toIso8601String();
-
+      // Get all flash sale products first
       final response = await client
           .from('products')
           .select()
@@ -291,12 +290,30 @@ mixin ProductQueryMixin {
           .eq('is_suspended', false)
           .eq('is_flash_sale', true)
           .gt('stock', 0)
-          .lte('flash_sale_start', now)
-          .gt('flash_sale_end', now)
-          .order('flash_sale_end', ascending: true)
-          .limit(limit);
+          .limit(limit * 2); // Get more to filter
 
-      return (response as List)
+      final now = DateTime.now();
+
+      // Filter in Dart to handle timezone correctly
+      final activeFlashSale = (response as List).where((json) {
+        final startStr = json['flash_sale_start'];
+        final endStr = json['flash_sale_end'];
+        if (startStr == null || endStr == null) return false;
+
+        final start = DateTime.parse(startStr);
+        final end = DateTime.parse(endStr);
+        return now.isAfter(start) && now.isBefore(end);
+      }).toList();
+
+      // Sort by end time (soonest ending first)
+      activeFlashSale.sort((a, b) {
+        final endA = DateTime.parse(a['flash_sale_end']);
+        final endB = DateTime.parse(b['flash_sale_end']);
+        return endA.compareTo(endB);
+      });
+
+      return activeFlashSale
+          .take(limit)
           .map((json) => ProductModel.fromJson(json, locale: locale))
           .toList();
     } catch (e) {

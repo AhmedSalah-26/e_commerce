@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/shared_widgets/network_error_widget.dart';
 import '../../../../core/shared_widgets/skeleton_widgets.dart';
-import '../../../../core/shared_widgets/empty_states.dart';
+import '../../../../core/shared_widgets/empty_states/empty_state_widget.dart';
 import '../../../../core/shared_widgets/product_card/product_grid_card.dart';
 import '../../../products/domain/entities/product_entity.dart';
 import '../../../products/presentation/cubit/products_cubit.dart';
@@ -85,7 +85,7 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
         list.sort((a, b) => b.effectivePrice.compareTo(a.effectivePrice));
         break;
       case 'rating':
-        list.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
+        list.sort((a, b) => (b.rating).compareTo(a.rating));
         break;
       default:
         break;
@@ -98,6 +98,7 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final title = widget.categoryName ?? 'all_products'.tr();
+    final isArabic = context.locale.languageCode == 'ar';
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -107,9 +108,7 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(
-            Directionality.of(context) == TextDirection.rtl
-                ? Icons.arrow_forward_ios
-                : Icons.arrow_back_ios,
+            isArabic ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
             size: 20,
             color: theme.colorScheme.onSurface,
           ),

@@ -10,6 +10,7 @@ import '../../../categories/presentation/cubit/categories_state.dart';
 import '../../../products/presentation/cubit/products_cubit.dart';
 import '../../../products/presentation/cubit/products_state.dart';
 import '../cubit/home_sliders_cubit.dart';
+import 'circular_categories_row.dart';
 import 'images_card_slider.dart';
 import 'category_row.dart';
 import 'products_grid.dart';
@@ -71,6 +72,11 @@ class HomeContentBuilder {
             child: Column(
               children: <Widget>[
                 ImagesCard(images: sliderImages),
+                CircularCategoriesRow(
+                  selectedCategoryId: selectedCategoryId,
+                  onCategorySelected: onCategorySelected,
+                  onAllSelected: onAllProductsSelected,
+                ),
                 const SizedBox(height: 4),
                 // Flash Sale Section - Red & Eye-catching
                 BlocBuilder<HomeSlidersCubit, HomeSlidersState>(

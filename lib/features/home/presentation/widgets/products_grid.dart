@@ -30,10 +30,8 @@ class ProductsGrid extends StatelessWidget {
           childAspectRatio: _aspectRatio,
         ),
         itemCount: products.length,
-        // Add cacheExtent for smoother scrolling
-        cacheExtent: _itemHeight * 2,
         // Use addAutomaticKeepAlives and addRepaintBoundaries for optimization
-        addAutomaticKeepAlives: true,
+        addAutomaticKeepAlives: false,
         addRepaintBoundaries: true,
         itemBuilder: (context, index) {
           final product = products[index];

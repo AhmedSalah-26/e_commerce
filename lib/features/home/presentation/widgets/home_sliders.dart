@@ -9,16 +9,27 @@ import '../../../banners/data/datasources/banner_remote_datasource.dart';
 import '../../../banners/presentation/cubit/banners_cubit.dart';
 import '../cubit/home_sliders_cubit.dart';
 import 'dynamic_banner_slider.dart';
+import 'circular_categories_row.dart';
 import 'horizontal_products_slider.dart';
 import 'flash_sale_slider.dart';
 
 class HomeSliders extends StatelessWidget {
-  const HomeSliders({super.key});
+  final String? selectedCategoryId;
+  final Function(String?)? onCategorySelected;
+  final VoidCallback? onAllSelected;
+
+  const HomeSliders({
+    super.key,
+    this.selectedCategoryId,
+    this.onCategorySelected,
+    this.onAllSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // 1. Dynamic Banners Slider
         BlocProvider(
           create: (_) {
             final cubit = BannersCubit(sl<BannerRemoteDatasource>());
@@ -39,7 +50,17 @@ class HomeSliders extends StatelessWidget {
             },
           ),
         ),
-        const SizedBox(height: 4),
+
+        // 2. Circular Categories Row directly below the Banner
+        CircularCategoriesRow(
+          selectedCategoryId: selectedCategoryId,
+          onCategorySelected: onCategorySelected,
+          onAllSelected: onAllSelected,
+        ),
+
+        const SizedBox(height: 6),
+
+        // 3. Flash Sale Section
         BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
           builder: (context, state) {
             if (state.flashSaleProducts.isEmpty && !state.isLoadingFlashSale) {
@@ -52,7 +73,10 @@ class HomeSliders extends StatelessWidget {
             );
           },
         ),
+
         const SizedBox(height: 4),
+
+        // 4. Best Deals Section
         BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
           builder: (context, state) {
             return HorizontalProductsSlider(
@@ -65,7 +89,10 @@ class HomeSliders extends StatelessWidget {
             );
           },
         ),
+
         const SizedBox(height: 4),
+
+        // 5. New Arrivals Section
         BlocBuilder<HomeSlidersCubit, HomeSlidersState>(
           builder: (context, state) {
             return HorizontalProductsSlider(

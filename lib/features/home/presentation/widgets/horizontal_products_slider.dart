@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/shared_widgets/section_header.dart';
 import '../../../../core/shared_widgets/product_card/product_grid_card.dart';
 import '../../../products/domain/entities/product_entity.dart';
 
@@ -35,7 +36,7 @@ class HorizontalProductsSlider extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
       decoration: BoxDecoration(
         color:
             backgroundColor ?? theme.colorScheme.primary.withValues(alpha: 0.1),
@@ -44,48 +45,12 @@ class HorizontalProductsSlider extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section header with arrow
-          InkWell(
-            onTap: onViewAll,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        if (subtitle != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            subtitle!,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.7),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 18,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                ],
-              ),
-            ),
+          // Modern Section header with capsule "عرض الكل <" button
+          SectionHeader(
+            title: title,
+            subtitle: subtitle,
+            onViewAll: onViewAll,
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
           ),
           SizedBox(
             height: 195,
@@ -95,7 +60,6 @@ class HorizontalProductsSlider extends StatelessWidget {
               itemCount: products.length,
               addAutomaticKeepAlives: false,
               addRepaintBoundaries: true,
-              cacheExtent: 500,
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 3),

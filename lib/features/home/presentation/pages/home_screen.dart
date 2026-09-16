@@ -142,6 +142,14 @@ class HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onCategorySelected(String? categoryId) {
+    if (categoryId == null) {
+      context.push('/all-categories');
+    } else {
+      context.push('/all-categories?categoryId=$categoryId');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -168,8 +176,10 @@ class HomeScreenState extends State<HomeScreen> {
                   controller: _scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
-                    // Sliders
-                    const SliverToBoxAdapter(child: HomeSliders()),
+                    // Sliders (Dynamic Banner + Circular Categories + Sliders)
+                    const SliverToBoxAdapter(
+                      child: HomeSliders(),
+                    ),
                     // Sticky tabs
                     SliverPersistentHeader(
                       pinned: true,

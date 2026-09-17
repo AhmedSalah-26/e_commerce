@@ -3,8 +3,8 @@ class AppConstants {
   AppConstants._();
 
   // App Info
-  static const String appName = 'متجري';
-  static const String appNameEn = 'My Store';
+  static const String appName = 'إيزي أوردر';
+  static const String appNameEn = 'Easy Order';
   static const String appVersion = '1.0.0';
 
   // API & Network

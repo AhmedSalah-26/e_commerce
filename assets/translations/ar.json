@@ -1,5 +1,5 @@
 {
-  "app_name": "متجري",
+  "app_name": "إيزي أوردر",
   "loading": "جاري التحميل...",
   "error": "خطأ",
   "success": "تم بنجاح",
@@ -257,7 +257,7 @@
   "help_troubleshooting": "حل المشاكل",
   
   "about_title": "عن التطبيق",
-  "about_description": "متجري هو منصة تسوق إلكترونية متكاملة توفر تجربة تسوق سلسة وآمنة. نحن نربط بين العملاء والتجار لتوفير أفضل المنتجات بأسعار تنافسية.",
+  "about_description": "إيزي أوردر هو منصة تسوق إلكترونية متكاملة توفر تجربة تسوق سلسة وآمنة. نحن نربط بين العملاء والتجار لتوفير أفضل المنتجات بأسعار تنافسية.",
   "about_version": "الإصدار",
   "about_developer": "معلومات الشركة",
   "about_contact": "البريد الإلكتروني",
@@ -311,13 +311,13 @@
   "help_working_time": "9:00 ص - 6:00 م",
 
   "about_app_title": "عن التطبيق",
-  "about_store_name": "متجري",
-  "about_company_name": "My Store Egypt",
+  "about_store_name": "إيزي أوردر",
+  "about_company_name": "Easy Order Egypt",
   "about_location": "القاهرة، مصر",
-  "about_copyright": "© 2024 متجري",
+  "about_copyright": "© 2024 إيزي أوردر",
   "about_rights_reserved": "جميع الحقوق محفوظة",
 
-  "support_email": "support@mystore-eg.com",
+  "support_email": "support@easyorder-eg.com",
   "support_phone": "+20 123 456 7890",
 
   "edit_profile": "تعديل الملف الشخصي",

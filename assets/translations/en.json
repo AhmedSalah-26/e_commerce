@@ -1,5 +1,5 @@
 {
-  "app_name": "My Store",
+  "app_name": "Easy Order",
   "loading": "Loading...",
   "error": "Error",
   "success": "Success",
@@ -225,7 +225,7 @@
   "help_troubleshooting": "Troubleshooting",
   
   "about_title": "About the App",
-  "about_description": "My Store is a comprehensive e-commerce platform that provides a seamless and secure shopping experience. We connect customers with merchants to offer the best products at competitive prices.",
+  "about_description": "Easy Order is a comprehensive e-commerce platform that provides a seamless and secure shopping experience. We connect customers with merchants to offer the best products at competitive prices.",
   "about_version": "Version",
   "about_developer": "Company Information",
   "about_contact": "Email",
@@ -279,13 +279,13 @@
   "help_working_time": "9:00 AM - 6:00 PM",
 
   "about_app_title": "About the App",
-  "about_store_name": "My Store",
-  "about_company_name": "My Store Egypt",
+  "about_store_name": "Easy Order",
+  "about_company_name": "Easy Order Egypt",
   "about_location": "Cairo, Egypt",
-  "about_copyright": "© 2024 My Store",
+  "about_copyright": "© 2024 Easy Order",
   "about_rights_reserved": "All rights reserved",
 
-  "support_email": "support@mystore-eg.com",
+  "support_email": "support@easyorder-eg.com",
   "support_phone": "+20 123 456 7890",
 
   "edit_profile": "Edit Profile",

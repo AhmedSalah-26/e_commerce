@@ -34,7 +34,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   List<Map<String, String>> _getPages(bool isRtl) {
     return [
       {
-        'title': isRtl ? 'مرحباً بك في متجرنا' : 'Welcome to Our Store',
+        'title': isRtl ? 'مرحباً بك في إيزي أوردر' : 'Welcome to Easy Order',
         'description': isRtl
             ? 'اكتشف تشكيلة واسعة من المنتجات المميزة بأفضل الأسعار. تسوق بسهولة وأمان من أي مكان.'
             : 'Discover a wide range of premium products at the best prices. Shop easily and securely from anywhere.',

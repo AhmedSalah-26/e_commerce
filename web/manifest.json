@@ -1,6 +1,6 @@
 {
-    "name": "projects",
-    "short_name": "projects",
+    "name": "إيزي أوردر",
+    "short_name": "Easy Order",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

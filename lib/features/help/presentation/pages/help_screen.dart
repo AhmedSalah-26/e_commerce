@@ -10,7 +10,7 @@ class HelpScreen extends StatelessWidget {
   Future<void> _launchEmail() async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
-      path: 'support@mystore-eg.com',
+      path: 'support@easyorder-eg.com',
       query: 'subject=استفسار عن التطبيق',
     );
     if (await canLaunchUrl(emailUri)) {
